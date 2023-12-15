@@ -24,7 +24,7 @@ Section Mode.
     | var x => fst (nth x Γ dummy)
     | Sort m l => mKind
     | Pi m mx A B => mKind
-    | lam A t => md t
+    | lam mx A t => md t
     | app u v => md u
     | Erased A => mKind
     | erase t => mGhost
