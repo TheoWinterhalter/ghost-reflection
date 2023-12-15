@@ -13,4 +13,4 @@ dune build
 dune install
 ```
 
-We also apply a patch stolen from logrel-coq to fix the generated files.
+We also change slightly the imports to the file so that it works.
