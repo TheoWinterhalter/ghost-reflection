@@ -23,7 +23,7 @@ Section Mode.
     match t with
     | var x => fst (nth x Γ dummy)
     | Sort m l => mKind
-    | Pi m A B => mKind
+    | Pi m mx A B => mKind
     | lam A t => md t
     | app u v => md u
     | Erased A => mKind

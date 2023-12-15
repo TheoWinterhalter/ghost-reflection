@@ -11,7 +11,7 @@ Reserved Notation "'ε|' u |" (at level 0).
 Equations castrm : term → term := {
   ε| var x | := var x ;
   ε| Sort m l | := Sort m l ;
-  ε| Pi m A B | := Pi m ε|A| ε|B| ;
+  ε| Pi m mx A B | := Pi m mx ε|A| ε|B| ;
   ε| lam A t | := lam ε|A| ε|t| ;
   ε| app u v | := app ε|u| ε|v| ;
   ε| Erased A | := Erased ε|A| ;

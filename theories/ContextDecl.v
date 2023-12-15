@@ -15,10 +15,10 @@ Definition decl := (mode * term)%type.
 Definition context := list decl.
 
 Notation "'∙'" :=
-  (@nil term).
+  (@nil decl).
 
 Notation "Γ ,, d" :=
-  (@cons term d Γ) (at level 20, d at next level).
+  (@cons decl d Γ) (at level 20, d at next level).
 
 Notation "Γ ,,, Δ" :=
-  (@app term Δ Γ) (at level 25, Δ at next level, left associativity).
+  (@app decl Δ Γ) (at level 25, Δ at next level, left associativity).

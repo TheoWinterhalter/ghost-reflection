@@ -7,4 +7,8 @@ clean: Makefile.coq
 Makefile.coq:
 	coq_makefile -f _CoqProject -o Makefile.coq
 
-.PHONY: all clean
+autosubst:
+	cd theories/autosubst ; \
+	$(MAKE) -f Makefile
+
+.PHONY: all clean autosubst
