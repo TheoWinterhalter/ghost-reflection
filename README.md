@@ -14,3 +14,8 @@ dune install
 ```
 
 We also change slightly the imports to the file so that it works.
+
+## Building the project
+
+We use Coq 8.18 and Equations 1.3.
+Running `make` at the root of the project is enough to build everything.

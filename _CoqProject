@@ -5,3 +5,8 @@ theories/BasicAST.v
 theories/autosubst/core.v
 theories/autosubst/unscoped.v
 theories/autosubst/AST.v
+
+theories/ContextDecl.v
+theories/CastRemoval.v
+theories/TermMode.v
+theories/Typing.v
