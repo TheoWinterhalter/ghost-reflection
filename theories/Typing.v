@@ -2,6 +2,8 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import AST unscoped.
 From GhostTT Require Import BasicAST ContextDecl CastRemoval TermMode.
 
+Import ListNotations.
+
 (* TODO The substitution notation is broken, make new better ones? *)
 (* Import SubstNotations UnscopedNotations. *)
 
@@ -19,6 +21,59 @@ Inductive typing (Γ : context) : term → term → Prop :=
     ∀ x m A,
       nth_error Γ x = Some (m, A) →
       Γ ⊢ var x : A
+
+| type_sort :
+    ∀ m i j,
+      i < j →
+      Γ ⊢ Sort m i : Sort m j
+
+| type_pi :
+    ∀ mx m i j A B,
+      md Γ A = mKind →
+      md (Γ ,, (mx, A)) B = mKind →
+      Γ ⊢ A : Sort mx i →
+      Γ ,, (mx, A) ⊢ B : Sort m j →
+      Γ ⊢ Pi m mx A B : Sort m (max i j)
+
+| type_lam :
+    ∀ mx m i j A B t,
+      md Γ A = mKind →
+      md (Γ ,, (mx, A)) t = m →
+      Γ ⊢ A : Sort mx i →
+      Γ ,, (mx, A) ⊢ B : Sort m j →
+      Γ ,, (mx, A) ⊢ t : B →
+      Γ ⊢ lam mx A t : Pi m mx A B
+
+| type_app :
+    ∀ mx m A B t u,
+      md Γ t = m →
+      md Γ u = mx →
+      Γ ⊢ t : Pi m mx A B →
+      Γ ⊢ u : A →
+      Γ ⊢ app t u : subst1 (scons u ids) B
+
+| type_erased :
+    ∀ i A,
+      md Γ A = mKind →
+      Γ ⊢ A : Sort mType i →
+      Γ ⊢ Erased A : Sort mGhost i
+
+| type_erase :
+    ∀ i A t,
+      md Γ A = mKind →
+      md Γ t = mType →
+      Γ ⊢ A : Sort mType i →
+      Γ ⊢ t : A →
+      Γ ⊢ erase t : Erased A
+
+(* | type_reveal *)
+(* | type_revealP *)
+(* | type_gheq *)
+(* | type_ghrefl *)
+(* | type_ghcast *)
+(* | type_bot *)
+(* | type_bot_elim *)
+(* | type_conv *)
 
 where "Γ ⊢ t : A" := (typing Γ t A)
 
@@ -45,12 +100,17 @@ with conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ reveal (erase t) P p ≡ app p t
 
 | revealP_erase :
-    ∀ t P p,
+    ∀ t p,
       md Γ p = mKind →
       md Γ t = mType →
       Γ ⊢ revealP (erase t) p ≡ app p t
 
 (* Congruence rules *)
+
+(* A rule to quotient away all levels of Prop, making it impredicative *)
+| cong_Prop :
+    ∀ i j,
+      Γ ⊢ Sort mProp i ≡ Sort mProp j
 
 | cong_Pi :
     ∀ m mx A A' B B',
