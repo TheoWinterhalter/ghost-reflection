@@ -19,7 +19,7 @@ Class Action (A G : Type) :=
   ren1.
 
 Notation "a ⋅ x" :=
-  (action a x) (at level 7, right associativity) : subst_scope.
+  (action a x) (at level 20, right associativity) : subst_scope.
 
 Notation "↑" := (shift) : subst_scope.
 

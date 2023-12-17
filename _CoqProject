@@ -12,3 +12,4 @@ theories/ContextDecl.v
 theories/CastRemoval.v
 theories/TermMode.v
 theories/Typing.v
+theories/BasicMetaTheory.v
