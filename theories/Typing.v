@@ -9,6 +9,10 @@ Import ListNotations.
 
 Set Default Goal Selector "!".
 
+Notation "A ⇒[ mx | m ] B" :=
+  (Pi m mx A (ren1 shift B))
+  (at level 20, mx, m at next level, right associativity).
+
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
 
@@ -66,14 +70,78 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ t : A →
       Γ ⊢ erase t : Erased A
 
-(* | type_reveal *)
-(* | type_revealP *)
-(* | type_gheq *)
-(* | type_ghrefl *)
-(* | type_ghcast *)
-(* | type_bot *)
-(* | type_bot_elim *)
-(* | type_conv *)
+| type_reveal :
+    ∀ i m A t P p,
+      md Γ p = m →
+      md Γ t = mGhost →
+      md Γ P = mKind →
+      In m [ mProp ; mGhost ] →
+      Γ ⊢ t : Erased A →
+      Γ ⊢ P : Erased A ⇒[ mGhost | mKind ] Sort m i →
+      Γ ⊢ p : Pi m mType A (app P (erase (var 0))) →
+      Γ ⊢ reveal t P p : app P t
+
+| type_revealP :
+    ∀ A t p,
+      md Γ t = mGhost →
+      md Γ p = mKind →
+      Γ ⊢ t : Erased A →
+      Γ ⊢ p : A ⇒[ mType | mKind ] Sort mProp 0 →
+      Γ ⊢ revealP t p : Sort mProp 0
+
+| type_gheq :
+    ∀ i A u v,
+      md Γ A = mKind →
+      md Γ u = mGhost →
+      md Γ v = mGhost →
+      Γ ⊢ A : Sort mGhost i →
+      Γ ⊢ u : A →
+      Γ ⊢ v : A →
+      Γ ⊢ gheq A u v : Sort mProp 0
+
+| type_ghrefl :
+    ∀ i A u,
+      md Γ A = mKind →
+      md Γ u = mGhost →
+      Γ ⊢ A : Sort mGhost i →
+      Γ ⊢ u : A →
+      Γ ⊢ ghrefl A u : gheq A u u
+
+| type_ghcast :
+    ∀ i m A u v e P t,
+      md Γ A = mKind →
+      md Γ P = mKind →
+      md Γ u = mGhost →
+      md Γ v = mGhost →
+      md Γ t = m →
+      md Γ e = mProp →
+      m ≠ mKind →
+      Γ ⊢ A : Sort mGhost i →
+      Γ ⊢ u : A →
+      Γ ⊢ v : A →
+      Γ ⊢ e : gheq A u v →
+      Γ ⊢ P : A ⇒[ mGhost | mKind ] Sort m i →
+      Γ ⊢ ghcast e P t : app P v
+
+| type_bot :
+    Γ ⊢ bot : Sort mProp 0
+
+| type_bot_elim :
+    ∀ i m A p,
+      md Γ A = mKind →
+      md Γ p = mProp →
+      Γ ⊢ A : Sort m i →
+      Γ ⊢ p : bot →
+      Γ ⊢ bot_elim m A p : A
+
+| type_conv :
+    ∀ i m A B t,
+      md Γ B = mKind →
+      md Γ t = m →
+      Γ ⊢ t : A →
+      Γ ⊢ A ≡ B →
+      Γ ⊢ B : Sort m i →
+      Γ ⊢ t : B
 
 where "Γ ⊢ t : A" := (typing Γ t A)
 
