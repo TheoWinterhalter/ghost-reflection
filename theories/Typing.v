@@ -33,16 +33,16 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_pi :
     ∀ mx m i j A B,
-      md Γ A = mKind →
-      md (Γ ,, (mx, A)) B = mKind →
+      mdc Γ A = mKind →
+      mdc (Γ ,, (mx, A)) B = mKind →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ⊢ Pi m mx A B : Sort m (max i j)
 
 | type_lam :
     ∀ mx m i j A B t,
-      md Γ A = mKind →
-      md (Γ ,, (mx, A)) t = m →
+      mdc Γ A = mKind →
+      mdc (Γ ,, (mx, A)) t = m →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ,, (mx, A) ⊢ t : B →
@@ -50,31 +50,31 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_app :
     ∀ mx m A B t u,
-      md Γ t = m →
-      md Γ u = mx →
+      mdc Γ t = m →
+      mdc Γ u = mx →
       Γ ⊢ t : Pi m mx A B →
       Γ ⊢ u : A →
       Γ ⊢ app t u : subst1 (scons u ids) B
 
 | type_erased :
     ∀ i A,
-      md Γ A = mKind →
+      mdc Γ A = mKind →
       Γ ⊢ A : Sort mType i →
       Γ ⊢ Erased A : Sort mGhost i
 
 | type_erase :
     ∀ i A t,
-      md Γ A = mKind →
-      md Γ t = mType →
+      mdc Γ A = mKind →
+      mdc Γ t = mType →
       Γ ⊢ A : Sort mType i →
       Γ ⊢ t : A →
       Γ ⊢ erase t : Erased A
 
 | type_reveal :
     ∀ i m A t P p,
-      md Γ p = m →
-      md Γ t = mGhost →
-      md Γ P = mKind →
+      mdc Γ p = m →
+      mdc Γ t = mGhost →
+      mdc Γ P = mKind →
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
       Γ ⊢ P : Erased A ⇒[ mGhost | mKind ] Sort m i →
@@ -83,17 +83,17 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_revealP :
     ∀ A t p,
-      md Γ t = mGhost →
-      md Γ p = mKind →
+      mdc Γ t = mGhost →
+      mdc Γ p = mKind →
       Γ ⊢ t : Erased A →
       Γ ⊢ p : A ⇒[ mType | mKind ] Sort mProp 0 →
       Γ ⊢ revealP t p : Sort mProp 0
 
 | type_gheq :
     ∀ i A u v,
-      md Γ A = mKind →
-      md Γ u = mGhost →
-      md Γ v = mGhost →
+      mdc Γ A = mKind →
+      mdc Γ u = mGhost →
+      mdc Γ v = mGhost →
       Γ ⊢ A : Sort mGhost i →
       Γ ⊢ u : A →
       Γ ⊢ v : A →
@@ -101,20 +101,20 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_ghrefl :
     ∀ i A u,
-      md Γ A = mKind →
-      md Γ u = mGhost →
+      mdc Γ A = mKind →
+      mdc Γ u = mGhost →
       Γ ⊢ A : Sort mGhost i →
       Γ ⊢ u : A →
       Γ ⊢ ghrefl A u : gheq A u u
 
 | type_ghcast :
     ∀ i m A u v e P t,
-      md Γ A = mKind →
-      md Γ P = mKind →
-      md Γ u = mGhost →
-      md Γ v = mGhost →
-      md Γ t = m →
-      md Γ e = mProp →
+      mdc Γ A = mKind →
+      mdc Γ P = mKind →
+      mdc Γ u = mGhost →
+      mdc Γ v = mGhost →
+      mdc Γ t = m →
+      mdc Γ e = mProp →
       m ≠ mKind →
       Γ ⊢ A : Sort mGhost i →
       Γ ⊢ u : A →
@@ -128,16 +128,16 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_bot_elim :
     ∀ i m A p,
-      md Γ A = mKind →
-      md Γ p = mProp →
+      mdc Γ A = mKind →
+      mdc Γ p = mProp →
       Γ ⊢ A : Sort m i →
       Γ ⊢ p : bot →
       Γ ⊢ bot_elim m A p : A
 
 | type_conv :
     ∀ i m A B t,
-      md Γ B = mKind →
-      md Γ t = m →
+      mdc Γ B = mKind →
+      mdc Γ t = m →
       Γ ⊢ t : A →
       Γ ⊢ A ≡ B →
       Γ ⊢ B : Sort m i →
@@ -151,26 +151,26 @@ with conversion (Γ : context) : term → term → Prop :=
 
 | conv_irr :
     ∀ p q,
-      md Γ p = mProp →
-      md Γ q = mProp →
+      mdc Γ p = mProp →
+      mdc Γ q = mProp →
       Γ ⊢ p ≡ q
 
 | conv_beta :
     ∀ mx A t u,
-      md Γ u = mx →
+      mdc Γ u = mx →
       (* Γ ⊢ app (lam mx A t) u ≡ t [ u .. ] *)
       Γ ⊢ app (lam mx A t) u ≡ subst1 (scons u ids) t
 
 | reveal_erase :
     ∀ t P p,
-      In (md Γ p) [ mProp ; mGhost ] →
-      In (md Γ t) [ mType ; mKind ] →
+      In (mdc Γ p) [ mProp ; mGhost ] →
+      In (mdc Γ t) [ mType ; mKind ] →
       Γ ⊢ reveal (erase t) P p ≡ app p t
 
 | revealP_erase :
     ∀ t p,
-      md Γ p = mKind →
-      md Γ t = mType →
+      mdc Γ p = mKind →
+      mdc Γ t = mType →
       Γ ⊢ revealP (erase t) p ≡ app p t
 
 (* Congruence rules *)

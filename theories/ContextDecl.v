@@ -14,6 +14,11 @@ Definition decl := (mode * term)%type.
 
 Definition context := list decl.
 
+Definition scope := list mode.
+
+Definition sc (Γ : context) : scope :=
+  map fst Γ.
+
 Notation "'∙'" :=
   (@nil decl).
 

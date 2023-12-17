@@ -8,20 +8,19 @@ Set Default Goal Selector "!".
 
 (** Reads the mode of a term.
 
-  The mode of a variable comes from the context, assuming the term is well
-  scoped.
+  The mode of a variable comes from the scope.
 
  **)
 
 Section Mode.
 
-  Context (Γ : context).
+  Context (Γ : scope).
 
-  Let dummy := (mType, var 0).
+  Let dummy := mType.
 
   Fixpoint md (t : term) : mode :=
     match t with
-    | var x => fst (nth x Γ dummy)
+    | var x => nth x Γ dummy
     | Sort m l => mKind
     | Pi m mx A B => mKind
     | lam mx A t => md t
@@ -42,3 +41,7 @@ Section Mode.
     end.
 
 End Mode.
+
+(* Handy notation for the mode in a context *)
+
+Notation mdc Γ t := (md (sc Γ) t).
