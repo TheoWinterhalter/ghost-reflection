@@ -1,16 +1,16 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import AST unscoped.
-From GhostTT Require Import BasicAST ContextDecl CastRemoval TermMode.
+From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
+  TermMode.
 
 Import ListNotations.
 
-(* TODO The substitution notation is broken, make new better ones? *)
-(* Import SubstNotations UnscopedNotations. *)
-
 Set Default Goal Selector "!".
 
+Open Scope subst_scope.
+
 Notation "A ⇒[ mx | m ] B" :=
-  (Pi m mx A (ren1 shift B))
+  (Pi m mx A (shift ⋅ B))
   (at level 20, mx, m at next level, right associativity).
 
 Reserved Notation "Γ ⊢ t : A"
@@ -54,7 +54,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       mdc Γ u = mx →
       Γ ⊢ t : Pi m mx A B →
       Γ ⊢ u : A →
-      Γ ⊢ app t u : subst1 (scons u ids) B
+      Γ ⊢ app t u : (u ..) ⋅ B
 
 | type_erased :
     ∀ i A,
@@ -158,8 +158,7 @@ with conversion (Γ : context) : term → term → Prop :=
 | conv_beta :
     ∀ mx A t u,
       mdc Γ u = mx →
-      (* Γ ⊢ app (lam mx A t) u ≡ t [ u .. ] *)
-      Γ ⊢ app (lam mx A t) u ≡ subst1 (scons u ids) t
+      Γ ⊢ app (lam mx A t) u ≡ (u ..) ⋅ t
 
 | reveal_erase :
     ∀ t P p,
