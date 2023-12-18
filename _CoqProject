@@ -11,5 +11,6 @@ theories/SubstNotations.v
 theories/ContextDecl.v
 theories/CastRemoval.v
 theories/TermMode.v
+theories/Scoping.v
 theories/Typing.v
 theories/BasicMetaTheory.v

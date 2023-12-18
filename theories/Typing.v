@@ -121,6 +121,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ v : A →
       Γ ⊢ e : gheq A u v →
       Γ ⊢ P : A ⇒[ mGhost | mKind ] Sort m i →
+      Γ ⊢ t : app P u →
       Γ ⊢ ghcast e P t : app P v
 
 | type_bot :
