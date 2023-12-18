@@ -54,7 +54,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ u mx →
       Γ ⊢ t : Pi m mx A B →
       Γ ⊢ u : A →
-      Γ ⊢ app t u : (u ..) ⋅ B
+      Γ ⊢ app t u : B <[ u .. ]
 
 | type_erased :
     ∀ i A,
@@ -159,7 +159,7 @@ with conversion (Γ : context) : term → term → Prop :=
 | conv_beta :
     ∀ mx A t u,
       cscoping Γ u mx →
-      Γ ⊢ app (lam mx A t) u ≡ (u ..) ⋅ t
+      Γ ⊢ app (lam mx A t) u ≡ t <[ u .. ]
 
 | reveal_erase :
     ∀ mp mt t P p,

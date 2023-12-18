@@ -24,15 +24,19 @@ Lemma md_subst :
   ∀ Γ Δ σ t m,
     sscoping Γ σ Δ →
     scoping Δ t m →
-    scoping Γ (σ ⋅ t) m.
+    scoping Γ (t <[ σ ]) m.
 Proof.
   intros Γ Δ σ t m hσ ht.
   induction ht in Γ, σ, hσ |- *.
-  (* all: try solve [ constructor | eassumption ]. *)
+  all: try solve [ asimpl ; constructor ; eauto ].
   - rename H into hx, Γ0 into Δ.
     asimpl. induction hσ in x, hx |- *. 1: destruct x ; discriminate.
     destruct x.
     + simpl in *. inversion hx. subst. assumption.
     + apply IHhσ. simpl in hx. assumption.
-  - unfold "⋅". unfold ActionSubst1. asimpl. constructor.
+  - asimpl. constructor.
+    + eauto.
+    + apply IHht2. constructor.
+      * admit.
+      * asimpl. constructor. reflexivity.
 Abort.
