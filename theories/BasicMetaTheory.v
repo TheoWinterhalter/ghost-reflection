@@ -3,7 +3,7 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import AST unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
-  TermMode Typing.
+  TermMode Scoping Typing.
 
 Import ListNotations.
 Import CombineNotations.
@@ -12,30 +12,27 @@ Set Default Goal Selector "!".
 
 (** Substitution preserves modes **)
 
-Inductive mds (Γ : scope) (σ : nat → term) : scope → Prop :=
-| mds_nil : mds Γ σ []
-| mds_cons :
+Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
+| scope_nil : sscoping Γ σ []
+| scope_cons :
     ∀ Δ m,
-      mds Γ (↑ >> σ) Δ →
-      md Γ (σ var_zero) = m →
-      mds Γ σ (m :: Δ).
+      sscoping Γ (↑ >> σ) Δ →
+      scoping Γ (σ var_zero) m →
+      sscoping Γ σ (m :: Δ).
 
 Lemma md_subst :
-  ∀ Γ Δ σ t,
-    mds Γ σ Δ →
-    md Γ (σ ⋅ t) = md Δ t.
+  ∀ Γ Δ σ t m,
+    sscoping Γ σ Δ →
+    scoping Δ t m →
+    scoping Γ (σ ⋅ t) m.
 Proof.
-  intros Γ Δ σ t h.
-  induction t in Γ, Δ, σ, h |- *. all: try reflexivity.
-  - simpl. asimpl.
-    induction h as [| Δ m h h0 ih].
-    + destruct n.
-      * simpl. asimpl. (* ??? *) give_up.
-      * give_up.
-    + give_up.
-  - asimpl. unfold action. unfold ActionSubst1. asimpl.
-    unfold ">>". asimpl. unfold ">>". simpl.
-    apply IHt2.
-    (* I don't understand what's happening with autosubst at all! *)
-    (* Is it really saving me time? It's seems the opposite. *)
+  intros Γ Δ σ t m hσ ht.
+  induction ht in Γ, σ, hσ |- *.
+  (* all: try solve [ constructor | eassumption ]. *)
+  - rename H into hx, Γ0 into Δ.
+    asimpl. induction hσ in x, hx |- *. 1: destruct x ; discriminate.
+    destruct x.
+    + simpl in *. inversion hx. subst. assumption.
+    + apply IHhσ. simpl in hx. assumption.
+  - unfold "⋅". unfold ActionSubst1. asimpl. constructor.
 Abort.
