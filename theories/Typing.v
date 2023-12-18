@@ -1,7 +1,7 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import AST unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
-  TermMode.
+  TermMode Scoping.
 
 Import ListNotations.
 
@@ -33,16 +33,16 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_pi :
     ∀ mx m i j A B,
-      mdc Γ A = mKind →
-      mdc (Γ ,, (mx, A)) B = mKind →
+      cscoping Γ A mKind →
+      cscoping (Γ ,, (mx, A)) B mKind →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ⊢ Pi m mx A B : Sort m (max i j)
 
 | type_lam :
     ∀ mx m i j A B t,
-      mdc Γ A = mKind →
-      mdc (Γ ,, (mx, A)) t = m →
+      cscoping Γ A mKind →
+      cscoping (Γ ,, (mx, A)) t m →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ,, (mx, A) ⊢ t : B →
@@ -50,31 +50,31 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_app :
     ∀ mx m A B t u,
-      mdc Γ t = m →
-      mdc Γ u = mx →
+      cscoping Γ t m →
+      cscoping Γ u mx →
       Γ ⊢ t : Pi m mx A B →
       Γ ⊢ u : A →
       Γ ⊢ app t u : (u ..) ⋅ B
 
 | type_erased :
     ∀ i A,
-      mdc Γ A = mKind →
+      cscoping Γ A mKind →
       Γ ⊢ A : Sort mType i →
       Γ ⊢ Erased A : Sort mGhost i
 
 | type_erase :
     ∀ i A t,
-      mdc Γ A = mKind →
-      mdc Γ t = mType →
+      cscoping Γ A mKind →
+      cscoping Γ t mType →
       Γ ⊢ A : Sort mType i →
       Γ ⊢ t : A →
       Γ ⊢ erase t : Erased A
 
 | type_reveal :
     ∀ i m A t P p,
-      mdc Γ p = m →
-      mdc Γ t = mGhost →
-      mdc Γ P = mKind →
+      cscoping Γ p m →
+      cscoping Γ t mGhost →
+      cscoping Γ P mKind →
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
       Γ ⊢ P : Erased A ⇒[ mGhost | mKind ] Sort m i →
@@ -83,17 +83,17 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_revealP :
     ∀ A t p,
-      mdc Γ t = mGhost →
-      mdc Γ p = mKind →
+      cscoping Γ t mGhost →
+      cscoping Γ p mKind →
       Γ ⊢ t : Erased A →
       Γ ⊢ p : A ⇒[ mType | mKind ] Sort mProp 0 →
       Γ ⊢ revealP t p : Sort mProp 0
 
 | type_gheq :
     ∀ i A u v,
-      mdc Γ A = mKind →
-      mdc Γ u = mGhost →
-      mdc Γ v = mGhost →
+      cscoping Γ A mKind →
+      cscoping Γ u mGhost →
+      cscoping Γ v mGhost →
       Γ ⊢ A : Sort mGhost i →
       Γ ⊢ u : A →
       Γ ⊢ v : A →
@@ -101,20 +101,20 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_ghrefl :
     ∀ i A u,
-      mdc Γ A = mKind →
-      mdc Γ u = mGhost →
+      cscoping Γ A mKind →
+      cscoping Γ u mGhost →
       Γ ⊢ A : Sort mGhost i →
       Γ ⊢ u : A →
       Γ ⊢ ghrefl A u : gheq A u u
 
 | type_ghcast :
     ∀ i m A u v e P t,
-      mdc Γ A = mKind →
-      mdc Γ P = mKind →
-      mdc Γ u = mGhost →
-      mdc Γ v = mGhost →
-      mdc Γ t = m →
-      mdc Γ e = mProp →
+      cscoping Γ A mKind →
+      cscoping Γ P mKind →
+      cscoping Γ u mGhost →
+      cscoping Γ v mGhost →
+      cscoping Γ t m →
+      cscoping Γ e mProp →
       m ≠ mKind →
       Γ ⊢ A : Sort mGhost i →
       Γ ⊢ u : A →
@@ -129,16 +129,16 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_bot_elim :
     ∀ i m A p,
-      mdc Γ A = mKind →
-      mdc Γ p = mProp →
+      cscoping Γ A mKind →
+      cscoping Γ p mProp →
       Γ ⊢ A : Sort m i →
       Γ ⊢ p : bot →
       Γ ⊢ bot_elim m A p : A
 
 | type_conv :
     ∀ i m A B t,
-      mdc Γ B = mKind →
-      mdc Γ t = m →
+      cscoping Γ B mKind →
+      cscoping Γ t m →
       Γ ⊢ t : A →
       Γ ⊢ A ≡ B →
       Γ ⊢ B : Sort m i →
@@ -152,25 +152,27 @@ with conversion (Γ : context) : term → term → Prop :=
 
 | conv_irr :
     ∀ p q,
-      mdc Γ p = mProp →
-      mdc Γ q = mProp →
+      cscoping Γ p mProp →
+      cscoping Γ q mProp →
       Γ ⊢ p ≡ q
 
 | conv_beta :
     ∀ mx A t u,
-      mdc Γ u = mx →
+      cscoping Γ u mx →
       Γ ⊢ app (lam mx A t) u ≡ (u ..) ⋅ t
 
 | reveal_erase :
-    ∀ t P p,
-      In (mdc Γ p) [ mProp ; mGhost ] →
-      In (mdc Γ t) [ mType ; mKind ] →
+    ∀ mp mt t P p,
+      cscoping Γ p mp →
+      cscoping Γ t mt →
+      In mp [ mProp ; mGhost ] →
+      In mt [ mType ; mKind ] →
       Γ ⊢ reveal (erase t) P p ≡ app p t
 
 | revealP_erase :
     ∀ t p,
-      mdc Γ p = mKind →
-      mdc Γ t = mType →
+      cscoping Γ p mKind →
+      cscoping Γ t mType →
       Γ ⊢ revealP (erase t) p ≡ app p t
 
 (* Congruence rules *)
