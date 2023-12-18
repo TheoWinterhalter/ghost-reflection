@@ -20,6 +20,29 @@ Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
       scoping Γ (σ var_zero) m →
       sscoping Γ σ (m :: Δ).
 
+Lemma scoping_weak :
+  ∀ Γ t m m',
+    scoping Γ t m →
+    scoping (m' :: Γ) t m.
+Proof.
+  intros Γ t m m' h.
+  induction h.
+  - constructor.
+Abort.
+
+Lemma sscoping_weak :
+  ∀ Γ Δ σ m,
+    sscoping Γ σ Δ →
+    sscoping (m :: Γ) (↑ >> σ) Δ.
+Proof.
+  intros Γ Δ σ m h.
+  induction h.
+  - constructor.
+  - constructor.
+    + assumption.
+    + asimpl.
+Abort.
+
 Lemma md_subst :
   ∀ Γ Δ σ t m,
     sscoping Γ σ Δ →
