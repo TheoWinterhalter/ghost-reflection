@@ -12,6 +12,11 @@ Set Default Goal Selector "!".
 
 (** Substitution preserves modes **)
 
+Definition rscoping (Γ : scope) (ρ : nat → nat) (Δ : scope) : Prop :=
+  ∀ x m,
+    nth_error Δ x = Some m →
+    nth_error Γ (ρ x) = Some m.
+
 Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
 | scope_nil : sscoping Γ σ []
 | scope_cons :
@@ -20,17 +25,30 @@ Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
       scoping Γ (σ var_zero) m →
       sscoping Γ σ (m :: Δ).
 
-Lemma scoping_weak :
-  ∀ Γ t m m',
-    scoping Γ t m →
-    scoping (m' :: Γ) (ren_term ↑ t) m.
+Lemma scoping_ren :
+  ∀ Γ Δ ρ t m,
+    rscoping Γ ρ Δ →
+    scoping Δ t m →
+    scoping Γ (ren_term ρ t) m.
 Proof.
-  intros Γ t m m' h.
-  induction h. all: try solve [ asimpl ; econstructor ; eauto ].
+  intros Γ Δ ρ t m hρ ht.
+  induction ht in Γ, ρ, hρ |- *.
+  all: try solve [ asimpl ; econstructor ; eauto ].
   - asimpl. constructor.
-    + assumption.
-    + (* TODO generalise to renamings *)
-Abort.
+    + auto.
+    + apply IHht2. intros y my e.
+      destruct y.
+      * simpl in e.
+        simpl. assumption.
+      * simpl in e. simpl. apply hρ. assumption.
+  - asimpl. constructor.
+    + auto.
+    + apply IHht2. intros y my e.
+      destruct y.
+      * simpl in e.
+        simpl. assumption.
+      * simpl in e. simpl. apply hρ. assumption.
+Qed.
 
 Lemma sscoping_weak :
   ∀ Γ Δ σ m,
@@ -42,8 +60,9 @@ Proof.
   - constructor.
   - constructor.
     + assumption.
-    + asimpl.
-Abort.
+    + asimpl. eapply scoping_ren. 2: eassumption.
+      intros x mx e. simpl. assumption.
+Qed.
 
 Lemma md_subst :
   ∀ Γ Δ σ t m,
