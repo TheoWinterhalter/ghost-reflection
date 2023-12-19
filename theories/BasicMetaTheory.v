@@ -32,22 +32,18 @@ Lemma scoping_ren :
     scoping Γ (ren_term ρ t) m.
 Proof.
   intros Γ Δ ρ t m hρ ht.
-  induction ht in Γ, ρ, hρ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ].
-  - asimpl. constructor.
-    + auto.
-    + apply IHht2. intros y my e.
-      destruct y.
-      * simpl in e.
-        simpl. assumption.
-      * simpl in e. simpl. apply hρ. assumption.
-  - asimpl. constructor.
-    + auto.
-    + apply IHht2. intros y my e.
-      destruct y.
-      * simpl in e.
-        simpl. assumption.
-      * simpl in e. simpl. apply hρ. assumption.
+  assert (lem :
+    ∀ Γ Δ ρ mx,
+      rscoping Γ ρ Δ →
+      rscoping (mx :: Γ) (0 .: ρ >> S) (mx :: Δ)
+  ).
+  { intros ? ? ? mx h' y my e.
+    destruct y.
+    - simpl in *. assumption.
+    - simpl in *. apply h'. assumption.
+  }
+  induction ht in Γ, ρ, hρ, lem |- *.
+  all: solve [ asimpl ; econstructor ; eauto ].
 Qed.
 
 Lemma sscoping_weak :
