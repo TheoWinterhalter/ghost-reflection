@@ -5,6 +5,7 @@ From GhostTT.autosubst Require Import AST.
 From GhostTT Require Import BasicAST ContextDecl.
 
 Set Default Goal Selector "!".
+Set Equations Transparent.
 
 Reserved Notation "'ε|' u |" (at level 0).
 

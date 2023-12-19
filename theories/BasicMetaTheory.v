@@ -85,3 +85,16 @@ Proof.
       * asimpl. apply sscoping_weak. assumption.
       * asimpl. constructor. reflexivity.
 Qed.
+
+(** Cast removal preserves modes **)
+
+Lemma md_castrm :
+  ∀ Γ t m,
+    scoping Γ t m →
+    scoping Γ (castrm t) m.
+Proof.
+  intros Γ t m h.
+  induction h.
+  all: try solve [ simpl ; econstructor ; eauto ].
+  cbn. assumption.
+Qed.
