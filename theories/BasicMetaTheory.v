@@ -23,17 +23,19 @@ Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
 Lemma scoping_weak :
   ∀ Γ t m m',
     scoping Γ t m →
-    scoping (m' :: Γ) t m.
+    scoping (m' :: Γ) (ren_term ↑ t) m.
 Proof.
   intros Γ t m m' h.
-  induction h.
-  - constructor.
+  induction h. all: try solve [ asimpl ; econstructor ; eauto ].
+  - asimpl. constructor.
+    + assumption.
+    + (* TODO generalise to renamings *)
 Abort.
 
 Lemma sscoping_weak :
   ∀ Γ Δ σ m,
     sscoping Γ σ Δ →
-    sscoping (m :: Γ) (↑ >> σ) Δ.
+    sscoping (m :: Γ) (σ >> ren_term ↑) Δ.
 Proof.
   intros Γ Δ σ m h.
   induction h.
@@ -60,6 +62,6 @@ Proof.
   - asimpl. constructor.
     + eauto.
     + apply IHht2. constructor.
-      * admit.
+      * asimpl. admit.
       * asimpl. constructor. reflexivity.
 Abort.
