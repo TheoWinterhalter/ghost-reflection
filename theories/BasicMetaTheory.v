@@ -72,7 +72,7 @@ Lemma md_subst :
 Proof.
   intros Γ Δ σ t m hσ ht.
   induction ht in Γ, σ, hσ |- *.
-  all: try solve [ asimpl ; constructor ; eauto ].
+  all: try solve [ asimpl ; econstructor ; eauto ].
   - rename H into hx, Γ0 into Δ.
     asimpl. induction hσ in x, hx |- *. 1: destruct x ; discriminate.
     destruct x.
@@ -81,6 +81,11 @@ Proof.
   - asimpl. constructor.
     + eauto.
     + apply IHht2. constructor.
-      * asimpl. admit.
+      * asimpl. apply sscoping_weak. assumption.
       * asimpl. constructor. reflexivity.
-Abort.
+  - asimpl. constructor.
+    + eauto.
+    + apply IHht2. constructor.
+      * asimpl. apply sscoping_weak. assumption.
+      * asimpl. constructor. reflexivity.
+Qed.
