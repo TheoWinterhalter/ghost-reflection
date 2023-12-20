@@ -11,7 +11,7 @@ Notation "a ⋅ x" :=
   (ren1 a x) (at level 20, right associativity) : subst_scope.
 
 Notation "t <[ s ]" :=
-  (subst1 s t) (at level 20, right associativity) : subst_scope.
+  (subst1 s t) (at level 10, right associativity) : subst_scope.
 
 Notation "↑" := (shift) : subst_scope.
 

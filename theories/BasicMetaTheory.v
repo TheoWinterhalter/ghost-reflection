@@ -98,3 +98,35 @@ Proof.
   all: try solve [ simpl ; econstructor ; eauto ].
   cbn. assumption.
 Qed.
+
+(** Cast removal commutes with renamings **)
+
+Lemma castrm_ren :
+  ∀ t ρ,
+    ε| ρ ⋅ t | = ρ ⋅ ε| t |.
+Proof.
+  intros t ρ.
+  induction t in ρ |- *.
+  all: try reflexivity.
+  all: solve [ simpl ; asimpl ; repeat core.unfold_funcomp ; f_equal ; auto ].
+Qed.
+
+(** Cast removal commutes with substitution **)
+
+Lemma castrm_subst :
+  ∀ t σ,
+    ε| t <[ σ ] | = ε| t | <[ σ >> castrm ].
+Proof.
+  intros t σ.
+  induction t in σ |- *. all: try reflexivity.
+  - asimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
+    asimpl. repeat core.unfold_funcomp. rewrite IHt2.
+    asimpl. repeat core.unfold_funcomp.
+    apply subst_term_morphism2. intros n.
+    destruct n.
+    + asimpl. repeat core.unfold_funcomp. simpl. reflexivity.
+    + asimpl. repeat core.unfold_funcomp. simpl.
+
+    (* simpl. rewrite IHt1, IHt2. asimpl. repeat core.unfold_funcomp.
+    f_equal. asimpl. *)
+Abort.
