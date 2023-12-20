@@ -2,7 +2,7 @@ From Coq Require Import Utf8 List.
 From Equations Require Import Equations.
 
 From GhostTT.autosubst Require Import AST.
-From GhostTT Require Import BasicAST ContextDecl.
+From GhostTT Require Import BasicAST ContextDecl Scoping.
 
 Set Default Goal Selector "!".
 
@@ -14,28 +14,26 @@ Set Default Goal Selector "!".
 
 Section Mode.
 
-  Context (Γ : scope).
-
   Let dummy := mType.
 
-  Fixpoint md (t : term) : mode :=
+  Fixpoint md (Γ : scope) (t : term) : mode :=
     match t with
     | var x => nth x Γ dummy
     | Sort m l => mKind
     | Pi m mx A B => mKind
-    | lam mx A t => md t
-    | app u v => md u
+    | lam mx A t => md (mx :: Γ) t
+    | app u v => md Γ u
     | Erased A => mKind
     | erase t => mGhost
     | reveal t P p =>
-      match md p with
+      match md Γ p with
       | mGhost => mGhost
       | _ => mProp
       end
     | revealP t p => mKind
     | gheq A u v => mKind
     | ghrefl A u => mProp
-    | ghcast e P t => md t
+    | ghcast e P t => md Γ t
     | bot => mKind
     | bot_elim m A p => m
     end.
@@ -45,3 +43,30 @@ End Mode.
 (* Handy notation for the mode in a context *)
 
 Notation mdc Γ t := (md (sc Γ) t).
+
+(** Relation with scoping **)
+
+Lemma scoping_md :
+  ∀ Γ t m,
+    scoping Γ t m →
+    md Γ t = m.
+Proof.
+  intros Γ t m h.
+  induction h. all: try reflexivity. all: try solve [ auto ].
+  - simpl. eapply nth_error_nth. assumption.
+  - simpl. rewrite IHh3. cbn in *. intuition eauto.
+    + rewrite <- H0. reflexivity.
+    + rewrite <- H. reflexivity.
+Qed.
+
+(** Consequence: scoping is functional **)
+
+Lemma scoping_functional :
+  ∀ Γ t m m',
+    scoping Γ t m →
+    scoping Γ t m' →
+    m = m'.
+Proof.
+  intros Γ t m m' h h'.
+  eapply scoping_md in h, h'. congruence.
+Qed.
