@@ -121,11 +121,14 @@ Proof.
   induction t in σ |- *. all: try reflexivity.
   - asimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
     asimpl. repeat core.unfold_funcomp. rewrite IHt2.
-    asimpl. repeat core.unfold_funcomp.
-    apply subst_term_morphism2. intros n.
-    destruct n.
-    + asimpl. repeat core.unfold_funcomp. simpl. reflexivity.
-    + asimpl. repeat core.unfold_funcomp. simpl.
+    assert (∀ t, t <[ (var 0 .: σ >> ren1 ↑) >> castrm] = t <[ var 0 .: σ >> (castrm >> ren1 ↑) ]).
+    { apply subst_term_morphism2. intros n.
+      destruct n.
+      - asimpl. repeat core.unfold_funcomp. simpl. reflexivity.
+      - asimpl. repeat core.unfold_funcomp. simpl.
+        apply castrm_ren.
+    }
+    auto.
 
     (* simpl. rewrite IHt1, IHt2. asimpl. repeat core.unfold_funcomp.
     f_equal. asimpl. *)
