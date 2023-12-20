@@ -139,7 +139,42 @@ Proof.
     auto.
 Qed.
 
+(** Inversion for scoping **)
+
 (** Conversion entails mode equality **)
+
+Lemma scope_app_inv :
+  ∀ Γ u v m,
+    scoping Γ (app u v) m →
+    ∃ mx,
+      scoping Γ u m ∧
+      scoping Γ v mx.
+Proof.
+  intros Γ u v m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_lam_inv :
+  ∀ Γ mx A t m,
+    scoping Γ (lam mx A t) m →
+    scoping Γ A mKind ∧
+    scoping (mx :: Γ) t m.
+Proof.
+  intros Γ mx A t m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+(* Not repeatable, not good *)
+Ltac scoping_fun :=
+  match goal with
+  | h : cscoping ?Γ ?t ?m, h' : cscoping ?Γ ?t ?m' |- _ =>
+    assert (m = m') ; [
+      eapply scoping_functional ; eassumption
+    | try subst m' ; try subst m
+    ]
+  end.
 
 Lemma conv_md_impl :
   ∀ Γ u v m,
@@ -149,6 +184,11 @@ Lemma conv_md_impl :
 Proof.
   intros Γ u v m h hu.
   induction h in m, hu |- *.
+  (* all: try solve [ repeat scoping_fun ; assumption ]. *)
+  - scoping_fun. assumption.
+  - eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
+    eapply scope_lam_inv in hl. destruct hl as [hA ht].
+    (* scoping_fun. *)
   (* TODO Prove functionality from implication of md *)
 Admitted.
 
