@@ -138,3 +138,26 @@ Proof.
     asimpl. repeat core.unfold_funcomp. rewrite IHt2.
     auto.
 Qed.
+
+(** Conversion entails mode equality **)
+
+Lemma conv_md_impl :
+  ∀ Γ u v m,
+    Γ ⊢ u ≡ v →
+    cscoping Γ u m →
+    cscoping Γ v m.
+Proof.
+  intros Γ u v m h hu.
+  induction h in m, hu |- *.
+  (* TODO Prove functionality from implication of md *)
+Admitted.
+
+Corollary conv_md :
+  ∀ Γ u v,
+    Γ ⊢ u ≡ v →
+    (∀ m, cscoping Γ u m ↔ cscoping Γ v m).
+Proof.
+  intros Γ u v h m. split.
+  - apply conv_md_impl. assumption.
+  - apply conv_md_impl. apply conv_sym. assumption.
+Qed.
