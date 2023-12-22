@@ -300,7 +300,7 @@ Ltac scoping_fun :=
     ]
   end.
 
-(* Ltac forall_iff_impl T :=
+Ltac forall_iff_impl T :=
   lazymatch eval cbn beta in T with
   | forall x : ?A, @?T' x =>
     let y := fresh x in
@@ -308,7 +308,7 @@ Ltac scoping_fun :=
     forall_iff_impl (@T' x)
   | ?P ↔ ?Q => exact (P → Q)
   | _ => fail "not a quantified ↔"
-  end. *)
+  end.
 
 Lemma conv_scoping :
   ∀ Γ u v m,
@@ -344,14 +344,14 @@ Proof.
       constructor.
       * constructor. assumption.
       * assumption.
-  - (* revert i j.
+  - revert i j.
     lazymatch goal with
     | |- ?G =>
       let G' := fresh in
-      assert (G' : Prop) ; [ forall_iff_impl G |] ;
+      unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
       let h := fresh in
-      assert (h : G') ; [| intros ; split ; eauto ]
-    end. *)
+      assert (h : G') ; [ subst G' | intros ; split ; eauto ]
+    end.
     (* apply scope_sort_inv in hu. subst. constructor.
   - apply scope_pi_inv in hu. intuition subst.
     constructor. all: firstorder.
