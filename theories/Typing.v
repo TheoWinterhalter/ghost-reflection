@@ -240,6 +240,8 @@ with conversion (Γ : context) : term → term → Prop :=
 | cong_bot_elim :
     ∀ m A A' p p',
       Γ ⊢ A ≡ A' →
+      (* Needed because syntactically we don't know p and p' are irrelevant *)
+      Γ ⊢ p ≡ p' →
       Γ ⊢ bot_elim m A p ≡ bot_elim m A' p'
 
 (* Structural rules *)

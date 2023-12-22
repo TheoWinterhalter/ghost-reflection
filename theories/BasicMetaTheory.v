@@ -341,6 +341,8 @@ Proof.
     constructor. all: firstorder.
   - apply scope_bot_elim_inv in hu. intuition subst.
     constructor. all: firstorder.
+  - assumption.
+  - (* Ouch, we need equivalence after all. *)
 Admitted.
 
 Corollary conv_scoping :
