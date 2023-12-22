@@ -342,12 +342,14 @@ Proof.
       * asimpl. apply sscoping_ids.
       * asimpl. assumption.
     + intro hu. econstructor.
-      * constructor.
-        all: admit. (* Need opposite of scoping_subst *)
-        (* But also info on A that isn't present in the rhs *)
-        (* Maybe, I need to weaken the theorem to assume both sides well scoped
-          or I change conversion to ask for more stuff.
-        *)
+      * constructor. 1: assumption.
+        eapply scoping_subst with (Γ := sc Γ) (σ := u ..) in H0 as h.
+        2:{
+          constructor.
+          - asimpl. apply sscoping_ids.
+          - asimpl. assumption.
+         }
+         scoping_fun. assumption.
       * eassumption.
   - split.
     + intro hu. apply scope_reveal_inv in hu. intuition idtac.

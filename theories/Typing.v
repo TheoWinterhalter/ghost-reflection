@@ -157,7 +157,9 @@ with conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ p ≡ q
 
 | conv_beta :
-    ∀ mx A t u,
+    ∀ m mx A t u,
+      cscoping Γ A mKind →
+      scoping (mx :: sc Γ) t m →
       cscoping Γ u mx →
       Γ ⊢ app (lam mx A t) u ≡ t <[ u .. ]
 
