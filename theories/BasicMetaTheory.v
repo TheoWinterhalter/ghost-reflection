@@ -4,6 +4,7 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import AST unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping Typing.
+From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
 Import CombineNotations.
@@ -60,7 +61,7 @@ Proof.
       intros x mx e. simpl. assumption.
 Qed.
 
-Lemma md_subst :
+Lemma scoping_subst :
   ∀ Γ Δ σ t m,
     sscoping Γ σ Δ →
     scoping Δ t m →
@@ -84,6 +85,36 @@ Proof.
     + apply IHht2. constructor.
       * asimpl. apply sscoping_weak. assumption.
       * asimpl. constructor. reflexivity.
+Qed.
+
+#[export] Instance sscoping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) sscoping.
+Proof.
+  intros Γ ? <- σ σ' e Δ ? <-.
+  enough (
+    h : ∀ σ σ', pointwise_relation _ eq σ σ' → sscoping Γ σ Δ → sscoping Γ σ' Δ
+  ).
+  { split.
+    - apply h. assumption.
+    - apply h. symmetry. assumption.
+  }
+  clear. intros σ σ' e h.
+  induction h as [| ? ? ? ? ih ] in σ', e |- *.
+  - constructor.
+  - constructor.
+    + apply ih. intros n. apply e.
+    + rewrite <- e. assumption.
+Qed.
+
+Lemma sscoping_ids :
+  ∀ Γ,
+    sscoping Γ ids Γ.
+Proof.
+  intros Γ. induction Γ as [| m Γ ih].
+  - constructor.
+  - constructor.
+    + eapply sscoping_weak with (m := m) in ih. asimpl in ih. assumption.
+    + constructor. reflexivity.
 Qed.
 
 (** Cast removal preserves modes **)
@@ -166,6 +197,41 @@ Proof.
   intuition eauto.
 Qed.
 
+Lemma scope_reveal_inv :
+  ∀ Γ t P p m,
+    scoping Γ (reveal t P p) m →
+    In m [ mProp ; mGhost ] ∧
+    scoping Γ t mGhost ∧
+    scoping Γ P mKind ∧
+    scoping Γ p m.
+Proof.
+  intros Γ t P p m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_revealP_inv :
+  ∀ Γ t p m,
+    scoping Γ (revealP t p) m →
+    scoping Γ t mGhost ∧
+    scoping Γ p mKind ∧
+    m = mKind.
+Proof.
+  intros Γ t p m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_sort_inv :
+  ∀ Γ ms i m,
+    scoping Γ (Sort ms i) m →
+    m = mKind.
+Proof.
+  intros Γ ms i m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
 (* Not repeatable, not good *)
 Ltac scoping_fun :=
   match goal with
@@ -176,7 +242,7 @@ Ltac scoping_fun :=
     ]
   end.
 
-Lemma conv_md_impl :
+Lemma conv_scoping_impl :
   ∀ Γ u v m,
     Γ ⊢ u ≡ v →
     cscoping Γ u m →
@@ -188,16 +254,24 @@ Proof.
   - scoping_fun. assumption.
   - eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
     eapply scope_lam_inv in hl. destruct hl as [hA ht].
-    (* scoping_fun. *)
-  (* TODO Prove functionality from implication of md *)
+    eapply scoping_subst. 2: eassumption.
+    constructor.
+    + asimpl. apply sscoping_ids.
+    + asimpl. assumption.
+  - apply scope_reveal_inv in hu. intuition idtac.
+    econstructor. all: eauto.
+  - apply scope_revealP_inv in hu. intuition subst.
+    econstructor. all: eauto.
+  - apply scope_sort_inv in hu. subst. constructor.
+  -
 Admitted.
 
-Corollary conv_md :
+Corollary conv_scoping :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
     (∀ m, cscoping Γ u m ↔ cscoping Γ v m).
 Proof.
   intros Γ u v h m. split.
-  - apply conv_md_impl. assumption.
-  - apply conv_md_impl. apply conv_sym. assumption.
+  - apply conv_scoping_impl. assumption.
+  - apply conv_scoping_impl. apply conv_sym. assumption.
 Qed.
