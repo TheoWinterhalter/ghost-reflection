@@ -310,6 +310,15 @@ Ltac forall_iff_impl T :=
   | _ => fail "not a quantified ↔"
   end.
 
+Ltac wlog_iff :=
+  lazymatch goal with
+  | |- ?G =>
+    let G' := fresh in
+    unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
+    let h := fresh in
+    assert (h : G') ; [ subst G' | subst G' ; intros ; split ; eauto ]
+  end.
+
 Lemma conv_scoping :
   ∀ Γ u v m,
     Γ ⊢ u ≡ v →
@@ -344,36 +353,75 @@ Proof.
       constructor.
       * constructor. assumption.
       * assumption.
-  - revert i j.
-    lazymatch goal with
-    | |- ?G =>
-      let G' := fresh in
-      unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
-      let h := fresh in
-      assert (h : G') ; [ subst G' | intros ; split ; eauto ]
-    end.
-    (* apply scope_sort_inv in hu. subst. constructor.
-  - apply scope_pi_inv in hu. intuition subst.
+  - revert i j. wlog_iff. intros i j hu.
+    apply scope_sort_inv in hu. subst. constructor.
+  - clear h1 h2. revert A A' B B' IHh1 IHh2. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros A A' B B' ihA ihB hu.
+    apply scope_pi_inv in hu. intuition subst.
     constructor. all: firstorder.
-  - apply scope_lam_inv in hu. intuition idtac.
+  - clear h1 h2. revert A A' t t' IHh1 IHh2. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros A A' t t' IHh1 IHh2 hu.
+    apply scope_lam_inv in hu. intuition idtac.
     constructor. all: firstorder.
-  - apply scope_app_inv in hu. destruct hu. intuition idtac.
+  - clear h1 h2. revert u u' v v' IHh1 IHh2. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros u u' v v' ihu ihv h.
+    apply scope_app_inv in h. destruct h. intuition idtac.
     econstructor. 1: firstorder.
-    eapply IHh2. eassumption.
-  - apply scope_erased_inv in hu. intuition subst.
+    eapply ihv. eassumption.
+  - clear h. revert A A' IHh. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros A A' ih h.
+    apply scope_erased_inv in h. intuition subst.
     constructor. firstorder.
-  - apply scope_erase_inv in hu. intuition subst.
+  - clear h. revert u u' IHh. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros u u' ih h.
+    apply scope_erase_inv in h. intuition subst.
     constructor. firstorder.
-  - apply scope_reveal_inv in hu. intuition idtac.
+  - clear h1 h2 h3. revert t t' P P' p p' IHh1 IHh2 IHh3. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros t t' P P' p p' iht ihP ihp h.
+    apply scope_reveal_inv in h. intuition idtac.
     constructor. all: firstorder.
-  - apply scope_revealP_inv in hu. intuition subst.
+  - clear h1 h2. revert t t' p p' IHh1 IHh2. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros t t' p p' iht ihp h.
+    apply scope_revealP_inv in h. intuition subst.
     constructor. all: firstorder.
-  - apply scope_gheq_inv in hu. intuition subst.
+  - clear h1 h2 h3. revert A A' u u' v v' IHh1 IHh2 IHh3. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros A A' u u' v v' ihA ihu ihv h.
+    apply scope_gheq_inv in h. intuition subst.
     constructor. all: firstorder.
-  - apply scope_bot_elim_inv in hu. intuition subst.
+  - clear h1 h2. revert A A' p p' IHh1 IHh2. wlog_iff.
+    2:{
+      apply H0. all: firstorder.
+    }
+    intros A A' p p' ihA ihp h.
+    apply scope_bot_elim_inv in h. intuition subst.
     constructor. all: firstorder.
-  - assumption.
-  -  *)
+  - reflexivity.
+  - symmetry. auto.
+  - etransitivity. all: eauto.
 Admitted.
 
 (* Corollary conv_scoping :
