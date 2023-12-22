@@ -232,6 +232,65 @@ Proof.
   intuition eauto.
 Qed.
 
+Lemma scope_pi_inv :
+  ∀ Γ mx m A B m',
+    scoping Γ (Pi m mx A B) m' →
+    scoping Γ A mKind ∧
+    scoping (mx :: Γ) B mKind ∧
+    m' = mKind.
+Proof.
+  intros Γ mx m A B m' h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_erased_inv :
+  ∀ Γ A m,
+    scoping Γ (Erased A) m →
+    scoping Γ A mKind ∧
+    m = mKind.
+Proof.
+  intros Γ A m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_erase_inv :
+  ∀ Γ t m,
+    scoping Γ (erase t) m →
+    scoping Γ t mType ∧
+    m = mGhost.
+Proof.
+  intros Γ t m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_gheq_inv :
+  ∀ Γ A u v m,
+    scoping Γ (gheq A u v) m →
+    scoping Γ A mKind ∧
+    scoping Γ u mGhost ∧
+    scoping Γ v mGhost ∧
+    m = mKind.
+Proof.
+  intros Γ A u v m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_bot_elim_inv :
+  ∀ Γ m A p m',
+    scoping Γ (bot_elim m A p) m' →
+    scoping Γ A mKind ∧
+    scoping Γ p mProp ∧
+    m' = m.
+Proof.
+  intros Γ m A p m' h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
 (* Not repeatable, not good *)
 Ltac scoping_fun :=
   match goal with
@@ -263,7 +322,25 @@ Proof.
   - apply scope_revealP_inv in hu. intuition subst.
     econstructor. all: eauto.
   - apply scope_sort_inv in hu. subst. constructor.
-  -
+  - apply scope_pi_inv in hu. intuition subst.
+    constructor. all: firstorder.
+  - apply scope_lam_inv in hu. intuition idtac.
+    constructor. all: firstorder.
+  - apply scope_app_inv in hu. destruct hu. intuition idtac.
+    econstructor. 1: firstorder.
+    eapply IHh2. eassumption.
+  - apply scope_erased_inv in hu. intuition subst.
+    constructor. firstorder.
+  - apply scope_erase_inv in hu. intuition subst.
+    constructor. firstorder.
+  - apply scope_reveal_inv in hu. intuition idtac.
+    constructor. all: firstorder.
+  - apply scope_revealP_inv in hu. intuition subst.
+    constructor. all: firstorder.
+  - apply scope_gheq_inv in hu. intuition subst.
+    constructor. all: firstorder.
+  - apply scope_bot_elim_inv in hu. intuition subst.
+    constructor. all: firstorder.
 Admitted.
 
 Corollary conv_scoping :

@@ -47,8 +47,7 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ (Erased A) mKind
 
 | scope_erase :
-    ∀ A t,
-      scoping Γ A mKind →
+    ∀ t,
       scoping Γ t mType →
       scoping Γ (erase t) mGhost
 
