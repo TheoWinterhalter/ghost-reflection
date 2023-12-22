@@ -291,37 +291,68 @@ Proof.
   intuition eauto.
 Qed.
 
-(* Not repeatable, not good *)
 Ltac scoping_fun :=
   match goal with
   | h : cscoping ?Γ ?t ?m, h' : cscoping ?Γ ?t ?m' |- _ =>
     assert (m = m') ; [
       eapply scoping_functional ; eassumption
-    | try subst m' ; try subst m
+    | first [ subst m' ; clear h' | subst m ; clear h ]
     ]
   end.
 
-Lemma conv_scoping_impl :
+(* Ltac forall_iff_impl T :=
+  lazymatch eval cbn beta in T with
+  | forall x : ?A, @?T' x =>
+    let y := fresh x in
+    refine (forall y, _) ;
+    forall_iff_impl (@T' x)
+  | ?P ↔ ?Q => exact (P → Q)
+  | _ => fail "not a quantified ↔"
+  end. *)
+
+Lemma conv_scoping :
   ∀ Γ u v m,
     Γ ⊢ u ≡ v →
-    cscoping Γ u m →
-    cscoping Γ v m.
+    cscoping Γ u m ↔ cscoping Γ v m.
 Proof.
-  intros Γ u v m h hu.
-  induction h in m, hu |- *.
-  (* all: try solve [ repeat scoping_fun ; assumption ]. *)
-  - scoping_fun. assumption.
-  - eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
-    eapply scope_lam_inv in hl. destruct hl as [hA ht].
-    eapply scoping_subst. 2: eassumption.
-    constructor.
-    + asimpl. apply sscoping_ids.
-    + asimpl. assumption.
-  - apply scope_reveal_inv in hu. intuition idtac.
-    econstructor. all: eauto.
-  - apply scope_revealP_inv in hu. intuition subst.
-    econstructor. all: eauto.
-  - apply scope_sort_inv in hu. subst. constructor.
+  intros Γ u v m h.
+  induction h in m |- *.
+  - split. all: intro. all: scoping_fun. all: assumption.
+  - split.
+    + intro hu.
+      eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
+      eapply scope_lam_inv in hl. destruct hl as [hA ht].
+      eapply scoping_subst. 2: eassumption.
+      constructor.
+      * asimpl. apply sscoping_ids.
+      * asimpl. assumption.
+    + intro hu.
+      admit. (* Need opposite of scoping_subst *)
+  - split.
+    + intro hu. apply scope_reveal_inv in hu. intuition idtac.
+      econstructor. all: eauto.
+    + intro hu. apply scope_app_inv in hu. destruct hu. intuition idtac.
+      scoping_fun. scoping_fun.
+      constructor. all: auto.
+      * constructor. (* A mistake here *) admit.
+      * (* No info on P! *) admit.
+  - split.
+    + intro hu. apply scope_revealP_inv in hu. intuition subst.
+      econstructor. all: eauto.
+    + intro hu. apply scope_app_inv in hu. destruct hu. intuition idtac.
+      scoping_fun. scoping_fun.
+      constructor.
+      * constructor. assumption.
+      * assumption.
+  - (* revert i j.
+    lazymatch goal with
+    | |- ?G =>
+      let G' := fresh in
+      assert (G' : Prop) ; [ forall_iff_impl G |] ;
+      let h := fresh in
+      assert (h : G') ; [| intros ; split ; eauto ]
+    end. *)
+    (* apply scope_sort_inv in hu. subst. constructor.
   - apply scope_pi_inv in hu. intuition subst.
     constructor. all: firstorder.
   - apply scope_lam_inv in hu. intuition idtac.
@@ -342,10 +373,10 @@ Proof.
   - apply scope_bot_elim_inv in hu. intuition subst.
     constructor. all: firstorder.
   - assumption.
-  - (* Ouch, we need equivalence after all. *)
+  -  *)
 Admitted.
 
-Corollary conv_scoping :
+(* Corollary conv_scoping :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
     (∀ m, cscoping Γ u m ↔ cscoping Γ v m).
@@ -354,3 +385,4 @@ Proof.
   - apply conv_scoping_impl. assumption.
   - apply conv_scoping_impl. apply conv_sym. assumption.
 Qed.
+ *)

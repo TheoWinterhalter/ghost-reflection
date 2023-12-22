@@ -237,6 +237,7 @@ with conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ u ≡ u' →
       Γ ⊢ ghrefl A u ≡ ghrefl A' u' *)
 
+(* Maybe not needed? *)
 | cong_bot_elim :
     ∀ m A A' p p',
       Γ ⊢ A ≡ A' →

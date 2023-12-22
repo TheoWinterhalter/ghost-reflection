@@ -99,4 +99,4 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ (bot_elim m A p) m
 .
 
-Definition cscoping (Γ : context) := scoping (sc Γ).
+Notation cscoping Γ := (scoping (sc Γ)).
