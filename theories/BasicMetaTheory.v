@@ -409,3 +409,24 @@ Proof.
   - symmetry. auto.
   - etransitivity. all: eauto.
 Qed.
+
+(** Renaming preserves typing **)
+
+Definition rtyping (Γ : context) (ρ : nat → nat) (Δ : context) : Prop :=
+  ∀ x A m,
+    nth_error Δ x = Some (m, A) →
+    nth_error Γ (ρ x) = Some (m, A).
+
+Lemma typing_ren :
+  ∀ Γ Δ ρ t A,
+    rtyping Γ ρ Δ →
+    Δ ⊢ t : A →
+    Γ ⊢ (ren_term ρ t) : A.
+Proof.
+  intros Γ Δ ρ t A hρ ht.
+  induction ht in Γ, ρ, hρ |- *.
+  all: try solve [ asimpl ; econstructor ; eauto ].
+  - asimpl. econstructor. all: eauto using scoping_ren.
+    + eapply scoping_ren. 2: eassumption.
+      (* TODO rscoping from rtyping *)
+Admitted.
