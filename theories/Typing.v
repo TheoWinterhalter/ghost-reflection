@@ -164,11 +164,11 @@ with conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ app (lam mx A t) u ≡ t <[ u .. ]
 
 | reveal_erase :
-    ∀ mp mt t P p,
+    ∀ mp t P p,
+      cscoping Γ t mType →
+      cscoping Γ P mKind →
       cscoping Γ p mp →
-      cscoping Γ t mt →
       In mp [ mProp ; mGhost ] →
-      In mt [ mType ; mKind ] →
       Γ ⊢ reveal (erase t) P p ≡ app p t
 
 | revealP_erase :

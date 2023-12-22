@@ -357,8 +357,7 @@ Proof.
     + intro hu. apply scope_app_inv in hu. destruct hu. intuition idtac.
       scoping_fun. scoping_fun.
       constructor. all: auto.
-      * constructor. (* A mistake here *) admit.
-      * (* No info on P! *) admit.
+      constructor. assumption.
   - split.
     + intro hu. apply scope_revealP_inv in hu. intuition subst.
       econstructor. all: eauto.
@@ -409,15 +408,4 @@ Proof.
   - reflexivity.
   - symmetry. auto.
   - etransitivity. all: eauto.
-Admitted.
-
-(* Corollary conv_scoping :
-  ∀ Γ u v,
-    Γ ⊢ u ≡ v →
-    (∀ m, cscoping Γ u m ↔ cscoping Γ v m).
-Proof.
-  intros Γ u v h m. split.
-  - apply conv_scoping_impl. assumption.
-  - apply conv_scoping_impl. apply conv_sym. assumption.
 Qed.
- *)
