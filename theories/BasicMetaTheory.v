@@ -478,6 +478,19 @@ Proof.
   intros Γ t A B h ->. assumption.
 Qed.
 
+Lemma conv_ren :
+  ∀ Γ Δ ρ u v,
+    rtyping Γ ρ Δ →
+    Δ ⊢ u ≡ v →
+    Γ ⊢ ρ ⋅ u ≡ ρ ⋅ v.
+Proof.
+  intros Γ Δ ρ u v hρ h.
+  induction h in Γ, ρ, hρ |- *.
+  - constructor. all: eapply scoping_ren. all: eauto.
+    all: apply rtyping_scoping. all: assumption.
+  - asimpl. constructor. (* Ok, we want irr to apply last! *)
+Admitted.
+
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
     rtyping Γ ρ Δ →
@@ -581,5 +594,5 @@ Proof.
       apply rtyping_scoping. assumption.
     + eapply scoping_ren. 2: eassumption.
       apply rtyping_scoping. assumption.
-    + (* Currently annoying because mutual with conversion but actually not. *)
-Admitted.
+    + eapply conv_ren. all: eassumption.
+Qed.
