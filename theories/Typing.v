@@ -149,9 +149,8 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ var x : (plus (S x)) ⋅ A
 
 | type_sort :
-    ∀ m i j,
-      i < j →
-      Γ ⊢ Sort m i : Sort m j
+    ∀ m i,
+      Γ ⊢ Sort m i : Sort m (S i)
 
 | type_pi :
     ∀ mx m i j A B,

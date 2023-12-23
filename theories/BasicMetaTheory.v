@@ -720,7 +720,6 @@ Qed.
 Set Equations With UIP.
 Derive NoConfusion EqDec for mode.
 Derive NoConfusion NoConfusionHom EqDec for term.
-Derive NoConfusion NoConfusionHom EqDec for list.
 Derive Signature for typing.
 
 Require Import Equations.Prop.DepElim.
@@ -747,11 +746,23 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_sort_inv :
+  ∀ Γ m i A,
+    Γ ⊢ Sort m i : A →
+    Γ ⊢ Sort m (S i) ≡ A.
+Proof.
+  intros ???? h.
+  dependent induction h.
+  - constructor.
+  - eapply conv_trans. all: eauto.
+Qed.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
     lazymatch t with
     | var _ => eapply type_var_inv in h as h'
+    | Sort _ _ => eapply type_sort_inv in h as h'
     end
   end.
 
@@ -777,7 +788,8 @@ Lemma type_unique :
 Proof.
   intros Γ t A B hA hB.
   induction t in A, B, hA, hB |- *.
-  all: try unitac hA hB.
+  all: try unitac hA hB. all: try assumption.
   - eapply meta_conv_trans_l. 2: eassumption.
     f_equal. congruence.
+  -
 Admitted.
