@@ -535,4 +535,51 @@ Proof.
       apply rtyping_scoping. assumption.
     + eapply meta_conv. 1: apply IHht3. 1: auto.
       f_equal. f_equal. asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht1.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht1.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht1. asimpl in IHht4. asimpl in IHht5. asimpl in IHht6.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht1. asimpl in IHht2.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht2.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + (* Currently annoying because mutual with conversion but actually not. *)
 Admitted.
