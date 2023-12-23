@@ -433,6 +433,18 @@ Proof.
   unfold decl in en. rewrite en. reflexivity.
 Qed.
 
+Lemma rtyping_shift :
+  ∀ Γ Δ mx A ρ,
+    rtyping Γ ρ Δ →
+    rtyping (Γ ,, (mx, ren1 ρ A)) (0 .: ρ >> S) (Δ,, (mx, A)).
+Proof.
+  intros Γ Δ mx A ρ hρ.
+  intros y [my B] hy.
+  destruct y.
+  - cbn in *. inversion hy. admit. (* rtyping is probably off *)
+  - cbn in *. apply hρ. assumption.
+Abort.
+
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
     rtyping Γ ρ Δ →
