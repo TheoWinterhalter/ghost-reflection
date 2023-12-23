@@ -534,6 +534,5 @@ Proof.
     + eapply scoping_ren. 2: eassumption.
       apply rtyping_scoping. assumption.
     + eapply meta_conv. 1: apply IHht3. 1: auto.
-      f_equal. f_equal.
-      (* Forgot the right lifts in the typing rule *)
+      f_equal. f_equal. asimpl. reflexivity.
 Admitted.

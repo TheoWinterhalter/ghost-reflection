@@ -79,7 +79,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
       Γ ⊢ P : Erased A ⇒[ mGhost | mKind ] Sort m i →
-      Γ ⊢ p : Pi m mType A (app P (erase (var 0))) →
+      Γ ⊢ p : Pi m mType A (app (S ⋅ P) (erase (var 0))) →
       Γ ⊢ reveal t P p : app P t
 
 | type_revealP :
