@@ -26,6 +26,17 @@ Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
       scoping Γ (σ var_zero) m →
       sscoping Γ σ (m :: Δ).
 
+Lemma rscoping_shift :
+  ∀ Γ Δ ρ mx,
+    rscoping Γ ρ Δ →
+    rscoping (mx :: Γ) (0 .: ρ >> S) (mx :: Δ).
+Proof.
+  intros ? ? ? mx h' y my e.
+  destruct y.
+  - simpl in *. assumption.
+  - simpl in *. apply h'. assumption.
+Qed.
+
 Lemma scoping_ren :
   ∀ Γ Δ ρ t m,
     rscoping Γ ρ Δ →
@@ -33,16 +44,7 @@ Lemma scoping_ren :
     scoping Γ (ren_term ρ t) m.
 Proof.
   intros Γ Δ ρ t m hρ ht.
-  assert (lem :
-    ∀ Γ Δ ρ mx,
-      rscoping Γ ρ Δ →
-      rscoping (mx :: Γ) (0 .: ρ >> S) (mx :: Δ)
-  ).
-  { intros ? ? ? mx h' y my e.
-    destruct y.
-    - simpl in *. assumption.
-    - simpl in *. apply h'. assumption.
-  }
+  pose proof rscoping_shift as lem.
   induction ht in Γ, ρ, hρ, lem |- *.
   all: solve [ asimpl ; econstructor ; eauto ].
 Qed.
@@ -87,18 +89,44 @@ Proof.
       * asimpl. constructor. reflexivity.
 Qed.
 
+Ltac forall_iff_impl T :=
+  lazymatch eval cbn beta in T with
+  | forall x : ?A, @?T' x =>
+    let y := fresh x in
+    refine (forall y, _) ;
+    forall_iff_impl (@T' x)
+  | ?P ↔ ?Q => exact (P → Q)
+  | _ => fail "not a quantified ↔"
+  end.
+
+Ltac wlog_iff_using tac :=
+  lazymatch goal with
+  | |- ?G =>
+    let G' := fresh in
+    unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
+    let h := fresh in
+    assert (h : G') ; [
+      subst G'
+    | subst G' ; intros ; split ; eauto ; apply h ; clear h ; tac
+    ]
+  end.
+
+Ltac wlog_iff :=
+  wlog_iff_using firstorder.
+
+#[export] Instance rscoping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) rscoping.
+Proof.
+  intros Γ ? <- ρ ρ' e Δ ? <-.
+  revert ρ ρ' e. wlog_iff. intros ρ ρ' e h.
+  intros n m en. rewrite <- e. apply h. assumption.
+Qed.
+
 #[export] Instance sscoping_morphism :
   Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) sscoping.
 Proof.
   intros Γ ? <- σ σ' e Δ ? <-.
-  enough (
-    h : ∀ σ σ', pointwise_relation _ eq σ σ' → sscoping Γ σ Δ → sscoping Γ σ' Δ
-  ).
-  { split.
-    - apply h. assumption.
-    - apply h. symmetry. assumption.
-  }
-  clear. intros σ σ' e h.
+  revert σ σ' e. wlog_iff. intros σ σ' e h.
   induction h as [| ? ? ? ? ih ] in σ', e |- *.
   - constructor.
   - constructor.
@@ -300,31 +328,6 @@ Ltac scoping_fun :=
     ]
   end.
 
-Ltac forall_iff_impl T :=
-  lazymatch eval cbn beta in T with
-  | forall x : ?A, @?T' x =>
-    let y := fresh x in
-    refine (forall y, _) ;
-    forall_iff_impl (@T' x)
-  | ?P ↔ ?Q => exact (P → Q)
-  | _ => fail "not a quantified ↔"
-  end.
-
-Ltac wlog_iff_using tac :=
-  lazymatch goal with
-  | |- ?G =>
-    let G' := fresh in
-    unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
-    let h := fresh in
-    assert (h : G') ; [
-      subst G'
-    | subst G' ; intros ; split ; eauto ; apply h ; clear h ; tac
-    ]
-  end.
-
-Ltac wlog_iff :=
-  wlog_iff_using firstorder.
-
 Lemma conv_scoping :
   ∀ Γ u v m,
     Γ ⊢ u ≡ v →
@@ -441,5 +444,9 @@ Proof.
   all: try solve [ asimpl ; econstructor ; eauto ].
   - asimpl. econstructor. all: eauto using scoping_ren.
     + eapply scoping_ren. 2: eassumption.
-      (* TODO rscoping from rtyping *)
+      eapply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      simpl. apply rscoping_shift.
+      eapply rtyping_scoping. assumption.
+    + eapply IHht2.
 Admitted.
