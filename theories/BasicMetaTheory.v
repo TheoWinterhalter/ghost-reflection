@@ -670,3 +670,36 @@ Proof.
     + auto.
     + eapply IHh2. apply styping_shift. assumption.
 Qed.
+
+Lemma typing_subst :
+  ∀ Γ Δ σ t A,
+    styping Γ σ Δ →
+    Δ ⊢ t : A →
+    Γ ⊢ t <[ σ ] : A <[ σ ].
+Proof.
+  intros Γ Δ σ t A hσ ht.
+  induction ht in Γ, σ, hσ |- *.
+  all: try solve [ asimpl ; econstructor ; eauto ; scoping_subst_finish ].
+  - asimpl.
+    induction hσ in x, H |- *. 1: destruct x ; discriminate.
+    destruct x.
+    + cbn in H. inversion H. subst. assumption.
+    + apply IHhσ. assumption.
+  - asimpl. econstructor. all: eauto. all: try scoping_subst_finish.
+    eapply IHht2. eapply styping_shift. assumption.
+  - asimpl. econstructor. all: eauto. all: try scoping_subst_finish.
+    + eapply IHht2. eapply styping_shift. assumption.
+    + eapply IHht3. eapply styping_shift. assumption.
+  - asimpl. asimpl in IHht1.
+    eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_subst_finish.
+    asimpl. apply subst_term_morphism2. intros [].
+    + asimpl. reflexivity.
+    + asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    econstructor. all: eauto. all: try scoping_subst_finish.
+    eapply meta_conv. 1: apply IHht3. 1: auto.
+    f_equal. f_equal. asimpl. reflexivity.
+  - asimpl. asimpl in IHht2.
+    econstructor. all: eauto. all: try scoping_subst_finish.
+    eapply conv_subst. all: eassumption.
+Qed.
