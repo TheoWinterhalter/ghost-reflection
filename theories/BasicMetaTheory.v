@@ -717,6 +717,8 @@ Qed.
 
 (** Inversion of typing **)
 
+Derive NoConfusion EqDec for mode.
+Derive NoConfusion EqDec for term.
 Derive Signature for typing.
 
 Lemma type_var_inv :
@@ -728,7 +730,9 @@ Lemma type_var_inv :
 Proof.
   intros Γ x A h.
   depelim h.
-  (* Probably need EqDec on term *)
+  - eexists _, _. split. 1: eassumption.
+    constructor.
+  - (* Missing IH *)
 Admitted.
 
 Ltac ttinv h h' :=
