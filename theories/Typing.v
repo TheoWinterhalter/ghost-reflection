@@ -50,6 +50,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_app :
     ∀ mx m A B t u,
+      cscoping (Γ ,, (mx, A)) B mKind →
       cscoping Γ t m →
       cscoping Γ u mx →
       Γ ⊢ t : Pi m mx A B →

@@ -454,6 +454,21 @@ Proof.
     assumption.
 Qed.
 
+Lemma rscoping_sscoping :
+  ∀ Γ Δ ρ,
+    rscoping Γ ρ Δ →
+    sscoping Γ (ρ >> var) Δ.
+Proof.
+  intros Γ Δ ρ h.
+  induction Δ as [| m Δ ih] in ρ, h |- *.
+  - constructor.
+  - constructor.
+    + apply ih. asimpl.
+      intros x mx e.
+      apply h. cbn. assumption.
+    + constructor. apply h. reflexivity.
+Qed.
+
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
     rtyping Γ ρ Δ →
@@ -473,4 +488,25 @@ Proof.
       simpl. apply rscoping_shift.
       eapply rtyping_scoping. assumption.
     + eapply IHht2. eapply rtyping_shift. assumption.
+  - asimpl. econstructor. all: eauto using scoping_ren.
+    + eapply scoping_ren. 2: eassumption.
+      eapply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      simpl. apply rscoping_shift.
+      eapply rtyping_scoping. assumption.
+    + eapply IHht2. eapply rtyping_shift. assumption.
+    + eapply IHht3. eapply rtyping_shift. assumption.
+  - asimpl. econstructor.
+    + eapply scoping_subst. 2: eassumption.
+      cbn. constructor.
+      * asimpl. apply rscoping_sscoping.
+        apply rtyping_scoping. assumption.
+      * asimpl. eapply scoping_ren. 2: eassumption.
+        apply rtyping_scoping. assumption.
+    + econstructor.
+      * eapply scoping_ren. 2: eassumption.
+        apply rtyping_scoping. assumption.
+      * eapply scoping_ren. 2: eassumption.
+        apply rtyping_scoping. assumption.
+    + (* Oh, I applied conversion, not what I wanted... *)
 Admitted.
