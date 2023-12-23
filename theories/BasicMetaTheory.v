@@ -26,6 +26,14 @@ Inductive sscoping (Γ : scope) (σ : nat → term) : scope → Prop :=
       scoping Γ (σ var_zero) m →
       sscoping Γ σ (m :: Δ).
 
+Lemma rscoping_S :
+  ∀ Γ m,
+    rscoping (m :: Γ) S Γ.
+Proof.
+  intros Γ m. intros x mx e.
+  cbn. assumption.
+Qed.
+
 Lemma rscoping_shift :
   ∀ Γ Δ ρ mx,
     rscoping Γ ρ Δ →
@@ -60,7 +68,7 @@ Proof.
   - constructor.
     + assumption.
     + asimpl. eapply scoping_ren. 2: eassumption.
-      intros x mx e. simpl. assumption.
+      apply rscoping_S.
 Qed.
 
 Lemma scoping_subst :
@@ -561,12 +569,8 @@ Proof.
     eapply meta_conv. 1: apply IHht3. 1: auto.
     f_equal. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply conv_ren. all: eassumption.
+    econstructor. all: eauto. all: try scoping_ren_finish.
+    eapply conv_ren. all: eassumption.
 Qed.
 
 (** Substitution preserves typing **)
@@ -603,15 +607,6 @@ Proof.
   intros Γ Δ σ h. induction h.
   - constructor.
   - cbn. constructor. all: assumption.
-Qed.
-
-(* TODO MOVE and reuse *)
-Lemma rscoping_S :
-  ∀ Γ m,
-    rscoping (m :: Γ) S Γ.
-Proof.
-  intros Γ m. intros x mx e.
-  cbn. assumption.
 Qed.
 
 Lemma styping_weak :
