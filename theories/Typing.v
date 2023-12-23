@@ -23,12 +23,6 @@ Inductive conversion (Γ : context) : term → term → Prop :=
 
 (* Computation rules *)
 
-| conv_irr :
-    ∀ p q,
-      cscoping Γ p mProp →
-      cscoping Γ q mProp →
-      Γ ⊢ p ≡ q
-
 | conv_beta :
     ∀ m mx A t u,
       cscoping Γ A mKind →
@@ -136,6 +130,14 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ u ≡ v →
       Γ ⊢ v ≡ w →
       Γ ⊢ u ≡ w
+
+(* Proof irrelevance *)
+
+| conv_irr :
+    ∀ p q,
+      cscoping Γ p mProp →
+      cscoping Γ q mProp →
+      Γ ⊢ p ≡ q
 
 where "Γ ⊢ u ≡ v" := (conversion Γ u v).
 

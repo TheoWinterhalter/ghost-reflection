@@ -335,7 +335,6 @@ Lemma conv_scoping :
 Proof.
   intros Γ u v m h.
   induction h in m |- *.
-  - split. all: intro. all: scoping_fun. all: assumption.
   - split.
     + intro hu.
       eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
@@ -411,6 +410,7 @@ Proof.
   - reflexivity.
   - symmetry. auto.
   - etransitivity. all: eauto.
+  - split. all: intro. all: scoping_fun. all: assumption.
 Qed.
 
 (** Renaming preserves typing **)
@@ -478,6 +478,15 @@ Proof.
   intros Γ t A B h ->. assumption.
 Qed.
 
+Lemma meta_conv_trans_r :
+  ∀ Γ u v w,
+    Γ ⊢ u ≡ v →
+    v = w →
+    Γ ⊢ u ≡ w.
+Proof.
+  intros Γ u v ? h <-. assumption.
+Qed.
+
 Lemma conv_ren :
   ∀ Γ Δ ρ u v,
     rtyping Γ ρ Δ →
@@ -486,9 +495,36 @@ Lemma conv_ren :
 Proof.
   intros Γ Δ ρ u v hρ h.
   induction h in Γ, ρ, hρ |- *.
-  - constructor. all: eapply scoping_ren. all: eauto.
+  - asimpl. eapply meta_conv_trans_r. 1: econstructor.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rscoping_shift. apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + asimpl. reflexivity.
+  - asimpl. eapply meta_conv_trans_r. 1: econstructor.
+    all: eauto.
+    all: solve [
+      eapply scoping_ren ; [| eassumption] ;
+      apply rtyping_scoping ; assumption
+    ].
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - eapply conv_irr. all: eapply scoping_ren. all: eauto.
     all: apply rtyping_scoping. all: assumption.
-  - asimpl. constructor. (* Ok, we want irr to apply last! *)
 Admitted.
 
 Lemma typing_ren :
