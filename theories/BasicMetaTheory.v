@@ -487,6 +487,11 @@ Proof.
   intros Γ u v ? h <-. assumption.
 Qed.
 
+Ltac scoping_ren_finish :=
+  eapply scoping_ren ; [| eassumption] ;
+  try apply rscoping_shift ;
+  apply rtyping_scoping ; assumption.
+
 Lemma conv_ren :
   ∀ Γ Δ ρ u v,
     rtyping Γ ρ Δ →
@@ -495,37 +500,17 @@ Lemma conv_ren :
 Proof.
   intros Γ Δ ρ u v hρ h.
   induction h in Γ, ρ, hρ |- *.
+  all: try solve [ asimpl ; econstructor ; eauto ; scoping_ren_finish ].
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rscoping_shift. apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + asimpl. reflexivity.
-  - asimpl. eapply meta_conv_trans_r. 1: econstructor.
-    all: eauto.
-    all: solve [
-      eapply scoping_ren ; [| eassumption] ;
-      apply rtyping_scoping ; assumption
-    ].
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - eapply conv_irr. all: eapply scoping_ren. all: eauto.
-    all: apply rtyping_scoping. all: assumption.
-Admitted.
+    all: try scoping_ren_finish.
+    asimpl. reflexivity.
+  - asimpl. constructor.
+    + auto.
+    + eapply IHh2. apply rtyping_shift. assumption.
+  - asimpl. constructor.
+    + auto.
+    + eapply IHh2. apply rtyping_shift. assumption.
+Qed.
 
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
@@ -535,95 +520,22 @@ Lemma typing_ren :
 Proof.
   intros Γ Δ ρ t A hρ ht.
   induction ht in Γ, ρ, hρ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ].
+  all: try solve [ asimpl ; econstructor ; eauto ; scoping_ren_finish ].
   - asimpl. eapply hρ in H as [B [? eB]].
     asimpl in eB. rewrite eB.
     econstructor. eassumption.
-  - asimpl. econstructor. all: eauto using scoping_ren.
-    + eapply scoping_ren. 2: eassumption.
-      eapply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      simpl. apply rscoping_shift.
-      eapply rtyping_scoping. assumption.
-    + eapply IHht2. eapply rtyping_shift. assumption.
-  - asimpl. econstructor. all: eauto using scoping_ren.
-    + eapply scoping_ren. 2: eassumption.
-      eapply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      simpl. apply rscoping_shift.
-      eapply rtyping_scoping. assumption.
+  - asimpl. econstructor. all: eauto. all: try scoping_ren_finish.
+    eapply IHht2. eapply rtyping_shift. assumption.
+  - asimpl. econstructor. all: eauto. all: try scoping_ren_finish.
     + eapply IHht2. eapply rtyping_shift. assumption.
     + eapply IHht3. eapply rtyping_shift. assumption.
   - asimpl. asimpl in IHht1.
-    eapply meta_conv. 1: econstructor. all: eauto using scoping_ren.
-    + eapply scoping_ren. 2: eassumption.
-      cbn. eapply rscoping_shift.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + asimpl. reflexivity.
-  - asimpl. asimpl in IHht.
-    constructor. 2: eauto.
-    eapply scoping_ren. 2: eassumption.
-    apply rtyping_scoping. assumption.
-  - asimpl. asimpl in IHht1.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
+    eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_ren_finish.
+    asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply meta_conv. 1: apply IHht3. 1: auto.
-      f_equal. f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-  - asimpl. asimpl in IHht1.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-  - asimpl. asimpl in IHht1.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-  - asimpl. asimpl in IHht1. asimpl in IHht4. asimpl in IHht5. asimpl in IHht6.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-  - asimpl. asimpl in IHht1. asimpl in IHht2.
-    econstructor. all: eauto.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      apply rtyping_scoping. assumption.
+    econstructor. all: eauto. all: try scoping_ren_finish.
+    eapply meta_conv. 1: apply IHht3. 1: auto.
+    f_equal. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto.
     + eapply scoping_ren. 2: eassumption.
