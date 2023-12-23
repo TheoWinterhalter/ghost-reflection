@@ -605,23 +605,34 @@ Proof.
   - cbn. constructor. all: assumption.
 Qed.
 
+(* TODO MOVE and reuse *)
+Lemma rscoping_S :
+  ∀ Γ m,
+    rscoping (m :: Γ) S Γ.
+Proof.
+  intros Γ m. intros x mx e.
+  cbn. assumption.
+Qed.
+
 Lemma styping_weak :
   ∀ Γ Δ σ mx A,
     styping Γ σ Δ →
-    styping (Γ,, (mx, A <[ σ ])) (σ >> ren_term ↑) Δ.
+    styping (Γ,, (mx, A)) (σ >> ren_term ↑) Δ.
 Proof.
   intros Γ Δ σ mx A h.
   induction h.
   - constructor.
   - constructor.
-    + admit.
-    + asimpl. admit.
+    + assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rscoping_S.
     + asimpl. eapply meta_conv.
       * eapply typing_ren. 2: eassumption.
         intros n ? ? e. asimpl. cbn.
         eexists. split. 1: eassumption.
         reflexivity.
-Abort.
+      * asimpl. reflexivity.
+Qed.
 
 Lemma styping_shift :
   ∀ Γ Δ mx A σ,
@@ -630,12 +641,12 @@ Lemma styping_shift :
 Proof.
   intros Γ Δ mx A σ h.
   constructor.
-  - asimpl. (* Need: styping_weak *) admit.
+  - asimpl. apply styping_weak. assumption.
   - asimpl. constructor. reflexivity.
   - asimpl. eapply meta_conv.
     + econstructor. cbn. reflexivity.
     + asimpl. reflexivity.
-Admitted.
+Qed.
 
 Ltac scoping_subst_finish :=
   eapply scoping_subst ; [| eassumption] ;
