@@ -415,10 +415,18 @@ Qed.
 
 (** Renaming preserves typing **)
 
+(* Inductive rtyping (Γ : context) : ∀ (ρ : nat → nat) (Δ : context), Prop :=
+| rtyping_nil : ∀ ρ, rtyping Γ ρ []
+| rtyping_cons :
+    ∀ ρ Δ m A,
+      rtyping Γ (S >> ρ) Δ →
+      nth_error Γ 0 = Some (m, (S >> ρ) ⋅ A) →
+      rtyping Γ ρ (Δ ,, (m, A)). *)
+
 Definition rtyping (Γ : context) (ρ : nat → nat) (Δ : context) : Prop :=
-  ∀ x mA,
-    nth_error Δ x = Some mA →
-    nth_error Γ (ρ x) = Some mA.
+  ∀ x m A,
+    nth_error Δ x = Some (m, A) →
+    nth_error Γ (ρ x) = Some (m, ((λ n, x + n) >> ρ) ⋅ A).
 
 Lemma rtyping_scoping :
   ∀ Γ Δ ρ,
@@ -427,7 +435,7 @@ Lemma rtyping_scoping :
 Proof.
   intros Γ Δ ρ h.
   intros n m e. unfold sc in e. rewrite nth_error_map in e.
-  destruct (nth_error (A := mode * term) Δ n) eqn:en. 2: discriminate.
+  destruct (nth_error (A := mode * term) Δ n) as [[]|] eqn:en. 2: discriminate.
   simpl in e. inversion e. subst. clear e.
   eapply h in en. unfold sc. rewrite nth_error_map.
   unfold decl in en. rewrite en. reflexivity.
@@ -436,13 +444,17 @@ Qed.
 Lemma rtyping_shift :
   ∀ Γ Δ mx A ρ,
     rtyping Γ ρ Δ →
-    rtyping (Γ ,, (mx, ren1 ρ A)) (0 .: ρ >> S) (Δ,, (mx, A)).
+    rtyping (Γ ,, (mx, ρ ⋅ A)) (0 .: ρ >> S) (Δ,, (mx, A)).
 Proof.
   intros Γ Δ mx A ρ hρ.
-  intros y [my B] hy.
+  intros y my B hy.
   destruct y.
-  - cbn in *. inversion hy. admit. (* rtyping is probably off *)
-  - cbn in *. apply hρ. assumption.
+  - cbn in *. inversion hy. f_equal. f_equal. asimpl.
+    apply ren_term_morphism2. intro n. core.unfold_funcomp. simpl.
+    destruct n. all: cbn. all: admit.
+  - cbn in *. rewrite hρ. 2: eassumption.
+    f_equal. f_equal.
+    apply ren_term_morphism2. intro n. core.unfold_funcomp. cbn.
 Abort.
 
 Lemma typing_ren :
