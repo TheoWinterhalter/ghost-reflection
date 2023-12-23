@@ -413,9 +413,22 @@ Qed.
 (** Renaming preserves typing **)
 
 Definition rtyping (Γ : context) (ρ : nat → nat) (Δ : context) : Prop :=
-  ∀ x A m,
-    nth_error Δ x = Some (m, A) →
-    nth_error Γ (ρ x) = Some (m, A).
+  ∀ x mA,
+    nth_error Δ x = Some mA →
+    nth_error Γ (ρ x) = Some mA.
+
+Lemma rtyping_scoping :
+  ∀ Γ Δ ρ,
+    rtyping Γ ρ Δ →
+    rscoping (sc Γ) ρ (sc Δ).
+Proof.
+  intros Γ Δ ρ h.
+  intros n m e. unfold sc in e. rewrite nth_error_map in e.
+  destruct (nth_error (A := mode * term) Δ n) eqn:en. 2: discriminate.
+  simpl in e. inversion e. subst. clear e.
+  eapply h in en. unfold sc. rewrite nth_error_map.
+  unfold decl in en. rewrite en. reflexivity.
+Qed.
 
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
