@@ -24,7 +24,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
 | type_var :
     ∀ x m A,
       nth_error Γ x = Some (m, A) →
-      Γ ⊢ var x : A
+      Γ ⊢ var x : (plus (S x)) ⋅ A
 
 | type_sort :
     ∀ m i j,

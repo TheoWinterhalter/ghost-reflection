@@ -415,18 +415,12 @@ Qed.
 
 (** Renaming preserves typing **)
 
-(* Inductive rtyping (Γ : context) : ∀ (ρ : nat → nat) (Δ : context), Prop :=
-| rtyping_nil : ∀ ρ, rtyping Γ ρ []
-| rtyping_cons :
-    ∀ ρ Δ m A,
-      rtyping Γ (S >> ρ) Δ →
-      nth_error Γ 0 = Some (m, (S >> ρ) ⋅ A) →
-      rtyping Γ ρ (Δ ,, (m, A)). *)
-
 Definition rtyping (Γ : context) (ρ : nat → nat) (Δ : context) : Prop :=
   ∀ x m A,
     nth_error Δ x = Some (m, A) →
-    nth_error Γ (ρ x) = Some (m, ((λ n, x + n) >> ρ) ⋅ A).
+    ∃ B,
+      nth_error Γ (ρ x) = Some (m, B) ∧
+      (plus (S x) >> ρ) ⋅ A = (plus (S (ρ x))) ⋅ B.
 
 Lemma rtyping_scoping :
   ∀ Γ Δ ρ,
@@ -437,7 +431,8 @@ Proof.
   intros n m e. unfold sc in e. rewrite nth_error_map in e.
   destruct (nth_error (A := mode * term) Δ n) as [[]|] eqn:en. 2: discriminate.
   simpl in e. inversion e. subst. clear e.
-  eapply h in en. unfold sc. rewrite nth_error_map.
+  eapply h in en. destruct en as [B [en eB]].
+  unfold sc. rewrite nth_error_map.
   unfold decl in en. rewrite en. reflexivity.
 Qed.
 
@@ -449,28 +444,33 @@ Proof.
   intros Γ Δ mx A ρ hρ.
   intros y my B hy.
   destruct y.
-  - cbn in *. inversion hy. f_equal. f_equal. asimpl.
-    apply ren_term_morphism2. intro n. core.unfold_funcomp. simpl.
-    destruct n. all: cbn. all: admit.
-  - cbn in *. rewrite hρ. 2: eassumption.
-    f_equal. f_equal.
-    apply ren_term_morphism2. intro n. core.unfold_funcomp. cbn.
-Abort.
+  - cbn in *. inversion hy. eexists.
+    split. 1: reflexivity.
+    asimpl. reflexivity.
+  - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
+    eexists. split. 1: eassumption.
+    asimpl.
+    apply (f_equal (λ t, S ⋅ t)) in eC. asimpl in eC.
+    assumption.
+Qed.
 
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
     rtyping Γ ρ Δ →
     Δ ⊢ t : A →
-    Γ ⊢ (ren_term ρ t) : A.
+    Γ ⊢ ρ ⋅ t : ρ ⋅ A.
 Proof.
   intros Γ Δ ρ t A hρ ht.
   induction ht in Γ, ρ, hρ |- *.
   all: try solve [ asimpl ; econstructor ; eauto ].
+  - asimpl. eapply hρ in H as [B [? eB]].
+    asimpl in eB. rewrite eB.
+    econstructor. eassumption.
   - asimpl. econstructor. all: eauto using scoping_ren.
     + eapply scoping_ren. 2: eassumption.
       eapply rtyping_scoping. assumption.
     + eapply scoping_ren. 2: eassumption.
       simpl. apply rscoping_shift.
       eapply rtyping_scoping. assumption.
-    + eapply IHht2.
+    + eapply IHht2. eapply rtyping_shift. assumption.
 Admitted.
