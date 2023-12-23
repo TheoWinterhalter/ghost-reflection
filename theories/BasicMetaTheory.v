@@ -433,6 +433,19 @@ Definition rtyping (Γ : context) (ρ : nat → nat) (Δ : context) : Prop :=
       nth_error Γ (ρ x) = Some (m, B) ∧
       (plus (S x) >> ρ) ⋅ A = (plus (S (ρ x))) ⋅ B.
 
+#[export] Instance rtyping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) rtyping.
+Proof.
+  intros Γ ? <- ρ ρ' e Δ ? <-.
+  revert ρ ρ' e. wlog_iff. intros ρ ρ' e h.
+  intros n m A en. rewrite <- e.
+  eapply h in en as [B [en eB]].
+  eexists. split. 1: eassumption.
+  asimpl. rewrite <- eB.
+  apply ren_term_morphism2. intro x. cbn. core.unfold_funcomp.
+  rewrite <- e. reflexivity.
+Qed.
+
 Lemma rtyping_scoping :
   ∀ Γ Δ ρ,
     rtyping Γ ρ Δ →
@@ -567,6 +580,21 @@ Inductive styping (Γ : context) (σ : nat → term) : context → Prop :=
       Γ ⊢ σ var_zero : A <[ S >> σ ] →
       styping Γ σ (Δ,, (m, A)).
 
+#[export] Instance styping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) styping.
+Proof.
+  intros Γ ? <- σ σ' e Δ ? <-.
+  revert σ σ' e. wlog_iff. intros σ σ' e h.
+  induction h as [| ? ? ? ? ? ih ] in σ', e |- *.
+  - constructor.
+  - constructor.
+    + apply ih. intros n. apply e.
+    + rewrite <- e. assumption.
+    + rewrite <- e. eapply meta_conv. 1: eassumption.
+      asimpl. apply subst_term_morphism2.
+      intro. apply e.
+Qed.
+
 Lemma styping_scoping :
   ∀ Γ Δ σ,
     styping Γ σ Δ →
@@ -576,6 +604,24 @@ Proof.
   - constructor.
   - cbn. constructor. all: assumption.
 Qed.
+
+Lemma styping_weak :
+  ∀ Γ Δ σ mx A,
+    styping Γ σ Δ →
+    styping (Γ,, (mx, A <[ σ ])) (σ >> ren_term ↑) Δ.
+Proof.
+  intros Γ Δ σ mx A h.
+  induction h.
+  - constructor.
+  - constructor.
+    + admit.
+    + asimpl. admit.
+    + asimpl. eapply meta_conv.
+      * eapply typing_ren. 2: eassumption.
+        intros n ? ? e. asimpl. cbn.
+        eexists. split. 1: eassumption.
+        reflexivity.
+Abort.
 
 Lemma styping_shift :
   ∀ Γ Δ mx A σ,
