@@ -717,9 +717,19 @@ Qed.
 
 (** Inversion of typing **)
 
+Set Equations With UIP.
 Derive NoConfusion EqDec for mode.
-Derive NoConfusion EqDec for term.
+Derive NoConfusion NoConfusionHom EqDec for term.
+Derive NoConfusion NoConfusionHom EqDec for list.
 Derive Signature for typing.
+
+Require Import Equations.Prop.DepElim.
+
+Ltac destruct_exists h :=
+  match type of h with
+  | ∃ _, _ => destruct h as [? h] ; destruct_exists h
+  | _ => idtac
+  end.
 
 Lemma type_var_inv :
   ∀ Γ x A,
@@ -729,11 +739,13 @@ Lemma type_var_inv :
       Γ ⊢ (plus (S x)) ⋅ B ≡ A.
 Proof.
   intros Γ x A h.
-  depelim h.
+  dependent induction h.
   - eexists _, _. split. 1: eassumption.
     constructor.
-  - (* Missing IH *)
-Admitted.
+  - destruct_exists IHh1. intuition subst.
+    eexists _, _. split. 1: eassumption.
+    eapply conv_trans. all: eauto.
+Qed.
 
 Ltac ttinv h h' :=
   lazymatch type of h with
@@ -744,12 +756,6 @@ Ltac ttinv h h' :=
   end.
 
 (** Uniqueness of type **)
-
-Ltac destruct_exists h :=
-  match type of h with
-  | ∃ _, _ => destruct h as [? h] ; destruct_exists h
-  | _ => idtac
-  end.
 
 Ltac unitac h1 h2 :=
   let h1' := fresh h1 in
