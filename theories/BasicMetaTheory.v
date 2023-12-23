@@ -6,6 +6,8 @@ From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping Typing.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
+From Equations Require Import Equations.
+
 Import ListNotations.
 Import CombineNotations.
 
@@ -510,6 +512,15 @@ Proof.
   intros Γ t A B h ->. assumption.
 Qed.
 
+Lemma meta_conv_trans_l :
+  ∀ Γ u v w,
+    u = v →
+    Γ ⊢ v ≡ w →
+    Γ ⊢ u ≡ w.
+Proof.
+  intros Γ ??? <- h. assumption.
+Qed.
+
 Lemma meta_conv_trans_r :
   ∀ Γ u v w,
     Γ ⊢ u ≡ v →
@@ -703,3 +714,60 @@ Proof.
     econstructor. all: eauto. all: try scoping_subst_finish.
     eapply conv_subst. all: eassumption.
 Qed.
+
+(** Inversion of typing **)
+
+Derive Signature for typing.
+
+Lemma type_var_inv :
+  ∀ Γ x A,
+    Γ ⊢ var x : A →
+    ∃ m B,
+      nth_error Γ x = Some (m, B) ∧
+      Γ ⊢ (plus (S x)) ⋅ B ≡ A.
+Proof.
+  intros Γ x A h.
+  depelim h.
+  (* Probably need EqDec on term *)
+Admitted.
+
+Ltac ttinv h h' :=
+  lazymatch type of h with
+  | _ ⊢ ?t : _ =>
+    lazymatch t with
+    | var _ => eapply type_var_inv in h as h'
+    end
+  end.
+
+(** Uniqueness of type **)
+
+Ltac destruct_exists h :=
+  match type of h with
+  | ∃ _, _ => destruct h as [? h] ; destruct_exists h
+  | _ => idtac
+  end.
+
+Ltac unitac h1 h2 :=
+  let h1' := fresh h1 in
+  let h2' := fresh h2 in
+  ttinv h1 h1' ; ttinv h2 h2' ;
+  destruct_exists h1' ;
+  destruct_exists h2' ;
+  intuition subst ;
+  eapply conv_trans ; [
+    eapply conv_sym ; eassumption
+  | idtac
+  ].
+
+Lemma type_unique :
+  ∀ Γ t A B,
+    Γ ⊢ t : A →
+    Γ ⊢ t : B →
+    Γ ⊢ A ≡ B.
+Proof.
+  intros Γ t A B hA hB.
+  induction t in A, B, hA, hB |- *.
+  all: try unitac hA hB.
+  - eapply meta_conv_trans_l. 2: eassumption.
+    f_equal. congruence.
+Admitted.
