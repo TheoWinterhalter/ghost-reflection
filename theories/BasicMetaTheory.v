@@ -757,12 +757,30 @@ Proof.
   - eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_pi_inv :
+  ∀ Γ mx m A B C,
+    Γ ⊢ Pi m mx A B : C →
+    ∃ i j,
+      cscoping Γ A mKind ∧
+      cscoping (Γ ,, (mx, A)) B mKind ∧
+      Γ ⊢ A : Sort mx i ∧
+      Γ ,, (mx, A) ⊢ B : Sort m j ∧
+      Γ ⊢ Sort m (max i j) ≡ C.
+Proof.
+  intros ?????? h.
+  dependent induction h.
+  - eexists _,_. intuition eauto. constructor.
+  - destruct_exists IHh1. eexists _,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
     lazymatch t with
     | var _ => eapply type_var_inv in h as h'
     | Sort _ _ => eapply type_sort_inv in h as h'
+    | Pi _ _ _ _ => eapply type_pi_inv in h as h'
     end
   end.
 
@@ -780,6 +798,20 @@ Ltac unitac h1 h2 :=
   | idtac
   ].
 
+Derive Signature for conversion.
+
+Lemma conv_sort_inv :
+  ∀ Γ m i j,
+    Γ ⊢ Sort m i ≡ Sort m j →
+    m = mProp ∨ i = j.
+Proof.
+  intros Γ m i j h.
+  dependent induction h. all: intuition auto.
+  - (* We're not going to be able to prove it this way. *)
+    admit.
+  - inversion H.
+Abort.
+
 Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
@@ -787,9 +819,20 @@ Lemma type_unique :
     Γ ⊢ A ≡ B.
 Proof.
   intros Γ t A B hA hB.
-  induction t in A, B, hA, hB |- *.
+  induction t in Γ, A, B, hA, hB |- *.
   all: try unitac hA hB. all: try assumption.
   - eapply meta_conv_trans_l. 2: eassumption.
     f_equal. congruence.
-  -
-Admitted.
+  - eapply conv_trans. 2: eassumption.
+    eapply IHt1 in H2. 2: eassumption.
+    eapply IHt2 in H5. 2: eassumption.
+    (* Without conv_sort_inv we can only hope for uniqueness modulo
+      universe levels. Maybe it's a good idea to generalise already to
+      principal typing?
+      I don't really need conversion for the proof.
+
+      It might be a good idea to progress with the rest instead, as we might
+      later have more power to prove this lemma, and it won't be needed for
+      a while.
+     *)
+Abort.
