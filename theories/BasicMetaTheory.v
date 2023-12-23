@@ -515,4 +515,25 @@ Proof.
     + eapply scoping_ren. 2: eassumption.
       apply rtyping_scoping. assumption.
     + asimpl. reflexivity.
+  - asimpl. asimpl in IHht.
+    constructor. 2: eauto.
+    eapply scoping_ren. 2: eassumption.
+    apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht1.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    econstructor. all: eauto.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply meta_conv. 1: apply IHht3. 1: auto.
+      f_equal. f_equal.
+      (* Forgot the right lifts in the typing rule *)
 Admitted.
