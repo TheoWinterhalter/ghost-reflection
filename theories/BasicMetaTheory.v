@@ -469,6 +469,15 @@ Proof.
     + constructor. apply h. reflexivity.
 Qed.
 
+Lemma meta_conv :
+  ∀ Γ t A B,
+    Γ ⊢ t : A →
+    A = B →
+    Γ ⊢ t : B.
+Proof.
+  intros Γ t A B h ->. assumption.
+Qed.
+
 Lemma typing_ren :
   ∀ Γ Δ ρ t A,
     rtyping Γ ρ Δ →
@@ -496,17 +505,14 @@ Proof.
       eapply rtyping_scoping. assumption.
     + eapply IHht2. eapply rtyping_shift. assumption.
     + eapply IHht3. eapply rtyping_shift. assumption.
-  - asimpl. econstructor.
-    + eapply scoping_subst. 2: eassumption.
-      cbn. constructor.
-      * asimpl. apply rscoping_sscoping.
-        apply rtyping_scoping. assumption.
-      * asimpl. eapply scoping_ren. 2: eassumption.
-        apply rtyping_scoping. assumption.
-    + econstructor.
-      * eapply scoping_ren. 2: eassumption.
-        apply rtyping_scoping. assumption.
-      * eapply scoping_ren. 2: eassumption.
-        apply rtyping_scoping. assumption.
-    + (* Oh, I applied conversion, not what I wanted... *)
+  - asimpl. asimpl in IHht1.
+    eapply meta_conv. 1: econstructor. all: eauto using scoping_ren.
+    + eapply scoping_ren. 2: eassumption.
+      cbn. eapply rscoping_shift.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      apply rtyping_scoping. assumption.
+    + asimpl. reflexivity.
 Admitted.
