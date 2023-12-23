@@ -89,6 +89,17 @@ Proof.
       * asimpl. constructor. reflexivity.
 Qed.
 
+Lemma sscoping_shift :
+  ∀ Γ Δ mx σ,
+    sscoping Γ σ Δ →
+    sscoping (mx :: Γ) (var 0 .: σ >> ren1 S) (mx :: Δ).
+Proof.
+  intros Γ Δ mx σ h.
+  constructor.
+  - asimpl. apply sscoping_weak. assumption.
+  - asimpl. constructor. reflexivity.
+Qed.
+
 Ltac forall_iff_impl T :=
   lazymatch eval cbn beta in T with
   | forall x : ?A, @?T' x =>
@@ -543,4 +554,67 @@ Proof.
     + eapply scoping_ren. 2: eassumption.
       apply rtyping_scoping. assumption.
     + eapply conv_ren. all: eassumption.
+Qed.
+
+(** Substitution preserves typing **)
+
+Inductive styping (Γ : context) (σ : nat → term) : context → Prop :=
+| type_nil : styping Γ σ []
+| type_cons :
+    ∀ Δ m A,
+      styping Γ (↑ >> σ) Δ →
+      cscoping Γ (σ 0) m →
+      Γ ⊢ σ var_zero : A <[ S >> σ ] →
+      styping Γ σ (Δ,, (m, A)).
+
+Lemma styping_scoping :
+  ∀ Γ Δ σ,
+    styping Γ σ Δ →
+    sscoping (sc Γ) σ (sc Δ).
+Proof.
+  intros Γ Δ σ h. induction h.
+  - constructor.
+  - cbn. constructor. all: assumption.
+Qed.
+
+Lemma styping_shift :
+  ∀ Γ Δ mx A σ,
+    styping Γ σ Δ →
+    styping (Γ ,, (mx, A <[ σ ])) (var 0 .: σ >> ren1 S) (Δ,, (mx, A)).
+Proof.
+  intros Γ Δ mx A σ h.
+  constructor.
+  - asimpl. (* Need: styping_weak *) admit.
+  - asimpl. constructor. reflexivity.
+  - asimpl. eapply meta_conv.
+    + econstructor. cbn. reflexivity.
+    + asimpl. reflexivity.
+Admitted.
+
+Ltac scoping_subst_finish :=
+  eapply scoping_subst ; [| eassumption] ;
+  try apply sscoping_shift ;
+  apply styping_scoping ; assumption.
+
+Lemma conv_subst :
+  ∀ Γ Δ σ u v,
+    styping Γ σ Δ →
+    Δ ⊢ u ≡ v →
+    Γ ⊢ u <[ σ ] ≡ v <[ σ ].
+Proof.
+  intros Γ Δ σ u v hσ h.
+  induction h in Γ, σ, hσ |- *.
+  all: try solve [ asimpl ; econstructor ; eauto ; scoping_subst_finish ].
+  - asimpl. eapply meta_conv_trans_r. 1: econstructor.
+    all: try scoping_subst_finish.
+    asimpl. apply subst_term_morphism2.
+    intros [].
+    + asimpl. reflexivity.
+    + asimpl. reflexivity.
+  - asimpl. constructor.
+    + auto.
+    + eapply IHh2. apply styping_shift. assumption.
+  - asimpl. constructor.
+    + auto.
+    + eapply IHh2. apply styping_shift. assumption.
 Qed.
