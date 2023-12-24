@@ -884,6 +884,123 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_erase_inv :
+  ∀ Γ t C,
+    Γ ⊢ erase t : C →
+    ∃ i A,
+      cscoping Γ A mKind ∧
+      cscoping Γ t mType ∧
+      Γ ⊢ A : Sort mType i ∧
+      Γ ⊢ t : A ∧
+      Γ ⊢ Erased A ≡ C.
+Proof.
+  intros Γ t C h.
+  dependent induction h.
+  - eexists _,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_reveal_inv :
+  ∀ Γ t P p C,
+    Γ ⊢ reveal t P p : C →
+    ∃ i m A,
+      cscoping Γ p m ∧
+      cscoping Γ t mGhost ∧
+      cscoping Γ P mKind ∧
+      In m [ mProp ; mGhost ] ∧
+      Γ ⊢ t : Erased A ∧
+      Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
+      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (erase (var 0))) ∧
+      Γ ⊢ app P t ≡ C.
+Proof.
+  intros Γ t P p C h.
+  dependent induction h.
+  - eexists _,_,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_revealP_inv :
+  ∀ Γ t p C,
+    Γ ⊢ revealP t p : C →
+    ∃ i A,
+      cscoping Γ t mGhost ∧
+      cscoping Γ p mKind ∧
+      Γ ⊢ t : Erased A ∧
+      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ Sort mProp 0 ≡ C.
+Proof.
+  intros Γ t p C h.
+  dependent induction h.
+  - eexists _,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_gheq_inv :
+  ∀ Γ A u v C,
+    Γ ⊢ gheq A u v : C →
+    ∃ i,
+      cscoping Γ A mKind ∧
+      cscoping Γ u mGhost ∧
+      cscoping Γ v mGhost ∧
+      Γ ⊢ A : Sort mGhost i ∧
+      Γ ⊢ u : A ∧
+      Γ ⊢ v : A ∧
+      Γ ⊢ Sort mProp 0 ≡ C.
+Proof.
+  intros Γ A u v C h.
+  dependent induction h.
+  - eexists. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_ghrefl_inv :
+  ∀ Γ A u C,
+    Γ ⊢ ghrefl A u : C →
+    ∃ i,
+      cscoping Γ A mKind ∧
+      cscoping Γ u mGhost ∧
+      Γ ⊢ A : Sort mGhost i ∧
+      Γ ⊢ u : A ∧
+      Γ ⊢ gheq A u u ≡ C.
+Proof.
+  intros Γ A u C h.
+  dependent induction h.
+  - eexists. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_ghcast :
+  ∀ Γ e P t C,
+    Γ ⊢ ghcast e P t : C →
+    ∃ i m A u v,
+      cscoping Γ A mKind ∧
+      cscoping Γ P mKind ∧
+      cscoping Γ u mGhost ∧
+      cscoping Γ v mGhost ∧
+      cscoping Γ t m ∧
+      cscoping Γ e mProp ∧
+      m ≠ mKind ∧
+      Γ ⊢ A : Sort mGhost i ∧
+      Γ ⊢ u : A ∧
+      Γ ⊢ v : A ∧
+      Γ ⊢ e : gheq A u v ∧
+      Γ ⊢ P : A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
+      Γ ⊢ t : app P u ∧
+      Γ ⊢ app P v ≡ C.
+Proof.
+  intros Γ e P t C h.
+  dependent induction h.
+  - eexists _,_,_,_,_. intuition eauto. (*  apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_,_,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed. *)
+Admitted.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
@@ -894,6 +1011,11 @@ Ltac ttinv h h' :=
     | lam _ _ _ _ => eapply type_lam_inv in h as h'
     | app _ _ => eapply type_app_inv in h as h'
     | Erased _ => eapply type_erased_inv in h as h'
+    | erase _ => eapply type_erase_inv in h as h'
+    | reveal _ _ _ => eapply type_reveal_inv in h as h'
+    | revealP _ _ => eapply type_revealP_inv in h as h'
+    | gheq _ _ _ => eapply type_gheq_inv in h as h'
+    | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
     end
   end.
 
@@ -945,6 +1067,10 @@ Proof.
     (* I know Type_i ≡ Type_j but not Ghost_i ≡ Ghost_j *)
     (* What would be a reasonable option? *)
     (* Once again, it seems uniqueness may be out of reach, let's postpone *)
+    admit.
+  - eapply conv_trans. 2: eassumption.
+    constructor. eapply IHt. all: auto.
+  -
 Abort.
 
 (** Validity (or presupposition) **)
