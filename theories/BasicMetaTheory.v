@@ -666,6 +666,32 @@ Proof.
     + asimpl. reflexivity.
 Qed.
 
+Lemma styping_ids :
+  ∀ Γ,
+    styping Γ ids Γ.
+Proof.
+  intros Γ. induction Γ as [| [m A] Γ ih].
+  - constructor.
+  - constructor.
+    + eapply styping_weak with (mx := m) (A := A) in ih.
+      asimpl in ih. assumption.
+    + constructor. reflexivity.
+    + eapply meta_conv. 1: econstructor.
+      * cbn. reflexivity.
+      * asimpl. substify. reflexivity.
+Qed.
+
+Lemma styping_one :
+  ∀ Γ mx A u,
+    cscoping Γ u mx →
+    Γ ⊢ u : A →
+    styping Γ u.. (Γ ,, (mx, A)).
+Proof.
+  intros Γ mx A u h hm.
+  constructor. all: asimpl. all: auto.
+  apply styping_ids.
+Qed.
+
 Ltac scoping_subst_finish :=
   eapply scoping_subst ; [| eassumption] ;
   try apply sscoping_shift ;
@@ -905,4 +931,25 @@ Proof.
   - split.
     + constructor.
     + eexists. cbn. constructor.
+  - split.
+    + constructor. all: auto.
+    + eexists. constructor.
+  - split.
+    + constructor. 1: auto.
+      cbn. apply IHh3. econstructor. all: eauto.
+    + eexists. eapply meta_conv. 1: econstructor. all: auto.
+      * (* Missing information here too, again on λ *)
+        admit.
+      * cbn. eapply scoping_md in H0. cbn in H0. unfold sc. rewrite H0.
+        reflexivity.
+  - split.
+    + cbn. econstructor. 2: eauto.
+      eapply scoping_md in H0 as e. subst.
+      assumption.
+    + forward IHh1 by auto. destruct IHh1 as [hst [l hP]].
+      ttinv hP hP'.
+      eexists. eapply meta_conv. 1: eapply typing_subst. 2: intuition eauto.
+      * eapply styping_one. all: auto.
+      * cbn. erewrite scoping_md. 1: reflexivity.
+        assumption.
 Abort.
