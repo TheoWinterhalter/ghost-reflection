@@ -97,6 +97,9 @@ Proof.
     + apply IHht2. constructor.
       * asimpl. apply sscoping_weak. assumption.
       * asimpl. constructor. reflexivity.
+    + apply IHht3. constructor.
+      * asimpl. apply sscoping_weak. assumption.
+      * asimpl. constructor. reflexivity.
 Qed.
 
 Lemma sscoping_shift :
@@ -166,6 +169,17 @@ Proof.
     + constructor. reflexivity.
 Qed.
 
+Lemma sscoping_one :
+  ∀ Γ u mx,
+    scoping Γ u mx →
+    sscoping Γ u.. (mx :: Γ).
+Proof.
+  intros Γ u mx h.
+  constructor.
+  - asimpl. apply sscoping_ids.
+  - asimpl. assumption.
+Qed.
+
 (** Cast removal preserves modes **)
 
 Lemma md_castrm :
@@ -215,8 +229,10 @@ Proof.
     asimpl. repeat core.unfold_funcomp. rewrite IHt2.
     auto.
   - asimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
-    asimpl. repeat core.unfold_funcomp. rewrite IHt2.
-    auto.
+    + asimpl. repeat core.unfold_funcomp. rewrite IHt2.
+      auto.
+    + asimpl. repeat core.unfold_funcomp. rewrite IHt3.
+      auto.
 Qed.
 
 (** Inversion for scoping **)
@@ -236,12 +252,13 @@ Proof.
 Qed.
 
 Lemma scope_lam_inv :
-  ∀ Γ mx A t m,
-    scoping Γ (lam mx A t) m →
+  ∀ Γ mx A B t m,
+    scoping Γ (lam mx A B t) m →
     scoping Γ A mKind ∧
+    scoping (mx :: Γ) B mKind ∧
     scoping (mx :: Γ) t m.
 Proof.
-  intros Γ mx A t m h.
+  intros Γ mx A B t m h.
   inversion h. subst.
   intuition eauto.
 Qed.
@@ -359,14 +376,12 @@ Proof.
   - split.
     + intro hu.
       eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
-      eapply scope_lam_inv in hl. destruct hl as [hA ht].
+      eapply scope_lam_inv in hl. destruct hl as [hA [hB ht]].
       eapply scoping_subst. 2: eassumption.
-      constructor.
-      * asimpl. apply sscoping_ids.
-      * asimpl. assumption.
+      apply sscoping_one. assumption.
     + intro hu. econstructor.
-      * constructor. 1: assumption.
-        eapply scoping_subst with (Γ := sc Γ) (σ := u ..) in H0 as h.
+      * constructor. 1,2: assumption.
+        eapply scoping_subst with (Γ := sc Γ) (σ := u ..) in H1 as h.
         2:{
           constructor.
           - asimpl. apply sscoping_ids.
@@ -395,8 +410,8 @@ Proof.
     intros i i' j j' A A' B B' ihA ihB ihi ihj hu.
     apply scope_pi_inv in hu. intuition subst.
     constructor. all: firstorder.
-  - clear h1 h2. revert A A' t t' IHh1 IHh2. wlog_iff.
-    intros A A' t t' IHh1 IHh2 hu.
+  - clear h1 h2 h3. revert A A' B B' t t' IHh1 IHh2 IHh3. wlog_iff.
+    intros A A' B B' t t' ihA ihB iht hu.
     apply scope_lam_inv in hu. intuition idtac.
     constructor. all: firstorder.
   - clear h1 h2. revert u u' v v' IHh1 IHh2. wlog_iff.
@@ -565,6 +580,7 @@ Proof.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
+    + eapply IHh3. apply rtyping_shift. assumption.
 Qed.
 
 Lemma typing_ren :
@@ -720,6 +736,7 @@ Proof.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply styping_shift. assumption.
+    + eapply IHh3. apply styping_shift. assumption.
 Qed.
 
 Lemma typing_subst :
@@ -814,21 +831,22 @@ Proof.
 Qed.
 
 Lemma type_lam_inv :
-  ∀ Γ mx A t C,
-    Γ ⊢ lam mx A t : C →
-    ∃ i j m B,
+  ∀ Γ mx A B t C,
+    Γ ⊢ lam mx A B t : C →
+    ∃ i j m,
       cscoping Γ A mKind ∧
+      cscoping (Γ ,, (mx, A)) B mKind ∧
       cscoping (Γ ,, (mx, A)) t m ∧
       Γ ⊢ A : Sort mx i ∧
       Γ ,, (mx, A) ⊢ B : Sort m j ∧
       Γ ,, (mx, A) ⊢ t : B ∧
       Γ ⊢ Pi i j m mx A B ≡ C.
 Proof.
-  intros Γ mx A t C h.
+  intros Γ mx A B t C h.
   dependent induction h.
-  - eexists _,_,_,_. intuition eauto.
+  - eexists _,_,_. intuition eauto.
     apply conv_refl.
-  - destruct_exists IHh1. eexists _,_,_,_. intuition eauto.
+  - destruct_exists IHh1. eexists _,_,_. intuition eauto.
     eapply conv_trans. all: eauto.
 Qed.
 
@@ -839,7 +857,7 @@ Ltac ttinv h h' :=
     | var _ => eapply type_var_inv in h as h'
     | Sort _ _ => eapply type_sort_inv in h as h'
     | Pi _ _ _ _ _ _ => eapply type_pi_inv in h as h'
-    | lam _ _ _ => eapply type_lam_inv in h as h'
+    | lam _ _ _ _ => eapply type_lam_inv in h as h'
     end
   end.
 
@@ -857,20 +875,6 @@ Ltac unitac h1 h2 :=
   | idtac
   ].
 
-Derive Signature for conversion.
-
-(* Lemma conv_sort_inv :
-  ∀ Γ m i j,
-    Γ ⊢ Sort m i ≡ Sort m j →
-    m = mProp ∨ i = j.
-Proof.
-  intros Γ m i j h.
-  dependent induction h. all: intuition auto.
-  - (* We're not going to be able to prove it this way. *)
-    admit.
-  - inversion H.
-Abort. *)
-
 Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
@@ -887,16 +891,9 @@ Proof.
     eapply conv_trans. 2: eassumption.
     constructor.
     + apply conv_refl.
-    + apply conv_sym. assumption.
+    + apply conv_refl.
     + eapply IHt1. all: assumption.
-    + (* Here we have no induction hypothesis sadly. *)
-      (* One solution would be to add the codomain in the syntax of λ
-        but that would be a shame.
-        What else can we do though?
-
-        Maybe it's okay to have a cluttered syntax but then show that
-        elaboration is possible?
-       *)
+    + eapply conv_sym. assumption.
 Abort.
 
 (** Validity (or presupposition) **)
@@ -935,13 +932,11 @@ Proof.
         asimpl in h.
         exists i. assumption.
   - split.
-    + constructor. 1: auto.
-      cbn. apply IHh3. econstructor. all: eauto.
-    + eexists. eapply meta_conv. 1: econstructor. all: auto.
-      * (* Missing information here too, again on λ *)
-        admit.
-      * cbn. eapply scoping_md in H0. cbn in H0. unfold sc. rewrite H0.
-        reflexivity.
+    + cbn. constructor. 1,2: auto.
+      apply IHh3. econstructor. all: eauto.
+    + eexists. cbn. eapply meta_conv. 1: econstructor. all: auto.
+      erewrite scoping_md. 2: eassumption.
+      reflexivity.
   - split.
     + cbn. econstructor. 2: eauto.
       eapply scoping_md in H0 as e. subst.
@@ -978,4 +973,4 @@ Proof.
   - split.
     + erewrite scoping_md. 2: eassumption. assumption.
     + eexists. erewrite scoping_md. 2: eassumption. eassumption.
-Abort.
+Qed.

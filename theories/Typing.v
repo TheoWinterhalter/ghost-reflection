@@ -24,11 +24,12 @@ Inductive conversion (Γ : context) : term → term → Prop :=
 (** Computation rules **)
 
 | conv_beta :
-    ∀ m mx A t u,
+    ∀ m mx A B t u,
       cscoping Γ A mKind →
+      scoping (mx :: sc Γ) B mKind →
       scoping (mx :: sc Γ) t m →
       cscoping Γ u mx →
-      Γ ⊢ app (lam mx A t) u ≡ t <[ u .. ]
+      Γ ⊢ app (lam mx A B t) u ≡ t <[ u .. ]
 
 | reveal_erase :
     ∀ mp t P p,
@@ -65,10 +66,11 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ Pi i j m mx A B ≡ Pi i' j' m mx A' B'
 
 | cong_lam :
-    ∀ mx A A' t t',
+    ∀ mx A A' B B' t t',
       Γ ⊢ A ≡ A' →
+      Γ ,, (mx, A) ⊢ B ≡ B' →
       Γ ,, (mx, A) ⊢ t ≡ t' →
-      Γ ⊢ lam mx A t ≡ lam mx A' t'
+      Γ ⊢ lam mx A B t ≡ lam mx A' B' t'
 
 | cong_app :
     ∀ u u' v v',
@@ -170,11 +172,12 @@ Inductive typing (Γ : context) : term → term → Prop :=
 | type_lam :
     ∀ mx m i j A B t,
       cscoping Γ A mKind →
+      cscoping (Γ ,, (mx, A)) B mKind →
       cscoping (Γ ,, (mx, A)) t m →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ,, (mx, A) ⊢ t : B →
-      Γ ⊢ lam mx A t : Pi i j m mx A B
+      Γ ⊢ lam mx A B t : Pi i j m mx A B
 
 | type_app :
     ∀ i j mx m A B t u,
