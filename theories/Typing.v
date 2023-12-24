@@ -21,7 +21,7 @@ Reserved Notation "Γ ⊢ u ≡ v"
 
 Inductive conversion (Γ : context) : term → term → Prop :=
 
-(* Computation rules *)
+(** Computation rules **)
 
 | conv_beta :
     ∀ m mx A t u,
@@ -44,18 +44,25 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       cscoping Γ t mType →
       Γ ⊢ revealP (erase t) p ≡ app p t
 
-(* Congruence rules *)
+(** Congruence rules **)
 
-(* A rule to quotient away all levels of Prop, making it impredicative *)
+(** A rule to quotient away all levels of Prop, making it impredicative **)
 | cong_Prop :
     ∀ i j,
       Γ ⊢ Sort mProp i ≡ Sort mProp j
 
+(** We use something non-standard here:
+  Since the levels are stuck in the syntax, we allow them to be modulo
+  conversion somehow by referring to conversion of universes.
+  This lets us account for our impredicativity rule above.
+**)
 | cong_Pi :
-    ∀ i j m mx A A' B B',
+    ∀ i i' j j' m mx A A' B B',
       Γ ⊢ A ≡ A' →
       Γ ,, (mx, A) ⊢ B ≡ B' →
-      Γ ⊢ Pi i j m mx A B ≡ Pi i j m mx A' B'
+      Γ ⊢ Sort mx i ≡ Sort mx i' →
+      Γ ,, (mx, A) ⊢ Sort m j ≡ Sort m j' →
+      Γ ⊢ Pi i j m mx A B ≡ Pi i' j' m mx A' B'
 
 | cong_lam :
     ∀ mx A A' t t',
@@ -114,7 +121,7 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ p ≡ p' →
       Γ ⊢ bot_elim m A p ≡ bot_elim m A' p'
 
-(* Structural rules *)
+(** Structural rules **)
 
 | conv_refl :
     ∀ u,
@@ -131,7 +138,7 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ v ≡ w →
       Γ ⊢ u ≡ w
 
-(* Proof irrelevance *)
+(** Proof irrelevance **)
 
 | conv_irr :
     ∀ p q,

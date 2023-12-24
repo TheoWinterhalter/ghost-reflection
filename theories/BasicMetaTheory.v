@@ -391,8 +391,8 @@ Proof.
       * assumption.
   - revert i j. wlog_iff. intros i j hu.
     apply scope_sort_inv in hu. subst. constructor.
-  - clear h1 h2. revert A A' B B' IHh1 IHh2. wlog_iff.
-    intros A A' B B' ihA ihB hu.
+  - clear h1 h2 h3 h4. revert i i' j j' A A' B B' IHh1 IHh2 IHh3 IHh4. wlog_iff.
+    intros i i' j j' A A' B B' ihA ihB ihi ihj hu.
     apply scope_pi_inv in hu. intuition subst.
     constructor. all: firstorder.
   - clear h1 h2. revert A A' t t' IHh1 IHh2. wlog_iff.
@@ -550,6 +550,8 @@ Proof.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
+    + asimpl in IHh3. firstorder.
+    + asimpl in IHh4. eapply IHh4. apply rtyping_shift. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
@@ -677,6 +679,8 @@ Proof.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply styping_shift. assumption.
+    + asimpl in IHh3. firstorder.
+    + asimpl in IHh4. eapply IHh4. apply styping_shift. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply styping_shift. assumption.
@@ -844,15 +848,17 @@ Proof.
     f_equal. congruence.
   - repeat scoping_fun.
     eapply IHt2 in H7. 2: eassumption.
-    eapply conv_trans.
-    1:{
-      econstructor. 1: constructor.
-      apply conv_sym. eassumption.
-    }
-    (* Do we need yet another level annotation? *)
-    (* Another option is to allow converting the levels in Pi from i to i'
-      when Sort m i ≡ Sort m i'. This would also align with the quotient we have
-      for Prop. In other words, it's not moral to extract the levels from a
-      universe unless we know it's an invariant, we somehow have a quotient.
-     *)
+    eapply conv_trans. 2: eassumption.
+    constructor.
+    + apply conv_refl.
+    + apply conv_sym. assumption.
+    + eapply IHt1. all: assumption.
+    + (* Here we have no induction hypothesis sadly. *)
+      (* One solution would be to add the codomain in the syntax of λ
+        but that would be a shame.
+        What else can we do though?
+
+        Maybe it's okay to have a cluttered syntax but then show that
+        elaboration is possible?
+       *)
 Abort.
