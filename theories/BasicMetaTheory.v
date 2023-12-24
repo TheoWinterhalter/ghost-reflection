@@ -773,6 +773,25 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_lam_inv :
+  ∀ Γ mx A t C,
+    Γ ⊢ lam mx A t : C →
+    ∃ i j m B,
+      cscoping Γ A mKind ∧
+      cscoping (Γ ,, (mx, A)) t m ∧
+      Γ ⊢ A : Sort mx i ∧
+      Γ ,, (mx, A) ⊢ B : Sort m j ∧
+      Γ ,, (mx, A) ⊢ t : B ∧
+      Γ ⊢ Pi i j m mx A B ≡ C.
+Proof.
+  intros Γ mx A t C h.
+  dependent induction h.
+  - eexists _,_,_,_. intuition eauto.
+    apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
@@ -780,6 +799,7 @@ Ltac ttinv h h' :=
     | var _ => eapply type_var_inv in h as h'
     | Sort _ _ => eapply type_sort_inv in h as h'
     | Pi _ _ _ _ _ _ => eapply type_pi_inv in h as h'
+    | lam _ _ _ => eapply type_lam_inv in h as h'
     end
   end.
 
@@ -822,5 +842,17 @@ Proof.
   all: try unitac hA hB. all: try assumption.
   - eapply meta_conv_trans_l. 2: eassumption.
     f_equal. congruence.
-  -
+  - repeat scoping_fun.
+    eapply IHt2 in H7. 2: eassumption.
+    eapply conv_trans.
+    1:{
+      econstructor. 1: constructor.
+      apply conv_sym. eassumption.
+    }
+    (* Do we need yet another level annotation? *)
+    (* Another option is to allow converting the levels in Pi from i to i'
+      when Sort m i ≡ Sort m i'. This would also align with the quotient we have
+      for Prop. In other words, it's not moral to extract the levels from a
+      universe unless we know it's an invariant, we somehow have a quotient.
+     *)
 Abort.
