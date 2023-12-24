@@ -763,7 +763,7 @@ Qed.
 Lemma type_sort_inv :
   ∀ Γ m i A,
     Γ ⊢ Sort m i : A →
-    Γ ⊢ Sort m (S i) ≡ A.
+    Γ ⊢ Sort mKind (S i) ≡ A.
 Proof.
   intros ???? h.
   dependent induction h.
@@ -904,5 +904,5 @@ Proof.
         exists i. assumption.
   - split.
     + constructor.
-    + eexists. cbn. (* TODO Fix sort rule *)
+    + eexists. cbn. constructor.
 Abort.
