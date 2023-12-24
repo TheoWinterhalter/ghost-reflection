@@ -9,9 +9,9 @@ Set Default Goal Selector "!".
 
 Open Scope subst_scope.
 
-Notation "A ⇒[ mx | m ] B" :=
-  (Pi m mx A (shift ⋅ B))
-  (at level 20, mx, m at next level, right associativity).
+Notation "A ⇒[ i | j / mx | m ] B" :=
+  (Pi i j m mx A (shift ⋅ B))
+  (at level 20, i, j, mx, m at next level, right associativity).
 
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
@@ -52,10 +52,10 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ Sort mProp i ≡ Sort mProp j
 
 | cong_Pi :
-    ∀ m mx A A' B B',
+    ∀ i j m mx A A' B B',
       Γ ⊢ A ≡ A' →
       Γ ,, (mx, A) ⊢ B ≡ B' →
-      Γ ⊢ Pi m mx A B ≡ Pi m mx A' B'
+      Γ ⊢ Pi i j m mx A B ≡ Pi i j m mx A' B'
 
 | cong_lam :
     ∀ mx A A' t t',
@@ -153,12 +153,12 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ Sort m i : Sort m (S i)
 
 | type_pi :
-    ∀ mx m i j A B,
+    ∀ i j mx m A B,
       cscoping Γ A mKind →
       cscoping (Γ ,, (mx, A)) B mKind →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
-      Γ ⊢ Pi m mx A B : Sort m (max i j)
+      Γ ⊢ Pi i j m mx A B : Sort m (max i j)
 
 | type_lam :
     ∀ mx m i j A B t,
@@ -167,14 +167,14 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ,, (mx, A) ⊢ t : B →
-      Γ ⊢ lam mx A t : Pi m mx A B
+      Γ ⊢ lam mx A t : Pi i j m mx A B
 
 | type_app :
-    ∀ mx m A B t u,
+    ∀ i j mx m A B t u,
       cscoping (Γ ,, (mx, A)) B mKind →
       cscoping Γ t m →
       cscoping Γ u mx →
-      Γ ⊢ t : Pi m mx A B →
+      Γ ⊢ t : Pi i j m mx A B →
       Γ ⊢ u : A →
       Γ ⊢ app t u : B <[ u .. ]
 
@@ -199,16 +199,16 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ P mKind →
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
-      Γ ⊢ P : Erased A ⇒[ mGhost | mKind ] Sort m i →
-      Γ ⊢ p : Pi m mType A (app (S ⋅ P) (erase (var 0))) →
+      Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i →
+      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (erase (var 0))) →
       Γ ⊢ reveal t P p : app P t
 
 | type_revealP :
-    ∀ A t p,
+    ∀ i A t p,
       cscoping Γ t mGhost →
       cscoping Γ p mKind →
       Γ ⊢ t : Erased A →
-      Γ ⊢ p : A ⇒[ mType | mKind ] Sort mProp 0 →
+      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ revealP t p : Sort mProp 0
 
 | type_gheq :
@@ -242,7 +242,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ u : A →
       Γ ⊢ v : A →
       Γ ⊢ e : gheq A u v →
-      Γ ⊢ P : A ⇒[ mGhost | mKind ] Sort m i →
+      Γ ⊢ P : A ⇒[ i | S i / mGhost | mKind ] Sort m i →
       Γ ⊢ t : app P u →
       Γ ⊢ ghcast e P t : app P v
 

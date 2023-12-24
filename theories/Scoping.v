@@ -24,10 +24,10 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ (Sort m i) mKind
 
 | scope_pi :
-    ∀ mx m A B,
+    ∀ i j mx m A B,
       scoping Γ A mKind →
       scoping (mx :: Γ) B mKind →
-      scoping Γ (Pi m mx A B) mKind
+      scoping Γ (Pi i j m mx A B) mKind
 
 | scope_lam :
     ∀ mx m A t,
