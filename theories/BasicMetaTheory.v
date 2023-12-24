@@ -910,6 +910,12 @@ Lemma validity :
 Proof.
   intros Γ t A hΓ h.
   induction h in hΓ |- *.
+  all: try solve [
+    split ; [
+      cbn ; econstructor ; eauto
+    | eexists ; econstructor ; eauto
+    ]
+  ].
   - split.
     + constructor. unfold sc. rewrite nth_error_map.
       unfold decl in H. rewrite H. cbn.
@@ -929,12 +935,6 @@ Proof.
         asimpl in h.
         exists i. assumption.
   - split.
-    + constructor.
-    + eexists. cbn. constructor.
-  - split.
-    + constructor. all: auto.
-    + eexists. constructor.
-  - split.
     + constructor. 1: auto.
       cbn. apply IHh3. econstructor. all: eauto.
     + eexists. eapply meta_conv. 1: econstructor. all: auto.
@@ -952,4 +952,30 @@ Proof.
       * eapply styping_one. all: auto.
       * cbn. erewrite scoping_md. 1: reflexivity.
         assumption.
+  - split.
+    + cbn. erewrite scoping_md. 2: eassumption.
+      cbn in H2. destruct H2 as [<- | [<- |]].
+      * constructor. all: auto with datatypes.
+      * constructor. all: auto with datatypes.
+      * contradiction.
+    + eexists. eapply meta_conv. 1: econstructor. all: eauto.
+      * asimpl. constructor.
+      * cbn - [mdc]. f_equal.
+        cbn. erewrite scoping_md. 2: eassumption.
+        destruct H2 as [<- | [<- |]]. 3: contradiction.
+        all: reflexivity.
+  - split.
+    + cbn. econstructor. all: eauto.
+      * erewrite scoping_md. 2: eassumption. assumption.
+      * erewrite scoping_md. 2: eassumption. assumption.
+    + eexists. eapply meta_conv. 1: econstructor. all: eauto.
+      * cbn. constructor.
+      * cbn - [mdc]. f_equal.
+        cbn. erewrite scoping_md. 2: eassumption. reflexivity.
+  - split.
+    + cbn. constructor. all: auto.
+    + eexists. cbn. eassumption.
+  - split.
+    + erewrite scoping_md. 2: eassumption. assumption.
+    + eexists. erewrite scoping_md. 2: eassumption. eassumption.
 Abort.
