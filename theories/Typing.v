@@ -274,3 +274,13 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ t : B
 
 where "Γ ⊢ t : A" := (typing Γ t A).
+
+(** Context formation **)
+
+Inductive wf : context → Prop :=
+| wf_nil : wf nil
+| wf_cons :
+    ∀ Γ m i A,
+      wf Γ →
+      Γ ⊢ A : Sort m i →
+      wf (Γ ,, (m, A)).

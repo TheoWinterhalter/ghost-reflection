@@ -488,6 +488,16 @@ Proof.
     assumption.
 Qed.
 
+Lemma rtyping_S :
+  ∀ Γ m A,
+    rtyping (Γ ,, (m, A)) S Γ.
+Proof.
+  intros Γ m A. intros x mx B e.
+  simpl. asimpl.
+  eexists. split. 1: eassumption.
+  asimpl. reflexivity.
+Qed.
+
 Lemma rscoping_sscoping :
   ∀ Γ Δ ρ,
     rscoping Γ ρ Δ →
@@ -861,4 +871,38 @@ Proof.
         Maybe it's okay to have a cluttered syntax but then show that
         elaboration is possible?
        *)
+Abort.
+
+(** Validity (or presupposition) **)
+
+Lemma validity :
+  ∀ Γ t A,
+    wf Γ →
+    Γ ⊢ t : A →
+    cscoping Γ t (mdc Γ t) ∧
+    (∃ i, Γ ⊢ A : Sort (mdc Γ t) i).
+Proof.
+  intros Γ t A hΓ h.
+  induction h in hΓ |- *.
+  - split.
+    + constructor. unfold sc. rewrite nth_error_map.
+      unfold decl in H. rewrite H. cbn.
+      change mType with (fst (mType, A)).
+      rewrite map_nth. erewrite nth_error_nth. 2: eassumption.
+      reflexivity.
+    + induction hΓ as [| Γ my j B hΓ ih hB] in x, H |- *. 1: destruct x ; discriminate.
+      destruct x.
+      * cbn in *. inversion H. subst.
+        exists j. asimpl.
+        eapply meta_conv. 1: eapply typing_ren.
+        -- apply rtyping_S.
+        -- eassumption.
+        -- reflexivity.
+      * cbn in H. eapply ih in H as [i h].
+        eapply typing_ren in h. 2: eapply rtyping_S with (m := my) (A := B).
+        asimpl in h.
+        exists i. assumption.
+  - split.
+    + constructor.
+    + eexists. cbn. (* TODO Fix sort rule *)
 Abort.
