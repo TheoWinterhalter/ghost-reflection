@@ -869,6 +869,21 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_erased_inv :
+  ∀ Γ A C,
+    Γ ⊢ Erased A : C →
+    ∃ i,
+      cscoping Γ A mKind ∧
+      Γ ⊢ A : Sort mType i ∧
+      Γ ⊢ Sort mGhost i ≡ C.
+Proof.
+  intros Γ A C h.
+  dependent induction h.
+  - eexists. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
@@ -878,6 +893,7 @@ Ltac ttinv h h' :=
     | Pi _ _ _ _ _ _ => eapply type_pi_inv in h as h'
     | lam _ _ _ _ => eapply type_lam_inv in h as h'
     | app _ _ => eapply type_app_inv in h as h'
+    | Erased _ => eapply type_erased_inv in h as h'
     end
   end.
 
@@ -922,6 +938,13 @@ Proof.
       (* Another solution is of course to also annotate application but come on
         it sounds really bad and I'm not sure I can recover from this.
       *)
+      admit.
+  - eapply conv_trans. 2: eassumption.
+    (* eapply IHt. all: auto. *)
+    (* Another problem arises here with respect to sorts! *)
+    (* I know Type_i ≡ Type_j but not Ghost_i ≡ Ghost_j *)
+    (* What would be a reasonable option? *)
+    (* Once again, it seems uniqueness may be out of reach, let's postpone *)
 Abort.
 
 (** Validity (or presupposition) **)
