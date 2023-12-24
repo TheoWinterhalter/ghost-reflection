@@ -850,6 +850,25 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_app_inv :
+  ∀ Γ t u C,
+    Γ ⊢ app t u : C →
+    ∃ mx m i j A B,
+      cscoping (Γ ,, (mx, A)) B mKind ∧
+      cscoping Γ t m ∧
+      cscoping Γ u mx ∧
+      Γ ⊢ t : Pi i j m mx A B ∧
+      Γ ⊢ u : A ∧
+      Γ ⊢ B <[ u .. ] ≡ C.
+Proof.
+  intros Γ t u C h.
+  dependent induction h.
+  - eexists _,_,_,_,_,_. intuition eauto.
+    apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_,_,_,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
@@ -858,6 +877,7 @@ Ltac ttinv h h' :=
     | Sort _ _ => eapply type_sort_inv in h as h'
     | Pi _ _ _ _ _ _ => eapply type_pi_inv in h as h'
     | lam _ _ _ _ => eapply type_lam_inv in h as h'
+    | app _ _ => eapply type_app_inv in h as h'
     end
   end.
 
@@ -894,6 +914,14 @@ Proof.
     + apply conv_refl.
     + eapply IHt1. all: assumption.
     + eapply conv_sym. assumption.
+  - repeat scoping_fun.
+    eapply conv_trans. 2: eassumption.
+    eapply conv_subst.
+    + apply styping_one. all: eauto.
+    + (* Without injectivity of Π I'm kinda stuck here. *)
+      (* Another solution is of course to also annotate application but come on
+        it sounds really bad and I'm not sure I can recover from this.
+      *)
 Abort.
 
 (** Validity (or presupposition) **)
