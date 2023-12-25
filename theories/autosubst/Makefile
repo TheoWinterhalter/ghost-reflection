@@ -1,2 +1,2 @@
 syntax:
-	autosubst -s ucoq -v ge813 -allfv AST.sig -o AST.v
+	autosubst -s ucoq -v ge813 -allfv GAST.sig -o GAST.v

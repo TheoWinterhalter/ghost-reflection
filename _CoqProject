@@ -4,7 +4,7 @@ theories/BasicAST.v
 
 theories/autosubst/core.v
 theories/autosubst/unscoped.v
-theories/autosubst/AST.v
+theories/autosubst/GAST.v
 
 theories/SubstNotations.v
 

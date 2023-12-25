@@ -1,5 +1,5 @@
 From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import AST.
+From GhostTT.autosubst Require Import GAST.
 From GhostTT Require Import BasicAST.
 
 (** Contexts store for each variable its type and mode.

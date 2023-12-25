@@ -1,7 +1,7 @@
 From Coq Require Import Utf8 List.
 From Equations Require Import Equations.
 
-From GhostTT.autosubst Require Import AST.
+From GhostTT.autosubst Require Import GAST.
 From GhostTT Require Import BasicAST ContextDecl Scoping.
 
 Set Default Goal Selector "!".
