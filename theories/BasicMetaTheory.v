@@ -974,7 +974,7 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
-Lemma type_ghcast :
+Lemma type_ghcast_inv :
   ∀ Γ e P t C,
     Γ ⊢ ghcast e P t : C →
     ∃ i m A u v,
@@ -995,11 +995,12 @@ Lemma type_ghcast :
 Proof.
   intros Γ e P t C h.
   dependent induction h.
-  - eexists _,_,_,_,_. intuition eauto. (*  apply conv_refl.
-  - destruct_exists IHh1. eexists _,_,_,_,_. intuition eauto.
+  - eexists _,_,_,_,_. intuition idtac. 4,9,10: eauto. all: eauto.
+    apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_,_,_.
+    intuition idtac. 4,9,10: eauto. all: eauto.
     eapply conv_trans. all: eauto.
-Qed. *)
-Admitted.
+Qed.
 
 Ltac ttinv h h' :=
   lazymatch type of h with
@@ -1016,6 +1017,7 @@ Ltac ttinv h h' :=
     | revealP _ _ => eapply type_revealP_inv in h as h'
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
     | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
+    | ghcast _ _ _ => eapply type_ghcast_inv in h as h'
     end
   end.
 
@@ -1070,7 +1072,11 @@ Proof.
     admit.
   - eapply conv_trans. 2: eassumption.
     constructor. eapply IHt. all: auto.
-  -
+  - eapply conv_trans. 2: eassumption.
+    constructor. 1: apply conv_refl.
+    eapply IHt1 in H19. 2: eassumption.
+    (* Missing injectivity of gheq too. Once again, we could add arguements *)
+    admit.
 Abort.
 
 (** Validity (or presupposition) **)
