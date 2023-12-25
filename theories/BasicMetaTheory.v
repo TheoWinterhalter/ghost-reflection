@@ -1002,6 +1002,34 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_bot_inv :
+  ∀ Γ C,
+    Γ ⊢ bot : C →
+    Γ ⊢ Sort mProp 0 ≡ C.
+Proof.
+  intros Γ C h.
+  dependent induction h.
+  - apply conv_refl.
+  - eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_bot_elim_inv :
+  ∀ Γ m A p C,
+    Γ ⊢ bot_elim m A p : C →
+    ∃ i,
+      cscoping Γ A mKind ∧
+      cscoping Γ p mProp ∧
+      Γ ⊢ A : Sort m i ∧
+      Γ ⊢ p : bot ∧
+      Γ ⊢ A ≡ C.
+Proof.
+  intros Γ m A p C h.
+  dependent induction h.
+  - eexists. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Ltac ttinv h h' :=
   lazymatch type of h with
   | _ ⊢ ?t : _ =>
@@ -1018,6 +1046,8 @@ Ltac ttinv h h' :=
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
     | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
     | ghcast _ _ _ => eapply type_ghcast_inv in h as h'
+    | bot => eapply type_bot_inv in h as h'
+    | bot_elim _ _ _ => eapply type_bot_elim_inv in h as h'
     end
   end.
 
