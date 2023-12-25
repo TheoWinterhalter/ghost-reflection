@@ -478,11 +478,11 @@ Lemma rtyping_scoping :
 Proof.
   intros Γ Δ ρ h.
   intros n m e. unfold sc in e. rewrite nth_error_map in e.
-  destruct (nth_error (A := mode * term) Δ n) as [[]|] eqn:en. 2: discriminate.
+  destruct (nth_error Δ n) as [[]|] eqn:en. 2: discriminate.
   simpl in e. inversion e. subst. clear e.
   eapply h in en. destruct en as [B [en eB]].
   unfold sc. rewrite nth_error_map.
-  unfold decl in en. rewrite en. reflexivity.
+  rewrite en. reflexivity.
 Qed.
 
 Lemma rtyping_shift :
@@ -1128,7 +1128,7 @@ Proof.
   ].
   - split.
     + constructor. unfold sc. rewrite nth_error_map.
-      unfold decl in H. rewrite H. cbn.
+      rewrite H. cbn.
       change mType with (fst (mType, A)).
       rewrite map_nth. erewrite nth_error_nth. 2: eassumption.
       reflexivity.

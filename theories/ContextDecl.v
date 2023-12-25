@@ -1,5 +1,5 @@
 From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import GAST.
+From GhostTT.autosubst Require Import GAST CCAST.
 From GhostTT Require Import BasicAST.
 
 (** Contexts store for each variable its type and mode.
@@ -10,11 +10,11 @@ From GhostTT Require Import BasicAST.
 
 **)
 
-Definition decl := (mode * term)%type.
+Notation decl := (mode * term)%type.
 
-Definition context := list decl.
+Notation context := (list decl).
 
-Definition scope := list mode.
+Notation scope := (list mode).
 
 Definition sc (Γ : context) : scope :=
   map fst Γ.
@@ -27,3 +27,12 @@ Notation "Γ ,, d" :=
 
 Notation "Γ ,,, Δ" :=
   (@app decl Δ Γ) (at level 25, Δ at next level, left associativity).
+
+
+(** Same thing for CC **)
+
+Notation cdecl := (cmode * cterm)%type.
+
+Notation ccontext := (list cdecl).
+
+Notation cscope := (list cmode).
