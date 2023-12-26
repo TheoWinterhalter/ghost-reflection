@@ -18,3 +18,5 @@ theories/BasicMetaTheory.v
 
 theories/CScoping.v
 theories/CTyping.v
+
+theories/Erasure.v

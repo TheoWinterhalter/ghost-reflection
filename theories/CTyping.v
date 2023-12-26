@@ -26,6 +26,20 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ mx A t u,
       Γ ⊢ᶜ capp (clam mx A t) u ≡ t <[ u .. ]
 
+| cconv_El_val :
+    ∀ A a,
+      Γ ⊢ᶜ cEl (ctyval A a) ≡ A
+
+| cconv_Err_val :
+    ∀ A a,
+      Γ ⊢ᶜ cErr (ctyval A a) ≡ a
+
+| cconv_El_err :
+    Γ ⊢ᶜ cEl ctyerr ≡ cunit
+
+| cconv_Err_err :
+    Γ ⊢ᶜ cErr ctyerr ≡ ctt
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -116,6 +130,18 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ u : A →
       Γ ⊢ᶜ capp t u : B <[ u .. ]
 
+| ctype_unit :
+    Γ ⊢ᶜ cunit : cSort cType 0
+
+| ctype_tt :
+    Γ ⊢ᶜ ctt : cunit
+
+| ctype_top :
+    Γ ⊢ᶜ ctop : cSort cProp 0
+
+| ctype_star :
+    Γ ⊢ᶜ cstar : ctop
+
 | ctype_bot :
     Γ ⊢ᶜ cbot : cSort cProp 0
 
@@ -131,6 +157,30 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ A ≡ B →
       Γ ⊢ᶜ B : cSort m i →
       Γ ⊢ᶜ t : B
+
+| ctype_ty :
+    ∀ i,
+      Γ ⊢ᶜ cty i : cSort cType (S i)
+
+| ctype_tyval :
+    ∀ i A a,
+      Γ ⊢ᶜ A : cSort cType i →
+      Γ ⊢ᶜ a : A →
+      Γ ⊢ᶜ ctyval A a : cty i
+
+| ctype_tyerr :
+    ∀ i,
+      Γ ⊢ᶜ ctyerr : cty i
+
+| ctype_El :
+    ∀ i T,
+      Γ ⊢ᶜ T : cty i →
+      Γ ⊢ᶜ cEl T : cSort cType i
+
+| ctype_Err :
+    ∀ i T,
+      Γ ⊢ᶜ T : cty i →
+      Γ ⊢ᶜ cErr T : cEl T
 
 where "Γ ⊢ᶜ t : A" := (ctyping Γ t A).
 
