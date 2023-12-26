@@ -17,3 +17,4 @@ theories/Typing.v
 theories/BasicMetaTheory.v
 
 theories/CScoping.v
+theories/CTyping.v

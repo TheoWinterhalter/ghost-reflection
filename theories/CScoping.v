@@ -24,17 +24,16 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ (cSort m i) cType
 
 | cscope_pi :
-    ∀ i j mx m A B,
+    ∀ mx A B,
       ccscoping Γ A cType →
       ccscoping (mx :: Γ) B cType →
-      ccscoping Γ (cPi i j m mx A B) cType
+      ccscoping Γ (cPi mx A B) cType
 
 | cscope_lam :
-    ∀ mx m A B t,
+    ∀ mx m A t,
       ccscoping Γ A cType →
-      ccscoping (mx :: Γ) B cType →
       ccscoping (mx :: Γ) t m →
-      ccscoping Γ (clam mx A B t) m
+      ccscoping Γ (clam mx A t) m
 
 | cscope_app :
     ∀ mx m t u,
@@ -52,4 +51,4 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ (cbot_elim m A p) m
 .
 
-Notation ccxscoping Γ := (ccscoping (sc Γ)).
+Notation ccxscoping Γ := (ccscoping (csc Γ)).

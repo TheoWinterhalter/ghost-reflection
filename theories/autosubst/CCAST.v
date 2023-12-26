@@ -8,8 +8,8 @@ Module Core.
 Inductive cterm : Type :=
   | cvar : nat -> cterm
   | cSort : cmode -> level -> cterm
-  | cPi : level -> level -> cmode -> cmode -> cterm -> cterm -> cterm
-  | clam : cmode -> cterm -> cterm -> cterm -> cterm
+  | cPi : cmode -> cterm -> cterm -> cterm
+  | clam : cmode -> cterm -> cterm -> cterm
   | capp : cterm -> cterm -> cterm
   | cbot : cterm
   | cbot_elim : cmode -> cterm -> cterm -> cterm.
@@ -21,37 +21,22 @@ exact (eq_trans (eq_trans eq_refl (ap (fun x => cSort x s1) H0))
          (ap (fun x => cSort t0 x) H1)).
 Qed.
 
-Lemma congr_cPi {s0 : level} {s1 : level} {s2 : cmode} {s3 : cmode}
-  {s4 : cterm} {s5 : cterm} {t0 : level} {t1 : level} {t2 : cmode}
-  {t3 : cmode} {t4 : cterm} {t5 : cterm} (H0 : s0 = t0) (H1 : s1 = t1)
-  (H2 : s2 = t2) (H3 : s3 = t3) (H4 : s4 = t4) (H5 : s5 = t5) :
-  cPi s0 s1 s2 s3 s4 s5 = cPi t0 t1 t2 t3 t4 t5.
+Lemma congr_cPi {s0 : cmode} {s1 : cterm} {s2 : cterm} {t0 : cmode}
+  {t1 : cterm} {t2 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  cPi s0 s1 s2 = cPi t0 t1 t2.
 Proof.
 exact (eq_trans
-         (eq_trans
-            (eq_trans
-               (eq_trans
-                  (eq_trans
-                     (eq_trans eq_refl
-                        (ap (fun x => cPi x s1 s2 s3 s4 s5) H0))
-                     (ap (fun x => cPi t0 x s2 s3 s4 s5) H1))
-                  (ap (fun x => cPi t0 t1 x s3 s4 s5) H2))
-               (ap (fun x => cPi t0 t1 t2 x s4 s5) H3))
-            (ap (fun x => cPi t0 t1 t2 t3 x s5) H4))
-         (ap (fun x => cPi t0 t1 t2 t3 t4 x) H5)).
+         (eq_trans (eq_trans eq_refl (ap (fun x => cPi x s1 s2) H0))
+            (ap (fun x => cPi t0 x s2) H1)) (ap (fun x => cPi t0 t1 x) H2)).
 Qed.
 
-Lemma congr_clam {s0 : cmode} {s1 : cterm} {s2 : cterm} {s3 : cterm}
-  {t0 : cmode} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
-  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
-  clam s0 s1 s2 s3 = clam t0 t1 t2 t3.
+Lemma congr_clam {s0 : cmode} {s1 : cterm} {s2 : cterm} {t0 : cmode}
+  {t1 : cterm} {t2 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  clam s0 s1 s2 = clam t0 t1 t2.
 Proof.
 exact (eq_trans
-         (eq_trans
-            (eq_trans (eq_trans eq_refl (ap (fun x => clam x s1 s2 s3) H0))
-               (ap (fun x => clam t0 x s2 s3) H1))
-            (ap (fun x => clam t0 t1 x s3) H2))
-         (ap (fun x => clam t0 t1 t2 x) H3)).
+         (eq_trans (eq_trans eq_refl (ap (fun x => clam x s1 s2) H0))
+            (ap (fun x => clam t0 x s2) H1)) (ap (fun x => clam t0 t1 x) H2)).
 Qed.
 
 Lemma congr_capp {s0 : cterm} {s1 : cterm} {t0 : cterm} {t1 : cterm}
@@ -85,13 +70,12 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   match s with
   | cvar s0 => cvar (xi_cterm s0)
   | cSort s0 s1 => cSort s0 s1
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      cPi s0 s1 s2 s3 (ren_cterm xi_cterm s4)
-        (ren_cterm (upRen_cterm_cterm xi_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
+      cPi s0 (ren_cterm xi_cterm s1)
+        (ren_cterm (upRen_cterm_cterm xi_cterm) s2)
+  | clam s0 s1 s2 =>
       clam s0 (ren_cterm xi_cterm s1)
         (ren_cterm (upRen_cterm_cterm xi_cterm) s2)
-        (ren_cterm (upRen_cterm_cterm xi_cterm) s3)
   | capp s0 s1 => capp (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
   | cbot => cbot
   | cbot_elim s0 s1 s2 =>
@@ -108,13 +92,12 @@ cterm :=
   match s with
   | cvar s0 => sigma_cterm s0
   | cSort s0 s1 => cSort s0 s1
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      cPi s0 s1 s2 s3 (subst_cterm sigma_cterm s4)
-        (subst_cterm (up_cterm_cterm sigma_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
+      cPi s0 (subst_cterm sigma_cterm s1)
+        (subst_cterm (up_cterm_cterm sigma_cterm) s2)
+  | clam s0 s1 s2 =>
       clam s0 (subst_cterm sigma_cterm s1)
         (subst_cterm (up_cterm_cterm sigma_cterm) s2)
-        (subst_cterm (up_cterm_cterm sigma_cterm) s3)
   | capp s0 s1 =>
       capp (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
   | cbot => cbot
@@ -139,17 +122,14 @@ subst_cterm sigma_cterm s = s :=
   match s with
   | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (idSubst_cterm sigma_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0) (idSubst_cterm sigma_cterm Eq_cterm s1)
         (idSubst_cterm (up_cterm_cterm sigma_cterm)
-           (upId_cterm_cterm _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (upId_cterm_cterm _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0) (idSubst_cterm sigma_cterm Eq_cterm s1)
         (idSubst_cterm (up_cterm_cterm sigma_cterm)
            (upId_cterm_cterm _ Eq_cterm) s2)
-        (idSubst_cterm (up_cterm_cterm sigma_cterm)
-           (upId_cterm_cterm _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp (idSubst_cterm sigma_cterm Eq_cterm s0)
         (idSubst_cterm sigma_cterm Eq_cterm s1)
@@ -175,20 +155,16 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
   match s with
   | cvar s0 => ap (cvar) (Eq_cterm s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0) (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
         (extRen_cterm (upRen_cterm_cterm xi_cterm)
            (upRen_cterm_cterm zeta_cterm) (upExtRen_cterm_cterm _ _ Eq_cterm)
-           s5)
-  | clam s0 s1 s2 s3 =>
+           s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0) (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
         (extRen_cterm (upRen_cterm_cterm xi_cterm)
            (upRen_cterm_cterm zeta_cterm) (upExtRen_cterm_cterm _ _ Eq_cterm)
            s2)
-        (extRen_cterm (upRen_cterm_cterm xi_cterm)
-           (upRen_cterm_cterm zeta_cterm) (upExtRen_cterm_cterm _ _ Eq_cterm)
-           s3)
   | capp s0 s1 =>
       congr_capp (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
@@ -216,17 +192,14 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
   match s with
   | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0) (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
         (ext_cterm (up_cterm_cterm sigma_cterm) (up_cterm_cterm tau_cterm)
-           (upExt_cterm_cterm _ _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (upExt_cterm_cterm _ _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0) (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
         (ext_cterm (up_cterm_cterm sigma_cterm) (up_cterm_cterm tau_cterm)
            (upExt_cterm_cterm _ _ Eq_cterm) s2)
-        (ext_cterm (up_cterm_cterm sigma_cterm) (up_cterm_cterm tau_cterm)
-           (upExt_cterm_cterm _ _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
@@ -254,21 +227,18 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
   match s with
   | cvar s0 => ap (cvar) (Eq_cterm s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
         (compRenRen_cterm (upRen_cterm_cterm xi_cterm)
            (upRen_cterm_cterm zeta_cterm) (upRen_cterm_cterm rho_cterm)
-           (up_ren_ren _ _ _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (up_ren_ren _ _ _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
         (compRenRen_cterm (upRen_cterm_cterm xi_cterm)
            (upRen_cterm_cterm zeta_cterm) (upRen_cterm_cterm rho_cterm)
            (up_ren_ren _ _ _ Eq_cterm) s2)
-        (compRenRen_cterm (upRen_cterm_cterm xi_cterm)
-           (upRen_cterm_cterm zeta_cterm) (upRen_cterm_cterm rho_cterm)
-           (up_ren_ren _ _ _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
@@ -300,21 +270,18 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
   match s with
   | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compRenSubst_cterm (upRen_cterm_cterm xi_cterm)
            (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
-           (up_ren_subst_cterm_cterm _ _ _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (up_ren_subst_cterm_cterm _ _ _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compRenSubst_cterm (upRen_cterm_cterm xi_cterm)
            (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
            (up_ren_subst_cterm_cterm _ _ _ Eq_cterm) s2)
-        (compRenSubst_cterm (upRen_cterm_cterm xi_cterm)
-           (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
-           (up_ren_subst_cterm_cterm _ _ _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
@@ -358,21 +325,18 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
   match s with
   | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
         (compSubstRen_cterm (up_cterm_cterm sigma_cterm)
            (upRen_cterm_cterm zeta_cterm) (up_cterm_cterm theta_cterm)
-           (up_subst_ren_cterm_cterm _ _ _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (up_subst_ren_cterm_cterm _ _ _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
         (compSubstRen_cterm (up_cterm_cterm sigma_cterm)
            (upRen_cterm_cterm zeta_cterm) (up_cterm_cterm theta_cterm)
            (up_subst_ren_cterm_cterm _ _ _ Eq_cterm) s2)
-        (compSubstRen_cterm (up_cterm_cterm sigma_cterm)
-           (upRen_cterm_cterm zeta_cterm) (up_cterm_cterm theta_cterm)
-           (up_subst_ren_cterm_cterm _ _ _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
@@ -418,21 +382,18 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
   match s with
   | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compSubstSubst_cterm (up_cterm_cterm sigma_cterm)
            (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
-           (up_subst_subst_cterm_cterm _ _ _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (up_subst_subst_cterm_cterm _ _ _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compSubstSubst_cterm (up_cterm_cterm sigma_cterm)
            (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
            (up_subst_subst_cterm_cterm _ _ _ Eq_cterm) s2)
-        (compSubstSubst_cterm (up_cterm_cterm sigma_cterm)
-           (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
-           (up_subst_subst_cterm_cterm _ _ _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
@@ -532,21 +493,18 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
   match s with
   | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
-        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
+  | cPi s0 s1 s2 =>
+      congr_cPi (eq_refl s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
         (rinst_inst_cterm (upRen_cterm_cterm xi_cterm)
            (up_cterm_cterm sigma_cterm)
-           (rinstInst_up_cterm_cterm _ _ Eq_cterm) s5)
-  | clam s0 s1 s2 s3 =>
+           (rinstInst_up_cterm_cterm _ _ Eq_cterm) s2)
+  | clam s0 s1 s2 =>
       congr_clam (eq_refl s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
         (rinst_inst_cterm (upRen_cterm_cterm xi_cterm)
            (up_cterm_cterm sigma_cterm)
            (rinstInst_up_cterm_cterm _ _ Eq_cterm) s2)
-        (rinst_inst_cterm (upRen_cterm_cterm xi_cterm)
-           (up_cterm_cterm sigma_cterm)
-           (rinstInst_up_cterm_cterm _ _ Eq_cterm) s3)
   | capp s0 s1 =>
       congr_capp (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
@@ -758,18 +716,14 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
   match s with
   | cvar s0 => p_cterm s0
   | cSort s0 s1 => and True (and True True)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      and True
-        (and True
-           (and True
-              (and True
-                 (and (allfv_cterm p_cterm s4)
-                    (and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s5) True)))))
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
       and True
         (and (allfv_cterm p_cterm s1)
-           (and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s2)
-              (and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s3) True)))
+           (and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s2) True))
+  | clam s0 s1 s2 =>
+      and True
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s2) True))
   | capp s0 s1 =>
       and (allfv_cterm p_cterm s0) (and (allfv_cterm p_cterm s1) True)
   | cbot => True
@@ -793,24 +747,18 @@ allfv_cterm p_cterm s :=
   match s with
   | cvar s0 => H_cterm s0
   | cSort s0 s1 => conj I (conj I I)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      conj I
-        (conj I
-           (conj I
-              (conj I
-                 (conj (allfvTriv_cterm p_cterm H_cterm s4)
-                    (conj
-                       (allfvTriv_cterm (upAllfv_cterm_cterm p_cterm)
-                          (upAllfvTriv_cterm_cterm H_cterm) s5) I)))))
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
       conj I
         (conj (allfvTriv_cterm p_cterm H_cterm s1)
            (conj
               (allfvTriv_cterm (upAllfv_cterm_cterm p_cterm)
-                 (upAllfvTriv_cterm_cterm H_cterm) s2)
-              (conj
-                 (allfvTriv_cterm (upAllfv_cterm_cterm p_cterm)
-                    (upAllfvTriv_cterm_cterm H_cterm) s3) I)))
+                 (upAllfvTriv_cterm_cterm H_cterm) s2) I))
+  | clam s0 s1 s2 =>
+      conj I
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj
+              (allfvTriv_cterm (upAllfv_cterm_cterm p_cterm)
+                 (upAllfvTriv_cterm_cterm H_cterm) s2) I))
   | capp s0 s1 =>
       conj (allfvTriv_cterm p_cterm H_cterm s0)
         (conj (allfvTriv_cterm p_cterm H_cterm s1) I)
@@ -837,52 +785,7 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
   match s with
   | cvar s0 => fun HP => H_cterm s0 HP
   | cSort s0 s1 => fun HP => conj I (conj I I)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      fun HP =>
-      conj I
-        (conj I
-           (conj I
-              (conj I
-                 (conj
-                    (allfvImpl_cterm p_cterm q_cterm H_cterm s4
-                       match HP with
-                       | conj _ HP =>
-                           match HP with
-                           | conj _ HP =>
-                               match HP with
-                               | conj _ HP =>
-                                   match HP with
-                                   | conj _ HP =>
-                                       match HP with
-                                       | conj HP _ => HP
-                                       end
-                                   end
-                               end
-                           end
-                       end)
-                    (conj
-                       (allfvImpl_cterm (upAllfv_cterm_cterm p_cterm)
-                          (upAllfv_cterm_cterm q_cterm)
-                          (upAllfvImpl_cterm_cterm H_cterm) s5
-                          match HP with
-                          | conj _ HP =>
-                              match HP with
-                              | conj _ HP =>
-                                  match HP with
-                                  | conj _ HP =>
-                                      match HP with
-                                      | conj _ HP =>
-                                          match HP with
-                                          | conj _ HP =>
-                                              match HP with
-                                              | conj HP _ => HP
-                                              end
-                                          end
-                                      end
-                                  end
-                              end
-                          end) I)))))
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
       fun HP =>
       conj I
         (conj
@@ -903,23 +806,29 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
                                     | conj HP _ => HP
                                     end
                      end
-                 end)
-              (conj
-                 (allfvImpl_cterm (upAllfv_cterm_cterm p_cterm)
-                    (upAllfv_cterm_cterm q_cterm)
-                    (upAllfvImpl_cterm_cterm H_cterm) s3
-                    match HP with
-                    | conj _ HP =>
-                        match HP with
-                        | conj _ HP =>
-                            match HP with
-                            | conj _ HP =>
-                                match HP with
-                                | conj HP _ => HP
-                                end
-                            end
-                        end
-                    end) I)))
+                 end) I))
+  | clam s0 s1 s2 =>
+      fun HP =>
+      conj I
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm (upAllfv_cterm_cterm p_cterm)
+                 (upAllfv_cterm_cterm q_cterm)
+                 (upAllfvImpl_cterm_cterm H_cterm) s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end) I))
   | capp s0 s1 =>
       fun HP =>
       conj
@@ -975,53 +884,7 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
   match s with
   | cvar s0 => fun H => H
   | cSort s0 s1 => fun H => conj I (conj I I)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      fun H =>
-      conj I
-        (conj I
-           (conj I
-              (conj I
-                 (conj
-                    (allfvRenL_cterm p_cterm xi_cterm s4
-                       match H with
-                       | conj _ H =>
-                           match H with
-                           | conj _ H =>
-                               match H with
-                               | conj _ H =>
-                                   match H with
-                                   | conj _ H =>
-                                       match H with
-                                       | conj H _ => H
-                                       end
-                                   end
-                               end
-                           end
-                       end)
-                    (conj
-                       (allfvImpl_cterm _ _
-                          (upAllfvRenL_cterm_cterm p_cterm xi_cterm) s5
-                          (allfvRenL_cterm (upAllfv_cterm_cterm p_cterm)
-                             (upRen_cterm_cterm xi_cterm) s5
-                             match H with
-                             | conj _ H =>
-                                 match H with
-                                 | conj _ H =>
-                                     match H with
-                                     | conj _ H =>
-                                         match H with
-                                         | conj _ H =>
-                                             match H with
-                                             | conj _ H =>
-                                                 match H with
-                                                 | conj H _ => H
-                                                 end
-                                             end
-                                         end
-                                     end
-                                 end
-                             end)) I)))))
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
       fun H =>
       conj I
         (conj
@@ -1043,23 +906,30 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
                                       | conj H _ => H
                                       end
                         end
-                    end))
-              (conj
-                 (allfvImpl_cterm _ _
-                    (upAllfvRenL_cterm_cterm p_cterm xi_cterm) s3
-                    (allfvRenL_cterm (upAllfv_cterm_cterm p_cterm)
-                       (upRen_cterm_cterm xi_cterm) s3
-                       match H with
-                       | conj _ H =>
-                           match H with
-                           | conj _ H =>
-                               match H with
-                               | conj _ H => match H with
-                                             | conj H _ => H
-                                             end
-                               end
-                           end
-                       end)) I)))
+                    end)) I))
+  | clam s0 s1 s2 =>
+      fun H =>
+      conj I
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvImpl_cterm _ _ (upAllfvRenL_cterm_cterm p_cterm xi_cterm)
+                 s2
+                 (allfvRenL_cterm (upAllfv_cterm_cterm p_cterm)
+                    (upRen_cterm_cterm xi_cterm) s2
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H => match H with
+                                      | conj H _ => H
+                                      end
+                        end
+                    end)) I))
   | capp s0 s1 =>
       fun H =>
       conj
@@ -1114,53 +984,7 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
   match s with
   | cvar s0 => fun H => H
   | cSort s0 s1 => fun H => conj I (conj I I)
-  | cPi s0 s1 s2 s3 s4 s5 =>
-      fun H =>
-      conj I
-        (conj I
-           (conj I
-              (conj I
-                 (conj
-                    (allfvRenR_cterm p_cterm xi_cterm s4
-                       match H with
-                       | conj _ H =>
-                           match H with
-                           | conj _ H =>
-                               match H with
-                               | conj _ H =>
-                                   match H with
-                                   | conj _ H =>
-                                       match H with
-                                       | conj H _ => H
-                                       end
-                                   end
-                               end
-                           end
-                       end)
-                    (conj
-                       (allfvRenR_cterm (upAllfv_cterm_cterm p_cterm)
-                          (upRen_cterm_cterm xi_cterm) s5
-                          (allfvImpl_cterm _ _
-                             (upAllfvRenR_cterm_cterm p_cterm xi_cterm) s5
-                             match H with
-                             | conj _ H =>
-                                 match H with
-                                 | conj _ H =>
-                                     match H with
-                                     | conj _ H =>
-                                         match H with
-                                         | conj _ H =>
-                                             match H with
-                                             | conj _ H =>
-                                                 match H with
-                                                 | conj H _ => H
-                                                 end
-                                             end
-                                         end
-                                     end
-                                 end
-                             end)) I)))))
-  | clam s0 s1 s2 s3 =>
+  | cPi s0 s1 s2 =>
       fun H =>
       conj I
         (conj
@@ -1182,23 +1006,30 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
                                       | conj H _ => H
                                       end
                         end
-                    end))
-              (conj
-                 (allfvRenR_cterm (upAllfv_cterm_cterm p_cterm)
-                    (upRen_cterm_cterm xi_cterm) s3
-                    (allfvImpl_cterm _ _
-                       (upAllfvRenR_cterm_cterm p_cterm xi_cterm) s3
-                       match H with
-                       | conj _ H =>
-                           match H with
-                           | conj _ H =>
-                               match H with
-                               | conj _ H => match H with
-                                             | conj H _ => H
-                                             end
-                               end
-                           end
-                       end)) I)))
+                    end)) I))
+  | clam s0 s1 s2 =>
+      fun H =>
+      conj I
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm (upAllfv_cterm_cterm p_cterm)
+                 (upRen_cterm_cterm xi_cterm) s2
+                 (allfvImpl_cterm _ _
+                    (upAllfvRenR_cterm_cterm p_cterm xi_cterm) s2
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H => match H with
+                                      | conj H _ => H
+                                      end
+                        end
+                    end)) I))
   | capp s0 s1 =>
       fun H =>
       conj
