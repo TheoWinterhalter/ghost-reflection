@@ -4,7 +4,7 @@ cmode : Type
 
 -- Syntax
 
-cterm(var) : Type
+cterm(cvar) : Type
 
 cSort : cmode -> level -> cterm
 

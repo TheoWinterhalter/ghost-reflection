@@ -6,7 +6,7 @@ From Coq Require Import Setoid Morphisms Relation_Definitions.
 Module Core.
 
 Inductive cterm : Type :=
-  | var : nat -> cterm
+  | cvar : nat -> cterm
   | cSort : cmode -> level -> cterm
   | cPi : level -> level -> cmode -> cmode -> cterm -> cterm -> cterm
   | clam : cmode -> cterm -> cterm -> cterm -> cterm
@@ -83,7 +83,7 @@ Defined.
 
 Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   match s with
-  | var s0 => var (xi_cterm s0)
+  | cvar s0 => cvar (xi_cterm s0)
   | cSort s0 s1 => cSort s0 s1
   | cPi s0 s1 s2 s3 s4 s5 =>
       cPi s0 s1 s2 s3 (ren_cterm xi_cterm s4)
@@ -100,13 +100,13 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
 
 Lemma up_cterm_cterm (sigma : nat -> cterm) : nat -> cterm.
 Proof.
-exact (scons (var var_zero) (funcomp (ren_cterm shift) sigma)).
+exact (scons (cvar var_zero) (funcomp (ren_cterm shift) sigma)).
 Defined.
 
 Fixpoint subst_cterm (sigma_cterm : nat -> cterm) (s : cterm) {struct s} :
 cterm :=
   match s with
-  | var s0 => sigma_cterm s0
+  | cvar s0 => sigma_cterm s0
   | cSort s0 s1 => cSort s0 s1
   | cPi s0 s1 s2 s3 s4 s5 =>
       cPi s0 s1 s2 s3 (subst_cterm sigma_cterm s4)
@@ -123,7 +123,8 @@ cterm :=
   end.
 
 Lemma upId_cterm_cterm (sigma : nat -> cterm)
-  (Eq : forall x, sigma x = var x) : forall x, up_cterm_cterm sigma x = var x.
+  (Eq : forall x, sigma x = cvar x) :
+  forall x, up_cterm_cterm sigma x = cvar x.
 Proof.
 exact (fun n =>
        match n with
@@ -133,10 +134,10 @@ exact (fun n =>
 Qed.
 
 Fixpoint idSubst_cterm (sigma_cterm : nat -> cterm)
-(Eq_cterm : forall x, sigma_cterm x = var x) (s : cterm) {struct s} :
+(Eq_cterm : forall x, sigma_cterm x = cvar x) (s : cterm) {struct s} :
 subst_cterm sigma_cterm s = s :=
   match s with
-  | var s0 => Eq_cterm s0
+  | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -172,7 +173,7 @@ Fixpoint extRen_cterm (xi_cterm : nat -> nat) (zeta_cterm : nat -> nat)
 (Eq_cterm : forall x, xi_cterm x = zeta_cterm x) (s : cterm) {struct s} :
 ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
   match s with
-  | var s0 => ap (var) (Eq_cterm s0)
+  | cvar s0 => ap (cvar) (Eq_cterm s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -213,7 +214,7 @@ Fixpoint ext_cterm (sigma_cterm : nat -> cterm) (tau_cterm : nat -> cterm)
 (Eq_cterm : forall x, sigma_cterm x = tau_cterm x) (s : cterm) {struct s} :
 subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
   match s with
-  | var s0 => Eq_cterm s0
+  | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -251,7 +252,7 @@ Fixpoint compRenRen_cterm (xi_cterm : nat -> nat) (zeta_cterm : nat -> nat)
 (s : cterm) {struct s} :
 ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
   match s with
-  | var s0 => ap (var) (Eq_cterm s0)
+  | cvar s0 => ap (cvar) (Eq_cterm s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -297,7 +298,7 @@ Fixpoint compRenSubst_cterm (xi_cterm : nat -> nat)
 (s : cterm) {struct s} :
 subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
   match s with
-  | var s0 => Eq_cterm s0
+  | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -355,7 +356,7 @@ Fixpoint compSubstRen_cterm (sigma_cterm : nat -> cterm)
 ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
 :=
   match s with
-  | var s0 => Eq_cterm s0
+  | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -415,7 +416,7 @@ Fixpoint compSubstSubst_cterm (sigma_cterm : nat -> cterm)
 subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
 :=
   match s with
-  | var s0 => Eq_cterm s0
+  | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -514,8 +515,8 @@ exact (fun s =>
 Qed.
 
 Lemma rinstInst_up_cterm_cterm (xi : nat -> nat) (sigma : nat -> cterm)
-  (Eq : forall x, funcomp (var) xi x = sigma x) :
-  forall x, funcomp (var) (upRen_cterm_cterm xi) x = up_cterm_cterm sigma x.
+  (Eq : forall x, funcomp (cvar) xi x = sigma x) :
+  forall x, funcomp (cvar) (upRen_cterm_cterm xi) x = up_cterm_cterm sigma x.
 Proof.
 exact (fun n =>
        match n with
@@ -526,10 +527,10 @@ Qed.
 
 Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
 (sigma_cterm : nat -> cterm)
-(Eq_cterm : forall x, funcomp (var) xi_cterm x = sigma_cterm x) (s : cterm)
+(Eq_cterm : forall x, funcomp (cvar) xi_cterm x = sigma_cterm x) (s : cterm)
 {struct s} : ren_cterm xi_cterm s = subst_cterm sigma_cterm s :=
   match s with
-  | var s0 => Eq_cterm s0
+  | cvar s0 => Eq_cterm s0
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 s3 s4 s5 =>
       congr_cPi (eq_refl s0) (eq_refl s1) (eq_refl s2) (eq_refl s3)
@@ -557,27 +558,27 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
   end.
 
 Lemma rinstInst'_cterm (xi_cterm : nat -> nat) (s : cterm) :
-  ren_cterm xi_cterm s = subst_cterm (funcomp (var) xi_cterm) s.
+  ren_cterm xi_cterm s = subst_cterm (funcomp (cvar) xi_cterm) s.
 Proof.
 exact (rinst_inst_cterm xi_cterm _ (fun n => eq_refl) s).
 Qed.
 
 Lemma rinstInst'_cterm_pointwise (xi_cterm : nat -> nat) :
   pointwise_relation _ eq (ren_cterm xi_cterm)
-    (subst_cterm (funcomp (var) xi_cterm)).
+    (subst_cterm (funcomp (cvar) xi_cterm)).
 Proof.
 exact (fun s => rinst_inst_cterm xi_cterm _ (fun n => eq_refl) s).
 Qed.
 
-Lemma instId'_cterm (s : cterm) : subst_cterm (var) s = s.
+Lemma instId'_cterm (s : cterm) : subst_cterm (cvar) s = s.
 Proof.
-exact (idSubst_cterm (var) (fun n => eq_refl) s).
+exact (idSubst_cterm (cvar) (fun n => eq_refl) s).
 Qed.
 
 Lemma instId'_cterm_pointwise :
-  pointwise_relation _ eq (subst_cterm (var)) id.
+  pointwise_relation _ eq (subst_cterm (cvar)) id.
 Proof.
-exact (fun s => idSubst_cterm (var) (fun n => eq_refl) s).
+exact (fun s => idSubst_cterm (cvar) (fun n => eq_refl) s).
 Qed.
 
 Lemma rinstId'_cterm (s : cterm) : ren_cterm id s = s.
@@ -592,27 +593,27 @@ exact (fun s =>
 Qed.
 
 Lemma varL'_cterm (sigma_cterm : nat -> cterm) (x : nat) :
-  subst_cterm sigma_cterm (var x) = sigma_cterm x.
+  subst_cterm sigma_cterm (cvar x) = sigma_cterm x.
 Proof.
 exact (eq_refl).
 Qed.
 
 Lemma varL'_cterm_pointwise (sigma_cterm : nat -> cterm) :
-  pointwise_relation _ eq (funcomp (subst_cterm sigma_cterm) (var))
+  pointwise_relation _ eq (funcomp (subst_cterm sigma_cterm) (cvar))
     sigma_cterm.
 Proof.
 exact (fun x => eq_refl).
 Qed.
 
 Lemma varLRen'_cterm (xi_cterm : nat -> nat) (x : nat) :
-  ren_cterm xi_cterm (var x) = var (xi_cterm x).
+  ren_cterm xi_cterm (cvar x) = cvar (xi_cterm x).
 Proof.
 exact (eq_refl).
 Qed.
 
 Lemma varLRen'_cterm_pointwise (xi_cterm : nat -> nat) :
-  pointwise_relation _ eq (funcomp (ren_cterm xi_cterm) (var))
-    (funcomp (var) xi_cterm).
+  pointwise_relation _ eq (funcomp (ren_cterm xi_cterm) (cvar))
+    (funcomp (cvar) xi_cterm).
 Proof.
 exact (fun x => eq_refl).
 Qed.
@@ -628,7 +629,7 @@ Instance Up_cterm_cterm : (Up_cterm _ _) := @up_cterm_cterm.
 #[global]Instance Ren_cterm : (Ren1 _ _ _) := @ren_cterm.
 
 #[global]
-Instance VarInstance_cterm : (Var _ _) := @var.
+Instance VarInstance_cterm : (Var _ _) := @cvar.
 
 Notation "[ sigma_cterm ]" := (subst_cterm sigma_cterm)
   ( at level 1, left associativity, only printing) : fscope.
@@ -646,12 +647,12 @@ Notation "⟨ xi_cterm ⟩" := (ren_cterm xi_cterm)
 Notation "s ⟨ xi_cterm ⟩" := (ren_cterm xi_cterm s)
   ( at level 7, left associativity, only printing) : subst_scope.
 
-Notation "'var'" := var ( at level 1, only printing) : subst_scope.
+Notation "'var'" := cvar ( at level 1, only printing) : subst_scope.
 
 Notation "x '__cterm'" := (@ids _ _ VarInstance_cterm x)
   ( at level 5, format "x __cterm", only printing) : subst_scope.
 
-Notation "x '__cterm'" := (var x) ( at level 5, format "x __cterm") :
+Notation "x '__cterm'" := (cvar x) ( at level 5, format "x __cterm") :
   subst_scope.
 
 #[global]
@@ -755,7 +756,7 @@ Defined.
 
 Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
   match s with
-  | var s0 => p_cterm s0
+  | cvar s0 => p_cterm s0
   | cSort s0 s1 => and True (and True True)
   | cPi s0 s1 s2 s3 s4 s5 =>
       and True
@@ -790,7 +791,7 @@ Fixpoint allfvTriv_cterm (p_cterm : nat -> Prop)
 (H_cterm : forall x, p_cterm x) (s : cterm) {struct s} :
 allfv_cterm p_cterm s :=
   match s with
-  | var s0 => H_cterm s0
+  | cvar s0 => H_cterm s0
   | cSort s0 s1 => conj I (conj I I)
   | cPi s0 s1 s2 s3 s4 s5 =>
       conj I
@@ -834,7 +835,7 @@ Fixpoint allfvImpl_cterm (p_cterm : nat -> Prop) (q_cterm : nat -> Prop)
 (H_cterm : forall x, p_cterm x -> q_cterm x) (s : cterm) {struct s} :
 allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
   match s with
-  | var s0 => fun HP => H_cterm s0 HP
+  | cvar s0 => fun HP => H_cterm s0 HP
   | cSort s0 s1 => fun HP => conj I (conj I I)
   | cPi s0 s1 s2 s3 s4 s5 =>
       fun HP =>
@@ -972,7 +973,7 @@ Fixpoint allfvRenL_cterm (p_cterm : nat -> Prop) (xi_cterm : nat -> nat)
 allfv_cterm p_cterm (ren_cterm xi_cterm s) ->
 allfv_cterm (funcomp p_cterm xi_cterm) s :=
   match s with
-  | var s0 => fun H => H
+  | cvar s0 => fun H => H
   | cSort s0 s1 => fun H => conj I (conj I I)
   | cPi s0 s1 s2 s3 s4 s5 =>
       fun H =>
@@ -1111,7 +1112,7 @@ Fixpoint allfvRenR_cterm (p_cterm : nat -> Prop) (xi_cterm : nat -> nat)
 allfv_cterm (funcomp p_cterm xi_cterm) s ->
 allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
   match s with
-  | var s0 => fun H => H
+  | cvar s0 => fun H => H
   | cSort s0 s1 => fun H => conj I (conj I I)
   | cPi s0 s1 s2 s3 s4 s5 =>
       fun H =>

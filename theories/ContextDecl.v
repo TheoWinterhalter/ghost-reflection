@@ -36,3 +36,6 @@ Notation cdecl := (cmode * cterm)%type.
 Notation ccontext := (list cdecl).
 
 Notation cscope := (list cmode).
+
+Definition csc (Γ : ccontext) : cscope :=
+  map fst Γ.
