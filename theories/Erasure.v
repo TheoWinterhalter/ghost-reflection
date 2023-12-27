@@ -1,10 +1,12 @@
 From Coq Require Import Utf8 List Bool.
 From Equations Require Import Equations.
-From GhostTT.autosubst Require Import CCAST GAST unscoped.
+From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping Scoping
   CTyping TermMode Typing.
+From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
+Import CombineNotations.
 
 Set Default Goal Selector "!".
 Set Equations Transparent.
@@ -85,3 +87,29 @@ Equations erase_ctx (Γ : context) : ccontext := {
     else (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
+
+(** Erasure commutes with substitution **)
+
+Ltac destruct_if e :=
+  lazymatch goal with
+  | |- context [ if ?b then _ else _ ] =>
+    destruct b eqn: e
+  end.
+
+Lemma erase_subst :
+  ∀ Γ Δ σ t,
+    ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase Γ ].
+Proof.
+  intros Γ Δ σ t.
+  induction t.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
+  - asimpl. cbn - [mode_inb mode_inclb].
+    destruct_if e.
+    + cbn. asimpl. repeat unfold_funcomp. f_equal.
+      * rewrite IHt1. f_equal.
+        (* TODO generalise? *)
+      (* *
+    +
+ *)
+Abort.
