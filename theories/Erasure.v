@@ -37,22 +37,22 @@ Definition mode_eqb (m m' : mode) : bool :=
 Definition mode_inb := inb mode_eqb.
 Definition mode_inclb := inclb mode_eqb.
 
-Fixpoint erase (Γ : scope) (t : term) : cterm :=
-  match t with
-  | var x => cvar x
-  | Sort mProp i => ctyval ctop cstar (* Need Box from Prop to Type (S i) *)
+Reserved Notation "⟦ G | u '⟧ε'" (at level 0, G, u at next level).
+Reserved Notation "⟦ G | u '⟧τ'" (at level 0, G, u at next level).
+Reserved Notation "⟦ G | u '⟧∅'" (at level 0, G, u at next level).
+
+Equations erase (Γ : scope) (t : term) : cterm := {
+  ⟦ Γ | var x ⟧ε := cvar x ;
+  ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
   (* But if I need to have η for it then I'm screwed... We'll see
   what's needed… *)
-  | Sort _m i => ctyval (cty i) ctyerr
-  | Pi i j m mx A B =>
+  ⟦ Γ | Sort _m i ⟧ε := ctyval (cty i) ctyerr ;
+  ⟦ Γ | Pi i j m mx A B ⟧ε :=
     if mode_inb mx [ mType ; mKind ] && negb (mode_eqb m mProp)
-    then
-      let A' := cEl (erase Γ A) in
-      let cB' := erase (mx :: Γ) B in
-      let B' := cEl cB' in
-      let Be :=cErr cB' in
-      ctyval (cPi cType A' B') (clam cType A' Be)
-    else cDummy
-  | _ => cDummy
-  end.
-
+    then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
+    else cDummy ;
+  ⟦ _ | _ ⟧ε := cDummy ;
+}
+where "⟦ G | u '⟧ε'" := (erase G u)
+where "⟦ G | u '⟧τ'" := (cEl ⟦ G | u ⟧ε)
+where "⟦ G | u '⟧∅'" := (cErr ⟦ G | u ⟧ε).
