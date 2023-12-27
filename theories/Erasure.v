@@ -50,9 +50,24 @@ Equations erase (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | Pi i j m mx A B ⟧ε :=
     if mode_inb mx [ mType ; mKind ] && negb (mode_eqb m mProp)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
-    else cDummy ;
+    else if mode_inclb [ m ; mx ] [ mGhost ]
+    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ (S ⋅ ⟦ mx :: Γ | B ⟧∅))
+    else if mode_eqb m mProp
+    then cstar
+    else ⟦ mx :: Γ | B ⟧ε ;
   ⟦ _ | _ ⟧ε := cDummy ;
 }
 where "⟦ G | u '⟧ε'" := (erase G u)
 where "⟦ G | u '⟧τ'" := (cEl ⟦ G | u ⟧ε)
 where "⟦ G | u '⟧∅'" := (cErr ⟦ G | u ⟧ε).
+
+Reserved Notation "⟦ G '⟧ε'" (at level 0, G at next level).
+
+Equations erase_ctx (Γ : context) : ccontext := {
+  ⟦ [] ⟧ε := [] ;
+  ⟦ Γ ,, (mx, A) ⟧ε :=
+    if mode_inb mx [ mProp ; mGhost ]
+    then ⟦ Γ ⟧ε
+    else (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+}
+where "⟦ G '⟧ε'" := (erase_ctx G).
