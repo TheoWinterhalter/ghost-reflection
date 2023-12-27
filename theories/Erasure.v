@@ -101,15 +101,24 @@ Lemma erase_subst :
     ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase Γ ].
 Proof.
   intros Γ Δ σ t.
-  induction t.
+  induction t in Γ, Δ, σ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
   - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
   - asimpl. cbn - [mode_inb mode_inclb].
     destruct_if e.
     + cbn. asimpl. repeat unfold_funcomp. f_equal.
-      * rewrite IHt1. f_equal.
-        (* TODO generalise? *)
-      (* *
-    +
- *)
+      * erewrite IHt1. f_equal.
+        erewrite IHt2. f_equal.
+        substify. instantiate (1 := m0 :: Δ). asimpl.
+        (* eapply subst_term_morphism2. *)
+        f_equal. asimpl. unfold_funcomp.
+        (* I'm a bit lost... *)
+        admit.
+      * erewrite IHt1. f_equal.
+        erewrite IHt2. f_equal. instantiate (1 := m0 :: Δ).
+        asimpl.
+        admit.
+    + destruct_if e'.
+      * cbn. erewrite IHt1. f_equal. all: admit.
+      * admit.
 Abort.
