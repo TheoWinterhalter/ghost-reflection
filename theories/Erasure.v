@@ -55,7 +55,21 @@ Equations erase (Γ : scope) (t : term) : cterm := {
     else if mode_eqb m mProp
     then cstar
     else ⟦ mx :: Γ | B ⟧ε ;
-  ⟦ _ | _ ⟧ε := cDummy ;
+  ⟦ Γ | lam mx A B t ⟧ε :=
+    if mode_inb mx [ mProp ; mGhost ]
+    then ⟦ mx :: Γ | t ⟧ε
+    else clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε ;
+  ⟦ Γ | app u v ⟧ε :=
+    if mode_inb (md Γ v) [ mProp ; mGhost ]
+    then ⟦ Γ | u ⟧ε
+    else capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε ;
+  ⟦ Γ | Erased A ⟧ε := ⟦ Γ | A ⟧ε ;
+  ⟦ Γ | revealP t P ⟧ε := cstar ;
+  ⟦ Γ | gheq A u v ⟧ε := cstar ;
+  ⟦ Γ | ghcast e P t ⟧ε := ⟦ Γ | t ⟧ε ;
+  ⟦ Γ | bot ⟧ε := cstar ;
+  ⟦ Γ | bot_elim m A p ⟧ε := ⟦ Γ | A ⟧∅ ;
+  ⟦ _ | _ ⟧ε := cDummy
 }
 where "⟦ G | u '⟧ε'" := (erase G u)
 where "⟦ G | u '⟧τ'" := (cEl ⟦ G | u ⟧ε)
