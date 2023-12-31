@@ -43,6 +43,8 @@ Reserved Notation "⟦ G | u '⟧ε'" (at level 0, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 0, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 0, G, u at next level).
 
+(* TODO Bad name! Overlaps with the erase constructor! *)
+(* Maybe it should be called erasure too? Or erase_term? *)
 Equations erase (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧ε := cvar x ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
@@ -96,14 +98,17 @@ Ltac destruct_if e :=
     destruct b eqn: e
   end.
 
+(* TODO WRONG, σ should be filtered to remove stuff in Ghost or Prop mode. *)
 Lemma erase_subst :
   ∀ Γ Δ σ t,
     ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase Γ ].
 Proof.
   intros Γ Δ σ t.
-  induction t in Γ, Δ, σ |- *.
+  funelim (erase Δ t).
+  (* induction t in Γ, Δ, σ |- *. *)
   all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
+  - (* Not making much progress, should I do the if directly in Equations? *)
+  (* - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
   - asimpl. cbn - [mode_inb mode_inclb].
     destruct_if e.
     + cbn. asimpl. repeat unfold_funcomp. f_equal.
@@ -120,5 +125,42 @@ Proof.
         admit.
     + destruct_if e'.
       * cbn. erewrite IHt1. f_equal. all: admit.
-      * admit.
+      * admit. *)
+    admit.
+  - admit.
+  - cbn - [mode_inb]. destruct (mode_inb (md _ v) _) eqn:e.
+    + (* Need scoping information probably *)
+      admit.
+    + admit.
+Abort.
+
+(* Erasure preserves conversion *)
+
+Lemma erase_conv :
+  ∀ Γ u v,
+    Γ ⊢ u ≡ v →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | u ⟧ε ≡ ⟦ sc Γ | v ⟧ε.
+Proof.
+  intros Γ u v h.
+  induction h.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    destruct (mode_inb _ _) eqn:e1.
+    + (* TODO Need proper erasure subst lemma *) admit.
+    + eapply cconv_trans. 1: econstructor.
+      admit.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    cbn.
+    (* TODO WRONG
+
+      I can see two options:
+      - Concluding only on stuff with the right relevance.
+      - Producing clever garbage when erasing irrelevant stuff.
+        Like erase reveal t P p to capp (erase p) (erase t).
+
+      Maybe having the restriction is better?
+      Let's move on to typing instead to get the right expectations.
+
+     *)
 Abort.
