@@ -134,7 +134,7 @@ Proof.
     + admit.
 Abort.
 
-(* Erasure preserves conversion *)
+(** Erasure preserves conversion **)
 
 Lemma erase_conv :
   ∀ Γ u v,
@@ -162,5 +162,31 @@ Proof.
       Maybe having the restriction is better?
       Let's move on to typing instead to get the right expectations.
 
+     *)
+Abort.
+
+(* TODO MOVE *)
+
+Lemma ccmeta_conv :
+  ∀ Γ t A B,
+    Γ ⊢ᶜ t : A →
+    A = B →
+    Γ ⊢ᶜ t : B.
+Proof.
+  intros. subst. assumption.
+Qed.
+
+(** Erasure preserves typing **)
+
+Theorem erase_typing :
+  ∀ Γ t A,
+    Γ ⊢ t : A →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | t ⟧ε : ⟦ sc Γ | A ⟧τ.
+Proof.
+  intros Γ t A h.
+  induction h.
+  - cbn. eapply ccmeta_conv.
+    + econstructor. (* TODO Need a lemma, but translatin of variables is wrong
+      we need to filter for removed variables in the context.
      *)
 Abort.
