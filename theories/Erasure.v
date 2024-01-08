@@ -2,7 +2,7 @@ From Coq Require Import Utf8 List Bool.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping Scoping
-  CTyping TermMode Typing.
+  CTyping TermMode Typing BasicMetaTheory.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -133,6 +133,14 @@ Qed.
   This might ok if we see it as an intermediary language anyway.
 *)
 
+(** Erasure commutes with renaming **)
+
+Lemma erase_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε. (* Here again, having the scopes is annoying *)
+Abort.
+
 (** Erasure commutes with substitution **)
 
 Ltac destruct_if e :=
@@ -225,11 +233,16 @@ Qed.
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
+    mode_inb (mdc Γ t) [ mProp ; mGhost ] = false →
     ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | t ⟧ε : ⟦ sc Γ | A ⟧τ.
 Proof.
-  intros Γ t A h.
+  intros Γ t A h hm.
   induction h.
   - cbn. eapply ccmeta_conv.
     + econstructor. eapply erase_ctx_var. 1: eassumption.
-      (* TODO Missing relevance hypothesis *)
+      cbn - [mode_inb] in hm.
+      erewrite nth_error_nth in hm.
+      2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
+      assumption.
+    + cbn - [skipn]. (* asimpl. repeat unfold_funcomp. *)
 Abort.
