@@ -39,13 +39,11 @@ Definition mode_eqb (m m' : mode) : bool :=
 Definition mode_inb := inb mode_eqb.
 Definition mode_inclb := inclb mode_eqb.
 
-Reserved Notation "⟦ G | u '⟧ε'" (at level 0, G, u at next level).
-Reserved Notation "⟦ G | u '⟧τ'" (at level 0, G, u at next level).
-Reserved Notation "⟦ G | u '⟧∅'" (at level 0, G, u at next level).
+Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
+Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
+Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
-(* TODO Bad name! Overlaps with the erase constructor! *)
-(* Maybe it should be called erasure too? Or erase_term? *)
-Equations erase (Γ : scope) (t : term) : cterm := {
+Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧ε := cvar x ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
   (* But if I need to have η for it then I'm screwed... We'll see
@@ -75,11 +73,11 @@ Equations erase (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | bot_elim m A p ⟧ε := ⟦ Γ | A ⟧∅ ;
   ⟦ _ | _ ⟧ε := cDummy
 }
-where "⟦ G | u '⟧ε'" := (erase G u)
+where "⟦ G | u '⟧ε'" := (erase_term G u)
 where "⟦ G | u '⟧τ'" := (cEl ⟦ G | u ⟧ε)
 where "⟦ G | u '⟧∅'" := (cErr ⟦ G | u ⟧ε).
 
-Reserved Notation "⟦ G '⟧ε'" (at level 0, G at next level).
+Reserved Notation "⟦ G '⟧ε'" (at level 9, G at next level).
 
 Equations erase_ctx (Γ : context) : ccontext := {
   ⟦ [] ⟧ε := [] ;
@@ -101,10 +99,10 @@ Ltac destruct_if e :=
 (* TODO WRONG, σ should be filtered to remove stuff in Ghost or Prop mode. *)
 Lemma erase_subst :
   ∀ Γ Δ σ t,
-    ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase Γ ].
+    ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase_term Γ ].
 Proof.
   intros Γ Δ σ t.
-  funelim (erase Δ t).
+  funelim (erase_term Δ t).
   (* induction t in Γ, Δ, σ |- *. *)
   all: try solve [ asimpl ; cbn ; eauto ].
   - (* Not making much progress, should I do the if directly in Equations? *)
