@@ -39,12 +39,29 @@ Definition mode_eqb (m m' : mode) : bool :=
 Definition mode_inb := inb mode_eqb.
 Definition mode_inclb := inclb mode_eqb.
 
+(** Erasure for a variable
+
+  It needs to skip over variables in scope that are erased.
+
+**)
+
+Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
+  match x with
+  | 0 => 0
+  | S x =>
+    match Γ with
+    | [] => 0 (* Garbage *)
+    | mProp :: Γ | mGhost :: Γ => erase_var Γ x
+    | _ :: Γ => S (erase_var Γ x)
+    end
+  end.
+
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
 Equations erase_term (Γ : scope) (t : term) : cterm := {
-  ⟦ Γ | var x ⟧ε := cvar x ;
+  ⟦ Γ | var x ⟧ε := cvar (erase_var Γ x) ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
   (* But if I need to have η for it then I'm screwed... We'll see
   what's needed… *)
@@ -87,6 +104,33 @@ Equations erase_ctx (Γ : context) : ccontext := {
     else (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
+
+(** Erasure of context and of variables **)
+
+Lemma erase_ctx_var :
+  ∀ Γ x m A,
+    nth_error Γ x = Some (m, A) →
+    mode_inb m [ mProp ; mGhost ] = false →
+    nth_error ⟦ Γ ⟧ε (erase_var (sc Γ) x) =
+    Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ).
+  intros Γ x m A e hr.
+Proof.
+  induction Γ as [| [my B] Γ ih ] in x, m, A, e, hr |- *.
+  1: destruct x ; discriminate.
+  destruct x.
+  - cbn in e. noconf e.
+    cbn - [mode_inb]. rewrite hr. reflexivity.
+  - cbn in e. cbn - [mode_inb]. destruct (mode_inb my _) eqn:ey.
+    + eapply ih in e as ih'. 2: auto.
+      admit.
+    + admit.
+Abort.
+
+(* Having the translation dependent on the scope is going to be really painful
+  it would be best to have the annotations directly on the variable nodes like
+  I did on paper. This means redoing some stuff but it might be worth it.
+  This might ok if we see it as an intermediary language anyway.
+*)
 
 (** Erasure commutes with substitution **)
 
