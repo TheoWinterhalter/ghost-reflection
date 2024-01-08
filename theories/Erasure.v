@@ -51,8 +51,10 @@ Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
   | S x =>
     match Γ with
     | [] => 0 (* Garbage *)
-    | mProp :: Γ | mGhost :: Γ => erase_var Γ x
-    | _ :: Γ => S (erase_var Γ x)
+    | m :: Γ =>
+      if mode_inb m [ mProp ; mGhost ]
+      then erase_var Γ x
+      else S (erase_var Γ x)
     end
   end.
 
@@ -120,11 +122,10 @@ Proof.
   destruct x.
   - cbn in e. noconf e.
     cbn - [mode_inb]. rewrite hr. reflexivity.
-  - cbn in e. cbn - [mode_inb]. destruct (mode_inb my _) eqn:ey.
-    + eapply ih in e as ih'. 2: auto.
-      admit.
-    + admit.
-Abort.
+  - cbn in e. cbn - [mode_inb skipn]. destruct (mode_inb my _) eqn:ey.
+    + erewrite ih. 2,3: eauto. reflexivity.
+    + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
+Qed.
 
 (* Having the translation dependent on the scope is going to be really painful
   it would be best to have the annotations directly on the variable nodes like
@@ -149,6 +150,7 @@ Proof.
   funelim (erase_term Δ t).
   (* induction t in Γ, Δ, σ |- *. *)
   all: try solve [ asimpl ; cbn ; eauto ].
+  - admit.
   - (* Not making much progress, should I do the if directly in Equations? *)
   (* - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
   - asimpl. cbn - [mode_inb mode_inclb].
@@ -228,7 +230,6 @@ Proof.
   intros Γ t A h.
   induction h.
   - cbn. eapply ccmeta_conv.
-    + econstructor. (* TODO Need a lemma, but translatin of variables is wrong
-      we need to filter for removed variables in the context.
-     *)
+    + econstructor. eapply erase_ctx_var. 1: eassumption.
+      (* TODO Missing relevance hypothesis *)
 Abort.
