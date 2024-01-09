@@ -39,6 +39,9 @@ Definition mode_eqb (m m' : mode) : bool :=
 Definition mode_inb := inb mode_eqb.
 Definition mode_inclb := inclb mode_eqb.
 
+Notation irrm m :=
+  (mode_inb m [ mProp ; mGhost ]).
+
 (** Erasure for a variable
 
   It needs to skip over variables in scope that are erased.
@@ -52,9 +55,7 @@ Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
     match Γ with
     | [] => 0 (* Garbage *)
     | m :: Γ =>
-      if mode_inb m [ mProp ; mGhost ]
-      then erase_var Γ x
-      else S (erase_var Γ x)
+      if irrm m then erase_var Γ x else S (erase_var Γ x)
     end
   end.
 
@@ -77,11 +78,11 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     then cstar
     else ⟦ mx :: Γ | B ⟧ε ;
   ⟦ Γ | lam mx A B t ⟧ε :=
-    if mode_inb mx [ mProp ; mGhost ]
+    if irrm mx
     then ⟦ mx :: Γ | t ⟧ε
     else clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε ;
   ⟦ Γ | app u v ⟧ε :=
-    if mode_inb (md Γ v) [ mProp ; mGhost ]
+    if irrm (md Γ v)
     then ⟦ Γ | u ⟧ε
     else capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε ;
   ⟦ Γ | Erased A ⟧ε := ⟦ Γ | A ⟧ε ;
@@ -101,7 +102,7 @@ Reserved Notation "⟦ G '⟧ε'" (at level 9, G at next level).
 Equations erase_ctx (Γ : context) : ccontext := {
   ⟦ [] ⟧ε := [] ;
   ⟦ Γ ,, (mx, A) ⟧ε :=
-    if mode_inb mx [ mProp ; mGhost ]
+    if irrm mx
     then ⟦ Γ ⟧ε
     else (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
 }
@@ -112,7 +113,7 @@ where "⟦ G '⟧ε'" := (erase_ctx G).
 Lemma erase_ctx_var :
   ∀ Γ x m A,
     nth_error Γ x = Some (m, A) →
-    mode_inb m [ mProp ; mGhost ] = false →
+    irrm m = false →
     nth_error ⟦ Γ ⟧ε (erase_var (sc Γ) x) =
     Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ).
   intros Γ x m A e hr.
@@ -138,7 +139,7 @@ Qed.
 Definition erase_ren (Δ : scope) (ρ : nat → nat) : nat → nat :=
   λ n,
     match nth_error Δ n with
-    | Some m => (* if mode_inb m [ mProp ; mGhost ] then  *) ρ n
+    | Some m => (* if irrm m then  *) ρ n
     | None => ρ n
     end.
 
@@ -250,7 +251,7 @@ Qed.
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
-    mode_inb (mdc Γ t) [ mProp ; mGhost ] = false →
+    irrm (mdc Γ t) = false →
     ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | t ⟧ε : ⟦ sc Γ | A ⟧τ.
 Proof.
   intros Γ t A h hm.
