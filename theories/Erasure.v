@@ -143,6 +143,22 @@ Definition erase_ren (Δ : scope) (ρ : nat → nat) : nat → nat :=
     | None => ρ n
     end.
 
+Lemma erase_var_none :
+  ∀ Γ x,
+    nth_error Γ x = None →
+    erase_var Γ x = 0.
+Proof.
+  intros Γ x e.
+  induction Γ as [| m Γ ih] in x, e |- *.
+  - destruct x. all: reflexivity.
+  - destruct x.
+    + cbn. reflexivity.
+    + cbn - [ mode_inb ]. cbn in e.
+      destruct (irrm _) eqn:e'.
+      * apply ih. assumption.
+      *
+Abort.
+
 Lemma erase_renaming :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
@@ -156,7 +172,6 @@ Proof.
     + eapply hρ in e as e'. admit.
     + (* Need lemma about erase_var when nth_error returns None *)
       (* And also when Some m with m irr, or not, for above. *)
-      (* TODO: Also give a name to inb prop ghost, like irrm *)
 Abort.
 
 (** Erasure commutes with substitution **)
