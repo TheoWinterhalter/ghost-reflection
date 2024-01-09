@@ -135,10 +135,27 @@ Qed.
 
 (** Erasure commutes with renaming **)
 
-Lemma erase_ren :
+Definition erase_ren (Δ : scope) (ρ : nat → nat) : nat → nat :=
+  λ n,
+    match nth_error Δ n with
+    | Some m => (* if mode_inb m [ mProp ; mGhost ] then  *) ρ n
+    | None => ρ n
+    end.
+
+Lemma erase_renaming :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
-    ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε. (* Here again, having the scopes is annoying *)
+    ⟦ Γ | ρ ⋅ t ⟧ε = (erase_ren Δ ρ) ⋅ ⟦ Δ | t ⟧ε.
+Proof.
+  intros Γ Δ ρ t hρ.
+  funelim (⟦ Δ | t ⟧ε).
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - asimpl. cbn. f_equal. unfold erase_ren.
+    destruct (nth_error _ _) as [m |] eqn:e.
+    + eapply hρ in e as e'. admit.
+    + (* Need lemma about erase_var when nth_error returns None *)
+      (* And also when Some m with m irr, or not, for above. *)
+      (* TODO: Also give a name to inb prop ghost, like irrm *)
 Abort.
 
 (** Erasure commutes with substitution **)
