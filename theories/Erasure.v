@@ -45,18 +45,15 @@ Notation irrm m :=
 (** Erasure for a variable
 
   It needs to skip over variables in scope that are erased.
+  When the variable is meant to be erased or not in scope, it returns 0
+  so that all ill-scoped or irrelevant term are erased to cvar 0 (cDummy).
 
 **)
 
-Fixpoint erase_var (Γ : scope) (x : nat) {struct x} : nat :=
-  match x with
-  | 0 => 0
-  | S x =>
-    match Γ with
-    | [] => S x
-    | m :: Γ =>
-      if irrm m then erase_var Γ x else S (erase_var Γ x)
-    end
+Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
+  match Γ, x with
+  | m :: Γ, S x => if irrm m then erase_var Γ x else S (erase_var Γ x)
+  | _, _ => 0
   end.
 
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
@@ -108,6 +105,27 @@ Equations erase_ctx (Γ : context) : ccontext := {
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
+(** Erasure of irrelevant terms is cDummy **)
+
+Lemma erase_irr :
+  ∀ Γ t,
+    irrm (md Γ t) = true →
+    ⟦ Γ | t ⟧ε = cDummy.
+Proof.
+  intros Γ t hm.
+  induction t in Γ, hm |- *.
+  all: try reflexivity.
+  all: try discriminate hm.
+  - cbn - [mode_inb] in *.
+    destruct Γ, n. all: try discriminate. 1: reflexivity.
+    cbn - [mode_inb] in *.
+    (* It doesn't return 0 when the term isn't in there
+      maybe I need another erase_var.
+      One option is length (firstn x Γ) but it might suffer from the
+      same problems.
+    *)
+Abort.
+
 (** Erasure of context and of variables **)
 
 Lemma erase_ctx_var :
@@ -137,7 +155,7 @@ Lemma erase_var_weakening :
     erase_var Γ (S (x + y)) = S (erase_var Γ x + erase_var Γ y).
 Proof.
   intros Γ x y mx hx hmx.
-  cbn - [mode_inb]. destruct Γ as [| m Γ].
+  (* cbn - [mode_inb]. destruct Γ as [| m Γ].
   - destruct x, y. all: cbn. all: reflexivity.
   - destruct (irrm m) eqn:e.
     + destruct x.
@@ -148,7 +166,7 @@ Proof.
         -- destruct x. all: reflexivity.
         -- destruct (irrm m') eqn:e'.
           ++ destruct x.
-            ** cbn - [mode_inb]. (* Right, so I need more info. *)
+            ** cbn - [mode_inb]. *) (* Right, so I need more info. *)
             (* **
           ++
       *
