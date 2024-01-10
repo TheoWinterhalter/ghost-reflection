@@ -48,12 +48,12 @@ Notation irrm m :=
 
 **)
 
-Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
+Fixpoint erase_var (Γ : scope) (x : nat) {struct x} : nat :=
   match x with
   | 0 => 0
   | S x =>
     match Γ with
-    | [] => 0 (* Garbage *)
+    | [] => S x
     | m :: Γ =>
       if irrm m then erase_var Γ x else S (erase_var Γ x)
     end
@@ -128,35 +128,26 @@ Proof.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
-(* Having the translation dependent on the scope is going to be really painful
-  it would be best to have the annotations directly on the variable nodes like
-  I did on paper. This means redoing some stuff but it might be worth it.
-  This might ok if we see it as an intermediary language anyway.
-*)
-
 (** Erasure commutes with renaming **)
 
-Definition erase_ren (Δ : scope) (ρ : nat → nat) : nat → nat :=
-  λ n,
-    match nth_error Δ n with
-    | Some m => (* if irrm m then  *) ρ n
-    | None => ρ n
-    end.
+Fixpoint erase_ren (Δ : scope) (ρ : nat → nat) n {struct n} :=
+  match n with
+  | 0 => ρ 0
+  | S x =>
+    match Δ with
+    | [] => ρ (S x)
+    | m :: Δ => if irrm m then erase_ren Δ ρ x else ρ x
+    end
+  end.
 
-Lemma erase_var_none :
-  ∀ Γ x,
-    nth_error Γ x = None →
-    erase_var Γ x = 0.
+Lemma erase_ren_var :
+  ∀ Γ Δ ρ x,
+    rscoping Γ ρ Δ →
+    erase_var Γ (ρ x) = erase_ren Δ ρ (erase_var Δ x).
 Proof.
-  intros Γ x e.
-  induction Γ as [| m Γ ih] in x, e |- *.
-  - destruct x. all: reflexivity.
-  - destruct x.
-    + cbn. reflexivity.
-    + cbn - [ mode_inb ]. cbn in e.
-      destruct (irrm _) eqn:e'.
-      * apply ih. assumption.
-      *
+  intros Γ Δ ρ x hρ.
+  induction x as [| x ih] in Γ, Δ, ρ, hρ |- *.
+  - cbn.
 Abort.
 
 Lemma erase_renaming :
@@ -167,11 +158,11 @@ Proof.
   intros Γ Δ ρ t hρ.
   funelim (⟦ Δ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn. f_equal. unfold erase_ren.
+  - asimpl. cbn. f_equal.
+    (* unfold erase_ren.
     destruct (nth_error _ _) as [m |] eqn:e.
     + eapply hρ in e as e'. admit.
-    + (* Need lemma about erase_var when nth_error returns None *)
-      (* And also when Some m with m irr, or not, for above. *)
+    + admit. *)
 Abort.
 
 (** Erasure commutes with substitution **)
@@ -277,5 +268,6 @@ Proof.
       erewrite nth_error_nth in hm.
       2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
       assumption.
-    + cbn - [skipn]. (* asimpl. repeat unfold_funcomp. *)
+    + cbn - [skipn]. f_equal. (* asimpl. repeat unfold_funcomp. *)
+      (* Maybe just state that one lemma, that would be easier probably *)
 Abort.
