@@ -128,41 +128,46 @@ Proof.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
-(** Erasure commutes with renaming **)
+(** Erasure commutes with weakening **)
 
-Fixpoint erase_ren (Δ : scope) (ρ : nat → nat) n {struct n} :=
-  match n with
-  | 0 => ρ 0
-  | S x =>
-    match Δ with
-    | [] => ρ (S x)
-    | m :: Δ => if irrm m then erase_ren Δ ρ x else ρ x
-    end
-  end.
-
-Lemma erase_ren_var :
-  ∀ Γ Δ ρ x,
-    rscoping Γ ρ Δ →
-    erase_var Γ (ρ x) = erase_ren Δ ρ (erase_var Δ x).
+Lemma erase_var_weakening :
+  ∀ Γ x y mx,
+    nth_error Γ x = Some mx →
+    irrm mx = false →
+    erase_var Γ (S (x + y)) = S (erase_var Γ x + erase_var Γ y).
 Proof.
-  intros Γ Δ ρ x hρ.
-  induction x as [| x ih] in Γ, Δ, ρ, hρ |- *.
-  - cbn.
+  intros Γ x y mx hx hmx.
+  cbn - [mode_inb]. destruct Γ as [| m Γ].
+  - destruct x, y. all: cbn. all: reflexivity.
+  - destruct (irrm m) eqn:e.
+    + destruct x.
+      1:{ cbn in hx. noconf hx. congruence. }
+      cbn in hx. cbn - [mode_inb]. rewrite e.
+      destruct y.
+      * cbn - [mode_inb]. destruct Γ as [| m' Γ].
+        -- destruct x. all: reflexivity.
+        -- destruct (irrm m') eqn:e'.
+          ++ destruct x.
+            ** cbn - [mode_inb]. (* Right, so I need more info. *)
+            (* **
+          ++
+      *
+    + *)
 Abort.
 
-Lemma erase_renaming :
-  ∀ Γ Δ ρ t,
-    rscoping Γ ρ Δ →
-    ⟦ Γ | ρ ⋅ t ⟧ε = (erase_ren Δ ρ) ⋅ ⟦ Δ | t ⟧ε.
+Lemma erase_weakening :
+  ∀ Γ t x mx,
+    nth_error Γ x = Some mx →
+    irrm mx = false →
+    ⟦ Γ | (λ m, S (x + m)) ⋅ t ⟧ε = (λ m, S (erase_var Γ x + m)) ⋅ ⟦ Γ | t ⟧ε.
 Proof.
-  intros Γ Δ ρ t hρ.
-  funelim (⟦ Δ | t ⟧ε).
+  intros Γ t x mx hx hmx.
+  funelim (⟦ Γ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn. f_equal.
-    (* unfold erase_ren.
-    destruct (nth_error _ _) as [m |] eqn:e.
-    + eapply hρ in e as e'. admit.
-    + admit. *)
+  - asimpl. cbn - [erase_var]. f_equal.
+  (* Morally, I'm expecting to have the hypothesis on t being relevant
+  and not x… *)
+    (* apply erase_var_weakening. *)
 Abort.
 
 (** Erasure commutes with substitution **)
@@ -268,6 +273,8 @@ Proof.
       erewrite nth_error_nth in hm.
       2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
       assumption.
-    + cbn - [skipn]. f_equal. (* asimpl. repeat unfold_funcomp. *)
-      (* Maybe just state that one lemma, that would be easier probably *)
+    + cbn - [skipn]. f_equal.
+      cbn - [mode_inb] in hm. erewrite nth_error_nth in hm.
+      2:{ unfold sc. rewrite nth_error_map. rewrite H. reflexivity. }
+      cbn - [mode_inb] in hm.
 Abort.
