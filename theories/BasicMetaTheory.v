@@ -237,8 +237,6 @@ Qed.
 
 (** Inversion for scoping **)
 
-(** Conversion entails mode equality **)
-
 Lemma scope_app_inv :
   ∀ Γ u v m,
     scoping Γ (app u v) m →
@@ -365,6 +363,8 @@ Ltac scoping_fun :=
     | first [ subst m' ; clear h' | subst m ; clear h ]
     ]
   end.
+
+(** Conversion entails mode equality **)
 
 Lemma conv_scoping :
   ∀ Γ u v m,
