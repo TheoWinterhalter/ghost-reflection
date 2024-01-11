@@ -216,19 +216,19 @@ Lemma erase_weakening :
   ∀ Γ t x mx,
     nth_error Γ x = Some mx →
     irrm mx = false →
-    ⟦ Γ | (λ m, S (x + m)) ⋅ t ⟧ε =
-    (λ m, S (erase_var Γ x + m)) ⋅ ⟦ skipn (S x) Γ | t ⟧ε.
+    ⟦ Γ | (λ m, x + m) ⋅ t ⟧ε =
+    (λ m, erase_var Γ x + m) ⋅ ⟦ skipn x Γ | t ⟧ε.
 Proof.
   intros Γ t x mx hx hmx.
   funelim (⟦ _ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
   - asimpl. cbn - [skipn erase_var].
     destruct_if e.
-    + rewrite <- relv_skipn. simpl plus. rewrite e.
+    + rewrite <- relv_skipn. rewrite e.
       asimpl. cbn - [skipn]. repeat unfold_funcomp.
       f_equal. (* Now more hyps for the lemma above! *)
       admit.
-    + rewrite <- relv_skipn. simpl plus. rewrite e.
+    + rewrite <- relv_skipn. rewrite e.
       reflexivity.
 Abort.
 
