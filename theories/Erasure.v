@@ -42,10 +42,13 @@ Definition mode_inclb := inclb mode_eqb.
 Notation irrm m :=
   (mode_inb m [ mProp ; mGhost ]).
 
+Notation relm m :=
+  (negb (irrm m)).
+
 (** Test whether a variable is relevant **)
 
 Definition relv (Γ : scope) x :=
-  negb (irrm (nth x Γ mType)).
+  relm (nth x Γ mType).
 
 (** Erasure for a variable
 
@@ -71,7 +74,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   what's needed… *)
   ⟦ Γ | Sort _m i ⟧ε := ctyval (cty i) ctyerr ;
   ⟦ Γ | Pi i j m mx A B ⟧ε :=
-    if mode_inb mx [ mType ; mKind ] && negb (mode_eqb m mProp)
+    if relm mx && negb (mode_eqb m mProp)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if mode_inclb [ m ; mx ] [ mGhost ]
     then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ (S ⋅ ⟦ mx :: Γ | B ⟧∅))
@@ -81,15 +84,15 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | lam mx A B t ⟧ε :=
     if irrm mx
     then ⟦ mx :: Γ | t ⟧ε
-    else if irrm (md (mx :: Γ) t)
-    then cDummy
-    else clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε ;
+    else if relm (md (mx :: Γ) t)
+    then clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε
+    else cDummy ;
   ⟦ Γ | app u v ⟧ε :=
     if irrm (md Γ v)
     then ⟦ Γ | u ⟧ε
-    else if irrm (md Γ u)
-    then cDummy
-    else capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε ;
+    else if relm (md Γ u)
+    then capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε
+    else cDummy ;
   ⟦ Γ | Erased A ⟧ε := ⟦ Γ | A ⟧ε ;
   ⟦ Γ | revealP t P ⟧ε := cstar ;
   ⟦ Γ | gheq A u v ⟧ε := cstar ;
@@ -236,7 +239,24 @@ Proof.
       f_equal. apply erase_var_weakening.
     + rewrite <- relv_skipn. rewrite e.
       reflexivity.
-  - asimpl. cbn - [skipn mode_inb].
+  - asimpl. cbn - [skipn mode_inb mode_inclb].
+    destruct_if e.
+    + asimpl. repeat unfold_funcomp. cbn - [skipn mode_inb mode_inclb].
+      f_equal.
+      * f_equal.
+        -- f_equal. eauto.
+        -- f_equal. (* We may have to prove things for a more general
+        notion of weakening. In logrel they consider S like I do, but also
+        up_ren which is what appears here. (They have an intentional weakening
+        datatype, maybe I should too?)
+        The question is how this works with erasure.
+
+        It's probably be easier to have many up_ren applied to erase_var shift.
+         *)
+         unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
+         repeat unfold_funcomp.
+      (* *
+    + *)
 Abort.
 
 (** Erasure commutes with substitution **)
