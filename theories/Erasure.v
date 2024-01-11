@@ -220,23 +220,23 @@ Proof.
 Qed.
 
 Lemma erase_weakening :
-  ∀ Γ t x mx,
-    nth_error Γ x = Some mx →
-    irrm mx = false →
+  ∀ Γ t x (* mx *),
+    (* nth_error Γ x = Some mx →
+    irrm mx = false → *)
     ⟦ Γ | (λ m, x + m) ⋅ t ⟧ε =
     (λ m, erase_var Γ x + m) ⋅ ⟦ skipn x Γ | t ⟧ε.
 Proof.
-  intros Γ t x mx hx hmx.
+  intros Γ t x (* mx hx hmx *).
   funelim (⟦ _ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
   - asimpl. cbn - [skipn erase_var].
     destruct_if e.
     + rewrite <- relv_skipn. rewrite e.
       asimpl. cbn - [skipn]. repeat unfold_funcomp.
-      f_equal. (* Now more hyps for the lemma above! *)
-      admit.
+      f_equal. apply erase_var_weakening.
     + rewrite <- relv_skipn. rewrite e.
       reflexivity.
+  - asimpl. cbn - [skipn mode_inb].
 Abort.
 
 (** Erasure commutes with substitution **)
