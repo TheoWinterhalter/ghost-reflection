@@ -42,6 +42,11 @@ Definition mode_inclb := inclb mode_eqb.
 Notation irrm m :=
   (mode_inb m [ mProp ; mGhost ]).
 
+(** Test whether a variable is relevant **)
+
+Definition relv (Γ : scope) x :=
+  negb (irrm (nth x Γ mType)).
+
 (** Erasure for a variable
 
   It needs to skip over variables in scope that are erased.
@@ -61,7 +66,7 @@ Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
 Equations erase_term (Γ : scope) (t : term) : cterm := {
-  ⟦ Γ | var x ⟧ε := cvar (erase_var Γ x) ;
+  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar (erase_var Γ x) else cDummy ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
   (* But if I need to have η for it then I'm screwed... We'll see
   what's needed… *)
@@ -77,17 +82,21 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | lam mx A B t ⟧ε :=
     if irrm mx
     then ⟦ mx :: Γ | t ⟧ε
+    else if irrm (md (mx :: Γ) t)
+    then cDummy
     else clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε ;
   ⟦ Γ | app u v ⟧ε :=
     if irrm (md Γ v)
     then ⟦ Γ | u ⟧ε
+    else if irrm (md Γ u)
+    then cDummy
     else capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε ;
   ⟦ Γ | Erased A ⟧ε := ⟦ Γ | A ⟧ε ;
   ⟦ Γ | revealP t P ⟧ε := cstar ;
   ⟦ Γ | gheq A u v ⟧ε := cstar ;
   ⟦ Γ | ghcast e P t ⟧ε := ⟦ Γ | t ⟧ε ;
   ⟦ Γ | bot ⟧ε := cstar ;
-  ⟦ Γ | bot_elim m A p ⟧ε := ⟦ Γ | A ⟧∅ ;
+  ⟦ Γ | bot_elim m A p ⟧ε := if irrm m then cDummy else ⟦ Γ | A ⟧∅ ;
   ⟦ _ | _ ⟧ε := cDummy
 }
 where "⟦ G | u '⟧ε'" := (erase_term G u)
@@ -105,6 +114,14 @@ Equations erase_ctx (Γ : context) : ccontext := {
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
+(* TODO MOVE *)
+
+Ltac destruct_if e :=
+  lazymatch goal with
+  | |- context [ if ?b then _ else _ ] =>
+    destruct b eqn: e
+  end.
+
 (** Erasure of irrelevant terms is cDummy **)
 
 Lemma erase_irr :
@@ -116,15 +133,17 @@ Proof.
   induction t in Γ, hm |- *.
   all: try reflexivity.
   all: try discriminate hm.
+  - cbn - [mode_inb] in *. unfold relv. rewrite hm.
+    reflexivity.
   - cbn - [mode_inb] in *.
-    destruct Γ, n. all: try discriminate. 1: reflexivity.
-    cbn - [mode_inb] in *.
-    (* It doesn't return 0 when the term isn't in there
-      maybe I need another erase_var.
-      One option is length (firstn x Γ) but it might suffer from the
-      same problems.
-    *)
-Abort.
+    destruct_if em. 1: eauto.
+    rewrite hm. reflexivity.
+  - cbn - [mode_inb] in *.
+    destruct_if em. 1: eauto.
+    rewrite hm. reflexivity.
+  - cbn - [mode_inb] in *. eauto.
+  - cbn - [mode_inb] in *. rewrite hm. reflexivity.
+Qed.
 
 (** Erasure of context and of variables **)
 
@@ -189,12 +208,6 @@ Proof.
 Abort.
 
 (** Erasure commutes with substitution **)
-
-Ltac destruct_if e :=
-  lazymatch goal with
-  | |- context [ if ?b then _ else _ ] =>
-    destruct b eqn: e
-  end.
 
 (* TODO WRONG, σ should be filtered to remove stuff in Ghost or Prop mode. *)
 Lemma erase_subst :
@@ -285,14 +298,14 @@ Theorem erase_typing :
 Proof.
   intros Γ t A h hm.
   induction h.
-  - cbn. eapply ccmeta_conv.
+  - cbn. unfold relv. cbn - [mode_inb] in hm. rewrite hm.
+    cbn. eapply ccmeta_conv.
     + econstructor. eapply erase_ctx_var. 1: eassumption.
-      cbn - [mode_inb] in hm.
       erewrite nth_error_nth in hm.
       2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
       assumption.
     + cbn - [skipn]. f_equal.
-      cbn - [mode_inb] in hm. erewrite nth_error_nth in hm.
+      erewrite nth_error_nth in hm.
       2:{ unfold sc. rewrite nth_error_map. rewrite H. reflexivity. }
       cbn - [mode_inb] in hm.
 Abort.
