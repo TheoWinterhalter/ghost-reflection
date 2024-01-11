@@ -1,4 +1,4 @@
-From Coq Require Import Utf8 List Bool.
+From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping Scoping
@@ -166,31 +166,6 @@ Qed.
 
 (** Erasure commutes with weakening **)
 
-Lemma erase_var_weakening :
-  ∀ Γ x y mx,
-    nth_error Γ x = Some mx →
-    irrm mx = false →
-    erase_var Γ (S (x + y)) = S (erase_var Γ x + erase_var Γ y).
-Proof.
-  intros Γ x y mx hx hmx.
-  (* cbn - [mode_inb]. destruct Γ as [| m Γ].
-  - destruct x, y. all: cbn. all: reflexivity.
-  - destruct (irrm m) eqn:e.
-    + destruct x.
-      1:{ cbn in hx. noconf hx. congruence. }
-      cbn in hx. cbn - [mode_inb]. rewrite e.
-      destruct y.
-      * cbn - [mode_inb]. destruct Γ as [| m' Γ].
-        -- destruct x. all: reflexivity.
-        -- destruct (irrm m') eqn:e'.
-          ++ destruct x.
-            ** cbn - [mode_inb]. *) (* Right, so I need more info. *)
-            (* **
-          ++
-      *
-    + *)
-Abort.
-
 Lemma nth_skipn :
   ∀ A (l : list A) x y d,
     nth (x + y) l d = nth y (skipn x l) d.
@@ -210,6 +185,38 @@ Proof.
   intros Γ x y.
   unfold relv.
   rewrite nth_skipn. reflexivity.
+Qed.
+
+Corollary relv_S :
+  ∀ m Γ x,
+    relv (m :: Γ) (S x) = relv Γ x.
+Proof.
+  intros m Γ x.
+  apply relv_skipn with (x := 1).
+Qed.
+
+Lemma erase_var_0 :
+  ∀ Γ,
+    erase_var Γ 0 = 0.
+Proof.
+  intros Γ. destruct Γ. all: reflexivity.
+Qed.
+
+Lemma erase_var_weakening :
+  ∀ Γ x y,
+    erase_var Γ (x + y) = erase_var Γ x + erase_var (skipn x Γ) y.
+Proof.
+  intros Γ x y.
+  induction Γ as [| m Γ ih] in x, y |- *.
+  - destruct x, y. all: cbn. all: reflexivity.
+  - destruct x, y. all: cbn - [mode_inb skipn]. all: try eauto.
+    + replace (x + 0) with x by lia.
+      destruct_if e.
+      * cbn. rewrite erase_var_0. lia.
+      * cbn. rewrite erase_var_0. lia.
+    + destruct_if e.
+      * cbn. auto.
+      * cbn. rewrite ih. lia.
 Qed.
 
 Lemma erase_weakening :
