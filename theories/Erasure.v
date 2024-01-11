@@ -201,10 +201,15 @@ Proof.
   intros Γ t x mx hx hmx.
   funelim (⟦ Γ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn - [erase_var]. f_equal.
-  (* Morally, I'm expecting to have the hypothesis on t being relevant
-  and not x… *)
-    (* apply erase_var_weakening. *)
+  - asimpl. cbn - [erase_var].
+    destruct_if e.
+    + destruct_if e'.
+      * asimpl. cbn. repeat unfold_funcomp.
+        f_equal. (* Now more hyps for the lemma above! *)
+        admit.
+      * asimpl. cbn. repeat unfold_funcomp.
+        f_equal. (* Contradiction in hyps here, so probably wrong destruct *)
+        admit.
 Abort.
 
 (** Erasure commutes with substitution **)
