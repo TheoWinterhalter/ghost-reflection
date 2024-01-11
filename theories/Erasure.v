@@ -11,7 +11,7 @@ Import CombineNotations.
 Set Default Goal Selector "!".
 Set Equations Transparent.
 
-Definition cDummy := cvar 0.
+Definition cDummy := ctt.
 
 (* TODO MOVE to utils *)
 Section Inb.
@@ -50,8 +50,7 @@ Definition relv (Γ : scope) x :=
 (** Erasure for a variable
 
   It needs to skip over variables in scope that are erased.
-  When the variable is meant to be erased or not in scope, it returns 0
-  so that all ill-scoped or irrelevant term are erased to cvar 0 (cDummy).
+  It returns 0 as a default, but it should not matter.
 
 **)
 
@@ -230,10 +229,7 @@ Proof.
       f_equal. (* Now more hyps for the lemma above! *)
       admit.
     + rewrite <- relv_skipn. simpl plus. rewrite e.
-      cbn.
-      (* cDummy is not good because it is affected by weakening
-        it should be a closed term instead.
-       *)
+      reflexivity.
 Abort.
 
 (** Erasure commutes with substitution **)
