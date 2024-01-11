@@ -192,24 +192,48 @@ Proof.
     + *)
 Abort.
 
+Lemma nth_skipn :
+  ∀ A (l : list A) x y d,
+    nth (x + y) l d = nth y (skipn x l) d.
+Proof.
+  intros A l x y d.
+  induction l as [| a l ih] in x, y |- *.
+  1:{ destruct x, y. all: reflexivity. }
+  destruct x, y. all: cbn. 1,2: reflexivity.
+  - apply ih.
+  - apply ih.
+Qed.
+
+Lemma relv_skipn :
+  ∀ Γ x y,
+    relv Γ (x + y) = relv (skipn x Γ) y.
+Proof.
+  intros Γ x y.
+  unfold relv.
+  rewrite nth_skipn. reflexivity.
+Qed.
+
 Lemma erase_weakening :
   ∀ Γ t x mx,
     nth_error Γ x = Some mx →
     irrm mx = false →
-    ⟦ Γ | (λ m, S (x + m)) ⋅ t ⟧ε = (λ m, S (erase_var Γ x + m)) ⋅ ⟦ Γ | t ⟧ε.
+    ⟦ Γ | (λ m, S (x + m)) ⋅ t ⟧ε =
+    (λ m, S (erase_var Γ x + m)) ⋅ ⟦ skipn (S x) Γ | t ⟧ε.
 Proof.
   intros Γ t x mx hx hmx.
-  funelim (⟦ Γ | t ⟧ε).
+  funelim (⟦ _ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn - [erase_var].
+  - asimpl. cbn - [skipn erase_var].
     destruct_if e.
-    + destruct_if e'.
-      * asimpl. cbn. repeat unfold_funcomp.
-        f_equal. (* Now more hyps for the lemma above! *)
-        admit.
-      * asimpl. cbn. repeat unfold_funcomp.
-        f_equal. (* Contradiction in hyps here, so probably wrong destruct *)
-        admit.
+    + rewrite <- relv_skipn. simpl plus. rewrite e.
+      asimpl. cbn - [skipn]. repeat unfold_funcomp.
+      f_equal. (* Now more hyps for the lemma above! *)
+      admit.
+    + rewrite <- relv_skipn. simpl plus. rewrite e.
+      cbn.
+      (* cDummy is not good because it is affected by weakening
+        it should be a closed term instead.
+       *)
 Abort.
 
 (** Erasure commutes with substitution **)
