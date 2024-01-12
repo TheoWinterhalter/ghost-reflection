@@ -236,6 +236,45 @@ Qed.
 (* TODO MOVE *)
 Notation "#| l |" := (length l).
 
+Lemma nth_error_app_r :
+  ∀ A (l l' : list A) n,
+    nth_error (l ++ l') (#|l| + n) = nth_error l' n.
+Proof.
+  intros A l l' n.
+  induction l as [| a l ih] in l', n |- *.
+  - reflexivity.
+  - cbn. apply ih.
+Qed.
+
+Lemma rscoping_weak :
+  ∀ Γ Δ,
+    rscoping (Δ ++ Γ) (plus #|Δ|) Γ.
+Proof.
+  intros Γ Δ. intros n m e.
+  rewrite nth_error_app_r. assumption.
+Qed.
+
+Lemma rscoping_upren :
+  ∀ Γ Δ m ρ,
+    rscoping Γ ρ Δ →
+    rscoping (m :: Γ) (up_ren ρ) (m :: Δ).
+Proof.
+  intros Γ Δ m ρ h. intros x mx e.
+  destruct x.
+  - cbn in *. assumption.
+  - cbn in *. apply h. assumption.
+Qed.
+
+Lemma upwk_scoping :
+  ∀ Γ Δ Ξ,
+    rscoping (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ|) (Ξ ++ Γ).
+Proof.
+  intros Γ Δ Ξ.
+  induction Ξ as [| m Ξ ih].
+  - cbn. apply rscoping_weak.
+  - cbn. apply rscoping_upren. assumption.
+Qed.
+
 Lemma erase_var_weakening :
   ∀ Γ Δ wk x,
     erase_var (Δ ++ Γ) (upwk #|Δ| wk x) =
