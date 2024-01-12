@@ -223,13 +223,11 @@ Proof.
 Qed.
 
 Lemma erase_weakening :
-  ∀ Γ t x (* mx *),
-    (* nth_error Γ x = Some mx →
-    irrm mx = false → *)
+  ∀ Γ t x,
     ⟦ Γ | (λ m, x + m) ⋅ t ⟧ε =
     (λ m, erase_var Γ x + m) ⋅ ⟦ skipn x Γ | t ⟧ε.
 Proof.
-  intros Γ t x (* mx hx hmx *).
+  intros Γ t x.
   funelim (⟦ _ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
   - asimpl. cbn - [skipn erase_var].
@@ -252,6 +250,9 @@ Proof.
         The question is how this works with erasure.
 
         It's probably be easier to have many up_ren applied to erase_var shift.
+
+        Maybe avoid using Δ ++ Γ that's annoying and instead have a renaming
+        from Γ to Δ + the fact that it's a weakening like above?
          *)
          unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
          repeat unfold_funcomp.
