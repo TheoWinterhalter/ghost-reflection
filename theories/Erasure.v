@@ -205,6 +205,17 @@ Proof.
   intros Γ. destruct Γ. all: reflexivity.
 Qed.
 
+(* Iterated up_ren *)
+Fixpoint up_rens n ρ :=
+  match n with
+  | 0 => ρ
+  | S n => up_ren (up_rens n ρ)
+  end.
+
+(* Combination of up_ren and shift, corresponding to weakening under binders *)
+Definition upwk (u w : nat) : nat → nat :=
+  up_rens u (Nat.add w).
+
 Lemma erase_var_weakening :
   ∀ Γ x y,
     erase_var Γ (x + y) = erase_var Γ x + erase_var (skipn x Γ) y.
@@ -222,20 +233,44 @@ Proof.
       * cbn. rewrite ih. lia.
 Qed.
 
-Lemma erase_weakening :
-  ∀ Γ t x,
-    ⟦ Γ | (λ m, x + m) ⋅ t ⟧ε =
-    (λ m, erase_var Γ x + m) ⋅ ⟦ skipn x Γ | t ⟧ε.
+(* TODO MOVE *)
+Notation "#| l |" := (length l).
+
+Lemma nth_upwk :
+  ∀ A (l : list A) l' wk x d,
+    nth (upwk #|l| wk x) (l ++ l') d = nth x (l ++ skipn wk l') d.
 Proof.
-  intros Γ t x.
+  intros A l l' wk x d.
+  induction l as [| a l ih] in l', wk, x, d |- *.
+  - cbn. apply nth_skipn.
+  - cbn. destruct x.
+    + cbn. reflexivity.
+    + cbn. apply ih.
+Qed.
+
+Lemma relv_upwk :
+  ∀ Γ Δ wk x,
+    relv (Δ ++ Γ) (upwk #|Δ| wk x) = relv (Δ ++ skipn wk Γ) x.
+Proof.
+  intros Γ Δ wk x.
+  unfold relv. rewrite nth_upwk. reflexivity.
+Qed.
+
+Lemma erase_weakening :
+  ∀ Γ Δ wk t,
+    ⟦ Δ ++ Γ | (upwk #|Δ| wk) ⋅ t ⟧ε =
+    (upwk #|Δ| (erase_var Γ wk)) ⋅ ⟦ Δ ++ skipn wk Γ | t ⟧ε.
+Proof.
+  intros Γ Δ wk t.
   funelim (⟦ _ | t ⟧ε).
   all: try solve [ asimpl ; cbn ; eauto ].
   - asimpl. cbn - [skipn erase_var].
     destruct_if e.
-    + rewrite <- relv_skipn. rewrite e.
+    + rewrite <- relv_upwk. rewrite e.
       asimpl. cbn - [skipn]. repeat unfold_funcomp.
-      f_equal. apply erase_var_weakening.
-    + rewrite <- relv_skipn. rewrite e.
+      f_equal. (* apply erase_var_weakening. *)
+      admit.
+    + rewrite <- relv_upwk. rewrite e.
       reflexivity.
   - asimpl. cbn - [skipn mode_inb mode_inclb].
     destruct_if e.
@@ -243,21 +278,50 @@ Proof.
       f_equal.
       * f_equal.
         -- f_equal. eauto.
-        -- f_equal. (* We may have to prove things for a more general
-        notion of weakening. In logrel they consider S like I do, but also
-        up_ren which is what appears here. (They have an intentional weakening
-        datatype, maybe I should too?)
-        The question is how this works with erasure.
-
-        It's probably be easier to have many up_ren applied to erase_var shift.
-
-        Maybe avoid using Δ ++ Γ that's annoying and instead have a renaming
-        from Γ to Δ + the fact that it's a weakening like above?
-         *)
-         unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
-         repeat unfold_funcomp.
-      (* *
-    + *)
+        -- f_equal.
+          unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
+          repeat unfold_funcomp.
+          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
+          apply H0. reflexivity.
+      * f_equal.
+        -- f_equal. eauto.
+        -- f_equal.
+          unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
+          repeat unfold_funcomp.
+          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
+          apply H0. reflexivity.
+    + destruct_if e'.
+      * asimpl. repeat unfold_funcomp. cbn - [skipn mode_inb mode_inclb].
+        f_equal.
+        -- f_equal. 1: f_equal ; eauto.
+          f_equal. unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
+          repeat unfold_funcomp.
+          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
+          cbn in H0. unfold up_ren in H0. unfold upwk. rewrite H0.
+          2: reflexivity.
+          asimpl. repeat unfold_funcomp.
+          unfold Ren_cterm. asimpl. repeat unfold_funcomp.
+          (* No composition law?? *)
+          admit.
+        -- f_equal. 1: f_equal ; eauto.
+          f_equal. unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
+          repeat unfold_funcomp.
+          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
+          cbn in H0. unfold up_ren in H0. unfold upwk. rewrite H0.
+          2: reflexivity.
+          asimpl. repeat unfold_funcomp.
+          unfold Ren_cterm. asimpl. repeat unfold_funcomp.
+          admit.
+      * destruct_if e''. 1: reflexivity.
+        asimpl. unfold Ren_cterm.
+        repeat unfold_funcomp.
+        specialize H0 with (Δ := _ :: _) (1 := eq_refl).
+        cbn in H0. unfold up_ren in H0. unfold upwk. rewrite H0.
+        2: reflexivity.
+        asimpl. repeat unfold_funcomp.
+        unfold Ren_cterm. asimpl. repeat unfold_funcomp.
+        (* ??? *)
+        admit.
 Abort.
 
 (** Erasure commutes with substitution **)
