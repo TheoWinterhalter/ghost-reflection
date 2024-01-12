@@ -216,7 +216,7 @@ Fixpoint up_rens n ρ :=
 Definition upwk (u w : nat) : nat → nat :=
   up_rens u (Nat.add w).
 
-Lemma erase_var_weakening :
+Lemma erase_var_plus :
   ∀ Γ x y,
     erase_var Γ (x + y) = erase_var Γ x + erase_var (skipn x Γ) y.
 Proof.
@@ -235,6 +235,25 @@ Qed.
 
 (* TODO MOVE *)
 Notation "#| l |" := (length l).
+
+Lemma erase_var_weakening :
+  ∀ Γ Δ wk x,
+    erase_var (Δ ++ Γ) (upwk #|Δ| wk x) =
+    upwk #|Δ| (erase_var Γ wk) (erase_var (Δ ++ skipn wk Γ) x).
+Proof.
+  intros Γ Δ wk x.
+  induction Δ as [| m Δ ih] in Γ, wk, x |- *.
+  - cbn. apply erase_var_plus.
+  - cbn - [mode_inb]. destruct x.
+    + cbn. reflexivity.
+    + cbn - [mode_inb].
+      destruct (irrm m) eqn:e.
+      * unfold upwk in ih. rewrite ih. asimpl. repeat unfold_funcomp.
+        (* Not ok?? *)
+        admit.
+      * cbn. unfold upwk in ih. rewrite ih. asimpl. repeat unfold_funcomp.
+        reflexivity.
+Abort.
 
 Lemma nth_upwk :
   ∀ A (l : list A) l' wk x d,
