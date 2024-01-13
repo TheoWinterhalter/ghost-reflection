@@ -116,6 +116,12 @@ Equations erase_ctx (Γ : context) : ccontext := {
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
+Fixpoint erase_sc (Γ : scope) : cscope :=
+  match Γ with
+  | [] => []
+  | m :: Γ => if irrm m then erase_sc Γ else cType :: erase_sc Γ
+  end.
+
 (* TODO MOVE *)
 
 Ltac destruct_if e :=
@@ -276,13 +282,13 @@ Proof.
 Qed.
 
 Lemma erase_var_weakening :
-  ∀ Γ Δ wk x,
-    erase_var (Δ ++ Γ) (upwk #|Δ| wk x) =
-    upwk #|Δ| (erase_var Γ wk) (erase_var (Δ ++ skipn wk Γ) x).
+  ∀ Γ Δ Ξ x,
+    erase_var (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ| x) =
+    upwk #|erase_sc Ξ| #|erase_sc Δ| (erase_var (Ξ ++ Γ) x).
 Proof.
-  intros Γ Δ wk x.
-  induction Δ as [| m Δ ih] in Γ, wk, x |- *.
-  - cbn. apply erase_var_plus.
+  intros Γ Δ Ξ x.
+  induction Ξ as [| m Ξ ih] in Γ, Δ, x |- *.
+  - cbn. (* apply erase_var_plus.
   - cbn - [mode_inb]. destruct x.
     + cbn. reflexivity.
     + cbn - [mode_inb].
@@ -291,64 +297,78 @@ Proof.
         (* Not ok?? *)
         admit.
       * cbn. unfold upwk in ih. rewrite ih. asimpl. repeat unfold_funcomp.
-        reflexivity.
+        reflexivity. *)
 Abort.
 
-Lemma nth_upwk :
-  ∀ A (l : list A) l' wk x d,
-    nth (upwk #|l| wk x) (l ++ l') d = nth x (l ++ skipn wk l') d.
+Lemma nth_app_r :
+  ∀ A (l l' : list A) d n,
+    nth (#|l| + n) (l ++ l') d = nth n l' d.
 Proof.
-  intros A l l' wk x d.
-  induction l as [| a l ih] in l', wk, x, d |- *.
-  - cbn. apply nth_skipn.
+  intros A l l' d n.
+  induction l as [| a l ih] in l', n |- *.
+  - reflexivity.
+  - cbn. apply ih.
+Qed.
+
+Lemma nth_upwk :
+  ∀ A (l1 l2 l3 : list A) x d,
+    nth (upwk #|l1| #|l2| x) (l1 ++ l2 ++ l3) d = nth x (l1 ++ l3) d.
+Proof.
+  intros A l1 l2 l3 x d.
+  induction l1 as [| a l1 ih] in l2, l3, x, d |- *.
+  - cbn. apply nth_app_r.
   - cbn. destruct x.
     + cbn. reflexivity.
     + cbn. apply ih.
 Qed.
 
 Lemma relv_upwk :
-  ∀ Γ Δ wk x,
-    relv (Δ ++ Γ) (upwk #|Δ| wk x) = relv (Δ ++ skipn wk Γ) x.
+  ∀ Γ Δ Ξ x,
+    relv (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ| x) = relv (Ξ ++ Γ) x.
 Proof.
-  intros Γ Δ wk x.
+  intros Γ Δ Ξ x.
   unfold relv. rewrite nth_upwk. reflexivity.
 Qed.
 
 Lemma erase_weakening :
-  ∀ Γ Δ wk t,
-    ⟦ Δ ++ Γ | (upwk #|Δ| wk) ⋅ t ⟧ε =
-    (upwk #|Δ| (erase_var Γ wk)) ⋅ ⟦ Δ ++ skipn wk Γ | t ⟧ε.
+  ∀ Γ Δ Ξ t,
+    ⟦ Ξ ++ Δ ++ Γ | (upwk #|Ξ| #|Δ|) ⋅ t ⟧ε =
+    (upwk #|erase_sc Ξ| #|erase_sc Δ|) ⋅ ⟦ Ξ ++ Γ | t ⟧ε.
 Proof.
-  intros Γ Δ wk t.
+  intros Γ Δ Ξ t.
   funelim (⟦ _ | t ⟧ε).
+  all: rename Γ0 into Γ.
   all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn - [skipn erase_var].
+  - asimpl. cbn - [erase_var].
+    rewrite relv_upwk.
+    destruct_if e. 2: reflexivity.
+    asimpl. cbn. repeat unfold_funcomp.
+    f_equal. (* apply erase_var_weakening. *)
+    admit.
+  - asimpl. cbn - [mode_inb mode_inclb].
+    (* TODO Maybe use a view for Equations or something *)
     destruct_if e.
-    + rewrite <- relv_upwk. rewrite e.
-      asimpl. cbn - [skipn]. repeat unfold_funcomp.
-      f_equal. (* apply erase_var_weakening. *)
-      admit.
-    + rewrite <- relv_upwk. rewrite e.
-      reflexivity.
-  - asimpl. cbn - [skipn mode_inb mode_inclb].
-    destruct_if e.
-    + asimpl. repeat unfold_funcomp. cbn - [skipn mode_inb mode_inclb].
+    + asimpl. repeat unfold_funcomp. cbn - [mode_inb mode_inclb].
       f_equal.
       * f_equal.
         -- f_equal. eauto.
         -- f_equal.
           unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
           repeat unfold_funcomp.
-          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
-          apply H0. reflexivity.
+          specialize H0 with (Ξ := _ :: _) (1 := eq_refl).
+          cbn - [mode_inb] in H0. rewrite H0. 2: reflexivity.
+          (* TODO Rewrite using e *)
+          (* asimpl. unfold Ren_cterm. repeat unfold_funcomp. *)
+          admit.
       * f_equal.
         -- f_equal. eauto.
         -- f_equal.
           unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
           repeat unfold_funcomp.
-          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
-          apply H0. reflexivity.
-    + destruct_if e'.
+          specialize H0 with (Ξ := _ :: _) (1 := eq_refl).
+          cbn - [mode_inb] in H0. rewrite H0. 2: reflexivity.
+          admit.
+    (* + destruct_if e'.
       * asimpl. repeat unfold_funcomp. cbn - [skipn mode_inb mode_inclb].
         f_equal.
         -- f_equal. 1: f_equal ; eauto.
@@ -379,7 +399,7 @@ Proof.
         asimpl. repeat unfold_funcomp.
         unfold Ren_cterm. asimpl. repeat unfold_funcomp.
         (* ??? *)
-        admit.
+        admit. *)
 Abort.
 
 (** Erasure commutes with substitution **)
