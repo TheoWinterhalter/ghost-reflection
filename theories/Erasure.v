@@ -13,6 +13,29 @@ Set Equations Transparent.
 
 Definition cDummy := ctt.
 
+(*** BIG TODO ***)
+(**
+
+  Variable handling is going to become much more complicated because erasure
+  removes some variables, while parametricity adds some in a non-uniform way
+  so computing offsets and weakenings will be painful arithmetic.
+  I propose to use flexible contexts that instead of one declaration per
+  position will have zero, one or two. A variable in the target will thus be
+  a position in the context, plus a role corresponding to how the variable is
+  used, be it as a regular or a parametricity variable.
+
+  This idea should work for all kinds of translations and is particularly suited
+  to combination of several translations like we do here.
+
+  TODO: Mention this idea of flexible variables in the paper, and keep this
+  comment somewhere in the code, probably where we introduce flex contexts.
+
+  We can also consider having a final translation to get rid of those but
+  this will be much nicer probably, we separate matters nicely.
+  I would argue though that we don't really need it.
+
+ **)
+
 (* TODO MOVE to utils *)
 Section Inb.
 
