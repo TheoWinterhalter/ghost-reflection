@@ -15,9 +15,9 @@ Set Default Goal Selector "!".
 Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 
 | cscope_var :
-    ∀ x m,
-      nth_error Γ x = Some m →
-      ccscoping Γ (cvar x) m
+    ∀ r x m,
+      option_bind (nth_error Γ x) (fget r) = Some m →
+      ccscoping Γ (cvar r x) m
 
 | scpoe_sort :
     ∀ m i,
@@ -26,13 +26,13 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 | cscope_pi :
     ∀ mx A B,
       ccscoping Γ A cType →
-      ccscoping (mx :: Γ) B cType →
+      ccscoping (mreg mx :: Γ) B cType →
       ccscoping Γ (cPi mx A B) cType
 
 | cscope_lam :
     ∀ mx m A t,
       ccscoping Γ A cType →
-      ccscoping (mx :: Γ) t m →
+      ccscoping (mreg mx :: Γ) t m →
       ccscoping Γ (clam mx A t) m
 
 | cscope_app :

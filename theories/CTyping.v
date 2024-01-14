@@ -50,13 +50,13 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
 | ccong_Pi :
     ∀ mx A A' B B',
       Γ ⊢ᶜ A ≡ A' →
-      (mx, A) :: Γ ⊢ᶜ B ≡ B' →
+      dreg mx A :: Γ ⊢ᶜ B ≡ B' →
       Γ ⊢ᶜ cPi mx A B ≡ cPi mx A' B'
 
 | ccong_clam :
     ∀ mx A A' t t',
       Γ ⊢ᶜ A ≡ A' →
-      (mx, A) :: Γ ⊢ᶜ t ≡ t' →
+      dreg mx A :: Γ ⊢ᶜ t ≡ t' →
       Γ ⊢ᶜ clam mx A t ≡ clam mx A' t'
 
 | ccong_app :
@@ -103,9 +103,9 @@ where "Γ ⊢ᶜ u ≡ v" := (conversion Γ u v).
 Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 
 | ctype_var :
-    ∀ x m A,
-      nth_error Γ x = Some (m, A) →
-      Γ ⊢ᶜ cvar x : (plus (S x)) ⋅ A
+    ∀ r x m A,
+      option_bind (nth_error Γ x) (fget r) = Some (m, A) →
+      Γ ⊢ᶜ cvar r x : (plus (S x)) ⋅ A
 
 | ctype_sort :
     ∀ m i,
@@ -114,14 +114,14 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 | ctype_pi :
     ∀ i j m mx A B,
       Γ ⊢ᶜ A : cSort mx i →
-      (mx, A) :: Γ ⊢ᶜ B : cSort m j →
+      dreg mx A :: Γ ⊢ᶜ B : cSort m j →
       Γ ⊢ᶜ cPi mx A B : cSort m (max i j)
 
 | ctype_clam :
     ∀ mx m i j A B t,
       Γ ⊢ᶜ A : cSort mx i →
-      (mx, A) :: Γ ⊢ᶜ B : cSort m j →
-      (mx, A) :: Γ ⊢ᶜ t : B →
+      dreg mx A :: Γ ⊢ᶜ B : cSort m j →
+      dreg mx A :: Γ ⊢ᶜ t : B →
       Γ ⊢ᶜ clam mx A t : cPi mx A B
 
 | ctype_app :
@@ -186,10 +186,24 @@ where "Γ ⊢ᶜ t : A" := (ctyping Γ t A).
 
 (** Context formation **)
 
+(* TODO MOVE *)
+
+Definition whenSome {A} (P : A → Prop) (o : option A) :=
+  match o with
+  | Some x => P x
+  | None => True
+  end.
+
+Definition on_flex {A} (P : A → Prop) (d : flex A) :=
+  whenSome P d.(freg) ∧ whenSome P d.(fprm).
+
+Definition isType Γ A m :=
+  ∃ i, Γ ⊢ᶜ A : cSort m i.
+
 Inductive cwf : ccontext → Prop :=
 | cwf_nil : cwf nil
 | cwf_cons :
-    ∀ Γ m i A,
+    ∀ Γ d,
       cwf Γ →
-      Γ ⊢ᶜ A : cSort m i →
-      cwf ((m, A) :: Γ).
+      on_flex (λ '(m, A), isType Γ A m) d →
+      cwf (d :: Γ).

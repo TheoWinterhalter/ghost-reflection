@@ -73,3 +73,36 @@ Notation cscope := (list (flex cmode)).
 
 Definition csc (Γ : ccontext) : cscope :=
   map (map_flex fst) Γ.
+
+Definition fget {d} (r : role) (decl : flex d) : option d :=
+  match r with
+  | reg => decl.(freg)
+  | prm => decl.(fprm)
+  end.
+
+(* TODO MOVE *)
+Definition option_bind {A B} (o : option A) (f : A → option B) :=
+  match o with
+  | Some x => f x
+  | None => None
+  end.
+
+  Definition skip {A} : flex A := {|
+    freg := None ;
+    fprm := None
+  |}.
+
+Definition mreg m : flex cmode := {|
+  freg := Some m ;
+  fprm := None
+|}.
+
+Definition dreg m A : flex cdecl := {|
+  freg := Some (m, A) ;
+  fprm := None
+|}.
+
+(** A bit out of place, but useful definitions for flex variables **)
+
+Definition cvar (r : role) (x : nat) :=
+  cvar_proj r (_cvar x).
