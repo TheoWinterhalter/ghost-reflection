@@ -6,7 +6,8 @@ From Coq Require Import Setoid Morphisms Relation_Definitions.
 Module Core.
 
 Inductive cterm : Type :=
-  | cvar : nat -> cterm
+  | _cvar : nat -> cterm
+  | cvar_proj : role -> cterm -> cterm
   | cSort : cmode -> level -> cterm
   | cPi : cmode -> cterm -> cterm -> cterm
   | clam : cmode -> cterm -> cterm -> cterm
