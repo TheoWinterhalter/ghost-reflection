@@ -1,10 +1,14 @@
 -- Universe levels and qualities
 level : Type
 cmode : Type
+role : Type
 
 -- Syntax
 
-cterm(cvar) : Type
+cterm(_cvar) : Type
+
+-- Variables are split in two constructors due to an Autosubst limitation
+cvar_proj : role -> cterm -> cterm
 
 cSort : cmode -> level -> cterm
 
