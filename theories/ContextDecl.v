@@ -102,6 +102,15 @@ Definition dreg m A : flex cdecl := {|
   fprm := None
 |}.
 
+Definition whenSome {A} (P : A → Prop) (o : option A) :=
+  match o with
+  | Some x => P x
+  | None => True
+  end.
+
+Definition on_flex {A} (P : A → Prop) (d : flex A) :=
+  whenSome P d.(freg) ∧ whenSome P d.(fprm).
+
 (** A bit out of place, but useful definitions for flex variables **)
 
 Definition cvar (r : role) (x : nat) :=

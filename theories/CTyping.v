@@ -186,17 +186,6 @@ where "Γ ⊢ᶜ t : A" := (ctyping Γ t A).
 
 (** Context formation **)
 
-(* TODO MOVE *)
-
-Definition whenSome {A} (P : A → Prop) (o : option A) :=
-  match o with
-  | Some x => P x
-  | None => True
-  end.
-
-Definition on_flex {A} (P : A → Prop) (d : flex A) :=
-  whenSome P d.(freg) ∧ whenSome P d.(fprm).
-
 Definition isType Γ A m :=
   ∃ i, Γ ⊢ᶜ A : cSort m i.
 
