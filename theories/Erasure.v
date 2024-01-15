@@ -67,7 +67,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     if relm mx && negb (mode_eqb m mProp)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if mode_inclb [ m ; mx ] [ mGhost ]
-    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ (S ⋅ ⟦ mx :: Γ | B ⟧∅))
+    then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if mode_eqb m mProp
     then cstar
     else ⟦ mx :: Γ | B ⟧ε ;
@@ -240,16 +240,16 @@ Proof.
     erewrite H0.
     2:{ eapply rscoping_upren. assumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
-    repeat (let e := fresh "e" in destruct_if e) ; eauto.
-    + asimpl. cbn. repeat unfold_funcomp.
-      unfold Ren_cterm, upRen_cterm_cterm. asimpl.
-      repeat unfold_funcomp. f_equal.
-      * f_equal. f_equal.
-        (* Is it true? *)
-        admit.
-      * f_equal. f_equal. admit.
-    + asimpl. unfold Ren_cterm. repeat unfold_funcomp.
-      (* This one is wrong! *)
+    repeat (let e := fresh "e" in destruct_if e) ; try solve [ eauto ].
+    (* cbn - [mode_inb mode_inclb] in *.
+    destruct (relm mx) eqn:e'. 1: discriminate.
+    destruct mx. all: try discriminate.
+    + cbn in *. destruct m. all: try discriminate.
+      * cbn in *. asimpl. *)
+    asimpl. repeat unfold_funcomp.
+    unfold Ren_cterm. asimpl.
+    repeat unfold_funcomp.
+    (* This one is wrong! *)
 Abort.
 
 Lemma nth_skipn :
