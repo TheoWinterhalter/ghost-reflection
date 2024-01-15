@@ -158,25 +158,6 @@ Qed.
 
 (** Erasure commutes with renaming **)
 
-(* Lemma rscoping_relv :
-  ∀ Γ Δ ρ x,
-    rscoping Γ ρ Δ →
-    nth_error Δ = Some m →
-    relv Γ (ρ x) = relv Δ x.
-Proof.
-  intros Γ Δ ρ x hρ.
-  unfold relv.
-  destruct (nth_error Δ x) eqn:e.
-  - symmetry. erewrite nth_error_nth. 2: eassumption.
-    eapply hρ in e.
-    erewrite nth_error_nth. 2: eassumption.
-    reflexivity.
-  -
-
-
-
-  f_equal. f_equal. *)
-
 Lemma erase_ren :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
@@ -227,40 +208,16 @@ Proof.
   apply relv_skipn with (x := 1).
 Qed.
 
-Lemma erase_var_0 :
-  ∀ Γ,
-    erase_var Γ 0 = 0.
-Proof.
-  intros Γ. destruct Γ. all: reflexivity.
-Qed.
-
 (* Iterated up_ren *)
-Fixpoint up_rens n ρ :=
+(* Fixpoint up_rens n ρ :=
   match n with
   | 0 => ρ
   | S n => up_ren (up_rens n ρ)
-  end.
+  end. *)
 
 (* Combination of up_ren and shift, corresponding to weakening under binders *)
-Definition upwk (u w : nat) : nat → nat :=
-  up_rens u (Nat.add w).
-
-Lemma erase_var_plus :
-  ∀ Γ x y,
-    erase_var Γ (x + y) = erase_var Γ x + erase_var (skipn x Γ) y.
-Proof.
-  intros Γ x y.
-  induction Γ as [| m Γ ih] in x, y |- *.
-  - destruct x, y. all: cbn. all: reflexivity.
-  - destruct x, y. all: cbn - [mode_inb skipn]. all: try eauto.
-    + replace (x + 0) with x by lia.
-      destruct_if e.
-      * cbn. rewrite erase_var_0. lia.
-      * cbn. rewrite erase_var_0. lia.
-    + destruct_if e.
-      * cbn. auto.
-      * cbn. rewrite ih. lia.
-Qed.
+(* Definition upwk (u w : nat) : nat → nat :=
+  up_rens u (Nat.add w). *)
 
 (* TODO MOVE *)
 Notation "#| l |" := (length l).
@@ -294,7 +251,7 @@ Proof.
   - cbn in *. apply h. assumption.
 Qed.
 
-Lemma upwk_scoping :
+(* Lemma upwk_scoping :
   ∀ Γ Δ Ξ,
     rscoping (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ|) (Ξ ++ Γ).
 Proof.
@@ -302,9 +259,9 @@ Proof.
   induction Ξ as [| m Ξ ih].
   - cbn. apply rscoping_weak.
   - cbn. apply rscoping_upren. assumption.
-Qed.
+Qed. *)
 
-Lemma erase_var_weakening :
+(* Lemma erase_var_weakening :
   ∀ Γ Δ Ξ x,
     erase_var (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ| x) =
     upwk #|erase_sc Ξ| #|erase_sc Δ| (erase_var (Ξ ++ Γ) x).
@@ -321,7 +278,7 @@ Proof.
         admit.
       * cbn. unfold upwk in ih. rewrite ih. asimpl. repeat unfold_funcomp.
         reflexivity. *)
-Abort.
+Abort. *)
 
 Lemma nth_app_r :
   ∀ A (l l' : list A) d n,
@@ -333,7 +290,7 @@ Proof.
   - cbn. apply ih.
 Qed.
 
-Lemma nth_upwk :
+(* Lemma nth_upwk :
   ∀ A (l1 l2 l3 : list A) x d,
     nth (upwk #|l1| #|l2| x) (l1 ++ l2 ++ l3) d = nth x (l1 ++ l3) d.
 Proof.
@@ -343,17 +300,17 @@ Proof.
   - cbn. destruct x.
     + cbn. reflexivity.
     + cbn. apply ih.
-Qed.
+Qed. *)
 
-Lemma relv_upwk :
+(* Lemma relv_upwk :
   ∀ Γ Δ Ξ x,
     relv (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ| x) = relv (Ξ ++ Γ) x.
 Proof.
   intros Γ Δ Ξ x.
   unfold relv. rewrite nth_upwk. reflexivity.
-Qed.
+Qed. *)
 
-Lemma erase_weakening :
+(* Lemma erase_weakening :
   ∀ Γ Δ Ξ t,
     ⟦ Ξ ++ Δ ++ Γ | (upwk #|Ξ| #|Δ|) ⋅ t ⟧ε =
     (upwk #|erase_sc Ξ| #|erase_sc Δ|) ⋅ ⟦ Ξ ++ Γ | t ⟧ε.
@@ -423,12 +380,12 @@ Proof.
         unfold Ren_cterm. asimpl. repeat unfold_funcomp.
         (* ??? *)
         admit. *)
-Abort.
+Abort. *)
 
 (** Erasure commutes with substitution **)
 
 (* TODO WRONG, σ should be filtered to remove stuff in Ghost or Prop mode. *)
-Lemma erase_subst :
+(* Lemma erase_subst :
   ∀ Γ Δ σ t,
     ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase_term Γ ].
 Proof.
@@ -462,7 +419,7 @@ Proof.
     + (* Need scoping information probably *)
       admit.
     + admit.
-Abort.
+Abort. *)
 
 (** Erasure preserves conversion **)
 
