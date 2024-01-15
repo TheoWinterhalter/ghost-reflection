@@ -57,26 +57,6 @@ Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
-(** Problem with skip??
-
-  Say you have Π mProp A B, then ⟦ mProp :: Γ ⟧ ⊢ ⟦ mProp :: Γ | B ⟧
-  which means None :: ⟦ Γ ⟧ ⊢ ⟦ mProp :: Γ | B ⟧
-  now what can we do with this? How do we go back to ⟦ Γ ⟧?
-  There is no corresponding λ and probably we don't want that.
-
-  Was it a bad idea after all? :/
-
-  Maybe we get rid of higher order for erasure? But generally we have to be able
-  to recover data in None :: Γ.
-
-  What is the erasure of λ A n. vec A n?
-  We have A : Type, n : erased nat ⊢ vec A n
-  which erases to A : Type, skip ⊢ list A
-  but then I can't just use λ A. list A because A here is 1 instead of 0.
-  And weakeaning is the opposite of a solution!
-  Do I need a close operator in the syntax?
-
-**)
 Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧ε := if relv Γ x then cvar x else cDummy ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
@@ -87,7 +67,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     if relm mx && negb (mode_eqb m mProp)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if mode_inclb [ m ; mx ] [ mGhost ]
-    then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
+    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (S ⋅ close ⟦ mx :: Γ | B ⟧∅))
     else if mode_eqb m mProp
     then cstar
     else ⟦ mx :: Γ | B ⟧ε ;
@@ -261,15 +241,21 @@ Proof.
     2:{ eapply rscoping_upren. assumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     repeat (let e := fresh "e" in destruct_if e) ; try solve [ eauto ].
+    + asimpl. repeat unfold_funcomp.
+      unfold Ren_cterm, upRen_cterm_cterm. asimpl. repeat unfold_funcomp.
+      cbn. unfold upRen_cterm_cterm. unfold up_ren.
+      asimpl. repeat unfold_funcomp. f_equal.
+      * f_equal. f_equal. f_equal.
+
+
     (* cbn - [mode_inb mode_inclb] in *.
     destruct (relm mx) eqn:e'. 1: discriminate.
     destruct mx. all: try discriminate.
     + cbn in *. destruct m. all: try discriminate.
       * cbn in *. asimpl. *)
-    asimpl. repeat unfold_funcomp.
+    (* asimpl. repeat unfold_funcomp.
     unfold Ren_cterm. asimpl.
-    repeat unfold_funcomp.
-    (* This one is wrong! *)
+    repeat unfold_funcomp. *)
 Abort.
 
 Lemma nth_skipn :
