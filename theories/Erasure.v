@@ -66,6 +66,16 @@ Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
   Was it a bad idea after all? :/
 
+  Maybe we get rid of higher order for erasure? But generally we have to be able
+  to recover data in None :: Γ.
+
+  What is the erasure of λ A n. vec A n?
+  We have A : Type, n : erased nat ⊢ vec A n
+  which erases to A : Type, skip ⊢ list A
+  but then I can't just use λ A. list A because A here is 1 instead of 0.
+  And weakeaning is the opposite of a solution!
+  Do I need a close operator in the syntax?
+
 **)
 Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧ε := if relv Γ x then cvar x else cDummy ;
