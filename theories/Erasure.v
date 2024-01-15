@@ -45,10 +45,13 @@ Notation irrm m :=
 Notation relm m :=
   (negb (irrm m)).
 
-(** Test whether a variable is relevant **)
+(** Test whether a variable is defined and relevant **)
 
 Definition relv (Γ : scope) x :=
-  relm (nth x Γ mType).
+  match nth_error Γ x with
+  | Some m => relm m
+  | None => false
+  end.
 
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
@@ -125,8 +128,10 @@ Proof.
   induction t in Γ, hm |- *.
   all: try reflexivity.
   all: try discriminate hm.
-  - cbn - [mode_inb] in *. unfold relv. rewrite hm.
-    reflexivity.
+  - cbn - [mode_inb] in *. unfold relv.
+    destruct (nth_error _ _) eqn:e. 2: reflexivity.
+    erewrite nth_error_nth in hm. 2: eassumption.
+    rewrite hm. reflexivity.
   - cbn - [mode_inb] in *.
     destruct_if em. 1: eauto.
     rewrite hm. reflexivity.
@@ -170,14 +175,11 @@ Proof.
   - cbn - [mode_inb].
     unfold relv.
     destruct (nth_error Γ x) eqn:e.
-    + symmetry. erewrite nth_error_nth. 2: eassumption.
-      eapply hρ in e.
-      erewrite nth_error_nth. 2: eassumption.
+    + eapply hρ in e. rewrite e.
       destruct (relm m). all: reflexivity.
-    + (* Missing relevant hyp probably *)
+    + destruct (nth_error Δ _) eqn:e'. 2: reflexivity.
+      destruct (relm m). 2: reflexivity.
 Abort.
-
-(* OLD BELOW *)
 
 Lemma nth_skipn :
   ∀ A (l : list A) x y d,
@@ -473,14 +475,13 @@ Theorem erase_typing :
 Proof.
   intros Γ t A h hm.
   induction h.
-  - cbn. unfold relv. cbn - [mode_inb] in hm. rewrite hm.
+  - cbn. unfold relv. unfold sc. rewrite nth_error_map.
+    rewrite H. cbn - [mode_inb].
+    cbn - [mode_inb] in hm.
+    erewrite nth_error_nth in hm.
+    2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
+    cbn - [mode_inb] in hm. rewrite hm.
     cbn. eapply ccmeta_conv.
-    + econstructor. eapply erase_ctx_var. 1: eassumption.
-      erewrite nth_error_nth in hm.
-      2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
-      assumption.
+    + econstructor. eapply erase_ctx_var. all: eassumption.
     + cbn - [skipn]. f_equal.
-      erewrite nth_error_nth in hm.
-      2:{ unfold sc. rewrite nth_error_map. rewrite H. reflexivity. }
-      cbn - [mode_inb] in hm.
 Abort.
