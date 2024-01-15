@@ -70,7 +70,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (S ⋅ close ⟦ mx :: Γ | B ⟧∅))
     else if mode_eqb m mProp
     then cstar
-    else ⟦ mx :: Γ | B ⟧ε ;
+    else close ⟦ mx :: Γ | B ⟧ε ;
   ⟦ Γ | lam mx A B t ⟧ε :=
     if irrm mx
     then ⟦ mx :: Γ | t ⟧ε
@@ -237,7 +237,7 @@ Lemma erase_scoping :
     ccscoping (erase_sc Γ) ⟦ Γ | t ⟧ε cType.
 Proof.
   intros Γ t m hrm h.
-  funelim (⟦ Γ | t ⟧ε). all: try solve [ constructor ].
+  funelim (⟦ Γ | t ⟧ε). all: try solve [ repeat econstructor ].
   - cbn. destruct_if e. 2: constructor.
     unfold relv in e. destruct nth_error eqn:e'. 2: discriminate.
     eapply scoping_md in h. cbn in h.
@@ -246,12 +246,29 @@ Proof.
     eapply erase_sc_var. 1: eassumption.
     destruct (irrm _) eqn:e2. 1: discriminate.
     reflexivity.
+  - cbn. constructor. all: admit. (* BAD *)
   - cbn - [mode_inclb mode_inb].
     repeat (let e := fresh "e" in destruct_if e).
-    all: try solve [ constructor ].
+    (* all: try solve [ repeat constructor ]. *)
+    + admit.
+    + admit.
     + (* Right, lifting problem here *) admit.
     + specialize H0 with (Γ := _ :: _) (3 := eq_refl).
-      (* Mistake found here! *)
+      cbn - [mode_inb] in H0.
+      destruct (irrm mx) eqn:e'.
+      2:{ destruct m, mx ; cbn in * ; discriminate. }
+      constructor. eapply H0. all: eauto.
+      apply scope_pi_inv in h. intuition subst. assumption.
+  - cbn - [mode_inclb mode_inb].
+    destruct_if e.
+    + (* Mistake too *) admit.
+    + apply scope_lam_inv in h.
+      erewrite scoping_md. 2: intuition eauto.
+      rewrite hrm. constructor.
+      * constructor. specialize H0 with (3 := eq_refl). eapply H0.
+        all: intuition eauto. (* ????? *)
+        admit.
+      *
 Abort.
 
 (** Erasure commutes with renaming **)

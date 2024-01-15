@@ -73,6 +73,8 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 
 | cscope_tyval :
     ∀ A a,
+      ccscoping Γ A cType →
+      ccscoping Γ a cType →
       ccscoping Γ (ctyval A a) cType
 
 | cscope_tyerr :
@@ -80,10 +82,12 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 
 | cscope_El :
     ∀ T,
+      ccscoping Γ T cType →
       ccscoping Γ (cEl T) cType
 
 | cscope_Err :
     ∀ T,
+      ccscoping Γ T cType →
       ccscoping Γ (cErr T) cType
 .
 
