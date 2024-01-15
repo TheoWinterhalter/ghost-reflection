@@ -55,7 +55,7 @@ Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
 Equations erase_term (Γ : scope) (t : term) : cterm := {
-  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar reg x else cDummy ;
+  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar x else cDummy ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
   (* But if I need to have η for it then I'm screwed... We'll see
   what's needed… *)
@@ -98,13 +98,13 @@ Equations erase_ctx (Γ : context) : ccontext := {
   ⟦ [] ⟧ε := [] ;
   ⟦ Γ ,, (mx, A) ⟧ε :=
     if irrm mx
-    then skip :: ⟦ Γ ⟧ε
-    else dreg cType ⟦ sc Γ | A ⟧τ :: ⟦ Γ ⟧ε
+    then None :: ⟦ Γ ⟧ε
+    else Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
 Definition erase_sc (Γ : scope) : cscope :=
-  map (λ m, if irrm m then skip else mreg cType) Γ.
+  map (λ m, if irrm m then None else Some cType) Γ.
 
 (* TODO MOVE *)
 
@@ -143,10 +143,9 @@ Lemma erase_ctx_var :
   ∀ Γ x m A,
     nth_error Γ x = Some (m, A) →
     irrm m = false →
-    nth_error ⟦ Γ ⟧ε (erase_var (sc Γ) x) =
-    Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ).
-  intros Γ x m A e hr.
+    nth_error ⟦ Γ ⟧ε x = Some (Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ)).
 Proof.
+  intros Γ x m A e hr.
   induction Γ as [| [my B] Γ ih ] in x, m, A, e, hr |- *.
   1: destruct x ; discriminate.
   destruct x.
@@ -157,7 +156,47 @@ Proof.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
-(** Erasure commutes with weakening **)
+(** Erasure commutes with renaming **)
+
+(* Lemma rscoping_relv :
+  ∀ Γ Δ ρ x,
+    rscoping Γ ρ Δ →
+    nth_error Δ = Some m →
+    relv Γ (ρ x) = relv Δ x.
+Proof.
+  intros Γ Δ ρ x hρ.
+  unfold relv.
+  destruct (nth_error Δ x) eqn:e.
+  - symmetry. erewrite nth_error_nth. 2: eassumption.
+    eapply hρ in e.
+    erewrite nth_error_nth. 2: eassumption.
+    reflexivity.
+  -
+
+
+
+  f_equal. f_equal. *)
+
+Lemma erase_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε.
+Proof.
+  intros Γ Δ ρ t hρ.
+  funelim (⟦ _ | t ⟧ε).
+  all: rename Γ0 into Δ.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - cbn - [mode_inb].
+    unfold relv.
+    destruct (nth_error Γ x) eqn:e.
+    + symmetry. erewrite nth_error_nth. 2: eassumption.
+      eapply hρ in e.
+      erewrite nth_error_nth. 2: eassumption.
+      destruct (relm m). all: reflexivity.
+    + (* Missing relevant hyp probably *)
+Abort.
+
+(* OLD BELOW *)
 
 Lemma nth_skipn :
   ∀ A (l : list A) x y d,
