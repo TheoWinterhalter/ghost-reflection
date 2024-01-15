@@ -193,22 +193,22 @@ Proof.
   - apply ih.
 Qed.
 
-Lemma relv_skipn :
+(* Lemma relv_skipn :
   ∀ Γ x y,
     relv Γ (x + y) = relv (skipn x Γ) y.
 Proof.
   intros Γ x y.
   unfold relv.
   rewrite nth_skipn. reflexivity.
-Qed.
+Qed. *)
 
-Corollary relv_S :
+(* Corollary relv_S :
   ∀ m Γ x,
     relv (m :: Γ) (S x) = relv Γ x.
 Proof.
   intros m Γ x.
   apply relv_skipn with (x := 1).
-Qed.
+Qed. *)
 
 (* Iterated up_ren *)
 (* Fixpoint up_rens n ρ :=
