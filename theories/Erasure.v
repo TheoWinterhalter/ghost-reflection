@@ -161,14 +161,20 @@ Proof.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
+Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
+  ∀ x,
+    nth_error Δ x = None →
+    nth_error Γ (ρ x) = None.
+
 (** Erasure commutes with renaming **)
 
 Lemma erase_ren :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
     ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε.
 Proof.
-  intros Γ Δ ρ t hρ.
+  intros Γ Δ ρ t hρ hcρ.
   funelim (⟦ _ | t ⟧ε).
   all: rename Γ0 into Δ.
   all: try solve [ asimpl ; cbn ; eauto ].
@@ -177,8 +183,7 @@ Proof.
     destruct (nth_error Γ x) eqn:e.
     + eapply hρ in e. rewrite e.
       destruct (relm m). all: reflexivity.
-    + destruct (nth_error Δ _) eqn:e'. 2: reflexivity.
-      destruct (relm m). 2: reflexivity.
+    + eapply hcρ in e. rewrite e. reflexivity.
 Abort.
 
 Lemma nth_skipn :
@@ -248,6 +253,25 @@ Lemma rscoping_upren :
     rscoping (m :: Γ) (up_ren ρ) (m :: Δ).
 Proof.
   intros Γ Δ m ρ h. intros x mx e.
+  destruct x.
+  - cbn in *. assumption.
+  - cbn in *. apply h. assumption.
+Qed.
+
+Lemma rscoping_comp_weak :
+  ∀ Γ Δ,
+    rscoping_comp (Δ ++ Γ) (plus #|Δ|) Γ.
+Proof.
+  intros Γ Δ. intros n e.
+  rewrite nth_error_app_r. assumption.
+Qed.
+
+Lemma rscoping_comp_upren :
+  ∀ Γ Δ m ρ,
+    rscoping_comp Γ ρ Δ →
+    rscoping_comp (m :: Γ) (up_ren ρ) (m :: Δ).
+Proof.
+  intros Γ Δ m ρ h. intros x e.
   destruct x.
   - cbn in *. assumption.
   - cbn in *. apply h. assumption.
