@@ -19,6 +19,11 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       nth_error Γ x = Some (Some m) →
       ccscoping Γ (cvar x) m
 
+| cscope_close :
+    ∀ m t,
+      ccscoping (None :: Γ) t m →
+      ccscoping Γ (close t) m
+
 | scpoe_sort :
     ∀ m i,
       ccscoping Γ (cSort m i) cType
