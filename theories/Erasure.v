@@ -144,6 +144,17 @@ Qed.
 
 (** Erasure of context and of variables **)
 
+Lemma erase_sc_var :
+  ∀ Γ x m,
+    nth_error Γ x = Some m →
+    irrm m = false →
+    nth_error (erase_sc Γ) x = Some (Some cType).
+Proof.
+  intros Γ x m e hr.
+  unfold erase_sc. rewrite nth_error_map.
+  rewrite e. cbn - [mode_inb]. rewrite hr. reflexivity.
+Qed.
+
 Lemma erase_ctx_var :
   ∀ Γ x m A,
     nth_error Γ x = Some (m, A) →
@@ -216,6 +227,32 @@ Proof.
   - cbn in *. assumption.
   - cbn in *. apply h. assumption.
 Qed.
+
+(** Erasure preserves scoping **)
+
+Lemma erase_scoping :
+  ∀ Γ t m,
+    relm m = true →
+    scoping Γ t m →
+    ccscoping (erase_sc Γ) ⟦ Γ | t ⟧ε cType.
+Proof.
+  intros Γ t m hrm h.
+  funelim (⟦ Γ | t ⟧ε). all: try solve [ constructor ].
+  - cbn. destruct_if e. 2: constructor.
+    unfold relv in e. destruct nth_error eqn:e'. 2: discriminate.
+    eapply scoping_md in h. cbn in h.
+    erewrite nth_error_nth in h. 2: eassumption.
+    subst. constructor.
+    eapply erase_sc_var. 1: eassumption.
+    destruct (irrm _) eqn:e2. 1: discriminate.
+    reflexivity.
+  - cbn - [mode_inclb mode_inb].
+    repeat (let e := fresh "e" in destruct_if e).
+    all: try solve [ constructor ].
+    + (* Right, lifting problem here *) admit.
+    + specialize H0 with (Γ := _ :: _) (3 := eq_refl).
+      (* Mistake found here! *)
+Abort.
 
 (** Erasure commutes with renaming **)
 
