@@ -57,6 +57,16 @@ Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
+(** Problem with skip??
+
+  Say you have Π mProp A B, then ⟦ mProp :: Γ ⟧ ⊢ ⟦ mProp :: Γ | B ⟧
+  which means None :: ⟦ Γ ⟧ ⊢ ⟦ mProp :: Γ | B ⟧
+  now what can we do with this? How do we go back to ⟦ Γ ⟧?
+  There is no corresponding λ and probably we don't want that.
+
+  Was it a bad idea after all? :/
+
+**)
 Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧ε := if relv Γ x then cvar x else cDummy ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
