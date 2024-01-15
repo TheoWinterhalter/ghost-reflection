@@ -50,25 +50,12 @@ Notation relm m :=
 Definition relv (Γ : scope) x :=
   relm (nth x Γ mType).
 
-(** Erasure for a variable
-
-  It needs to skip over variables in scope that are erased.
-  It returns 0 as a default, but it should not matter.
-
-**)
-
-Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
-  match Γ, x with
-  | m :: Γ, S x => if irrm m then erase_var Γ x else S (erase_var Γ x)
-  | _, _ => 0
-  end.
-
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
 Equations erase_term (Γ : scope) (t : term) : cterm := {
-  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar (erase_var Γ x) else cDummy ;
+  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar reg x else cDummy ;
   ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
   (* But if I need to have η for it then I'm screwed... We'll see
   what's needed… *)
@@ -111,16 +98,13 @@ Equations erase_ctx (Γ : context) : ccontext := {
   ⟦ [] ⟧ε := [] ;
   ⟦ Γ ,, (mx, A) ⟧ε :=
     if irrm mx
-    then ⟦ Γ ⟧ε
-    else (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+    then skip :: ⟦ Γ ⟧ε
+    else dreg cType ⟦ sc Γ | A ⟧τ :: ⟦ Γ ⟧ε
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
-Fixpoint erase_sc (Γ : scope) : cscope :=
-  match Γ with
-  | [] => []
-  | m :: Γ => if irrm m then erase_sc Γ else cType :: erase_sc Γ
-  end.
+Definition erase_sc (Γ : scope) : cscope :=
+  map (λ m, if irrm m then skip else mreg cType) Γ.
 
 (* TODO MOVE *)
 
