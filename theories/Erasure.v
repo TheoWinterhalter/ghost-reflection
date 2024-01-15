@@ -166,66 +166,6 @@ Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
     nth_error Δ x = None →
     nth_error Γ (ρ x) = None.
 
-(** Erasure commutes with renaming **)
-
-Lemma erase_ren :
-  ∀ Γ Δ ρ t,
-    rscoping Γ ρ Δ →
-    rscoping_comp Γ ρ Δ →
-    ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε.
-Proof.
-  intros Γ Δ ρ t hρ hcρ.
-  funelim (⟦ _ | t ⟧ε).
-  all: rename Γ0 into Δ.
-  all: try solve [ asimpl ; cbn ; eauto ].
-  - cbn - [mode_inb].
-    unfold relv.
-    destruct (nth_error Γ x) eqn:e.
-    + eapply hρ in e. rewrite e.
-      destruct (relm m). all: reflexivity.
-    + eapply hcρ in e. rewrite e. reflexivity.
-Abort.
-
-Lemma nth_skipn :
-  ∀ A (l : list A) x y d,
-    nth (x + y) l d = nth y (skipn x l) d.
-Proof.
-  intros A l x y d.
-  induction l as [| a l ih] in x, y |- *.
-  1:{ destruct x, y. all: reflexivity. }
-  destruct x, y. all: cbn. 1,2: reflexivity.
-  - apply ih.
-  - apply ih.
-Qed.
-
-(* Lemma relv_skipn :
-  ∀ Γ x y,
-    relv Γ (x + y) = relv (skipn x Γ) y.
-Proof.
-  intros Γ x y.
-  unfold relv.
-  rewrite nth_skipn. reflexivity.
-Qed. *)
-
-(* Corollary relv_S :
-  ∀ m Γ x,
-    relv (m :: Γ) (S x) = relv Γ x.
-Proof.
-  intros m Γ x.
-  apply relv_skipn with (x := 1).
-Qed. *)
-
-(* Iterated up_ren *)
-(* Fixpoint up_rens n ρ :=
-  match n with
-  | 0 => ρ
-  | S n => up_ren (up_rens n ρ)
-  end. *)
-
-(* Combination of up_ren and shift, corresponding to weakening under binders *)
-(* Definition upwk (u w : nat) : nat → nat :=
-  up_rens u (Nat.add w). *)
-
 (* TODO MOVE *)
 Notation "#| l |" := (length l).
 
@@ -276,6 +216,81 @@ Proof.
   - cbn in *. assumption.
   - cbn in *. apply h. assumption.
 Qed.
+
+(** Erasure commutes with renaming **)
+
+Lemma erase_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
+    ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε.
+Proof.
+  intros Γ Δ ρ t hρ hcρ.
+  funelim (⟦ _ | t ⟧ε).
+  all: rename Γ0 into Δ.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - cbn - [mode_inb].
+    unfold relv.
+    destruct (nth_error Γ x) eqn:e.
+    + eapply hρ in e. rewrite e.
+      destruct (relm m). all: reflexivity.
+    + eapply hcρ in e. rewrite e. reflexivity.
+  - cbn - [mode_inb mode_inclb].
+    erewrite H. 2,3: assumption.
+    erewrite H0.
+    2:{ eapply rscoping_upren. assumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    repeat (let e := fresh "e" in destruct_if e) ; eauto.
+    + asimpl. cbn. repeat unfold_funcomp.
+      unfold Ren_cterm, upRen_cterm_cterm. asimpl.
+      repeat unfold_funcomp. f_equal.
+      * f_equal. f_equal.
+        (* Is it true? *)
+        admit.
+      * f_equal. f_equal. admit.
+    + asimpl. unfold Ren_cterm. repeat unfold_funcomp.
+      (* This one is wrong! *)
+Abort.
+
+Lemma nth_skipn :
+  ∀ A (l : list A) x y d,
+    nth (x + y) l d = nth y (skipn x l) d.
+Proof.
+  intros A l x y d.
+  induction l as [| a l ih] in x, y |- *.
+  1:{ destruct x, y. all: reflexivity. }
+  destruct x, y. all: cbn. 1,2: reflexivity.
+  - apply ih.
+  - apply ih.
+Qed.
+
+(* Lemma relv_skipn :
+  ∀ Γ x y,
+    relv Γ (x + y) = relv (skipn x Γ) y.
+Proof.
+  intros Γ x y.
+  unfold relv.
+  rewrite nth_skipn. reflexivity.
+Qed. *)
+
+(* Corollary relv_S :
+  ∀ m Γ x,
+    relv (m :: Γ) (S x) = relv Γ x.
+Proof.
+  intros m Γ x.
+  apply relv_skipn with (x := 1).
+Qed. *)
+
+(* Iterated up_ren *)
+(* Fixpoint up_rens n ρ :=
+  match n with
+  | 0 => ρ
+  | S n => up_ren (up_rens n ρ)
+  end. *)
+
+(* Combination of up_ren and shift, corresponding to weakening under binders *)
+(* Definition upwk (u w : nat) : nat → nat :=
+  up_rens u (Nat.add w). *)
 
 (* Lemma upwk_scoping :
   ∀ Γ Δ Ξ,
