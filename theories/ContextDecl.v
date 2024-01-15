@@ -36,12 +36,7 @@ Notation "Γ ,,, Δ" :=
   removes some variables, while parametricity adds some in a non-uniform way
   so computing offsets and weakenings will be painful arithmetic.
   I propose to use flexible contexts that instead of one declaration per
-  position will have zero, one or two. A variable in the target will thus be
-  a position in the context, plus a role corresponding to how the variable is
-  used, be it as a regular or a parametricity variable.
-
-  This idea should work for all kinds of translations and is particularly suited
-  to combination of several translations like we do here.
+  position can have zero or one.
 
   TODO: Mention this idea of flexible variables in the paper.
 
@@ -53,32 +48,12 @@ Notation "Γ ,,, Δ" :=
 
 Notation cdecl := (cmode * cterm)%type.
 
-(* Flex declaration *)
-Record flex decl := {
-  freg : option decl ;
-  fprm : option decl
-}.
+Notation ccontext := (list (option cdecl)).
 
-Arguments freg {decl}.
-Arguments fprm {decl}.
-
-Definition map_flex {d d'} (f : d → d') (c : flex d) : flex d' := {|
-  freg := option_map f c.(freg) ;
-  fprm := option_map f c.(fprm)
-|}.
-
-Notation ccontext := (list (flex cdecl)).
-
-Notation cscope := (list (flex cmode)).
+Notation cscope := (list (option cmode)).
 
 Definition csc (Γ : ccontext) : cscope :=
-  map (map_flex fst) Γ.
-
-Definition fget {d} (r : role) (decl : flex d) : option d :=
-  match r with
-  | reg => decl.(freg)
-  | prm => decl.(fprm)
-  end.
+  map (option_map fst) Γ.
 
 (* TODO MOVE *)
 Definition option_bind {A B} (o : option A) (f : A → option B) :=
@@ -87,31 +62,8 @@ Definition option_bind {A B} (o : option A) (f : A → option B) :=
   | None => None
   end.
 
-  Definition skip {A} : flex A := {|
-    freg := None ;
-    fprm := None
-  |}.
-
-Definition mreg m : flex cmode := {|
-  freg := Some m ;
-  fprm := None
-|}.
-
-Definition dreg m A : flex cdecl := {|
-  freg := Some (m, A) ;
-  fprm := None
-|}.
-
 Definition whenSome {A} (P : A → Prop) (o : option A) :=
   match o with
   | Some x => P x
   | None => True
   end.
-
-Definition on_flex {A} (P : A → Prop) (d : flex A) :=
-  whenSome P d.(freg) ∧ whenSome P d.(fprm).
-
-(** A bit out of place, but useful definitions for flex variables **)
-
-Definition cvar (r : role) (x : nat) :=
-  cvar_proj r (_cvar x).
