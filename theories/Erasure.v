@@ -122,6 +122,13 @@ Ltac destruct_if e :=
     destruct b eqn: e
   end.
 
+Ltac destruct_if' :=
+  let e := fresh "e" in
+  destruct_if e.
+
+Ltac destruct_ifs :=
+  repeat destruct_if'.
+
 (** Erasure of irrelevant terms is cDummy **)
 
 Lemma erase_irr :
@@ -251,7 +258,7 @@ Proof.
   - cbn - [mode_inb]. destruct_if e. all: repeat constructor.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2. fold (erase_sc Γ) in IHh2.
-    repeat (let e := fresh "e" in destruct_if e).
+    destruct_ifs.
     (* all: try solve [ repeat constructor ; eauto ]. *)
     + destruct (irrm mx) eqn:e'. 1: discriminate.
       repeat constructor. all: eauto.
@@ -289,6 +296,39 @@ Abort.
 
 (** Erasure commutes with renaming **)
 
+Lemma nth_nth_error :
+  ∀ A (l : list A) (d : A) n,
+    nth n l d = match nth_error l n with Some x => x | None => d end.
+Proof.
+  intros A l d n.
+  induction l in n |- *.
+  - cbn. destruct n. all: reflexivity.
+  - cbn. destruct n.
+    + cbn. reflexivity.
+    + cbn. apply IHl.
+Qed.
+
+Lemma md_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
+    md Γ (ρ ⋅ t) = md Δ t.
+Proof.
+  intros Γ Δ ρ t hρ hcρ.
+  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn ; eauto ].
+  - cbn. rewrite 2!nth_nth_error.
+    destruct (nth_error Δ n) eqn:e.
+    + eapply hρ in e. rewrite e. reflexivity.
+    + eapply hcρ in e. rewrite e. reflexivity.
+  - cbn. eapply IHt3.
+    + eapply rscoping_shift. assumption.
+    + eapply rscoping_comp_upren. assumption.
+  - cbn. erewrite IHt3. 2,3: eauto.
+    reflexivity.
+Qed.
+
 Lemma erase_ren :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
@@ -311,24 +351,31 @@ Proof.
     erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
-    repeat (let e := fresh "e" in destruct_if e) ; try solve [ eauto ].
+    destruct_ifs. all: try solve [ eauto ].
     asimpl. repeat unfold_funcomp.
     unfold Ren_cterm, upRen_cterm_cterm. asimpl. repeat unfold_funcomp.
     cbn. unfold upRen_cterm_cterm. unfold up_ren.
-    asimpl. repeat unfold_funcomp. f_equal.
-    + f_equal. f_equal. f_equal. repeat rewrite renRen_cterm. asimpl.
-      repeat unfold_funcomp. reflexivity.
-
-
-    (* cbn - [mode_inb mode_inclb] in *.
-    destruct (relm mx) eqn:e'. 1: discriminate.
-    destruct mx. all: try discriminate.
-    + cbn in *. destruct m. all: try discriminate.
-      * cbn in *. asimpl. *)
-    (* asimpl. repeat unfold_funcomp.
-    unfold Ren_cterm. asimpl.
-    repeat unfold_funcomp. *)
-Abort.
+    asimpl. repeat unfold_funcomp.
+    repeat rewrite renRen_cterm. asimpl. reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    erewrite md_ren.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+Qed.
 
 Lemma nth_skipn :
   ∀ A (l : list A) x y d,
