@@ -248,17 +248,29 @@ Proof.
     reflexivity.
   - cbn. constructor. all: admit. (* BAD *)
   - cbn - [mode_inclb mode_inb].
+    specialize H with (3 := eq_refl).
+    specialize H0 with (3 := eq_refl).
+    apply scope_pi_inv in h. intuition subst.
+    cbn - [mode_inb] in H0.
     repeat (let e := fresh "e" in destruct_if e).
-    (* all: try solve [ repeat constructor ]. *)
-    + admit.
-    + admit.
+    (* all: try solve [ repeat constructor ; eauto ]. *)
+    + repeat constructor.
+      * eapply H. 2,3: eauto. reflexivity.
+      * destruct (irrm mx) eqn:e'. 1: discriminate.
+        eapply H0. 2,3: eauto. reflexivity.
+      * eapply H. 2,3: eauto. reflexivity.
+      * destruct (irrm mx) eqn:e'. 1: discriminate.
+        eapply H0. 2,3: eauto. reflexivity.
+    + repeat constructor.
+      * eapply H. 2,3: eauto. reflexivity.
+      * (* TODO Change the mode_inclb stuff so it's easy to do proofs *)
+        admit.
+      * eapply H. 2,3: eauto. reflexivity.
+      * admit.
     + (* Right, lifting problem here *) admit.
-    + specialize H0 with (Γ := _ :: _) (3 := eq_refl).
-      cbn - [mode_inb] in H0.
-      destruct (irrm mx) eqn:e'.
+    + destruct (irrm mx) eqn:e'.
       2:{ destruct m, mx ; cbn in * ; discriminate. }
       constructor. eapply H0. all: eauto.
-      apply scope_pi_inv in h. intuition subst. assumption.
   - cbn - [mode_inclb mode_inb].
     destruct_if e.
     + (* Mistake too *) admit.
@@ -266,8 +278,8 @@ Proof.
       erewrite scoping_md. 2: intuition eauto.
       rewrite hrm. constructor.
       * constructor. specialize H0 with (3 := eq_refl). eapply H0.
-        all: intuition eauto. (* ????? *)
-        admit.
+        2,3: intuition eauto.
+        reflexivity.
       *
 Abort.
 
