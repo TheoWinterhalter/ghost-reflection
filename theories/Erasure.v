@@ -260,6 +260,7 @@ Proof.
       cbn in *.
       repeat constructor. all: eauto.
       * (* Missing properties about renaming and scoping *)
+        asimpl. unfold Ren_cterm, upRen_cterm_cterm.
         admit.
       * admit.
     + constructor.
@@ -295,28 +296,28 @@ Lemma erase_ren :
     ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε.
 Proof.
   intros Γ Δ ρ t hρ hcρ.
-  funelim (⟦ _ | t ⟧ε).
-  all: rename Γ0 into Δ.
+  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
   - cbn - [mode_inb].
     unfold relv.
-    destruct (nth_error Γ x) eqn:e.
+    destruct (nth_error Δ n) eqn:e.
     + eapply hρ in e. rewrite e.
       destruct (relm m). all: reflexivity.
     + eapply hcρ in e. rewrite e. reflexivity.
   - cbn - [mode_inb].
     destruct_if e. all: eauto.
   - cbn - [mode_inb].
-    erewrite H. 2,3: assumption.
-    erewrite H0.
-    2:{ eapply rscoping_upren. assumption. }
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2.
+    2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     repeat (let e := fresh "e" in destruct_if e) ; try solve [ eauto ].
     asimpl. repeat unfold_funcomp.
     unfold Ren_cterm, upRen_cterm_cterm. asimpl. repeat unfold_funcomp.
     cbn. unfold upRen_cterm_cterm. unfold up_ren.
     asimpl. repeat unfold_funcomp. f_equal.
-    + f_equal. f_equal. f_equal.
+    + f_equal. f_equal. f_equal. repeat rewrite renRen_cterm. asimpl.
+      repeat unfold_funcomp. reflexivity.
 
 
     (* cbn - [mode_inb mode_inclb] in *.
