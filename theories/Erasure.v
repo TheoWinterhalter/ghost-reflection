@@ -389,6 +389,18 @@ Proof.
   - apply ih.
 Qed.
 
+Lemma nth_error_skipn :
+  ∀ A (l : list A) x y,
+    nth_error l (x + y) = nth_error (skipn x l) y.
+Proof.
+  intros A l x y.
+  induction l as [| a l ih] in x, y |- *.
+  1:{ destruct x, y. all: reflexivity. }
+  destruct x, y. all: cbn. 1,2: reflexivity.
+  - apply ih.
+  - apply ih.
+Qed.
+
 (* Lemma relv_skipn :
   ∀ Γ x y,
     relv Γ (x + y) = relv (skipn x Γ) y.
@@ -648,4 +660,8 @@ Proof.
     cbn. eapply ccmeta_conv.
     + econstructor. eapply erase_ctx_var. all: eassumption.
     + cbn - [skipn]. f_equal.
+      erewrite erase_ren.
+      * reflexivity.
+      * intros y my ey. rewrite <- nth_error_skipn in ey. assumption.
+      * intros y ey. rewrite <- nth_error_skipn in ey. assumption.
 Abort.
