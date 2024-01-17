@@ -1,5 +1,7 @@
 -Q theories GhostTT
 
+theories/Util.v
+
 theories/BasicAST.v
 
 theories/autosubst/core.v

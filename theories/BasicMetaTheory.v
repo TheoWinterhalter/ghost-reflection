@@ -2,7 +2,7 @@
 
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping Typing.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
@@ -112,31 +112,6 @@ Proof.
   - asimpl. apply sscoping_weak. assumption.
   - asimpl. constructor. reflexivity.
 Qed.
-
-Ltac forall_iff_impl T :=
-  lazymatch eval cbn beta in T with
-  | forall x : ?A, @?T' x =>
-    let y := fresh x in
-    refine (forall y, _) ;
-    forall_iff_impl (@T' x)
-  | ?P ↔ ?Q => exact (P → Q)
-  | _ => fail "not a quantified ↔"
-  end.
-
-Ltac wlog_iff_using tac :=
-  lazymatch goal with
-  | |- ?G =>
-    let G' := fresh in
-    unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
-    let h := fresh in
-    assert (h : G') ; [
-      subst G'
-    | subst G' ; intros ; split ; eauto ; apply h ; clear h ; tac
-    ]
-  end.
-
-Ltac wlog_iff :=
-  wlog_iff_using firstorder.
 
 #[export] Instance rscoping_morphism :
   Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) rscoping.

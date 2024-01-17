@@ -2,7 +2,7 @@
 
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import CCAST unscoped.
-From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CScoping
   CTyping.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
@@ -116,4 +116,67 @@ Proof.
     cbn. constructor. reflexivity.
 Qed.
 
-(* TODO forall_iff_impl should be moved to utils! *)
+#[export] Instance crscoping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) crscoping.
+Proof.
+  intros Γ ? <- ρ ρ' e Δ ? <-.
+  revert ρ ρ' e. wlog_iff. intros ρ ρ' e h.
+  intros n m en. rewrite <- e. apply h. assumption.
+Qed.
+
+#[export] Instance csscoping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) csscoping.
+Proof.
+  intros Γ ? <- σ σ' e Δ ? <-.
+  revert σ σ' e. wlog_iff. intros σ σ' e h.
+  induction h as [| ? ? ? ? ih ] in σ', e |- *.
+  - constructor.
+  - constructor.
+    + apply ih. intros n. apply e.
+    + rewrite <- e. assumption.
+Qed.
+
+Lemma csscoping_ids :
+  ∀ Γ,
+    csscoping Γ ids Γ.
+Proof.
+  intros Γ. induction Γ as [| m Γ ih].
+  - constructor.
+  - constructor.
+    + eapply csscoping_weak with (m := m) in ih. asimpl in ih. assumption.
+    + destruct m. 2: constructor.
+      constructor. reflexivity.
+Qed.
+
+Lemma csscoping_one :
+  ∀ Γ u mx,
+    ccscoping Γ u mx →
+    csscoping Γ u.. (Some mx :: Γ).
+Proof.
+  intros Γ u mx h.
+  constructor.
+  - asimpl. apply csscoping_ids.
+  - cbn. assumption.
+Qed.
+
+(** Renaming preserves typing **)
+
+Definition crtyping (Γ : ccontext) (ρ : nat → nat) (Δ : ccontext) : Prop :=
+  ∀ x m A,
+    nth_error Δ x = Some (Some (m, A)) →
+    ∃ B,
+      nth_error Γ (ρ x) = Some (Some (m, B)) ∧
+      (plus (S x) >> ρ) ⋅ A = (plus (S (ρ x))) ⋅ B.
+
+#[export] Instance crtyping_morphism :
+  Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) crtyping.
+Proof.
+  intros Γ ? <- ρ ρ' e Δ ? <-.
+  revert ρ ρ' e. wlog_iff. intros ρ ρ' e h.
+  intros n m A en. rewrite <- e.
+  eapply h in en as [B [en eB]].
+  eexists. split. 1: eassumption.
+  asimpl. rewrite <- eB.
+  apply ren_cterm_morphism2. intro x. cbn. core.unfold_funcomp.
+  rewrite <- e. reflexivity.
+Qed.
