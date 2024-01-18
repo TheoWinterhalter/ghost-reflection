@@ -161,13 +161,6 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ p : cbot →
       Γ ⊢ᶜ cbot_elim m A p : A
 
-| ctype_conv :
-    ∀ i m A B t,
-      Γ ⊢ᶜ t : A →
-      Γ ⊢ᶜ A ≡ B →
-      Γ ⊢ᶜ B : cSort m i →
-      Γ ⊢ᶜ t : B
-
 | ctype_ty :
     ∀ i,
       Γ ⊢ᶜ cty i : cSort cType (S i)
@@ -191,6 +184,13 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ i T,
       Γ ⊢ᶜ T : cty i →
       Γ ⊢ᶜ cErr T : cEl T
+
+| ctype_conv :
+    ∀ i m A B t,
+      Γ ⊢ᶜ t : A →
+      Γ ⊢ᶜ A ≡ B →
+      Γ ⊢ᶜ B : cSort m i →
+      Γ ⊢ᶜ t : B
 
 where "Γ ⊢ᶜ t : A" := (ctyping Γ t A).
 

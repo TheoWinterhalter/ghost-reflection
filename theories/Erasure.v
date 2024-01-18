@@ -665,4 +665,28 @@ Proof.
       * reflexivity.
       * intros y my ey. rewrite <- nth_error_skipn in ey. assumption.
       * intros y ey. rewrite <- nth_error_skipn in ey. assumption.
+  - cbn. destruct_if e.
+    + econstructor.
+      * constructor. all: constructor.
+      * apply cconv_sym. eapply cconv_trans. 1: econstructor.
+        (* Uh oh, unit is not lifted to the upper level, maybe we can do it
+          in CC though!
+        *)
+        admit.
+      * repeat econstructor.
+    + econstructor.
+      * repeat constructor.
+      * apply cconv_sym. econstructor.
+      * repeat econstructor.
+  - cbn - [mode_inb]. destruct_ifs.
+    + econstructor.
+      * econstructor. all: econstructor.
+        (* TODO Trick to use τ and ∅ version easily
+          Possibly with a quantified lemma or just a lemma actually.
+
+          Then potentially do a tactic to deal with ih.
+        *)
+        all: admit.
+      * admit.
+      * admit.
 Abort.
