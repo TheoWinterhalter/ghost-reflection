@@ -644,6 +644,34 @@ Qed.
 
 (** Erasure preserves typing **)
 
+Lemma erase_typing_El :
+  ∀ Γ A m i,
+    isProp m = false →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧ε : ⟦ sc Γ | Sort m i ⟧τ →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧τ : cSort cType i.
+Proof.
+  intros Γ A m i hm h.
+  econstructor. cbn in h. rewrite hm in h.
+  econstructor.
+  - eassumption.
+  - constructor.
+  - econstructor.
+Qed.
+
+Lemma erase_typing_Err :
+  ∀ Γ A m i,
+    isProp m = false →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧ε : ⟦ sc Γ | Sort m i ⟧τ →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧∅ : ⟦ sc Γ | A ⟧τ.
+Proof.
+  intros Γ A m i hm h.
+  econstructor. cbn in h. rewrite hm in h.
+  econstructor.
+  - eassumption.
+  - constructor.
+  - econstructor.
+Qed.
+
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -681,12 +709,14 @@ Proof.
   - cbn - [mode_inb]. destruct_ifs.
     + econstructor.
       * econstructor. all: econstructor.
-        (* TODO Trick to use τ and ∅ version easily
-          Possibly with a quantified lemma or just a lemma actually.
-
-          Then potentially do a tactic to deal with ih.
-        *)
-        all: admit.
+      (* TODO IH tactic *)
+        -- eapply erase_typing_El. 2: eapply IHh1.
+          ++ destruct mx. all: discriminate.
+          ++ destruct mx. all: discriminate. (* ???? *)
+        -- admit.
+        -- admit.
+        -- admit.
+        -- admit.
       * admit.
       * admit.
 Abort.
