@@ -645,12 +645,12 @@ Qed.
 (** Erasure preserves typing **)
 
 Lemma erase_typing_El :
-  ∀ Γ A m i,
+  ∀ Γ Γ' A m i,
     isProp m = false →
-    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧ε : ⟦ sc Γ | Sort m i ⟧τ →
-    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧τ : cSort cType i.
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧ε : ⟦ Γ | Sort m i ⟧τ →
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧τ : cSort cType i.
 Proof.
-  intros Γ A m i hm h.
+  intros Γ Γ' A m i hm h.
   econstructor. cbn in h. rewrite hm in h.
   econstructor.
   - eassumption.
@@ -659,12 +659,12 @@ Proof.
 Qed.
 
 Lemma erase_typing_Err :
-  ∀ Γ A m i,
+  ∀ Γ Γ' A m i,
     isProp m = false →
-    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧ε : ⟦ sc Γ | Sort m i ⟧τ →
-    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | A ⟧∅ : ⟦ sc Γ | A ⟧τ.
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧ε : ⟦ Γ | Sort m i ⟧τ →
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧∅ : ⟦ Γ | A ⟧τ.
 Proof.
-  intros Γ A m i hm h.
+  intros Γ Γ' A m i hm h.
   econstructor. cbn in h. rewrite hm in h.
   econstructor.
   - eassumption.
@@ -706,14 +706,18 @@ Proof.
       * repeat constructor.
       * apply cconv_sym. econstructor.
       * repeat econstructor.
-  - cbn - [mode_inb]. destruct_ifs.
+  - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2.
+    destruct_ifs.
+    + (* Redundant case *)
+      destruct mx. all: discriminate.
     + econstructor.
       * econstructor. all: econstructor.
       (* TODO IH tactic *)
         -- eapply erase_typing_El. 2: eapply IHh1.
-          ++ destruct mx. all: discriminate.
-          ++ destruct mx. all: discriminate. (* ???? *)
-        -- admit.
+          ++ destruct mx. all: try discriminate. all: reflexivity.
+          ++ erewrite scoping_md. 2: eassumption. reflexivity.
+        -- eapply erase_typing_El. (* 2: eapply IHh2. *)
+          all: admit. (* TODO Simplify iffing *)
         -- admit.
         -- admit.
         -- admit.
