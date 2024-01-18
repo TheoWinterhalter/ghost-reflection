@@ -250,7 +250,6 @@ Proof.
   induction h in hrm |- *.
   all: try solve [ cbn ; repeat econstructor ].
   all: try solve [ cbn ; eauto ].
-  (* all: try solve [ cbn - [mode_inb mode_eqb mode_inclb] ; (let e := fresh "e" in destruct_if e) ; repeat econstructor ]. *)
   - cbn. destruct_if e. 2: constructor.
     constructor. eapply erase_sc_var. 1: eassumption.
     destruct (irrm _) eqn:e2. 1: discriminate.
@@ -266,10 +265,12 @@ Proof.
       destruct mx. all: try discriminate.
       cbn in *.
       repeat constructor. all: eauto.
-      * (* Missing properties about renaming and scoping *)
-        asimpl. unfold Ren_cterm, upRen_cterm_cterm.
-        admit.
-      * admit.
+      * asimpl. unfold Ren_cterm, upRen_cterm_cterm.
+        eapply cscoping_ren. 2: eauto.
+        eapply crscoping_shift. eapply crscoping_S.
+      * asimpl. unfold Ren_cterm, upRen_cterm_cterm.
+        eapply cscoping_ren. 2: eauto.
+        eapply crscoping_shift. eapply crscoping_S.
     + constructor.
     + constructor.
       destruct (irrm mx) eqn:e'.
@@ -292,7 +293,7 @@ Proof.
     assumption.
   - cbn - [mode_inb]. destruct_if e. 1: discriminate.
     constructor. eauto.
-Abort.
+Qed.
 
 (** Erasure commutes with renaming **)
 
