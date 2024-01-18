@@ -42,11 +42,8 @@ Definition isGhost m := mode_eqb m mGhost.
 Definition mode_inb := inb mode_eqb.
 (* Definition mode_inclb := inclb mode_eqb. *)
 
-Notation irrm m :=
-  (mode_inb m [ mProp ; mGhost ]).
-
 Notation relm m :=
-  (negb (irrm m)).
+  (mode_inb m [ mType ; mKind ]).
 
 (** Test whether a variable is defined and relevant **)
 
@@ -77,9 +74,9 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | lam mx A B t ⟧ε :=
     if relm (md (mx :: Γ) t)
     then
-      if irrm mx
-      then close ⟦ mx :: Γ | t ⟧ε
-      else clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε
+      if relm mx
+      then clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε
+      else close ⟦ mx :: Γ | t ⟧ε
     else cDummy ;
   ⟦ Γ | app u v ⟧ε :=
     if relm (md Γ u)
@@ -93,7 +90,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | gheq A u v ⟧ε := ctt ;
   ⟦ Γ | ghcast e P t ⟧ε := ⟦ Γ | t ⟧ε ;
   ⟦ Γ | bot ⟧ε := ctt ;
-  ⟦ Γ | bot_elim m A p ⟧ε := if irrm m then cDummy else ⟦ Γ | A ⟧∅ ;
+  ⟦ Γ | bot_elim m A p ⟧ε := if relm m then ⟦ Γ | A ⟧∅ else cDummy ;
   ⟦ _ | _ ⟧ε := cDummy
 }
 where "⟦ G | u '⟧ε'" := (erase_term G u)
@@ -105,14 +102,14 @@ Reserved Notation "⟦ G '⟧ε'" (at level 9, G at next level).
 Equations erase_ctx (Γ : context) : ccontext := {
   ⟦ [] ⟧ε := [] ;
   ⟦ Γ ,, (mx, A) ⟧ε :=
-    if irrm mx
-    then None :: ⟦ Γ ⟧ε
-    else Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+    if relm mx
+    then Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+    else None :: ⟦ Γ ⟧ε
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
 Definition erase_sc (Γ : scope) : cscope :=
-  map (λ m, if irrm m then None else Some cType) Γ.
+  map (λ m, if relm m then Some cType else None) Γ.
 
 (* TODO MOVE *)
 
@@ -129,11 +126,24 @@ Ltac destruct_if' :=
 Ltac destruct_ifs :=
   repeat destruct_if'.
 
+Ltac destruct_bool b :=
+  lazymatch b with
+  | negb ?b => destruct_bool b
+  | ?b && ?c => destruct_bool b
+  | _ => let e := fresh "e" in destruct b eqn: e
+  end.
+
+Ltac d_if :=
+  lazymatch goal with
+  | |- context [ if ?b then _ else _ ] =>
+    destruct_bool b
+  end.
+
 (** Erasure of irrelevant terms is cDummy **)
 
 Lemma erase_irr :
   ∀ Γ t,
-    irrm (md Γ t) = true →
+    relm (md Γ t) = false →
     ⟦ Γ | t ⟧ε = cDummy.
 Proof.
   intros Γ t hm.
@@ -157,7 +167,7 @@ Qed.
 Lemma erase_sc_var :
   ∀ Γ x m,
     nth_error Γ x = Some m →
-    irrm m = false →
+    relm m = true →
     nth_error (erase_sc Γ) x = Some (Some cType).
 Proof.
   intros Γ x m e hr.
@@ -168,7 +178,7 @@ Qed.
 Lemma erase_ctx_var :
   ∀ Γ x m A,
     nth_error Γ x = Some (m, A) →
-    irrm m = false →
+    relm m = true →
     nth_error ⟦ Γ ⟧ε x = Some (Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ)).
 Proof.
   intros Γ x m A e hr.
@@ -251,15 +261,13 @@ Proof.
   all: try solve [ cbn ; repeat econstructor ].
   all: try solve [ cbn ; eauto ].
   - cbn. destruct_if e. 2: constructor.
-    constructor. eapply erase_sc_var. 1: eassumption.
-    destruct (irrm _) eqn:e2. 1: discriminate.
-    reflexivity.
+    constructor. eapply erase_sc_var. all: eassumption.
   - cbn - [mode_inb]. destruct_if e. all: repeat constructor.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2. fold (erase_sc Γ) in IHh2.
     destruct_ifs.
     (* all: try solve [ repeat constructor ; eauto ]. *)
-    + destruct (irrm mx) eqn:e'. 1: discriminate.
+    + destruct (relm mx) eqn:e'. 2: discriminate.
       repeat constructor. all: eauto.
     + destruct m. all: try discriminate.
       destruct mx. all: try discriminate.
@@ -273,8 +281,8 @@ Proof.
         eapply crscoping_shift. eapply crscoping_S.
     + constructor.
     + constructor.
-      destruct (irrm mx) eqn:e'.
-      2:{ destruct m, mx ; cbn in * ; discriminate. }
+      destruct (relm mx) eqn:e'.
+      1:{ destruct m, mx ; cbn in * ; discriminate. }
       eapply IHh2. reflexivity.
   - cbn - [mode_inb].
     destruct_if e. 2: constructor.
@@ -675,7 +683,7 @@ Qed.
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
-    irrm (mdc Γ t) = false →
+    relm (mdc Γ t) = true →
     ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | t ⟧ε : ⟦ sc Γ | A ⟧τ.
 Proof.
   intros Γ t A h hm.
@@ -708,19 +716,29 @@ Proof.
       * repeat econstructor.
   - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2.
     destruct_ifs.
+    (* repeat (d_if ; cbn - [mode_inb]).
+    all: try solve [ destruct m ; discriminate ]. *)
     + (* Redundant case *)
       destruct mx. all: discriminate.
-    + econstructor.
+    + destruct (relm mx) eqn:e'. 2: discriminate.
+      econstructor.
       * econstructor. all: econstructor.
       (* TODO IH tactic *)
         -- eapply erase_typing_El. 2: eapply IHh1.
           ++ destruct mx. all: try discriminate. all: reflexivity.
           ++ erewrite scoping_md. 2: eassumption. reflexivity.
-        -- eapply erase_typing_El. (* 2: eapply IHh2. *)
-          all: admit. (* TODO Simplify iffing *)
-        -- admit.
-        -- admit.
-        -- admit.
-      * admit.
-      * admit.
+        -- eapply erase_typing_El. 1: eassumption.
+          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
+          reflexivity.
+        -- eapply erase_typing_El. 2: eapply IHh1.
+          ++ destruct mx. all: try discriminate. all: reflexivity.
+          ++ erewrite scoping_md. 2: eassumption. reflexivity.
+        -- eapply erase_typing_El. 1: eassumption.
+          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
+          reflexivity.
+        -- eapply erase_typing_Err. 1: eassumption.
+          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
+          reflexivity.
+      * apply cconv_sym. constructor.
+      * (* Take out as a lemma! *)
 Abort.
