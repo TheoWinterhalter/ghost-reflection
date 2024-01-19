@@ -275,7 +275,7 @@ Proof.
       (* TODO scoping / typing tactic that uses close rules *)
       repeat constructor. all: eauto.
       * asimpl. unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm.
-        rewrite substRen_cterm. asimpl.
+        rewrite substRen_cterm. asimpl. cbn.
 
 
         (* eapply cscoping_ren. 2: eauto.
@@ -643,17 +643,6 @@ Proof.
 
      *)
 Abort.
-
-(* TODO MOVE *)
-
-Lemma ccmeta_conv :
-  ∀ Γ t A B,
-    Γ ⊢ᶜ t : A →
-    A = B →
-    Γ ⊢ᶜ t : B.
-Proof.
-  intros. subst. assumption.
-Qed.
 
 (** Erasure preserves typing **)
 

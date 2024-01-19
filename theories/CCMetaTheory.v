@@ -571,4 +571,54 @@ Qed.
 
 (** We can also lift from Γ, None to Γ, Some (m, A) **)
 
-(* TODO! Take substitution from goal in Erasure: ctt ⟨ ↑ ⟩ .: var >> ⟨ ↑ ⟩ *)
+Definition nones := ctt .: cvar >> ren_cterm S.
+
+Lemma csscoping_nones :
+  ∀ Γ m,
+    csscoping (Some m :: Γ) nones (None :: Γ).
+Proof.
+  intros Γ m. unfold nones. constructor.
+  - asimpl. apply crscoping_sscoping. apply crscoping_S.
+  - cbn. constructor.
+Qed.
+
+Lemma ccmeta_conv :
+  ∀ Γ t A B,
+    Γ ⊢ᶜ t : A →
+    A = B →
+    Γ ⊢ᶜ t : B.
+Proof.
+  intros. subst. assumption.
+Qed.
+
+Lemma cstyping_rscoping :
+  ∀ Γ Δ ρ,
+    crscoping (csc Γ) ρ (csc Δ) →
+    cstyping Γ (ρ >> cvar) Δ.
+Proof.
+  intros Γ Δ ρ h.
+  induction Δ as [| o Δ ih] in ρ, h |- *.
+  - constructor.
+  - constructor.
+    + apply ih. asimpl.
+      intros x mx e.
+      apply h. cbn. assumption.
+    + destruct o as [[]|]. 2: constructor.
+      cbn. split.
+      * constructor. eapply h. reflexivity.
+      * asimpl.
+        eapply ccmeta_conv.
+        -- econstructor. (* Any way to conclude? *) admit.
+        -- admit.
+Abort.
+
+Lemma cstyping_nones :
+  ∀ Γ m A,
+    cstyping (Some (m, A) :: Γ) nones (None :: Γ).
+Proof.
+  intros Γ m A. unfold nones. constructor.
+  - asimpl. admit.
+  - cbn. auto.
+Abort.
+
+Definition ignore t := t <[ nones ].
