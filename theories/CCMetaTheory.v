@@ -591,9 +591,9 @@ Proof.
   intros. subst. assumption.
 Qed.
 
-Lemma cstyping_rscoping :
+Lemma crtyping_typing :
   ∀ Γ Δ ρ,
-    crscoping (csc Γ) ρ (csc Δ) →
+    crtyping Γ ρ Δ →
     cstyping Γ (ρ >> cvar) Δ.
 Proof.
   intros Γ Δ ρ h.
@@ -601,24 +601,48 @@ Proof.
   - constructor.
   - constructor.
     + apply ih. asimpl.
-      intros x mx e.
+      intros x mx A e.
       apply h. cbn. assumption.
     + destruct o as [[]|]. 2: constructor.
       cbn. split.
-      * constructor. eapply h. reflexivity.
-      * asimpl.
+      * constructor. eapply crtyping_cscoping in h. eapply h. reflexivity.
+      * specialize (h 0). specialize h with (1 := eq_refl).
+        destruct h as [B [e eB]].
         eapply ccmeta_conv.
-        -- econstructor. (* Any way to conclude? *) admit.
-        -- admit.
-Abort.
+        -- econstructor. eassumption.
+        -- cbn. asimpl.
+          erewrite ren_cterm_morphism2.
+          ++ erewrite <- eB. substify. asimpl. reflexivity.
+          ++ intro. reflexivity.
+Qed.
 
 Lemma cstyping_nones :
   ∀ Γ m A,
     cstyping (Some (m, A) :: Γ) nones (None :: Γ).
 Proof.
   intros Γ m A. unfold nones. constructor.
-  - asimpl. admit.
+  - asimpl. eapply crtyping_typing. apply crtyping_S.
   - cbn. auto.
-Abort.
+Qed.
 
 Definition ignore t := t <[ nones ].
+
+Lemma cscope_ignore :
+  ∀ Γ mx m t,
+    ccscoping (None :: Γ) t m →
+    ccscoping (Some mx :: Γ) (ignore t) m.
+Proof.
+  intros Γ mx m t h.
+  eapply cscoping_subst. 2: eassumption.
+  apply csscoping_nones.
+Qed.
+
+Lemma ctype_ignore :
+  ∀ Γ mx B t A,
+    None :: Γ ⊢ᶜ t : A →
+    Some (mx, B) :: Γ ⊢ᶜ ignore t : ignore A.
+Proof.
+  intros Γ mx B t A h.
+  eapply ctyping_subst. 2: eassumption.
+  apply cstyping_nones.
+Qed.
