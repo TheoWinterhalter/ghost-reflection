@@ -117,7 +117,7 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Some (mx, A) :: Γ ⊢ᶜ B : cSort m j →
       Γ ⊢ᶜ cPi mx A B : cSort m (max i j)
 
-| ctype_clam :
+| ctype_lam :
     ∀ mx m i j A B t,
       Γ ⊢ᶜ A : cSort mx i →
       Some (mx, A) :: Γ ⊢ᶜ B : cSort m j →
@@ -196,3 +196,10 @@ Inductive cwf : ccontext → Prop :=
       cwf Γ →
       whenSome (λ '(m, A), isType Γ A m) d →
       cwf (d :: Γ).
+
+Create HintDb cc_type discriminated.
+
+Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
+  ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty
+  ctype_tyval ctype_tyerr ctype_El ctype_Err
+: cc_type.

@@ -87,3 +87,7 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 .
 
 Notation ccxscoping Γ := (ccscoping (csc Γ)).
+
+Create HintDb cc_scope discriminated.
+
+Hint Constructors ccscoping : cc_scope.

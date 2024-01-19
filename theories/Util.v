@@ -29,3 +29,7 @@ Ltac wlog_iff_using tac :=
 
 Ltac wlog_iff :=
   wlog_iff_using firstorder.
+
+Create HintDb shelvedb.
+
+Hint Extern 10000 => shelve : shelvedb.

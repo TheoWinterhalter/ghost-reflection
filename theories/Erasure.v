@@ -1,8 +1,8 @@
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping Scoping
-  CTyping TermMode Typing BasicMetaTheory CCMetaTheory.
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CScoping
+  Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -268,12 +268,12 @@ Proof.
     destruct_ifs.
     (* all: try solve [ repeat constructor ; eauto ]. *)
     + destruct (relm mx) eqn:e'. 2: discriminate.
-      repeat constructor. all: eauto.
+      auto with cc_scope.
     + destruct m. all: try discriminate.
       destruct mx. all: try discriminate.
       cbn in *.
-      (* TODO scoping / typing tactic that uses close rules *)
-      repeat constructor. all: eauto.
+      unshelve auto with cc_scope shelvedb.
+      (* TODO Maybe not unfold close / ignore? *)
       * asimpl. unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm.
         rewrite substRen_cterm. asimpl. cbn.
 

@@ -559,6 +559,8 @@ Proof.
   apply csscoping_one_none.
 Qed.
 
+Hint Resolve cscope_close : cc_scope.
+
 Lemma ctype_close :
   ∀ Γ t A,
     None :: Γ ⊢ᶜ t : A →
@@ -568,6 +570,8 @@ Proof.
   eapply ctyping_subst. 2: eassumption.
   apply cstyping_one_none.
 Qed.
+
+Hint Resolve ctype_close : cc_type.
 
 (** We can also lift from Γ, None to Γ, Some (m, A) **)
 
@@ -637,6 +641,8 @@ Proof.
   apply csscoping_nones.
 Qed.
 
+Hint Resolve cscope_ignore : cc_scope.
+
 Lemma ctype_ignore :
   ∀ Γ mx B t A,
     None :: Γ ⊢ᶜ t : A →
@@ -646,3 +652,5 @@ Proof.
   eapply ctyping_subst. 2: eassumption.
   apply cstyping_nones.
 Qed.
+
+Hint Resolve ctype_ignore : cc_type.
