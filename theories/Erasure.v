@@ -67,7 +67,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     if relm mx && negb (isProp m)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if isGhost m && isGhost mx
-    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (S ⋅ close ⟦ mx :: Γ | B ⟧∅))
+    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (Close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (S ⋅ close ⟦ mx :: Γ | B ⟧∅))
     else if isProp m
     then ctt
     else close ⟦ mx :: Γ | B ⟧ε ;
@@ -679,6 +679,19 @@ Proof.
   - econstructor.
 Qed.
 
+(*** PROBLEM Close
+
+  Is it really a god idea? Currently close/Close is going to get in the way
+  of conversion. Like is Close (Π A B) a Π?
+  Could we have the equivalent of an application by just doing a random
+  substitution?
+  In that case, maybe close should be a definition that substitutes?
+
+  Adding computation rules is getting out of hands, it becomes harder to
+  argue that it's just to avoid technicalities.
+
+***)
+
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -747,9 +760,7 @@ Proof.
       * econstructor. all: econstructor.
         -- eapply erase_typing_El. 2: eapply IHh1. 1: reflexivity.
           erewrite scoping_md. 2: eassumption. reflexivity.
-        -- (* Oh no! close can't be of type close! Should it be Close?
-        Probably! So that Close : Type.
-        *)
+        --
         admit.
         -- admit.
         -- admit.
