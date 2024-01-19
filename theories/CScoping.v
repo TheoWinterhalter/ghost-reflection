@@ -24,6 +24,11 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping (None :: Γ) t m →
       ccscoping Γ (close t) m
 
+| cscope_Close :
+    ∀ m A,
+      ccscoping (None :: Γ) A m →
+      ccscoping Γ (Close A) m
+
 | scpoe_sort :
     ∀ m i,
       ccscoping Γ (cSort m i) cType

@@ -52,6 +52,11 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       None :: Γ ⊢ᶜ u ≡ v →
       Γ ⊢ᶜ close u ≡ close v
 
+| cong_Close :
+    ∀ A B,
+      None :: Γ ⊢ᶜ A ≡ B →
+      Γ ⊢ᶜ Close A ≡ Close B
+
 | ccong_Pi :
     ∀ mx A A' B B',
       Γ ⊢ᶜ A ≡ A' →
@@ -115,7 +120,12 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 | ctype_close :
     ∀ t A,
       None :: Γ ⊢ᶜ t : A →
-      Γ ⊢ᶜ close t : close A
+      Γ ⊢ᶜ close t : Close A
+
+| ctype_Close :
+    ∀ A m i,
+      None :: Γ ⊢ᶜ A : cSort m i →
+      Γ ⊢ᶜ Close A : cSort m i
 
 | ctype_sort :
     ∀ m i,

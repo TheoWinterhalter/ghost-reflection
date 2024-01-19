@@ -93,6 +93,10 @@ Proof.
     + asimpl. apply csscoping_weak. assumption.
     + constructor.
   - asimpl. constructor.
+    eapply IHht. constructor.
+    + asimpl. apply csscoping_weak. assumption.
+    + constructor.
+  - asimpl. constructor.
     + eauto.
     + apply IHht2. constructor.
       * asimpl. apply csscoping_weak. assumption.
@@ -299,6 +303,7 @@ Proof.
   - asimpl. eapply cmeta_conv_trans_r. 1: econstructor.
     asimpl. reflexivity.
   - asimpl. constructor. eapply IHh. eapply crtyping_upren_none. assumption.
+  - asimpl. constructor. eapply IHh. eapply crtyping_upren_none. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply crtyping_shift. assumption.
@@ -319,6 +324,8 @@ Proof.
   - asimpl. eapply hρ in H as [B [? eB]].
     asimpl in eB. rewrite eB.
     econstructor. eassumption.
+  - asimpl. econstructor.
+    eapply IHht. eapply crtyping_upren_none. assumption.
   - asimpl. econstructor.
     eapply IHht. eapply crtyping_upren_none. assumption.
   - asimpl. econstructor. 1: eauto.
@@ -497,6 +504,8 @@ Proof.
   - asimpl. constructor.
     apply IHh. apply cstyping_shift_none. assumption.
   - asimpl. constructor.
+    apply IHh. apply cstyping_shift_none. assumption.
+  - asimpl. constructor.
     + auto.
     + eapply IHh2. apply cstyping_shift. assumption.
   - asimpl. constructor.
@@ -518,6 +527,8 @@ Proof.
     destruct x.
     + cbn in H. noconf H. cbn in *. intuition assumption.
     + apply IHhσ. assumption.
+  - asimpl. econstructor.
+    eapply IHht. eapply cstyping_shift_none. assumption.
   - asimpl. econstructor.
     eapply IHht. eapply cstyping_shift_none. assumption.
   - asimpl. econstructor. 1: eauto.
