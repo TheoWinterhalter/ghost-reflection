@@ -288,10 +288,9 @@ Proof.
     destruct_if e. 2: constructor.
     cbn - [mode_inb] in IHh2, IHh3.
     destruct_if e'.
+    + constructor. 2: eauto.
+      constructor. eauto.
     + constructor. eauto.
-    + constructor.
-      * constructor. auto.
-      * eauto.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
     rewrite hrm.
@@ -299,7 +298,7 @@ Proof.
     econstructor. all: eauto.
     eapply IHh2. erewrite scoping_md in e. 2: eassumption.
     assumption.
-  - cbn - [mode_inb]. destruct_if e. 1: discriminate.
+  - cbn - [mode_inb]. destruct_if e. 2: discriminate.
     constructor. eauto.
 Qed.
 

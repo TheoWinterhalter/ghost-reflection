@@ -8,6 +8,7 @@ Module Core.
 Inductive cterm : Type :=
   | cvar : nat -> cterm
   | close : cterm -> cterm
+  | Close : cterm -> cterm
   | cSort : cmode -> level -> cterm
   | cPi : cmode -> cterm -> cterm -> cterm
   | clam : cmode -> cterm -> cterm -> cterm
@@ -28,6 +29,12 @@ Lemma congr_close {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
   close s0 = close t0.
 Proof.
 exact (eq_trans eq_refl (ap (fun x => close x) H0)).
+Qed.
+
+Lemma congr_Close {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
+  Close s0 = Close t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => Close x) H0)).
 Qed.
 
 Lemma congr_cSort {s0 : cmode} {s1 : level} {t0 : cmode} {t1 : level}
@@ -133,6 +140,7 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   match s with
   | cvar s0 => cvar (xi_cterm s0)
   | close s0 => close (ren_cterm (upRen_cterm_cterm xi_cterm) s0)
+  | Close s0 => Close (ren_cterm (upRen_cterm_cterm xi_cterm) s0)
   | cSort s0 s1 => cSort s0 s1
   | cPi s0 s1 s2 =>
       cPi s0 (ren_cterm xi_cterm s1)
@@ -165,6 +173,7 @@ cterm :=
   match s with
   | cvar s0 => sigma_cterm s0
   | close s0 => close (subst_cterm (up_cterm_cterm sigma_cterm) s0)
+  | Close s0 => Close (subst_cterm (up_cterm_cterm sigma_cterm) s0)
   | cSort s0 s1 => cSort s0 s1
   | cPi s0 s1 s2 =>
       cPi s0 (subst_cterm sigma_cterm s1)
@@ -207,6 +216,10 @@ subst_cterm sigma_cterm s = s :=
   | cvar s0 => Eq_cterm s0
   | close s0 =>
       congr_close
+        (idSubst_cterm (up_cterm_cterm sigma_cterm)
+           (upId_cterm_cterm _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
         (idSubst_cterm (up_cterm_cterm sigma_cterm)
            (upId_cterm_cterm _ Eq_cterm) s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
@@ -255,6 +268,11 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
   | cvar s0 => ap (cvar) (Eq_cterm s0)
   | close s0 =>
       congr_close
+        (extRen_cterm (upRen_cterm_cterm xi_cterm)
+           (upRen_cterm_cterm zeta_cterm) (upExtRen_cterm_cterm _ _ Eq_cterm)
+           s0)
+  | Close s0 =>
+      congr_Close
         (extRen_cterm (upRen_cterm_cterm xi_cterm)
            (upRen_cterm_cterm zeta_cterm) (upExtRen_cterm_cterm _ _ Eq_cterm)
            s0)
@@ -310,6 +328,10 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
       congr_close
         (ext_cterm (up_cterm_cterm sigma_cterm) (up_cterm_cterm tau_cterm)
            (upExt_cterm_cterm _ _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
+        (ext_cterm (up_cterm_cterm sigma_cterm) (up_cterm_cterm tau_cterm)
+           (upExt_cterm_cterm _ _ Eq_cterm) s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 =>
       congr_cPi (eq_refl s0) (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
@@ -358,6 +380,11 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
   | cvar s0 => ap (cvar) (Eq_cterm s0)
   | close s0 =>
       congr_close
+        (compRenRen_cterm (upRen_cterm_cterm xi_cterm)
+           (upRen_cterm_cterm zeta_cterm) (upRen_cterm_cterm rho_cterm)
+           (up_ren_ren _ _ _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
         (compRenRen_cterm (upRen_cterm_cterm xi_cterm)
            (upRen_cterm_cterm zeta_cterm) (upRen_cterm_cterm rho_cterm)
            (up_ren_ren _ _ _ Eq_cterm) s0)
@@ -420,6 +447,11 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
   | cvar s0 => Eq_cterm s0
   | close s0 =>
       congr_close
+        (compRenSubst_cterm (upRen_cterm_cterm xi_cterm)
+           (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
+           (up_ren_subst_cterm_cterm _ _ _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
         (compRenSubst_cterm (upRen_cterm_cterm xi_cterm)
            (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
            (up_ren_subst_cterm_cterm _ _ _ Eq_cterm) s0)
@@ -499,6 +531,11 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
         (compSubstRen_cterm (up_cterm_cterm sigma_cterm)
            (upRen_cterm_cterm zeta_cterm) (up_cterm_cterm theta_cterm)
            (up_subst_ren_cterm_cterm _ _ _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
+        (compSubstRen_cterm (up_cterm_cterm sigma_cterm)
+           (upRen_cterm_cterm zeta_cterm) (up_cterm_cterm theta_cterm)
+           (up_subst_ren_cterm_cterm _ _ _ Eq_cterm) s0)
   | cSort s0 s1 => congr_cSort (eq_refl s0) (eq_refl s1)
   | cPi s0 s1 s2 =>
       congr_cPi (eq_refl s0)
@@ -574,6 +611,11 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
   | cvar s0 => Eq_cterm s0
   | close s0 =>
       congr_close
+        (compSubstSubst_cterm (up_cterm_cterm sigma_cterm)
+           (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
+           (up_subst_subst_cterm_cterm _ _ _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
         (compSubstSubst_cterm (up_cterm_cterm sigma_cterm)
            (up_cterm_cterm tau_cterm) (up_cterm_cterm theta_cterm)
            (up_subst_subst_cterm_cterm _ _ _ Eq_cterm) s0)
@@ -706,6 +748,11 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
   | cvar s0 => Eq_cterm s0
   | close s0 =>
       congr_close
+        (rinst_inst_cterm (upRen_cterm_cterm xi_cterm)
+           (up_cterm_cterm sigma_cterm)
+           (rinstInst_up_cterm_cterm _ _ Eq_cterm) s0)
+  | Close s0 =>
+      congr_Close
         (rinst_inst_cterm (upRen_cterm_cterm xi_cterm)
            (up_cterm_cterm sigma_cterm)
            (rinstInst_up_cterm_cterm _ _ Eq_cterm) s0)
@@ -944,6 +991,7 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
   match s with
   | cvar s0 => p_cterm s0
   | close s0 => and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s0) True
+  | Close s0 => and (allfv_cterm (upAllfv_cterm_cterm p_cterm) s0) True
   | cSort s0 s1 => and True (and True True)
   | cPi s0 s1 s2 =>
       and True
@@ -986,6 +1034,10 @@ allfv_cterm p_cterm s :=
   match s with
   | cvar s0 => H_cterm s0
   | close s0 =>
+      conj
+        (allfvTriv_cterm (upAllfv_cterm_cterm p_cterm)
+           (upAllfvTriv_cterm_cterm H_cterm) s0) I
+  | Close s0 =>
       conj
         (allfvTriv_cterm (upAllfv_cterm_cterm p_cterm)
            (upAllfvTriv_cterm_cterm H_cterm) s0) I
@@ -1039,6 +1091,14 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
   match s with
   | cvar s0 => fun HP => H_cterm s0 HP
   | close s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm (upAllfv_cterm_cterm p_cterm)
+           (upAllfv_cterm_cterm q_cterm) (upAllfvImpl_cterm_cterm H_cterm) s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | Close s0 =>
       fun HP =>
       conj
         (allfvImpl_cterm (upAllfv_cterm_cterm p_cterm)
@@ -1188,6 +1248,15 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
               match H with
               | conj H _ => H
               end)) I
+  | Close s0 =>
+      fun H =>
+      conj
+        (allfvImpl_cterm _ _ (upAllfvRenL_cterm_cterm p_cterm xi_cterm) s0
+           (allfvRenL_cterm (upAllfv_cterm_cterm p_cterm)
+              (upRen_cterm_cterm xi_cterm) s0
+              match H with
+              | conj H _ => H
+              end)) I
   | cSort s0 s1 => fun H => conj I (conj I I)
   | cPi s0 s1 s2 =>
       fun H =>
@@ -1320,6 +1389,15 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
   match s with
   | cvar s0 => fun H => H
   | close s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm (upAllfv_cterm_cterm p_cterm)
+           (upRen_cterm_cterm xi_cterm) s0
+           (allfvImpl_cterm _ _ (upAllfvRenR_cterm_cterm p_cterm xi_cterm) s0
+              match H with
+              | conj H _ => H
+              end)) I
+  | Close s0 =>
       fun H =>
       conj
         (allfvRenR_cterm (upAllfv_cterm_cterm p_cterm)
