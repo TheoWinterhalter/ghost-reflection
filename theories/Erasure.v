@@ -740,5 +740,23 @@ Proof.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
       * apply cconv_sym. constructor.
-      * (* Take out as a lemma! *)
+      * repeat econstructor.
+    + destruct m. all: try discriminate.
+    + destruct m. all: try discriminate.
+      destruct mx. all: try discriminate.
+      econstructor.
+      * econstructor. all: econstructor.
+        -- eapply erase_typing_El. 2: eapply IHh1. 1: reflexivity.
+          erewrite scoping_md. 2: eassumption. reflexivity.
+        -- (* Oh no! close can't be of type close! Should it be Close?
+        Probably! So that Close : Type.
+        *)
+        admit.
+        -- admit.
+        -- admit.
+        -- admit.
+      * admit.
+      * admit.
+    + admit.
+    + admit.
 Abort.
