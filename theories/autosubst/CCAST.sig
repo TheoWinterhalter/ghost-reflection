@@ -6,9 +6,6 @@ cmode : Type
 
 cterm(cvar) : Type
 
-close : (bind cterm in cterm) -> cterm
-Close : (bind cterm in cterm) -> cterm
-
 cSort : cmode -> level -> cterm
 
 cPi : cmode -> cterm -> (bind cterm in cterm) -> cterm

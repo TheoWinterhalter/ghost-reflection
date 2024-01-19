@@ -89,14 +89,6 @@ Proof.
     + simpl in *. inversion hx. subst. assumption.
     + apply IHhσ. simpl in hx. assumption.
   - asimpl. constructor.
-    eapply IHht. constructor.
-    + asimpl. apply csscoping_weak. assumption.
-    + constructor.
-  - asimpl. constructor.
-    eapply IHht. constructor.
-    + asimpl. apply csscoping_weak. assumption.
-    + constructor.
-  - asimpl. constructor.
     + eauto.
     + apply IHht2. constructor.
       * asimpl. apply csscoping_weak. assumption.
@@ -302,8 +294,6 @@ Proof.
   all: try solve [ asimpl ; econstructor ; eauto ; cscoping_ren_finish ].
   - asimpl. eapply cmeta_conv_trans_r. 1: econstructor.
     asimpl. reflexivity.
-  - asimpl. constructor. eapply IHh. eapply crtyping_upren_none. assumption.
-  - asimpl. constructor. eapply IHh. eapply crtyping_upren_none. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply crtyping_shift. assumption.
@@ -324,10 +314,6 @@ Proof.
   - asimpl. eapply hρ in H as [B [? eB]].
     asimpl in eB. rewrite eB.
     econstructor. eassumption.
-  - asimpl. econstructor.
-    eapply IHht. eapply crtyping_upren_none. assumption.
-  - asimpl. econstructor.
-    eapply IHht. eapply crtyping_upren_none. assumption.
   - asimpl. econstructor. 1: eauto.
     eapply IHht2. eapply crtyping_shift. assumption.
   - asimpl. econstructor. 1: eauto.
@@ -502,10 +488,6 @@ Proof.
     + asimpl. reflexivity.
     + asimpl. reflexivity.
   - asimpl. constructor.
-    apply IHh. apply cstyping_shift_none. assumption.
-  - asimpl. constructor.
-    apply IHh. apply cstyping_shift_none. assumption.
-  - asimpl. constructor.
     + auto.
     + eapply IHh2. apply cstyping_shift. assumption.
   - asimpl. constructor.
@@ -527,10 +509,6 @@ Proof.
     destruct x.
     + cbn in H. noconf H. cbn in *. intuition assumption.
     + apply IHhσ. assumption.
-  - asimpl. econstructor.
-    eapply IHht. eapply cstyping_shift_none. assumption.
-  - asimpl. econstructor.
-    eapply IHht. eapply cstyping_shift_none. assumption.
   - asimpl. econstructor. 1: eauto.
     eapply IHht2. eapply cstyping_shift. assumption.
   - asimpl. econstructor. 1: eauto.
@@ -545,3 +523,52 @@ Proof.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.
 Qed.
+
+(** Closing terms having None in the context **)
+
+Definition close t :=
+  t <[ ctt .. ].
+
+Lemma csscoping_one_none :
+  ∀ Γ u,
+    csscoping Γ u.. (None :: Γ).
+Proof.
+  intros Γ u.
+  constructor.
+  - asimpl. apply csscoping_ids.
+  - cbn. auto.
+Qed.
+
+Lemma cstyping_one_none :
+  ∀ Γ u,
+    cstyping Γ u.. (None :: Γ).
+Proof.
+  intros Γ u.
+  constructor. all: asimpl.
+  - apply cstyping_ids.
+  - cbn. auto.
+Qed.
+
+Lemma cscope_close :
+  ∀ Γ m t,
+    ccscoping (None :: Γ) t m →
+    ccscoping Γ (close t) m.
+Proof.
+  intros Γ m t h.
+  eapply cscoping_subst. 2: eassumption.
+  apply csscoping_one_none.
+Qed.
+
+Lemma ctype_close :
+  ∀ Γ t A,
+    None :: Γ ⊢ᶜ t : A →
+    Γ ⊢ᶜ close t : close A.
+Proof.
+  intros Γ t A h.
+  eapply ctyping_subst. 2: eassumption.
+  apply cstyping_one_none.
+Qed.
+
+(** We can also lift from Γ, None to Γ, Some (m, A) **)
+
+(* TODO! Take substitution from goal in Erasure: ctt ⟨ ↑ ⟩ .: var >> ⟨ ↑ ⟩ *)
