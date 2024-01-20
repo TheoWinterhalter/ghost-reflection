@@ -347,11 +347,22 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: try solve [ eauto ].
-    (* asimpl. repeat unfold_funcomp.
+    2:{
+      unfold close. asimpl.
+      unfold Ren_cterm, Subst_cterm, VarInstance_cterm.
+      repeat unfold_funcomp. rewrite substRen_cterm. rewrite renSubst_cterm.
+      asimpl. cbn. reflexivity.
+    }
+    asimpl. repeat unfold_funcomp.
     unfold Ren_cterm, upRen_cterm_cterm. asimpl. repeat unfold_funcomp.
     cbn. unfold upRen_cterm_cterm. unfold up_ren.
     asimpl. repeat unfold_funcomp.
-    repeat rewrite renRen_cterm. asimpl. reflexivity.
+    repeat rewrite renRen_cterm. asimpl.
+    unfold Subst_cterm, VarInstance_cterm.
+    unfold nones. repeat unfold_funcomp.
+    rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm.
+    asimpl.
+    reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt3.
@@ -361,6 +372,10 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: eauto.
+    unfold close. unfold upRen_term_term, up_ren. asimpl.
+    unfold Ren_cterm, Subst_cterm, VarInstance_cterm.
+    repeat unfold_funcomp. rewrite renSubst_cterm, substRen_cterm.
+    asimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
@@ -370,8 +385,7 @@ Proof.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: eauto.
-Qed. *)
-Admitted.
+Qed.
 
 Lemma nth_skipn :
   ∀ A (l : list A) x y d,
