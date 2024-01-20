@@ -67,7 +67,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     if relm mx && negb (isProp m)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if isGhost m && isGhost mx
-    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (S ⋅ close ⟦ mx :: Γ | B ⟧∅))
+    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (ignore ⟦ mx :: Γ | B ⟧∅))
     else if isProp m
     then ctt
     else close ⟦ mx :: Γ | B ⟧ε ;
@@ -258,54 +258,36 @@ Lemma erase_scoping :
 Proof.
   intros Γ t m hrm h.
   induction h in hrm |- *.
-  all: try solve [ cbn ; repeat econstructor ].
-  all: try solve [ cbn ; eauto ].
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
   - cbn. destruct_if e. 2: constructor.
     constructor. eapply erase_sc_var. all: eassumption.
-  - cbn - [mode_inb]. destruct_if e. all: repeat constructor.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2. fold (erase_sc Γ) in IHh2.
     destruct_ifs.
-    (* all: try solve [ repeat constructor ; eauto ]. *)
+    all: try solve [ eauto with cc_scope cc_type ].
     + destruct (relm mx) eqn:e'. 2: discriminate.
       auto with cc_scope.
     + destruct m. all: try discriminate.
       destruct mx. all: try discriminate.
       cbn in *.
-      unshelve auto with cc_scope shelvedb.
-      (* TODO Maybe not unfold close / ignore? *)
-      * asimpl. unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm.
-        rewrite substRen_cterm. asimpl. cbn.
-
-
-        (* eapply cscoping_ren. 2: eauto.
-        eapply crscoping_shift. eapply crscoping_S.
-      * asimpl. unfold Ren_cterm, upRen_cterm_cterm.
-        eapply cscoping_ren. 2: eauto.
-        eapply crscoping_shift. eapply crscoping_S.
-    + constructor.
-    + constructor.
-      destruct (relm mx) eqn:e'.
-      1:{ destruct m, mx ; cbn in * ; discriminate. }
-      eapply IHh2. reflexivity.
+      unshelve auto with cc_scope shelvedb. 2: eauto.
+      asimpl. unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm.
+      rewrite substRen_cterm. asimpl. cbn.
+      eapply cscope_ignore. eauto.
+    + destruct (relm mx) eqn:e'. 1: discriminate.
+      auto with cc_scope shelvedb.
   - cbn - [mode_inb].
-    destruct_if e. 2: constructor.
-    cbn - [mode_inb] in IHh2, IHh3.
-    destruct_if e'.
-    + constructor. 2: eauto.
-      constructor. eauto.
-    + constructor. eauto.
+    erewrite scoping_md. 2: eassumption.
+    rewrite hrm. cbn - [mode_inb] in IHh3.
+    destruct_if e. all: eauto with cc_scope.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
     rewrite hrm.
-    destruct_if e. 2: eauto.
-    econstructor. all: eauto.
-    eapply IHh2. erewrite scoping_md in e. 2: eassumption.
-    assumption.
-  - cbn - [mode_inb]. destruct_if e. 2: discriminate.
-    constructor. eauto.
-Qed. *)
-Admitted.
+    destruct_if e. 2: eauto with cc_scope.
+    erewrite scoping_md in e. 2: eassumption.
+    eauto with cc_scope.
+Qed.
 
 (** Erasure commutes with renaming **)
 

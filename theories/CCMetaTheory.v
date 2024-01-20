@@ -654,3 +654,5 @@ Proof.
 Qed.
 
 Hint Resolve ctype_ignore : cc_type.
+
+Opaque close ignore.
