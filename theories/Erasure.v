@@ -45,6 +45,23 @@ Definition mode_inb := inb mode_eqb.
 Notation relm m :=
   (mode_inb m [ mType ; mKind ]).
 
+(* TODO MOVE *)
+
+Ltac autosubst_unfold :=
+  (* repeat unfold_funcomp ; *)
+  unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm,
+    upRen_cterm_cterm.
+
+Ltac resubst :=
+  rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm.
+
+Ltac ssimpl :=
+  asimpl ;
+  autosubst_unfold ;
+  resubst ;
+  asimpl ;
+  repeat unfold_funcomp.
+
 (** Test whether a variable is defined and relevant **)
 
 Definition relv (Γ : scope) x :=
@@ -272,9 +289,7 @@ Proof.
       destruct mx. all: try discriminate.
       cbn in *.
       unshelve auto with cc_scope shelvedb. 2: eauto.
-      asimpl. unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm.
-      rewrite substRen_cterm. asimpl. cbn.
-      eapply cscope_ignore. eauto.
+      ssimpl. eapply cscope_ignore. eauto.
     + destruct (relm mx) eqn:e'. 1: discriminate.
       auto with cc_scope shelvedb.
   - cbn - [mode_inb].
@@ -347,22 +362,8 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: try solve [ eauto ].
-    2:{
-      unfold close. asimpl.
-      unfold Ren_cterm, Subst_cterm, VarInstance_cterm.
-      repeat unfold_funcomp. rewrite substRen_cterm. rewrite renSubst_cterm.
-      asimpl. cbn. reflexivity.
-    }
-    asimpl. repeat unfold_funcomp.
-    unfold Ren_cterm, upRen_cterm_cterm. asimpl. repeat unfold_funcomp.
-    cbn. unfold upRen_cterm_cterm. unfold up_ren.
-    asimpl. repeat unfold_funcomp.
-    repeat rewrite renRen_cterm. asimpl.
-    unfold Subst_cterm, VarInstance_cterm.
-    unfold nones. repeat unfold_funcomp.
-    rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm.
-    asimpl.
-    reflexivity.
+    2:{ unfold close. ssimpl. resubst. ssimpl. cbn. reflexivity. }
+    ssimpl. cbn. ssimpl. unfold nones. resubst. ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt3.
@@ -372,10 +373,7 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: eauto.
-    unfold close. unfold upRen_term_term, up_ren. asimpl.
-    unfold Ren_cterm, Subst_cterm, VarInstance_cterm.
-    repeat unfold_funcomp. rewrite renSubst_cterm, substRen_cterm.
-    asimpl. reflexivity.
+    unfold close. ssimpl. resubst. ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
@@ -678,6 +676,7 @@ Theorem erase_typing :
 Proof.
   intros Γ t A h hm.
   induction h.
+  (* all: try solve [ cbn ; eauto using erase_typing_El, erase_typing_Err with cc_scope cc_type ]. *)
   - cbn. unfold relv. unfold sc. rewrite nth_error_map.
     rewrite H. cbn - [mode_inb].
     cbn - [mode_inb] in hm.
@@ -738,7 +737,7 @@ Proof.
       * econstructor. all: econstructor.
         -- eapply erase_typing_El. 2: eapply IHh1. 1: reflexivity.
           erewrite scoping_md. 2: eassumption. reflexivity.
-        --
+        -- econstructor.
         admit.
         -- admit.
         -- admit.
