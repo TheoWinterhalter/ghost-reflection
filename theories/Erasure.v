@@ -58,6 +58,8 @@ Ltac resubst :=
 Ltac ssimpl :=
   asimpl ;
   autosubst_unfold ;
+  asimpl ;
+  repeat unfold_funcomp ;
   resubst ;
   asimpl ;
   repeat unfold_funcomp.
@@ -362,8 +364,8 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: try solve [ eauto ].
-    2:{ unfold close. ssimpl. resubst. ssimpl. cbn. reflexivity. }
-    ssimpl. cbn. ssimpl. unfold nones. resubst. ssimpl. reflexivity.
+    2:{ unfold close. ssimpl. cbn. reflexivity. }
+    ssimpl. cbn. ssimpl. unfold nones. ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt3.
@@ -373,7 +375,7 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: eauto.
-    unfold close. ssimpl. resubst. ssimpl. reflexivity.
+    unfold close. ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
