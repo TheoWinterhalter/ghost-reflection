@@ -631,7 +631,7 @@ Proof.
       I can see two options:
       - Concluding only on stuff with the right relevance.
       - Producing clever garbage when erasing irrelevant stuff.
-        Like erase reveal t P p to capp (erase p) (erase t).
+        Like erase reveal t P p to capp (hide p) (hide t).
 
       Maybe having the restriction is better?
       Let's move on to typing instead to get the right expectations.

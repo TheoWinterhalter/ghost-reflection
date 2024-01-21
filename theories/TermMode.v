@@ -24,7 +24,7 @@ Section Mode.
     | lam mx A B t => md (mx :: Γ) t
     | app u v => md Γ u
     | Erased A => mKind
-    | erase t => mGhost
+    | hide t => mGhost
     | reveal t P p =>
       match md Γ p with
       | mGhost => mGhost

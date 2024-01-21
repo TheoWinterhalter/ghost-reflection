@@ -12,7 +12,7 @@ Inductive term : Type :=
   | lam : mode -> term -> term -> term -> term
   | app : term -> term -> term
   | Erased : term -> term
-  | erase : term -> term
+  | hide : term -> term
   | reveal : term -> term -> term -> term
   | revealP : term -> term -> term
   | gheq : term -> term -> term -> term
@@ -71,10 +71,10 @@ Proof.
 exact (eq_trans eq_refl (ap (fun x => Erased x) H0)).
 Qed.
 
-Lemma congr_erase {s0 : term} {t0 : term} (H0 : s0 = t0) :
-  erase s0 = erase t0.
+Lemma congr_hide {s0 : term} {t0 : term} (H0 : s0 = t0) :
+  hide s0 = hide t0.
 Proof.
-exact (eq_trans eq_refl (ap (fun x => erase x) H0)).
+exact (eq_trans eq_refl (ap (fun x => hide x) H0)).
 Qed.
 
 Lemma congr_reveal {s0 : term} {s1 : term} {s2 : term} {t0 : term}
@@ -152,7 +152,7 @@ Fixpoint ren_term (xi_term : nat -> nat) (s : term) {struct s} : term :=
         (ren_term (upRen_term_term xi_term) s3)
   | app s0 s1 => app (ren_term xi_term s0) (ren_term xi_term s1)
   | Erased s0 => Erased (ren_term xi_term s0)
-  | erase s0 => erase (ren_term xi_term s0)
+  | hide s0 => hide (ren_term xi_term s0)
   | reveal s0 s1 s2 =>
       reveal (ren_term xi_term s0) (ren_term xi_term s1)
         (ren_term xi_term s2)
@@ -173,7 +173,7 @@ Proof.
 exact (scons (var var_zero) (funcomp (ren_term shift) sigma)).
 Defined.
 
-Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} : 
+Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} :
 term :=
   match s with
   | var s0 => sigma_term s0
@@ -187,7 +187,7 @@ term :=
         (subst_term (up_term_term sigma_term) s3)
   | app s0 s1 => app (subst_term sigma_term s0) (subst_term sigma_term s1)
   | Erased s0 => Erased (subst_term sigma_term s0)
-  | erase s0 => erase (subst_term sigma_term s0)
+  | hide s0 => hide (subst_term sigma_term s0)
   | reveal s0 s1 s2 =>
       reveal (subst_term sigma_term s0) (subst_term sigma_term s1)
         (subst_term sigma_term s2)
@@ -234,7 +234,7 @@ subst_term sigma_term s = s :=
       congr_app (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
   | Erased s0 => congr_Erased (idSubst_term sigma_term Eq_term s0)
-  | erase s0 => congr_erase (idSubst_term sigma_term Eq_term s0)
+  | hide s0 => congr_hide (idSubst_term sigma_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
@@ -290,7 +290,7 @@ ren_term xi_term s = ren_term zeta_term s :=
       congr_app (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
   | Erased s0 => congr_Erased (extRen_term xi_term zeta_term Eq_term s0)
-  | erase s0 => congr_erase (extRen_term xi_term zeta_term Eq_term s0)
+  | hide s0 => congr_hide (extRen_term xi_term zeta_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
@@ -347,7 +347,7 @@ subst_term sigma_term s = subst_term tau_term s :=
       congr_app (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
   | Erased s0 => congr_Erased (ext_term sigma_term tau_term Eq_term s0)
-  | erase s0 => congr_erase (ext_term sigma_term tau_term Eq_term s0)
+  | hide s0 => congr_hide (ext_term sigma_term tau_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
@@ -408,8 +408,8 @@ Fixpoint compRenRen_term (xi_term : nat -> nat) (zeta_term : nat -> nat)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
   | Erased s0 =>
       congr_Erased (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
-  | erase s0 =>
-      congr_erase (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
+  | hide s0 =>
+      congr_hide (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
@@ -475,8 +475,8 @@ subst_term tau_term (ren_term xi_term s) = subst_term theta_term s :=
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
   | Erased s0 =>
       congr_Erased (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
-  | erase s0 =>
-      congr_erase (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
+  | hide s0 =>
+      congr_hide (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
@@ -555,8 +555,8 @@ ren_term zeta_term (subst_term sigma_term s) = subst_term theta_term s :=
   | Erased s0 =>
       congr_Erased
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
-  | erase s0 =>
-      congr_erase
+  | hide s0 =>
+      congr_hide
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal
@@ -642,8 +642,8 @@ subst_term tau_term (subst_term sigma_term s) = subst_term theta_term s :=
   | Erased s0 =>
       congr_Erased
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
-  | erase s0 =>
-      congr_erase
+  | hide s0 =>
+      congr_hide
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal
@@ -774,7 +774,7 @@ Fixpoint rinst_inst_term (xi_term : nat -> nat) (sigma_term : nat -> term)
       congr_app (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
   | Erased s0 => congr_Erased (rinst_inst_term xi_term sigma_term Eq_term s0)
-  | erase s0 => congr_erase (rinst_inst_term xi_term sigma_term Eq_term s0)
+  | hide s0 => congr_hide (rinst_inst_term xi_term sigma_term Eq_term s0)
   | reveal s0 s1 s2 =>
       congr_reveal (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
@@ -940,7 +940,7 @@ Tactic Notation "auto_unfold" "in" "*" := repeat
                                            unfold VarInstance_term, Var, ids,
                                             Ren_term, Ren1, ren1,
                                             Up_term_term, Up_term, up_term,
-                                            Subst_term, Subst1, subst1 
+                                            Subst_term, Subst1, subst1
                                             in *.
 
 Ltac asimpl' := repeat (first
@@ -1011,7 +1011,7 @@ Fixpoint allfv_term (p_term : nat -> Prop) (s : term) {struct s} : Prop :=
               (and (allfv_term (upAllfv_term_term p_term) s3) True)))
   | app s0 s1 => and (allfv_term p_term s0) (and (allfv_term p_term s1) True)
   | Erased s0 => and (allfv_term p_term s0) True
-  | erase s0 => and (allfv_term p_term s0) True
+  | hide s0 => and (allfv_term p_term s0) True
   | reveal s0 s1 s2 =>
       and (allfv_term p_term s0)
         (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
@@ -1066,7 +1066,7 @@ Fixpoint allfvTriv_term (p_term : nat -> Prop) (H_term : forall x, p_term x)
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1) I)
   | Erased s0 => conj (allfvTriv_term p_term H_term s0) I
-  | erase s0 => conj (allfvTriv_term p_term H_term s0) I
+  | hide s0 => conj (allfvTriv_term p_term H_term s0) I
   | reveal s0 s1 s2 =>
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1)
@@ -1211,7 +1211,7 @@ allfv_term p_term s -> allfv_term q_term s :=
            match HP with
            | conj HP _ => HP
            end) I
-  | erase s0 =>
+  | hide s0 =>
       fun HP =>
       conj
         (allfvImpl_term p_term q_term H_term s0
@@ -1462,7 +1462,7 @@ allfv_term (funcomp p_term xi_term) s :=
         (allfvRenL_term p_term xi_term s0 match H with
                                           | conj H _ => H
                                           end) I
-  | erase s0 =>
+  | hide s0 =>
       fun H =>
       conj
         (allfvRenL_term p_term xi_term s0 match H with
@@ -1708,7 +1708,7 @@ allfv_term p_term (ren_term xi_term s) :=
         (allfvRenR_term p_term xi_term s0 match H with
                                           | conj H _ => H
                                           end) I
-  | erase s0 =>
+  | hide s0 =>
       fun H =>
       conj
         (allfvRenR_term p_term xi_term s0 match H with

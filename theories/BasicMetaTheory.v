@@ -294,9 +294,9 @@ Proof.
   intuition eauto.
 Qed.
 
-Lemma scope_erase_inv :
+Lemma scope_hide_inv :
   ∀ Γ t m,
-    scoping Γ (erase t) m →
+    scoping Γ (hide t) m →
     scoping Γ t mType ∧
     m = mGhost.
 Proof.
@@ -400,7 +400,7 @@ Proof.
     constructor. firstorder.
   - clear h. revert u u' IHh. wlog_iff.
     intros u u' ih h.
-    apply scope_erase_inv in h. intuition subst.
+    apply scope_hide_inv in h. intuition subst.
     constructor. firstorder.
   - clear h1 h2 h3. revert t t' P P' p p' IHh1 IHh2 IHh3. wlog_iff.
     intros t t' P P' p p' iht ihP ihp h.
@@ -859,9 +859,9 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
-Lemma type_erase_inv :
+Lemma type_hide_inv :
   ∀ Γ t C,
-    Γ ⊢ erase t : C →
+    Γ ⊢ hide t : C →
     ∃ i A,
       cscoping Γ A mKind ∧
       cscoping Γ t mType ∧
@@ -886,7 +886,7 @@ Lemma type_reveal_inv :
       In m [ mProp ; mGhost ] ∧
       Γ ⊢ t : Erased A ∧
       Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
-      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (erase (var 0))) ∧
+      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (hide (var 0))) ∧
       Γ ⊢ app P t ≡ C.
 Proof.
   intros Γ t P p C h.
@@ -1015,7 +1015,7 @@ Ltac ttinv h h' :=
     | lam _ _ _ _ => eapply type_lam_inv in h as h'
     | app _ _ => eapply type_app_inv in h as h'
     | Erased _ => eapply type_erased_inv in h as h'
-    | erase _ => eapply type_erase_inv in h as h'
+    | hide _ => eapply type_hide_inv in h as h'
     | reveal _ _ _ => eapply type_reveal_inv in h as h'
     | revealP _ _ => eapply type_revealP_inv in h as h'
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
