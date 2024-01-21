@@ -643,11 +643,11 @@ Abort.
 
 Lemma erase_typing_El :
   ∀ Γ Γ' A m i,
-    isProp m = false →
     Γ' ⊢ᶜ ⟦ Γ | A ⟧ε : ⟦ Γ | Sort m i ⟧τ →
+    isProp m = false →
     Γ' ⊢ᶜ ⟦ Γ | A ⟧τ : cSort cType i.
 Proof.
-  intros Γ Γ' A m i hm h.
+  intros Γ Γ' A m i h hm.
   econstructor. cbn in h. rewrite hm in h.
   econstructor.
   - eassumption.
@@ -657,11 +657,11 @@ Qed.
 
 Lemma erase_typing_Err :
   ∀ Γ Γ' A m i,
-    isProp m = false →
     Γ' ⊢ᶜ ⟦ Γ | A ⟧ε : ⟦ Γ | Sort m i ⟧τ →
+    isProp m = false →
     Γ' ⊢ᶜ ⟦ Γ | A ⟧∅ : ⟦ Γ | A ⟧τ.
 Proof.
-  intros Γ Γ' A m i hm h.
+  intros Γ Γ' A m i h hm.
   econstructor. cbn in h. rewrite hm in h.
   econstructor.
   - eassumption.
@@ -715,19 +715,19 @@ Proof.
       econstructor.
       * econstructor. all: econstructor.
       (* TODO IH tactic *)
-        -- eapply erase_typing_El. 2: eapply IHh1.
+        -- eapply erase_typing_El.
+          ++ eapply IHh1. erewrite scoping_md. 2: eassumption. reflexivity.
           ++ destruct mx. all: try discriminate. all: reflexivity.
-          ++ erewrite scoping_md. 2: eassumption. reflexivity.
-        -- eapply erase_typing_El. 1: eassumption.
+        -- eapply erase_typing_El. 2: eassumption.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
-        -- eapply erase_typing_El. 2: eapply IHh1.
+        -- eapply erase_typing_El.
+          ++ eapply IHh1. erewrite scoping_md. 2: eassumption. reflexivity.
           ++ destruct mx. all: try discriminate. all: reflexivity.
-          ++ erewrite scoping_md. 2: eassumption. reflexivity.
-        -- eapply erase_typing_El. 1: eassumption.
+        -- eapply erase_typing_Err. 2: eassumption.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
-        -- eapply erase_typing_Err. 1: eassumption.
+        -- eapply erase_typing_El. 2: eassumption.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
       * apply cconv_sym. constructor.
@@ -738,16 +738,16 @@ Proof.
       ssimpl.
       econstructor.
       * econstructor. all: econstructor.
-        -- eapply erase_typing_El. 2: eapply IHh1. 1: reflexivity.
+        -- eapply erase_typing_El. 1: eapply IHh1. 2: reflexivity.
           erewrite scoping_md. 2: eassumption. reflexivity.
         -- econstructor. econstructor.
           ++ eapply ctype_ignore.
             eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
           ++ cbn. econstructor.
           ++ eauto with cc_scope cc_type.
-        -- eapply erase_typing_El. 2: eapply IHh1.
+        -- eapply erase_typing_El.
+          ++ eapply IHh1. erewrite scoping_md. 2: eassumption. reflexivity.
           ++ reflexivity.
-          ++ erewrite scoping_md. 2: eassumption. reflexivity.
         -- econstructor. econstructor.
           ++ eapply ctype_ignore.
             eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
@@ -789,25 +789,49 @@ Proof.
       1:{ destruct mx ; discriminate. }
       econstructor.
       * econstructor.
-        -- eapply erase_typing_El. 1: eassumption.
+        -- eapply erase_typing_El. 2: eassumption.
           econstructor.
           ++ eauto.
           ++ cbn. rewrite e'. constructor.
-          ++ eapply erase_typing_El with (m := mKind). 1: reflexivity.
+          ++ eapply erase_typing_El with (m := mKind). 2: reflexivity.
             cbn. rewrite e'.
             econstructor.
             ** eauto with cc_type.
             ** apply cconv_sym. constructor.
             ** eauto with cc_type.
-        -- admit.
-        -- admit.
-      * admit.
-      * admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+        -- eauto.
+        -- eapply erase_typing_El.
+          ++ econstructor.
+            ** eauto.
+            ** cbn. rewrite ex. constructor.
+            ** cbn. rewrite ex. eauto with cc_type.
+          ++ assumption.
+      * apply cconv_sym. constructor.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        -- econstructor.
+          ++ eauto.
+          ++ constructor.
+          ++ eauto with cc_type.
+        -- eapply erase_typing_El.
+          ++ cbn. rewrite ex. eauto.
+          ++ assumption.
+        -- econstructor.
+          ++ eapply erase_typing_El.
+            ** cbn. rewrite ex. eauto.
+            ** assumption.
+          ++ eapply erase_typing_Err.
+            ** cbn. rewrite ex. eauto.
+            ** assumption.
+          ++ eapply erase_typing_El.
+            ** cbn. rewrite ex. eauto.
+            ** assumption.
+    + destruct m. all: discriminate.
+    + destruct m. all: discriminate.
+    + destruct m. all: discriminate.
+    + destruct m. all: discriminate.
+    + eapply ccmeta_conv.
+      * eapply ctype_close. eauto.
+      * cbn. reflexivity.
   - admit.
   - admit.
   - admit.
