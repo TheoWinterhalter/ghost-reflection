@@ -677,6 +677,7 @@ Theorem erase_typing :
 Proof.
   intros Γ t A h hm.
   induction h.
+  all: try solve [ cbn in hm ; discriminate ].
   (* all: try solve [ cbn ; eauto using erase_typing_El, erase_typing_Err with cc_scope cc_type ]. *)
   - cbn. unfold relv. unfold sc. rewrite nth_error_map.
     rewrite H. cbn - [mode_inb].
@@ -773,8 +774,6 @@ Proof.
         (* Uh oh: Not the right universe level here either! *)
         admit.
       * eauto with cc_scope cc_type.
-  - admit.
-  - admit.
   - admit.
   - admit.
   - admit.
