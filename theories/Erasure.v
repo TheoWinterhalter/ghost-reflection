@@ -774,7 +774,35 @@ Proof.
         (* Uh oh: Not the right universe level here either! *)
         admit.
       * eauto with cc_scope cc_type.
-  - admit.
+  - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2, IHh3.
+    repeat erewrite scoping_md ; [| eassumption].
+    cbn - [mode_inb] in hm.
+    erewrite scoping_md in hm. 2: eassumption.
+    rewrite hm.
+    erewrite scoping_md in IHh1. 2: eassumption.
+    erewrite scoping_md in IHh2. 2: eassumption.
+    erewrite scoping_md in IHh3. 2: eassumption.
+    rewrite hm in IHh3.
+    destruct_ifs. all: try discriminate.
+    + destruct (isProp m) eqn:e'. 1: discriminate.
+      destruct (isProp mx) eqn:ex.
+      1:{ destruct mx ; discriminate. }
+      econstructor.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        -- econstructor.
+          ++ eauto.
+          ++ constructor.
+          ++ eauto with cc_type.
+        -- (* ?????? *) admit.
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        constructor. 1: constructor.
+        (* ???????? *) admit.
+      * admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
   - admit.
   - admit.
   - admit.
