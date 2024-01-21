@@ -775,7 +775,7 @@ Proof.
         admit.
       * eauto with cc_scope cc_type.
   - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2, IHh3.
-    repeat erewrite scoping_md ; [| eassumption].
+    repeat (erewrite scoping_md ; [| eassumption]).
     cbn - [mode_inb] in hm.
     erewrite scoping_md in hm. 2: eassumption.
     rewrite hm.
@@ -832,8 +832,36 @@ Proof.
     + eapply ccmeta_conv.
       * eapply ctype_close. eauto.
       * cbn. reflexivity.
-  - admit.
-  - admit.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md in hm. 2: eassumption.
+    erewrite scoping_md in IHh1. 2: eassumption.
+    erewrite scoping_md in IHh2. 2: eassumption.
+    repeat (erewrite scoping_md ; [| eassumption]).
+    rewrite hm.
+    destruct_ifs.
+    + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
+      simpl "&&" in IHh1. cbn match in IHh1.
+      eapply ccmeta_conv.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        econstructor.
+        -- eauto.
+        -- constructor.
+        -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+          ++ (* Missing info here. *) admit.
+          ++ (* Same *) admit.
+      * cbn. f_equal. (* TODO Substitution lemma *) admit.
+    + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
+      simpl "&&" in IHh1. cbn match in IHh1.
+      destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
+      simpl "&&" in IHh1. cbn match in IHh1.
+      eapply ccmeta_conv.
+      * eauto.
+      * f_equal. (* TODO Other substitution lemma *) admit.
+  - erewrite scoping_md in IHh. 2: eassumption.
+    cbn. econstructor.
+    + eauto.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
   - admit.
   - admit.
   - admit.
