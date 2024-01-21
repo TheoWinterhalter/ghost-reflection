@@ -788,15 +788,20 @@ Proof.
       destruct (isProp mx) eqn:ex.
       1:{ destruct mx ; discriminate. }
       econstructor.
-      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
-        -- econstructor.
+      * econstructor.
+        -- eapply erase_typing_El. 1: eassumption.
+          econstructor.
           ++ eauto.
-          ++ constructor.
-          ++ eauto with cc_type.
-        -- (* ?????? *) admit.
-      * apply cconv_sym. eapply cconv_trans. 1: constructor.
-        constructor. 1: constructor.
-        (* ???????? *) admit.
+          ++ cbn. rewrite e'. constructor.
+          ++ eapply erase_typing_El with (m := mKind). 1: reflexivity.
+            cbn. rewrite e'.
+            econstructor.
+            ** eauto with cc_type.
+            ** apply cconv_sym. constructor.
+            ** eauto with cc_type.
+        -- admit.
+        -- admit.
+      * admit.
       * admit.
     + admit.
     + admit.
