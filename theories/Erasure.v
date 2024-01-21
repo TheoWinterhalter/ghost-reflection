@@ -48,7 +48,6 @@ Notation relm m :=
 (* TODO MOVE *)
 
 Ltac autosubst_unfold :=
-  (* repeat unfold_funcomp ; *)
   unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm,
     upRen_cterm_cterm.
 
@@ -735,17 +734,55 @@ Proof.
     + destruct m. all: try discriminate.
     + destruct m. all: try discriminate.
       destruct mx. all: try discriminate.
+      ssimpl.
       econstructor.
       * econstructor. all: econstructor.
         -- eapply erase_typing_El. 2: eapply IHh1. 1: reflexivity.
           erewrite scoping_md. 2: eassumption. reflexivity.
-        -- econstructor.
+        -- econstructor. econstructor.
+          ++ eapply ctype_ignore.
+            eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. econstructor.
+          ++ eauto with cc_scope cc_type.
+        -- eapply erase_typing_El. 2: eapply IHh1.
+          ++ reflexivity.
+          ++ erewrite scoping_md. 2: eassumption. reflexivity.
+        -- econstructor. econstructor.
+          ++ eapply ctype_ignore.
+            eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. constructor.
+          ++ eauto with cc_scope cc_type.
+        -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+          econstructor.
+          ++ eapply ctype_ignore. eapply IHh2.
+            erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. constructor.
+          ++ eauto with cc_scope cc_type.
+      * eapply cconv_sym. constructor.
+      * eauto with cc_scope cc_type.
+    + econstructor.
+      * eauto with cc_scope cc_type.
+      * eapply cconv_sym. constructor.
+      * eauto with cc_scope cc_type.
+    + destruct (relm mx) eqn:e'. 1: discriminate.
+      econstructor.
+      * eapply ctype_close. eapply IHh2.
+        erewrite scoping_md. 2: eassumption. reflexivity.
+      * cbn. eapply cconv_trans. 1: constructor.
+        apply cconv_sym. constructor.
+        (* Uh oh: Not the right universe level here either! *)
         admit.
-        -- admit.
-        -- admit.
-        -- admit.
-      * admit.
-      * admit.
-    + admit.
-    + admit.
+      * eauto with cc_scope cc_type.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
 Abort.
