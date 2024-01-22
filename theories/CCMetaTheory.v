@@ -659,8 +659,14 @@ Opaque close ignore.
 
 (** Reproving ext_cterm but with scoping assumption **)
 
+Definition inscope (Γ : cscope) x :=
+  match nth_error Γ x with
+  | Some (Some m) => true
+  | _ => false
+  end.
+
 Definition eq_subst_on (Γ : cscope) (σ θ : nat → cterm) :=
-  ∀ x, nth_error Γ x ≠ None → σ x = θ x.
+  ∀ x, inscope Γ x = true → σ x = θ x.
 
 Lemma eq_subst_on_up :
   ∀ Γ m σ θ,
@@ -682,7 +688,7 @@ Proof.
   intros Γ t m σ θ ht e.
   induction ht in σ, θ, e |- *.
   all: try solve [ cbn ; eauto ].
-  - cbn. apply e. congruence.
+  - cbn. apply e. unfold inscope. rewrite H. reflexivity.
   - cbn.
     erewrite IHht1. 2: eauto.
     erewrite IHht2. 2: eauto using eq_subst_on_up.

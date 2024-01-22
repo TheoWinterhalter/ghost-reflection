@@ -861,14 +861,13 @@ Proof.
         1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
         intros [| x] ex.
         -- cbn. reflexivity.
-        -- cbn. unfold relv. cbn - [mode_inb] in ex.
-          rewrite nth_error_map in ex.
-          destruct (nth_error (sc Γ) x) eqn:e'. 2: contradiction.
+        -- cbn. unfold relv. unfold inscope in ex.
           cbn - [mode_inb] in ex.
-          destruct (relm m0).
-          ** reflexivity.
-          ** (* Need even stronger result, on Some Some. *)
-            admit.
+          rewrite nth_error_map in ex.
+          destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+          cbn - [mode_inb] in ex.
+          destruct (relm m0). 2: discriminate.
+          reflexivity.
     + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
       destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
