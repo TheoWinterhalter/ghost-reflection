@@ -857,15 +857,18 @@ Proof.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
         ssimpl.
-        eapply ext_cterm. intros [].
+        eapply ext_cterm_scoped.
+        1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
+        intros [| x] ex.
         -- cbn. reflexivity.
-        -- cbn. unfold relv.
-        (* Maybe I need to know that n is in scope of Γ (should be ok)
-          but also that it's relevant? The idea is that when n is irrelevant in
-          Γ, then it should not appear in ⟦ Γ ⟧ε.
-          So maybe just assuming that n is in scope of ⟦ Γ ⟧ε is enough?
-        *)
-        admit.
+        -- cbn. unfold relv. cbn - [mode_inb] in ex.
+          rewrite nth_error_map in ex.
+          destruct (nth_error (sc Γ) x) eqn:e'. 2: contradiction.
+          cbn - [mode_inb] in ex.
+          destruct (relm m0).
+          ** reflexivity.
+          ** (* Need even stronger result, on Some Some. *)
+            admit.
     + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
       destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
