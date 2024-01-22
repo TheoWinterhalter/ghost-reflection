@@ -862,11 +862,37 @@ Proof.
     + eauto.
     + apply cconv_sym. constructor.
     + eauto with cc_type.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
+    destruct m. all: discriminate.
+  - cbn - [mode_inb]. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb]. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
+    repeat (erewrite scoping_md ; [| eassumption]). cbn.
+    cbn - [mode_inb] in IHh6.
+    repeat (erewrite scoping_md in IHh6 ; [| eassumption]).
+    rewrite hm in IHh6.
+    cbn in IHh6. eauto.
+  - cbn - [mode_inb]. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb]. cbn - [mode_inb] in hm.
+    rewrite hm. eapply erase_typing_Err.
+    + eapply IHh1. erewrite scoping_md. 2: eassumption.
+      reflexivity.
+    + destruct m. all: try reflexivity. discriminate.
+  - econstructor.
+    + eauto.
+    + (* TODO conv lemma *) admit.
+    + eapply erase_typing_El.
+      * eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
+      * erewrite scoping_md in hm. 2: eassumption.
+        destruct m. all: try reflexivity. discriminate.
 Abort.
