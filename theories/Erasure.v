@@ -432,24 +432,18 @@ Proof.
   all: try solve [ asimpl ; cbn ; eauto ].
   (* all: try solve [ cbn - [mode_inb] ; destruct_ifs ; ssimpl ; eauto ]. *)
   (* Solves only 1 *)
-  - ssimpl. cbn. unfold relv.
-    induction hσ as [| σ Δ m hσ ih hm].
-    + destruct n.
-      * cbn. (* Need some extra assumption about σ, but what? *)
-        admit.
-      * cbn. (* Same *) admit.
-    + destruct n.
-      * cbn - [mode_inb].
-        destruct (relm m) eqn:em.
-        -- cbn. ssimpl. reflexivity.
-        -- cbn. eapply erase_irr.
-          erewrite scoping_md. 2: eassumption. assumption.
-      * cbn - [mode_inb].
-        destruct (nth_error Δ n) eqn:en.
-        -- destruct_if em'.
-          ++ cbn. ssimpl. reflexivity.
-          ++ cbn. eapply erase_irr. (* ??? *) admit.
-        -- cbn. admit.
+  - ssimpl. cbn. unfold relv. destruct (nth_error Δ n) eqn:e.
+    + destruct (relm m) eqn:em.
+      * cbn. ssimpl. reflexivity.
+      * cbn. eapply erase_irr.
+        induction hσ as [| σ Δ mx hσ ih hm] in n, m, e, em |- *.
+        1: destruct n ; discriminate.
+        destruct n.
+        -- cbn - [mode_inb] in *.
+          erewrite scoping_md. 2: eassumption.
+          noconf e. assumption.
+        -- cbn in e. eapply ih. all: eassumption.
+    + cbn. admit. (* NEED extra hyp, about out of bounds vars *)
   - cbn. destruct_if em.
     + cbn. reflexivity.
     + cbn. reflexivity.
