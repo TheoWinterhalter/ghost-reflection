@@ -422,42 +422,53 @@ Qed.
 
 (** Erasure commutes with substitution **)
 
-(* TODO WRONG, σ should be filtered to remove stuff in Ghost or Prop mode. *)
-(* Lemma erase_subst :
+Lemma erase_subst :
   ∀ Γ Δ σ t,
+    sscoping Γ σ Δ →
     ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase_term Γ ].
 Proof.
-  intros Γ Δ σ t.
-  funelim (erase_term Δ t).
-  (* induction t in Γ, Δ, σ |- *. *)
+  intros Γ Δ σ t hσ.
+  induction t in Γ, Δ, σ, hσ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
-  - admit.
-  - (* Not making much progress, should I do the if directly in Equations? *)
-  (* - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
-  - asimpl. cbn - [mode_inb mode_inclb].
-    destruct_if e.
-    + cbn. asimpl. repeat unfold_funcomp. f_equal.
-      * erewrite IHt1. f_equal.
-        erewrite IHt2. f_equal.
-        substify. instantiate (1 := m0 :: Δ). asimpl.
-        (* eapply subst_term_morphism2. *)
-        f_equal. asimpl. unfold_funcomp.
-        (* I'm a bit lost... *)
+  (* all: try solve [ cbn - [mode_inb] ; destruct_ifs ; ssimpl ; eauto ]. *)
+  (* Solves only 1 *)
+  - ssimpl. cbn. unfold relv.
+    induction hσ as [| σ Δ m hσ ih hm].
+    + destruct n.
+      * cbn. (* Need some extra assumption about σ, but what? *)
         admit.
-      * erewrite IHt1. f_equal.
-        erewrite IHt2. f_equal. instantiate (1 := m0 :: Δ).
-        asimpl.
-        admit.
-    + destruct_if e'.
-      * cbn. erewrite IHt1. f_equal. all: admit.
-      * admit. *)
-    admit.
-  - admit.
-  - cbn - [mode_inb]. destruct (mode_inb (md _ v) _) eqn:e.
-    + (* Need scoping information probably *)
-      admit.
+      * cbn. (* Same *) admit.
+    + destruct n.
+      * cbn - [mode_inb].
+        destruct (relm m) eqn:em.
+        -- cbn. ssimpl. reflexivity.
+        -- cbn. eapply erase_irr.
+          erewrite scoping_md. 2: eassumption. assumption.
+      * cbn - [mode_inb].
+        destruct (nth_error Δ n) eqn:en.
+        -- destruct_if em'.
+          ++ cbn. ssimpl. reflexivity.
+          ++ cbn. eapply erase_irr. (* ??? *) admit.
+        -- cbn. admit.
+  - cbn. destruct_if em.
+    + cbn. reflexivity.
+    + cbn. reflexivity.
+  - cbn - [mode_inb]. destruct_ifs.
     + admit.
-Abort. *)
+    + admit.
+    + admit.
+    + admit.
+  - cbn - [mode_inb]. destruct_ifs.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+  - admit.
+  - admit.
+Abort.
 
 (** Erasure preserves conversion **)
 
