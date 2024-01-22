@@ -659,27 +659,54 @@ Opaque close ignore.
 
 (** Reproving ext_cterm but with scoping assumption **)
 
+Definition eq_subst_on (Γ : cscope) (σ θ : nat → cterm) :=
+  ∀ x, nth_error Γ x ≠ None → σ x = θ x.
+
+Lemma eq_subst_on_up :
+  ∀ Γ m σ θ,
+    eq_subst_on Γ σ θ →
+    eq_subst_on (Some m :: Γ) (up_cterm_cterm σ) (up_cterm_cterm θ).
+Proof.
+  intros Γ m σ θ h [] he.
+  - reflexivity.
+  - cbn. repeat core.unfold_funcomp. f_equal.
+    apply h. apply he.
+Qed.
+
 Lemma ext_cterm_scoped :
   ∀ Γ t m σ θ,
     ccscoping Γ t m →
-    (∀ x, nth_error Γ x ≠ None → σ x = θ x) →
+    eq_subst_on Γ σ θ →
     t <[ σ ] = t <[ θ ].
 Proof.
   intros Γ t m σ θ ht e.
-  assert (lem :
-    ∀ (Γ : cscope) σ θ,
-      (∀ x, nth_error Γ x ≠ None → σ x = θ x) →
-      (∀ x mx, nth_error (Some mx :: Γ) x ≠ None → up_cterm_cterm σ x = up_cterm_cterm θ x)
-  ).
-  { intros Δ ? ? h [] mx emx.
-    - reflexivity.
-    - cbn. repeat core.unfold_funcomp. f_equal.
-      apply h. assumption.
-  }
   induction ht in σ, θ, e |- *.
   all: try solve [ cbn ; eauto ].
   - cbn. apply e. congruence.
-  - cbn. erewrite IHht1. 2: eauto. erewrite IHht2. 1: reflexivity.
-    intros. eapply lem. all: eauto.
-  -
-Abort.
+  - cbn.
+    erewrite IHht1. 2: eauto.
+    erewrite IHht2. 2: eauto using eq_subst_on_up.
+    reflexivity.
+  - cbn.
+    erewrite IHht1. 2: eauto.
+    erewrite IHht2. 2: eauto using eq_subst_on_up.
+    reflexivity.
+  - cbn.
+    erewrite IHht1. 2: eauto.
+    erewrite IHht2. 2: eauto using eq_subst_on_up.
+    reflexivity.
+  - cbn.
+    erewrite IHht1. 2: eauto.
+    erewrite IHht2. 2: eauto using eq_subst_on_up.
+    reflexivity.
+  - cbn.
+    erewrite IHht1. 2: eauto.
+    erewrite IHht2. 2: eauto using eq_subst_on_up.
+    reflexivity.
+  - cbn.
+    erewrite IHht. 2: eauto.
+    reflexivity.
+  - cbn.
+    erewrite IHht. 2: eauto.
+    reflexivity.
+Qed.
