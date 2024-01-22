@@ -422,20 +422,28 @@ Qed.
 
 (** Erasure commutes with substitution **)
 
+Definition sscoping_comp (Γ : scope) σ (Δ : scope) :=
+  ∀ n,
+    nth_error Δ n = None →
+    ∃ m,
+      σ n = var m ∧
+      nth_error Γ m = None.
+
 Lemma erase_subst :
   ∀ Γ Δ σ t,
     sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ →
     ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase_term Γ ].
 Proof.
-  intros Γ Δ σ t hσ.
-  induction t in Γ, Δ, σ, hσ |- *.
+  intros Γ Δ σ t hσ hcσ.
+  induction t in Γ, Δ, σ, hσ, hcσ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
   (* all: try solve [ cbn - [mode_inb] ; destruct_ifs ; ssimpl ; eauto ]. *)
   (* Solves only 1 *)
   - ssimpl. cbn. unfold relv. destruct (nth_error Δ n) eqn:e.
     + destruct (relm m) eqn:em.
       * cbn. ssimpl. reflexivity.
-      * cbn. eapply erase_irr.
+      * cbn. eapply erase_irr. clear hcσ.
         induction hσ as [| σ Δ mx hσ ih hm] in n, m, e, em |- *.
         1: destruct n ; discriminate.
         destruct n.
@@ -443,7 +451,9 @@ Proof.
           erewrite scoping_md. 2: eassumption.
           noconf e. assumption.
         -- cbn in e. eapply ih. all: eassumption.
-    + cbn. admit. (* NEED extra hyp, about out of bounds vars *)
+    + cbn. eapply hcσ in e as e'. destruct e' as [m [e1 e2]].
+      rewrite e1. cbn.
+      unfold relv. rewrite e2. reflexivity.
   - cbn. destruct_if em.
     + cbn. reflexivity.
     + cbn. reflexivity.
@@ -462,7 +472,17 @@ Proof.
     + admit.
   - admit.
   - admit.
-Abort.
+Admitted.
+
+Lemma sscoping_comp_one :
+  ∀ Γ u mx,
+    sscoping_comp Γ u.. (mx :: Γ).
+Proof.
+  intros Γ u mx. intros n e.
+  destruct n.
+  - cbn in e. discriminate.
+  - cbn in e. cbn. eexists. intuition eauto.
+Qed.
 
 (** Erasure preserves conversion **)
 
@@ -705,7 +725,12 @@ Proof.
         -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
           ++ (* Missing info here. *) admit.
           ++ (* Same *) admit.
-      * cbn. f_equal. (* TODO Substitution lemma *) admit.
+      * cbn. f_equal. erewrite erase_subst.
+        2: eapply sscoping_one. 2: eassumption.
+        2: eapply sscoping_comp_one.
+        ssimpl.
+        (* Is it provable? *)
+        admit.
     + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
       destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
