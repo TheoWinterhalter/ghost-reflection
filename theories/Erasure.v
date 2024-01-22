@@ -45,24 +45,6 @@ Definition mode_inb := inb mode_eqb.
 Notation relm m :=
   (mode_inb m [ mType ; mKind ]).
 
-(* TODO MOVE *)
-
-Ltac autosubst_unfold :=
-  unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm,
-    upRen_cterm_cterm.
-
-Ltac resubst :=
-  rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm.
-
-Ltac ssimpl :=
-  asimpl ;
-  autosubst_unfold ;
-  asimpl ;
-  repeat unfold_funcomp ;
-  resubst ;
-  asimpl ;
-  repeat unfold_funcomp.
-
 (** Test whether a variable is defined and relevant **)
 
 Definition relv (Γ : scope) x :=
@@ -129,34 +111,6 @@ where "⟦ G '⟧ε'" := (erase_ctx G).
 Definition erase_sc (Γ : scope) : cscope :=
   map (λ m, if relm m then Some cType else None) Γ.
 
-(* TODO MOVE *)
-
-Ltac destruct_if e :=
-  lazymatch goal with
-  | |- context [ if ?b then _ else _ ] =>
-    destruct b eqn: e
-  end.
-
-Ltac destruct_if' :=
-  let e := fresh "e" in
-  destruct_if e.
-
-Ltac destruct_ifs :=
-  repeat destruct_if'.
-
-Ltac destruct_bool b :=
-  lazymatch b with
-  | negb ?b => destruct_bool b
-  | ?b && ?c => destruct_bool b
-  | _ => let e := fresh "e" in destruct b eqn: e
-  end.
-
-Ltac d_if :=
-  lazymatch goal with
-  | |- context [ if ?b then _ else _ ] =>
-    destruct_bool b
-  end.
-
 (** Erasure of irrelevant terms is cDummy **)
 
 Lemma erase_irr :
@@ -210,11 +164,6 @@ Proof.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
-Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
-  ∀ x,
-    nth_error Δ x = None →
-    nth_error Γ (ρ x) = None.
-
 (* TODO MOVE *)
 Notation "#| l |" := (length l).
 
@@ -253,17 +202,6 @@ Lemma rscoping_comp_weak :
 Proof.
   intros Γ Δ. intros n e.
   rewrite nth_error_app_r. assumption.
-Qed.
-
-Lemma rscoping_comp_upren :
-  ∀ Γ Δ m ρ,
-    rscoping_comp Γ ρ Δ →
-    rscoping_comp (m :: Γ) (up_ren ρ) (m :: Δ).
-Proof.
-  intros Γ Δ m ρ h. intros x e.
-  destruct x.
-  - cbn in *. assumption.
-  - cbn in *. apply h. assumption.
 Qed.
 
 (** Erasure preserves scoping **)
@@ -306,39 +244,6 @@ Proof.
 Qed.
 
 (** Erasure commutes with renaming **)
-
-Lemma nth_nth_error :
-  ∀ A (l : list A) (d : A) n,
-    nth n l d = match nth_error l n with Some x => x | None => d end.
-Proof.
-  intros A l d n.
-  induction l in n |- *.
-  - cbn. destruct n. all: reflexivity.
-  - cbn. destruct n.
-    + cbn. reflexivity.
-    + cbn. apply IHl.
-Qed.
-
-Lemma md_ren :
-  ∀ Γ Δ ρ t,
-    rscoping Γ ρ Δ →
-    rscoping_comp Γ ρ Δ →
-    md Γ (ρ ⋅ t) = md Δ t.
-Proof.
-  intros Γ Δ ρ t hρ hcρ.
-  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
-  all: try reflexivity.
-  all: try solve [ cbn ; eauto ].
-  - cbn. rewrite 2!nth_nth_error.
-    destruct (nth_error Δ n) eqn:e.
-    + eapply hρ in e. rewrite e. reflexivity.
-    + eapply hcρ in e. rewrite e. reflexivity.
-  - cbn. eapply IHt3.
-    + eapply rscoping_shift. assumption.
-    + eapply rscoping_comp_upren. assumption.
-  - cbn. erewrite IHt3. 2,3: eauto.
-    reflexivity.
-Qed.
 
 Lemma erase_ren :
   ∀ Γ Δ ρ t,
@@ -422,61 +327,6 @@ Qed.
 
 (** Erasure commutes with substitution **)
 
-Definition sscoping_comp (Γ : scope) σ (Δ : scope) :=
-  ∀ n,
-    nth_error Δ n = None →
-    ∃ m,
-      σ n = var m ∧
-      nth_error Γ m = None.
-
-Lemma sscoping_comp_shift :
-  ∀ Γ Δ σ mx,
-    sscoping_comp Γ σ Δ →
-    sscoping_comp (mx :: Γ) (up_term σ) (mx :: Δ).
-Proof.
-  intros Γ Δ σ mx h. intros n e.
-  destruct n.
-  - cbn in e. discriminate.
-  - cbn in e. cbn.
-    eapply h in e as e'. destruct e' as [m [e1 e2]].
-    ssimpl. exists (S m). intuition eauto.
-    rewrite e1. ssimpl. reflexivity.
-Qed.
-
-Lemma rscoping_comp_S :
-  ∀ Γ m,
-    rscoping_comp (m :: Γ) S Γ.
-Proof.
-  intros Γ m. intros n e. cbn. assumption.
-Qed.
-
-Lemma md_subst :
-  ∀ Γ Δ σ t,
-    sscoping Γ σ Δ →
-    sscoping_comp Γ σ Δ →
-    md Γ (t <[ σ ]) = md Δ t.
-Proof.
-  intros Γ Δ σ t hσ hcσ.
-  induction t in Γ, Δ, σ, hσ, hcσ |- *.
-  all: try reflexivity.
-  all: try solve [ cbn ; eauto ].
-  - cbn. rewrite nth_nth_error.
-    destruct (nth_error Δ n) eqn:e.
-    + clear hcσ. induction hσ as [| σ Δ mx hσ ih hm] in n, m, e |- *.
-      1: destruct n ; discriminate.
-      destruct n.
-      * cbn in *. noconf e.
-        erewrite scoping_md. 2: eassumption. reflexivity.
-      * cbn in e. eapply ih. assumption.
-    + eapply hcσ in e. destruct e as [m [e1 e2]].
-      rewrite e1. cbn. rewrite nth_nth_error. rewrite e2. reflexivity.
-  - cbn. eapply IHt3.
-    + eapply sscoping_shift. assumption.
-    + eapply sscoping_comp_shift. assumption.
-  - cbn. erewrite IHt3. 2,3: eauto.
-    reflexivity.
-Qed.
-
 Lemma erase_subst :
   ∀ Γ Δ σ t,
     sscoping Γ σ Δ →
@@ -512,17 +362,18 @@ Proof.
     2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
     destruct_ifs.
     + cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
-      * cbn - [mode_inb]. destruct_if e'. 2: discriminate.
-        eapply ext_cterm. intros [].
-        -- ssimpl. cbn. reflexivity.
+      * eapply ext_cterm. intros [].
+        -- ssimpl. cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+          reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
           2:{ eapply rscoping_S. }
           2:{ eapply rscoping_comp_S. }
           ssimpl. reflexivity.
-      * cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+      * (* cbn - [mode_inb]. destruct_if e'. 2: discriminate. *)
         eapply ext_cterm. intros [].
-        -- ssimpl. cbn. reflexivity.
+        -- ssimpl. cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+          reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
           2:{ eapply rscoping_S. }
@@ -559,7 +410,7 @@ Proof.
       * cbn. ssimpl. erewrite erase_ren.
         2:{ eapply rscoping_S. }
         2:{ eapply rscoping_comp_S. }
-        ssimpl. rewrite instId'_cterm. reflexivity.
+        ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst.
     2:{ eapply sscoping_shift. eassumption. }
@@ -569,10 +420,9 @@ Proof.
       erewrite IHt3.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
-      ssimpl. cbn - [mode_inb].
-      rewrite e0. f_equal.
+      ssimpl. f_equal.
       eapply ext_cterm. intros [].
-      * cbn. reflexivity.
+      * cbn - [mode_inb]. rewrite e0. reflexivity.
       * cbn. ssimpl.
         erewrite erase_ren.
         2:{ eapply rscoping_S. }
@@ -582,14 +432,13 @@ Proof.
       erewrite IHt3.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
-      ssimpl. cbn - [mode_inb]. rewrite e0. cbn.
-      eapply ext_cterm. intros [].
-      * reflexivity.
+      ssimpl. eapply ext_cterm. intros [].
+      * cbn - [mode_inb]. rewrite e0. reflexivity.
       * cbn. ssimpl.
         erewrite erase_ren.
         2:{ eapply rscoping_S. }
         2:{ eapply rscoping_comp_S. }
-        ssimpl. rewrite instId'_cterm. reflexivity.
+        ssimpl. reflexivity.
     + reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eauto.
@@ -600,16 +449,6 @@ Proof.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: reflexivity.
-Qed.
-
-Lemma sscoping_comp_one :
-  ∀ Γ u mx,
-    sscoping_comp Γ u.. (mx :: Γ).
-Proof.
-  intros Γ u mx. intros n e.
-  destruct n.
-  - cbn in e. discriminate.
-  - cbn in e. cbn. eexists. intuition eauto.
 Qed.
 
 (** Erasure preserves conversion **)

@@ -1,4 +1,4 @@
-From Coq Require Import Utf8 List.
+From Coq Require Import Utf8 List Bool.
 From Equations Require Import Equations.
 
 Import ListNotations.
@@ -33,3 +33,29 @@ Ltac wlog_iff :=
 Create HintDb shelvedb.
 
 Hint Extern 10000 => shelve : shelvedb.
+
+Ltac destruct_if e :=
+  lazymatch goal with
+  | |- context [ if ?b then _ else _ ] =>
+    destruct b eqn: e
+  end.
+
+Ltac destruct_if' :=
+  let e := fresh "e" in
+  destruct_if e.
+
+Ltac destruct_ifs :=
+  repeat destruct_if'.
+
+Ltac destruct_bool b :=
+  lazymatch b with
+  | negb ?b => destruct_bool b
+  | ?b && ?c => destruct_bool b
+  | _ => let e := fresh "e" in destruct b eqn: e
+  end.
+
+Ltac d_if :=
+  lazymatch goal with
+  | |- context [ if ?b then _ else _ ] =>
+    destruct_bool b
+  end.
