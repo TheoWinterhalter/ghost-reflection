@@ -192,7 +192,7 @@ Proof.
     t <[ var 0 .: σ >> (castrm >> ren1 ↑) ]
   ).
   { intros θ u.
-    apply subst_term_morphism2. intros n.
+    apply ext_term. intros n.
     destruct n.
     - asimpl. repeat core.unfold_funcomp. simpl. reflexivity.
     - asimpl. repeat core.unfold_funcomp. simpl.
@@ -442,7 +442,7 @@ Proof.
   eapply h in en as [B [en eB]].
   eexists. split. 1: eassumption.
   asimpl. rewrite <- eB.
-  apply ren_term_morphism2. intro x. cbn. core.unfold_funcomp.
+  apply extRen_term. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
 
@@ -609,7 +609,7 @@ Proof.
     + apply ih. intros n. apply e.
     + rewrite <- e. assumption.
     + rewrite <- e. eapply meta_conv. 1: eassumption.
-      asimpl. apply subst_term_morphism2.
+      asimpl. apply ext_term.
       intro. apply e.
 Qed.
 
@@ -699,7 +699,7 @@ Proof.
   all: try solve [ asimpl ; econstructor ; eauto ; scoping_subst_finish ].
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try scoping_subst_finish.
-    asimpl. apply subst_term_morphism2.
+    asimpl. apply ext_term.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
@@ -735,7 +735,7 @@ Proof.
     + eapply IHht3. eapply styping_shift. assumption.
   - asimpl. asimpl in IHht1.
     eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_subst_finish.
-    asimpl. apply subst_term_morphism2. intros [].
+    asimpl. apply ext_term. intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.

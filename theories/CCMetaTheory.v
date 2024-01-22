@@ -173,7 +173,7 @@ Proof.
   eapply h in en as [B [en eB]].
   eexists. split. 1: eassumption.
   asimpl. rewrite <- eB.
-  apply ren_cterm_morphism2. intro x. cbn. core.unfold_funcomp.
+  apply extRen_cterm. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
 
@@ -353,7 +353,7 @@ Proof.
       cbn in *. split.
       * rewrite <- e. intuition assumption.
       * rewrite <- e. eapply cmeta_conv. 1: intuition eassumption.
-        asimpl. apply subst_cterm_morphism2.
+        asimpl. apply ext_cterm.
         intro. apply e.
 Qed.
 
@@ -483,7 +483,7 @@ Proof.
   induction h in Γ, σ, hσ |- *.
   all: try solve [ asimpl ; econstructor ; eauto ; cscoping_subst_finish ].
   - asimpl. eapply cmeta_conv_trans_r. 1: econstructor.
-    asimpl. apply subst_cterm_morphism2.
+    asimpl. apply ext_cterm.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
@@ -516,7 +516,7 @@ Proof.
     + eapply IHht3. eapply cstyping_shift. assumption.
   - asimpl. asimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. apply subst_cterm_morphism2. intros [].
+    asimpl. apply ext_cterm. intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
@@ -615,7 +615,7 @@ Proof.
         eapply ccmeta_conv.
         -- econstructor. eassumption.
         -- cbn. asimpl.
-          erewrite ren_cterm_morphism2.
+          erewrite extRen_cterm.
           ++ erewrite <- eB. substify. asimpl. reflexivity.
           ++ intro. reflexivity.
 Qed.

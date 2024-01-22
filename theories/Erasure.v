@@ -513,7 +513,7 @@ Proof.
     destruct_ifs.
     + cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
       * cbn - [mode_inb]. destruct_if e'. 2: discriminate.
-        eapply subst_cterm_morphism2. intros [].
+        eapply ext_cterm. intros [].
         -- ssimpl. cbn. reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
@@ -521,7 +521,7 @@ Proof.
           2:{ eapply rscoping_comp_S. }
           ssimpl. reflexivity.
       * cbn - [mode_inb]. destruct_if e'. 2: discriminate.
-        eapply subst_cterm_morphism2. intros [].
+        eapply ext_cterm. intros [].
         -- ssimpl. cbn. reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
@@ -532,29 +532,29 @@ Proof.
       destruct m0. all: try discriminate.
       cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
       * cbn.
-        eapply subst_cterm_morphism2. intros [].
+        eapply ext_cterm. intros [].
         -- ssimpl. reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
           2:{ eapply rscoping_S. }
           2:{ eapply rscoping_comp_S. }
           ssimpl. rewrite rinstInst'_cterm.
-          eapply subst_cterm_morphism2. intro x.
+          eapply ext_cterm. intro x.
           cbn. ssimpl. reflexivity.
       * cbn.
-        eapply subst_cterm_morphism2. intros [].
+        eapply ext_cterm. intros [].
         -- ssimpl. reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
           2:{ eapply rscoping_S. }
           2:{ eapply rscoping_comp_S. }
           ssimpl. rewrite rinstInst'_cterm.
-          eapply subst_cterm_morphism2. intro x.
+          eapply ext_cterm. intro x.
           cbn. ssimpl. reflexivity.
     + reflexivity.
     + unfold close. ssimpl. cbn - [mode_inb].
       destruct_if e'. 1: discriminate.
-      cbn. eapply subst_cterm_morphism2. intros [].
+      cbn. eapply ext_cterm. intros [].
       * cbn. reflexivity.
       * cbn. ssimpl. erewrite erase_ren.
         2:{ eapply rscoping_S. }
@@ -571,7 +571,7 @@ Proof.
       2:{ eapply sscoping_comp_shift. assumption. }
       ssimpl. cbn - [mode_inb].
       rewrite e0. f_equal.
-      eapply subst_cterm_morphism2. intros [].
+      eapply ext_cterm. intros [].
       * cbn. reflexivity.
       * cbn. ssimpl.
         erewrite erase_ren.
@@ -583,7 +583,7 @@ Proof.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
       ssimpl. cbn - [mode_inb]. rewrite e0. cbn.
-      eapply subst_cterm_morphism2. intros [].
+      eapply ext_cterm. intros [].
       * reflexivity.
       * cbn. ssimpl.
         erewrite erase_ren.
@@ -857,7 +857,7 @@ Proof.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
         ssimpl.
-        eapply subst_cterm_morphism2. intros [].
+        eapply ext_cterm. intros [].
         -- cbn. reflexivity.
         -- cbn. unfold relv.
         (* Maybe I need to know that n is in scope of Γ (should be ok)
