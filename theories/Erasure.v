@@ -874,7 +874,23 @@ Proof.
       simpl "&&" in IHh1. cbn match in IHh1.
       eapply ccmeta_conv.
       * eauto.
-      * f_equal. (* TODO Other substitution lemma *) admit.
+      * f_equal. unfold close.
+        erewrite erase_subst.
+        2: eapply sscoping_one. 2: eassumption.
+        2: eapply sscoping_comp_one.
+        ssimpl.
+        eapply ext_cterm_scoped.
+        1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
+        intros [| x] ex.
+        -- unfold inscope in ex. cbn - [mode_inb] in ex.
+          rewrite e in ex. discriminate.
+        -- cbn. unfold relv. unfold inscope in ex.
+          cbn - [mode_inb] in ex.
+          rewrite nth_error_map in ex.
+          destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+          cbn - [mode_inb] in ex.
+          destruct (relm m0). 2: discriminate.
+          reflexivity.
   - erewrite scoping_md in IHh. 2: eassumption.
     cbn. econstructor.
     + eauto.
