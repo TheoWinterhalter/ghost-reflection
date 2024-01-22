@@ -623,24 +623,60 @@ Proof.
   induction h.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
-    destruct (mode_inb _ _) eqn:e1.
-    + (* TODO Need proper erasure subst lemma *) admit.
-    + eapply cconv_trans. 1: econstructor.
-      admit.
+    erewrite scoping_md. 2: eassumption.
+    destruct_ifs.
+    + eapply cmeta_conv_trans_r. 1: constructor.
+      erewrite erase_subst.
+      2: eapply sscoping_one. 2: eassumption.
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1: eapply erase_scoping. 2: eassumption. 1: assumption.
+      intros [| x] ex.
+      * cbn. reflexivity.
+      * cbn. unfold relv. unfold inscope in ex.
+        cbn - [mode_inb] in ex.
+        rewrite nth_error_map in ex.
+        destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+        cbn - [mode_inb] in ex.
+        destruct (relm m0). 2: discriminate.
+        reflexivity.
+    + unfold close. eapply cmeta_conv_trans_r. 1: constructor.
+      erewrite erase_subst.
+      2: eapply sscoping_one. 2: eassumption.
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1: eapply erase_scoping. 2: eassumption. 1: assumption.
+      intros [| x] ex.
+      * unfold inscope in ex. cbn - [mode_inb] in ex.
+        rewrite e0 in ex. discriminate.
+      * cbn. unfold relv. unfold inscope in ex.
+        cbn - [mode_inb] in ex.
+        rewrite nth_error_map in ex.
+        destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+        cbn - [mode_inb] in ex.
+        destruct (relm m0). 2: discriminate.
+        reflexivity.
+    + erewrite erase_irr.
+      2:{ erewrite md_subst.
+        2:{ eapply sscoping_one. eassumption. }
+        2:{ eapply sscoping_comp_one. }
+        erewrite scoping_md. 2: eassumption.
+        assumption.
+      }
+      constructor.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
+    cbn in H2.
+    destruct_if e.
+    1:{ destruct mp. all: intuition discriminate. }
+    constructor.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
     cbn.
-    (* TODO WRONG
-
-      I can see two options:
-      - Concluding only on stuff with the right relevance.
-      - Producing clever garbage when erasing irrelevant stuff.
-        Like erase reveal t P p to capp (hide p) (hide t).
-
-      Maybe having the restriction is better?
-      Let's move on to typing instead to get the right expectations.
-
-     *)
+    (* Ok, here is the problem when using unit and not Prop!
+      It needs to be fixed somehow…
+    *)
 Abort.
 
 (** Erasure preserves typing **)
