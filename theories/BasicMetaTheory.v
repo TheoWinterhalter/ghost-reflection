@@ -2,7 +2,7 @@
 
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping Typing.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
@@ -113,31 +113,6 @@ Proof.
   - asimpl. constructor. reflexivity.
 Qed.
 
-Ltac forall_iff_impl T :=
-  lazymatch eval cbn beta in T with
-  | forall x : ?A, @?T' x =>
-    let y := fresh x in
-    refine (forall y, _) ;
-    forall_iff_impl (@T' x)
-  | ?P ↔ ?Q => exact (P → Q)
-  | _ => fail "not a quantified ↔"
-  end.
-
-Ltac wlog_iff_using tac :=
-  lazymatch goal with
-  | |- ?G =>
-    let G' := fresh in
-    unshelve refine (let G' : Prop := _ in _) ; [ forall_iff_impl G |] ;
-    let h := fresh in
-    assert (h : G') ; [
-      subst G'
-    | subst G' ; intros ; split ; eauto ; apply h ; clear h ; tac
-    ]
-  end.
-
-Ltac wlog_iff :=
-  wlog_iff_using firstorder.
-
 #[export] Instance rscoping_morphism :
   Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) rscoping.
 Proof.
@@ -217,7 +192,7 @@ Proof.
     t <[ var 0 .: σ >> (castrm >> ren1 ↑) ]
   ).
   { intros θ u.
-    apply subst_term_morphism2. intros n.
+    apply ext_term. intros n.
     destruct n.
     - asimpl. repeat core.unfold_funcomp. simpl. reflexivity.
     - asimpl. repeat core.unfold_funcomp. simpl.
@@ -319,9 +294,9 @@ Proof.
   intuition eauto.
 Qed.
 
-Lemma scope_erase_inv :
+Lemma scope_hide_inv :
   ∀ Γ t m,
-    scoping Γ (erase t) m →
+    scoping Γ (hide t) m →
     scoping Γ t mType ∧
     m = mGhost.
 Proof.
@@ -425,7 +400,7 @@ Proof.
     constructor. firstorder.
   - clear h. revert u u' IHh. wlog_iff.
     intros u u' ih h.
-    apply scope_erase_inv in h. intuition subst.
+    apply scope_hide_inv in h. intuition subst.
     constructor. firstorder.
   - clear h1 h2 h3. revert t t' P P' p p' IHh1 IHh2 IHh3. wlog_iff.
     intros t t' P P' p p' iht ihP ihp h.
@@ -449,6 +424,145 @@ Proof.
   - split. all: intro. all: scoping_fun. all: assumption.
 Qed.
 
+(** Alternate lemma but using md **)
+
+Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
+  ∀ x,
+    nth_error Δ x = None →
+    nth_error Γ (ρ x) = None.
+
+Definition sscoping_comp (Γ : scope) σ (Δ : scope) :=
+  ∀ n,
+    nth_error Δ n = None →
+    ∃ m,
+      σ n = var m ∧
+      nth_error Γ m = None.
+
+Lemma sscoping_comp_shift :
+  ∀ Γ Δ σ mx,
+    sscoping_comp Γ σ Δ →
+    sscoping_comp (mx :: Γ) (up_term σ) (mx :: Δ).
+Proof.
+  intros Γ Δ σ mx h. intros n e.
+  destruct n.
+  - cbn in e. discriminate.
+  - cbn in e. cbn.
+    eapply h in e as e'. destruct e' as [m [e1 e2]].
+    ssimpl. exists (S m). intuition eauto.
+    rewrite e1. ssimpl. reflexivity.
+Qed.
+
+Lemma rscoping_comp_S :
+  ∀ Γ m,
+    rscoping_comp (m :: Γ) S Γ.
+Proof.
+  intros Γ m. intros n e. cbn. assumption.
+Qed.
+
+Lemma nth_nth_error :
+  ∀ A (l : list A) (d : A) n,
+    nth n l d = match nth_error l n with Some x => x | None => d end.
+Proof.
+  intros A l d n.
+  induction l in n |- *.
+  - cbn. destruct n. all: reflexivity.
+  - cbn. destruct n.
+    + cbn. reflexivity.
+    + cbn. apply IHl.
+Qed.
+
+Lemma rscoping_comp_upren :
+  ∀ Γ Δ m ρ,
+    rscoping_comp Γ ρ Δ →
+    rscoping_comp (m :: Γ) (up_ren ρ) (m :: Δ).
+Proof.
+  intros Γ Δ m ρ h. intros x e.
+  destruct x.
+  - cbn in *. assumption.
+  - cbn in *. apply h. assumption.
+Qed.
+
+Lemma md_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
+    md Γ (ρ ⋅ t) = md Δ t.
+Proof.
+  intros Γ Δ ρ t hρ hcρ.
+  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn ; eauto ].
+  - cbn. rewrite 2!nth_nth_error.
+    destruct (nth_error Δ n) eqn:e.
+    + eapply hρ in e. rewrite e. reflexivity.
+    + eapply hcρ in e. rewrite e. reflexivity.
+  - cbn. eapply IHt3.
+    + eapply rscoping_shift. assumption.
+    + eapply rscoping_comp_upren. assumption.
+  - cbn. erewrite IHt3. 2,3: eauto.
+    reflexivity.
+Qed.
+
+Lemma md_subst :
+  ∀ Γ Δ σ t,
+    sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ →
+    md Γ (t <[ σ ]) = md Δ t.
+Proof.
+  intros Γ Δ σ t hσ hcσ.
+  induction t in Γ, Δ, σ, hσ, hcσ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn ; eauto ].
+  - cbn. rewrite nth_nth_error.
+    destruct (nth_error Δ n) eqn:e.
+    + clear hcσ. induction hσ as [| σ Δ mx hσ ih hm] in n, m, e |- *.
+      1: destruct n ; discriminate.
+      destruct n.
+      * cbn in *. noconf e.
+        erewrite scoping_md. 2: eassumption. reflexivity.
+      * cbn in e. eapply ih. assumption.
+    + eapply hcσ in e. destruct e as [m [e1 e2]].
+      rewrite e1. cbn. rewrite nth_nth_error. rewrite e2. reflexivity.
+  - cbn. eapply IHt3.
+    + eapply sscoping_shift. assumption.
+    + eapply sscoping_comp_shift. assumption.
+  - cbn. erewrite IHt3. 2,3: eauto.
+    reflexivity.
+Qed.
+
+Lemma sscoping_comp_one :
+  ∀ Γ u mx,
+    sscoping_comp Γ u.. (mx :: Γ).
+Proof.
+  intros Γ u mx. intros n e.
+  destruct n.
+  - cbn in e. discriminate.
+  - cbn in e. cbn. eexists. intuition eauto.
+Qed.
+
+Lemma conv_md :
+  ∀ Γ u v,
+    Γ ⊢ u ≡ v →
+    mdc Γ u = mdc Γ v.
+Proof.
+  intros Γ u v h.
+  induction h.
+  all: try solve [ cbn ; reflexivity ].
+  all: try solve [ cbn ; eauto ].
+  - cbn. erewrite md_subst.
+    2: eapply sscoping_one ; eassumption.
+    2: eapply sscoping_comp_one.
+    reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    cbn in H2. destruct H2 as [| []]. 3: contradiction.
+    all: subst. all: reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption. reflexivity.
+  - cbn. rewrite IHh3. reflexivity.
+  - etransitivity. all: eassumption.
+  - erewrite 2!scoping_md. 2,3: eassumption.
+    reflexivity.
+Qed.
+
 (** Renaming preserves typing **)
 
 Definition rtyping (Γ : context) (ρ : nat → nat) (Δ : context) : Prop :=
@@ -467,7 +581,7 @@ Proof.
   eapply h in en as [B [en eB]].
   eexists. split. 1: eassumption.
   asimpl. rewrite <- eB.
-  apply ren_term_morphism2. intro x. cbn. core.unfold_funcomp.
+  apply extRen_term. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
 
@@ -634,7 +748,7 @@ Proof.
     + apply ih. intros n. apply e.
     + rewrite <- e. assumption.
     + rewrite <- e. eapply meta_conv. 1: eassumption.
-      asimpl. apply subst_term_morphism2.
+      asimpl. apply ext_term.
       intro. apply e.
 Qed.
 
@@ -724,7 +838,7 @@ Proof.
   all: try solve [ asimpl ; econstructor ; eauto ; scoping_subst_finish ].
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try scoping_subst_finish.
-    asimpl. apply subst_term_morphism2.
+    asimpl. apply ext_term.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
@@ -760,7 +874,7 @@ Proof.
     + eapply IHht3. eapply styping_shift. assumption.
   - asimpl. asimpl in IHht1.
     eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_subst_finish.
-    asimpl. apply subst_term_morphism2. intros [].
+    asimpl. apply ext_term. intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
@@ -884,9 +998,9 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
-Lemma type_erase_inv :
+Lemma type_hide_inv :
   ∀ Γ t C,
-    Γ ⊢ erase t : C →
+    Γ ⊢ hide t : C →
     ∃ i A,
       cscoping Γ A mKind ∧
       cscoping Γ t mType ∧
@@ -911,7 +1025,7 @@ Lemma type_reveal_inv :
       In m [ mProp ; mGhost ] ∧
       Γ ⊢ t : Erased A ∧
       Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
-      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (erase (var 0))) ∧
+      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (hide (var 0))) ∧
       Γ ⊢ app P t ≡ C.
 Proof.
   intros Γ t P p C h.
@@ -1040,7 +1154,7 @@ Ltac ttinv h h' :=
     | lam _ _ _ _ => eapply type_lam_inv in h as h'
     | app _ _ => eapply type_app_inv in h as h'
     | Erased _ => eapply type_erased_inv in h as h'
-    | erase _ => eapply type_erase_inv in h as h'
+    | hide _ => eapply type_hide_inv in h as h'
     | reveal _ _ _ => eapply type_reveal_inv in h as h'
     | revealP _ _ => eapply type_revealP_inv in h as h'
     | gheq _ _ _ => eapply type_gheq_inv in h as h'

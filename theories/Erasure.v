@@ -1,8 +1,8 @@
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping Scoping
-  CTyping TermMode Typing BasicMetaTheory.
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CScoping
+  Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -12,29 +12,6 @@ Set Default Goal Selector "!".
 Set Equations Transparent.
 
 Definition cDummy := ctt.
-
-(*** BIG TODO ***)
-(**
-
-  Variable handling is going to become much more complicated because erasure
-  removes some variables, while parametricity adds some in a non-uniform way
-  so computing offsets and weakenings will be painful arithmetic.
-  I propose to use flexible contexts that instead of one declaration per
-  position will have zero, one or two. A variable in the target will thus be
-  a position in the context, plus a role corresponding to how the variable is
-  used, be it as a regular or a parametricity variable.
-
-  This idea should work for all kinds of translations and is particularly suited
-  to combination of several translations like we do here.
-
-  TODO: Mention this idea of flexible variables in the paper, and keep this
-  comment somewhere in the code, probably where we introduce flex contexts.
-
-  We can also consider having a final translation to get rid of those but
-  this will be much nicer probably, we separate matters nicely.
-  I would argue though that we don't really need it.
-
- **)
 
 (* TODO MOVE to utils *)
 Section Inb.
@@ -59,31 +36,21 @@ Definition mode_eqb (m m' : mode) : bool :=
   | _,_ => false
   end.
 
-Definition mode_inb := inb mode_eqb.
-Definition mode_inclb := inclb mode_eqb.
+Definition isProp m := mode_eqb m mProp.
+Definition isGhost m := mode_eqb m mGhost.
 
-Notation irrm m :=
-  (mode_inb m [ mProp ; mGhost ]).
+Definition mode_inb := inb mode_eqb.
+(* Definition mode_inclb := inclb mode_eqb. *)
 
 Notation relm m :=
-  (negb (irrm m)).
+  (mode_inb m [ mType ; mKind ]).
 
-(** Test whether a variable is relevant **)
+(** Test whether a variable is defined and relevant **)
 
 Definition relv (Γ : scope) x :=
-  relm (nth x Γ mType).
-
-(** Erasure for a variable
-
-  It needs to skip over variables in scope that are erased.
-  It returns 0 as a default, but it should not matter.
-
-**)
-
-Fixpoint erase_var (Γ : scope) (x : nat) : nat :=
-  match Γ, x with
-  | m :: Γ, S x => if irrm m then erase_var Γ x else S (erase_var Γ x)
-  | _, _ => 0
+  match nth_error Γ x with
+  | Some m => relm m
+  | None => false
   end.
 
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
@@ -91,37 +58,39 @@ Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).
 
 Equations erase_term (Γ : scope) (t : term) : cterm := {
-  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar (erase_var Γ x) else cDummy ;
-  ⟦ Γ | Sort mProp i ⟧ε := ctyval ctop cstar ; (* Need Box from Prop to Type (S i) *)
-  (* But if I need to have η for it then I'm screwed... We'll see
-  what's needed… *)
-  ⟦ Γ | Sort _m i ⟧ε := ctyval (cty i) ctyerr ;
+  ⟦ Γ | var x ⟧ε := if relv Γ x then cvar x else cDummy ;
+  ⟦ Γ | Sort m i ⟧ε :=
+    if isProp m
+    then ctyval cunit ctt (* In the paper, ⊤/* *)
+    else ctyval (cty i) ctyerr ;
   ⟦ Γ | Pi i j m mx A B ⟧ε :=
-    if relm mx && negb (mode_eqb m mProp)
+    if relm mx && negb (isProp m)
     then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
-    else if mode_inclb [ m ; mx ] [ mGhost ]
-    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ (S ⋅ ⟦ mx :: Γ | B ⟧∅))
-    else if mode_eqb m mProp
-    then cstar
-    else ⟦ mx :: Γ | B ⟧ε ;
+    else if isGhost m && isGhost mx
+    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (ignore ⟦ mx :: Γ | B ⟧∅))
+    else if isProp m
+    then ctt
+    else close ⟦ mx :: Γ | B ⟧ε ;
   ⟦ Γ | lam mx A B t ⟧ε :=
-    if irrm mx
-    then ⟦ mx :: Γ | t ⟧ε
-    else if relm (md (mx :: Γ) t)
-    then clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε
+    if relm (md (mx :: Γ) t)
+    then
+      if relm mx
+      then clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧ε
+      else close ⟦ mx :: Γ | t ⟧ε
     else cDummy ;
   ⟦ Γ | app u v ⟧ε :=
-    if irrm (md Γ v)
-    then ⟦ Γ | u ⟧ε
-    else if relm (md Γ u)
-    then capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε
+    if relm (md Γ u)
+    then
+      if relm (md Γ v)
+      then capp ⟦ Γ | u ⟧ε ⟦ Γ | v ⟧ε
+      else ⟦ Γ | u ⟧ε
     else cDummy ;
   ⟦ Γ | Erased A ⟧ε := ⟦ Γ | A ⟧ε ;
-  ⟦ Γ | revealP t P ⟧ε := cstar ;
-  ⟦ Γ | gheq A u v ⟧ε := cstar ;
+  ⟦ Γ | revealP t P ⟧ε := ctt ;
+  ⟦ Γ | gheq A u v ⟧ε := ctt ;
   ⟦ Γ | ghcast e P t ⟧ε := ⟦ Γ | t ⟧ε ;
-  ⟦ Γ | bot ⟧ε := cstar ;
-  ⟦ Γ | bot_elim m A p ⟧ε := if irrm m then cDummy else ⟦ Γ | A ⟧∅ ;
+  ⟦ Γ | bot ⟧ε := ctt ;
+  ⟦ Γ | bot_elim m A p ⟧ε := if relm m then ⟦ Γ | A ⟧∅ else cDummy ;
   ⟦ _ | _ ⟧ε := cDummy
 }
 where "⟦ G | u '⟧ε'" := (erase_term G u)
@@ -133,44 +102,33 @@ Reserved Notation "⟦ G '⟧ε'" (at level 9, G at next level).
 Equations erase_ctx (Γ : context) : ccontext := {
   ⟦ [] ⟧ε := [] ;
   ⟦ Γ ,, (mx, A) ⟧ε :=
-    if irrm mx
-    then ⟦ Γ ⟧ε
-    else (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+    if relm mx
+    then Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+    else None :: ⟦ Γ ⟧ε
 }
 where "⟦ G '⟧ε'" := (erase_ctx G).
 
-Fixpoint erase_sc (Γ : scope) : cscope :=
-  match Γ with
-  | [] => []
-  | m :: Γ => if irrm m then erase_sc Γ else cType :: erase_sc Γ
-  end.
-
-(* TODO MOVE *)
-
-Ltac destruct_if e :=
-  lazymatch goal with
-  | |- context [ if ?b then _ else _ ] =>
-    destruct b eqn: e
-  end.
+Definition erase_sc (Γ : scope) : cscope :=
+  map (λ m, if relm m then Some cType else None) Γ.
 
 (** Erasure of irrelevant terms is cDummy **)
 
 Lemma erase_irr :
   ∀ Γ t,
-    irrm (md Γ t) = true →
+    relm (md Γ t) = false →
     ⟦ Γ | t ⟧ε = cDummy.
 Proof.
   intros Γ t hm.
   induction t in Γ, hm |- *.
   all: try reflexivity.
   all: try discriminate hm.
-  - cbn - [mode_inb] in *. unfold relv. rewrite hm.
-    reflexivity.
-  - cbn - [mode_inb] in *.
-    destruct_if em. 1: eauto.
+  - cbn - [mode_inb] in *. unfold relv.
+    destruct (nth_error _ _) eqn:e. 2: reflexivity.
+    erewrite nth_error_nth in hm. 2: eassumption.
     rewrite hm. reflexivity.
   - cbn - [mode_inb] in *.
-    destruct_if em. 1: eauto.
+    rewrite hm. cbn. reflexivity.
+  - cbn - [mode_inb] in *.
     rewrite hm. reflexivity.
   - cbn - [mode_inb] in *. eauto.
   - cbn - [mode_inb] in *. rewrite hm. reflexivity.
@@ -178,14 +136,24 @@ Qed.
 
 (** Erasure of context and of variables **)
 
+Lemma erase_sc_var :
+  ∀ Γ x m,
+    nth_error Γ x = Some m →
+    relm m = true →
+    nth_error (erase_sc Γ) x = Some (Some cType).
+Proof.
+  intros Γ x m e hr.
+  unfold erase_sc. rewrite nth_error_map.
+  rewrite e. cbn - [mode_inb]. rewrite hr. reflexivity.
+Qed.
+
 Lemma erase_ctx_var :
   ∀ Γ x m A,
     nth_error Γ x = Some (m, A) →
-    irrm m = false →
-    nth_error ⟦ Γ ⟧ε (erase_var (sc Γ) x) =
-    Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ).
-  intros Γ x m A e hr.
+    relm m = true →
+    nth_error ⟦ Γ ⟧ε x = Some (Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ)).
 Proof.
+  intros Γ x m A e hr.
   induction Γ as [| [my B] Γ ih ] in x, m, A, e, hr |- *.
   1: destruct x ; discriminate.
   destruct x.
@@ -194,72 +162,6 @@ Proof.
   - cbn in e. cbn - [mode_inb skipn]. destruct (mode_inb my _) eqn:ey.
     + erewrite ih. 2,3: eauto. reflexivity.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
-Qed.
-
-(** Erasure commutes with weakening **)
-
-Lemma nth_skipn :
-  ∀ A (l : list A) x y d,
-    nth (x + y) l d = nth y (skipn x l) d.
-Proof.
-  intros A l x y d.
-  induction l as [| a l ih] in x, y |- *.
-  1:{ destruct x, y. all: reflexivity. }
-  destruct x, y. all: cbn. 1,2: reflexivity.
-  - apply ih.
-  - apply ih.
-Qed.
-
-Lemma relv_skipn :
-  ∀ Γ x y,
-    relv Γ (x + y) = relv (skipn x Γ) y.
-Proof.
-  intros Γ x y.
-  unfold relv.
-  rewrite nth_skipn. reflexivity.
-Qed.
-
-Corollary relv_S :
-  ∀ m Γ x,
-    relv (m :: Γ) (S x) = relv Γ x.
-Proof.
-  intros m Γ x.
-  apply relv_skipn with (x := 1).
-Qed.
-
-Lemma erase_var_0 :
-  ∀ Γ,
-    erase_var Γ 0 = 0.
-Proof.
-  intros Γ. destruct Γ. all: reflexivity.
-Qed.
-
-(* Iterated up_ren *)
-Fixpoint up_rens n ρ :=
-  match n with
-  | 0 => ρ
-  | S n => up_ren (up_rens n ρ)
-  end.
-
-(* Combination of up_ren and shift, corresponding to weakening under binders *)
-Definition upwk (u w : nat) : nat → nat :=
-  up_rens u (Nat.add w).
-
-Lemma erase_var_plus :
-  ∀ Γ x y,
-    erase_var Γ (x + y) = erase_var Γ x + erase_var (skipn x Γ) y.
-Proof.
-  intros Γ x y.
-  induction Γ as [| m Γ ih] in x, y |- *.
-  - destruct x, y. all: cbn. all: reflexivity.
-  - destruct x, y. all: cbn - [mode_inb skipn]. all: try eauto.
-    + replace (x + 0) with x by lia.
-      destruct_if e.
-      * cbn. rewrite erase_var_0. lia.
-      * cbn. rewrite erase_var_0. lia.
-    + destruct_if e.
-      * cbn. auto.
-      * cbn. rewrite ih. lia.
 Qed.
 
 (* TODO MOVE *)
@@ -294,34 +196,124 @@ Proof.
   - cbn in *. apply h. assumption.
 Qed.
 
-Lemma upwk_scoping :
-  ∀ Γ Δ Ξ,
-    rscoping (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ|) (Ξ ++ Γ).
+Lemma rscoping_comp_weak :
+  ∀ Γ Δ,
+    rscoping_comp (Δ ++ Γ) (plus #|Δ|) Γ.
 Proof.
-  intros Γ Δ Ξ.
-  induction Ξ as [| m Ξ ih].
-  - cbn. apply rscoping_weak.
-  - cbn. apply rscoping_upren. assumption.
+  intros Γ Δ. intros n e.
+  rewrite nth_error_app_r. assumption.
 Qed.
 
-Lemma erase_var_weakening :
-  ∀ Γ Δ Ξ x,
-    erase_var (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ| x) =
-    upwk #|erase_sc Ξ| #|erase_sc Δ| (erase_var (Ξ ++ Γ) x).
+(** Erasure preserves scoping **)
+
+Lemma erase_scoping :
+  ∀ Γ t m,
+    relm m = true →
+    scoping Γ t m →
+    ccscoping (erase_sc Γ) ⟦ Γ | t ⟧ε cType.
 Proof.
-  intros Γ Δ Ξ x.
-  induction Ξ as [| m Ξ ih] in Γ, Δ, x |- *.
-  - cbn. (* apply erase_var_plus.
-  - cbn - [mode_inb]. destruct x.
-    + cbn. reflexivity.
-    + cbn - [mode_inb].
-      destruct (irrm m) eqn:e.
-      * unfold upwk in ih. rewrite ih. asimpl. repeat unfold_funcomp.
-        (* Not ok?? *)
-        admit.
-      * cbn. unfold upwk in ih. rewrite ih. asimpl. repeat unfold_funcomp.
-        reflexivity. *)
-Abort.
+  intros Γ t m hrm h.
+  induction h in hrm |- *.
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
+  - cbn. destruct_if e. 2: constructor.
+    constructor. eapply erase_sc_var. all: eassumption.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in IHh2. fold (erase_sc Γ) in IHh2.
+    destruct_ifs.
+    all: try solve [ eauto with cc_scope cc_type ].
+    + destruct (relm mx) eqn:e'. 2: discriminate.
+      auto with cc_scope.
+    + destruct m. all: try discriminate.
+      destruct mx. all: try discriminate.
+      cbn in *.
+      unshelve auto with cc_scope shelvedb. 2: eauto.
+      ssimpl. eapply cscope_ignore. eauto.
+    + destruct (relm mx) eqn:e'. 1: discriminate.
+      auto with cc_scope shelvedb.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    rewrite hrm. cbn - [mode_inb] in IHh3.
+    destruct_if e. all: eauto with cc_scope.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    rewrite hrm.
+    destruct_if e. 2: eauto with cc_scope.
+    erewrite scoping_md in e. 2: eassumption.
+    eauto with cc_scope.
+Qed.
+
+(** Erasure commutes with renaming **)
+
+Lemma erase_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
+    ⟦ Γ | ρ ⋅ t ⟧ε = ρ ⋅ ⟦ Δ | t ⟧ε.
+Proof.
+  intros Γ Δ ρ t hρ hcρ.
+  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - cbn - [mode_inb].
+    unfold relv.
+    destruct (nth_error Δ n) eqn:e.
+    + eapply hρ in e. rewrite e.
+      destruct (relm m). all: reflexivity.
+    + eapply hcρ in e. rewrite e. reflexivity.
+  - cbn - [mode_inb].
+    destruct_if e. all: eauto.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    destruct_ifs. all: try solve [ eauto ].
+    2:{ unfold close. ssimpl. cbn. reflexivity. }
+    ssimpl. cbn. ssimpl. unfold nones. ssimpl. reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    erewrite md_ren.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    destruct_ifs. all: eauto.
+    unfold close. ssimpl. reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+Qed.
+
+Lemma nth_skipn :
+  ∀ A (l : list A) x y d,
+    nth (x + y) l d = nth y (skipn x l) d.
+Proof.
+  intros A l x y d.
+  induction l as [| a l ih] in x, y |- *.
+  1:{ destruct x, y. all: reflexivity. }
+  destruct x, y. all: cbn. 1,2: reflexivity.
+  - apply ih.
+  - apply ih.
+Qed.
+
+Lemma nth_error_skipn :
+  ∀ A (l : list A) x y,
+    nth_error l (x + y) = nth_error (skipn x l) y.
+Proof.
+  intros A l x y.
+  induction l as [| a l ih] in x, y |- *.
+  1:{ destruct x, y. all: reflexivity. }
+  destruct x, y. all: cbn. 1,2: reflexivity.
+  - apply ih.
+  - apply ih.
+Qed.
 
 Lemma nth_app_r :
   ∀ A (l l' : list A) d n,
@@ -333,138 +325,144 @@ Proof.
   - cbn. apply ih.
 Qed.
 
-Lemma nth_upwk :
-  ∀ A (l1 l2 l3 : list A) x d,
-    nth (upwk #|l1| #|l2| x) (l1 ++ l2 ++ l3) d = nth x (l1 ++ l3) d.
-Proof.
-  intros A l1 l2 l3 x d.
-  induction l1 as [| a l1 ih] in l2, l3, x, d |- *.
-  - cbn. apply nth_app_r.
-  - cbn. destruct x.
-    + cbn. reflexivity.
-    + cbn. apply ih.
-Qed.
-
-Lemma relv_upwk :
-  ∀ Γ Δ Ξ x,
-    relv (Ξ ++ Δ ++ Γ) (upwk #|Ξ| #|Δ| x) = relv (Ξ ++ Γ) x.
-Proof.
-  intros Γ Δ Ξ x.
-  unfold relv. rewrite nth_upwk. reflexivity.
-Qed.
-
-Lemma erase_weakening :
-  ∀ Γ Δ Ξ t,
-    ⟦ Ξ ++ Δ ++ Γ | (upwk #|Ξ| #|Δ|) ⋅ t ⟧ε =
-    (upwk #|erase_sc Ξ| #|erase_sc Δ|) ⋅ ⟦ Ξ ++ Γ | t ⟧ε.
-Proof.
-  intros Γ Δ Ξ t.
-  funelim (⟦ _ | t ⟧ε).
-  all: rename Γ0 into Γ.
-  all: try solve [ asimpl ; cbn ; eauto ].
-  - asimpl. cbn - [erase_var].
-    rewrite relv_upwk.
-    destruct_if e. 2: reflexivity.
-    asimpl. cbn. repeat unfold_funcomp.
-    f_equal. (* apply erase_var_weakening. *)
-    admit.
-  - asimpl. cbn - [mode_inb mode_inclb].
-    (* TODO Maybe use a view for Equations or something *)
-    destruct_if e.
-    + asimpl. repeat unfold_funcomp. cbn - [mode_inb mode_inclb].
-      f_equal.
-      * f_equal.
-        -- f_equal. eauto.
-        -- f_equal.
-          unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
-          repeat unfold_funcomp.
-          specialize H0 with (Ξ := _ :: _) (1 := eq_refl).
-          cbn - [mode_inb] in H0. rewrite H0. 2: reflexivity.
-          (* TODO Rewrite using e *)
-          (* asimpl. unfold Ren_cterm. repeat unfold_funcomp. *)
-          admit.
-      * f_equal.
-        -- f_equal. eauto.
-        -- f_equal.
-          unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
-          repeat unfold_funcomp.
-          specialize H0 with (Ξ := _ :: _) (1 := eq_refl).
-          cbn - [mode_inb] in H0. rewrite H0. 2: reflexivity.
-          admit.
-    (* + destruct_if e'.
-      * asimpl. repeat unfold_funcomp. cbn - [skipn mode_inb mode_inclb].
-        f_equal.
-        -- f_equal. 1: f_equal ; eauto.
-          f_equal. unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
-          repeat unfold_funcomp.
-          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
-          cbn in H0. unfold up_ren in H0. unfold upwk. rewrite H0.
-          2: reflexivity.
-          asimpl. repeat unfold_funcomp.
-          unfold Ren_cterm. asimpl. repeat unfold_funcomp.
-          (* No composition law?? *)
-          admit.
-        -- f_equal. 1: f_equal ; eauto.
-          f_equal. unfold Ren_cterm. unfold upRen_cterm_cterm. asimpl.
-          repeat unfold_funcomp.
-          specialize H0 with (Δ := _ :: _) (1 := eq_refl).
-          cbn in H0. unfold up_ren in H0. unfold upwk. rewrite H0.
-          2: reflexivity.
-          asimpl. repeat unfold_funcomp.
-          unfold Ren_cterm. asimpl. repeat unfold_funcomp.
-          admit.
-      * destruct_if e''. 1: reflexivity.
-        asimpl. unfold Ren_cterm.
-        repeat unfold_funcomp.
-        specialize H0 with (Δ := _ :: _) (1 := eq_refl).
-        cbn in H0. unfold up_ren in H0. unfold upwk. rewrite H0.
-        2: reflexivity.
-        asimpl. repeat unfold_funcomp.
-        unfold Ren_cterm. asimpl. repeat unfold_funcomp.
-        (* ??? *)
-        admit. *)
-Abort.
-
 (** Erasure commutes with substitution **)
 
-(* TODO WRONG, σ should be filtered to remove stuff in Ghost or Prop mode. *)
 Lemma erase_subst :
   ∀ Γ Δ σ t,
+    sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ →
     ⟦ Γ | t <[ σ ] ⟧ε = ⟦ Δ | t ⟧ε <[ σ >> erase_term Γ ].
 Proof.
-  intros Γ Δ σ t.
-  funelim (erase_term Δ t).
-  (* induction t in Γ, Δ, σ |- *. *)
+  intros Γ Δ σ t hσ hcσ.
+  induction t in Γ, Δ, σ, hσ, hcσ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
-  - admit.
-  - (* Not making much progress, should I do the if directly in Equations? *)
-  (* - asimpl. cbn. destruct m. all: cbn. all: reflexivity.
-  - asimpl. cbn - [mode_inb mode_inclb].
-    destruct_if e.
-    + cbn. asimpl. repeat unfold_funcomp. f_equal.
-      * erewrite IHt1. f_equal.
-        erewrite IHt2. f_equal.
-        substify. instantiate (1 := m0 :: Δ). asimpl.
-        (* eapply subst_term_morphism2. *)
-        f_equal. asimpl. unfold_funcomp.
-        (* I'm a bit lost... *)
-        admit.
-      * erewrite IHt1. f_equal.
-        erewrite IHt2. f_equal. instantiate (1 := m0 :: Δ).
-        asimpl.
-        admit.
-    + destruct_if e'.
-      * cbn. erewrite IHt1. f_equal. all: admit.
-      * admit. *)
-    admit.
-  - admit.
-  - cbn - [mode_inb]. destruct (mode_inb (md _ v) _) eqn:e.
-    + (* Need scoping information probably *)
-      admit.
-    + admit.
-Abort.
+  (* all: try solve [ cbn - [mode_inb] ; destruct_ifs ; ssimpl ; eauto ]. *)
+  (* Solves only 1 *)
+  - ssimpl. cbn. unfold relv. destruct (nth_error Δ n) eqn:e.
+    + destruct (relm m) eqn:em.
+      * cbn. ssimpl. reflexivity.
+      * cbn. eapply erase_irr. clear hcσ.
+        induction hσ as [| σ Δ mx hσ ih hm] in n, m, e, em |- *.
+        1: destruct n ; discriminate.
+        destruct n.
+        -- cbn - [mode_inb] in *.
+          erewrite scoping_md. 2: eassumption.
+          noconf e. assumption.
+        -- cbn in e. eapply ih. all: eassumption.
+    + cbn. eapply hcσ in e as e'. destruct e' as [m [e1 e2]].
+      rewrite e1. cbn.
+      unfold relv. rewrite e2. reflexivity.
+  - cbn. destruct_if em.
+    + cbn. reflexivity.
+    + cbn. reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eauto.
+    erewrite IHt2.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
+    destruct_ifs.
+    + cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
+      * eapply ext_cterm. intros [].
+        -- ssimpl. cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+          reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
+      * (* cbn - [mode_inb]. destruct_if e'. 2: discriminate. *)
+        eapply ext_cterm. intros [].
+        -- ssimpl. cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+          reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
+    + destruct m. all: try discriminate.
+      destruct m0. all: try discriminate.
+      cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
+      * cbn.
+        eapply ext_cterm. intros [].
+        -- ssimpl. reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. rewrite rinstInst'_cterm.
+          eapply ext_cterm. intro x.
+          cbn. ssimpl. reflexivity.
+      * cbn.
+        eapply ext_cterm. intros [].
+        -- ssimpl. reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. rewrite rinstInst'_cterm.
+          eapply ext_cterm. intro x.
+          cbn. ssimpl. reflexivity.
+    + reflexivity.
+    + unfold close. ssimpl. cbn - [mode_inb].
+      destruct_if e'. 1: discriminate.
+      cbn. eapply ext_cterm. intros [].
+      * cbn. reflexivity.
+      * cbn. ssimpl. erewrite erase_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ eapply sscoping_comp_shift. assumption. }
+    destruct_ifs.
+    + erewrite IHt1. 2,3: eauto.
+      erewrite IHt3.
+      2:{ eapply sscoping_shift. eassumption. }
+      2:{ eapply sscoping_comp_shift. assumption. }
+      ssimpl. f_equal.
+      eapply ext_cterm. intros [].
+      * cbn - [mode_inb]. rewrite e0. reflexivity.
+      * cbn. ssimpl.
+        erewrite erase_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. reflexivity.
+    + unfold close. ssimpl.
+      erewrite IHt3.
+      2:{ eapply sscoping_shift. eassumption. }
+      2:{ eapply sscoping_comp_shift. assumption. }
+      ssimpl. eapply ext_cterm. intros [].
+      * cbn - [mode_inb]. rewrite e0. reflexivity.
+      * cbn. ssimpl.
+        erewrite erase_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. reflexivity.
+    + reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eauto.
+    erewrite md_subst. 2,3: eauto.
+    erewrite IHt1. 2,3: eauto.
+    erewrite IHt2. 2,3: eauto.
+    destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    destruct_ifs. all: reflexivity.
+Qed.
 
 (** Erasure preserves conversion **)
+
+Lemma cconv_close :
+  ∀ Γ u v,
+    None :: Γ ⊢ᶜ u ≡ v →
+    Γ ⊢ᶜ close u ≡ close v.
+Proof.
+  intros Γ u v h.
+  unfold close. eapply cconv_subst.
+  - eapply cstyping_one_none.
+  - assumption.
+Qed.
 
 Lemma erase_conv :
   ∀ Γ u v,
@@ -475,55 +473,391 @@ Proof.
   induction h.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
-    destruct (mode_inb _ _) eqn:e1.
-    + (* TODO Need proper erasure subst lemma *) admit.
-    + eapply cconv_trans. 1: econstructor.
-      admit.
+    erewrite scoping_md. 2: eassumption.
+    destruct_ifs.
+    + eapply cmeta_conv_trans_r. 1: constructor.
+      erewrite erase_subst.
+      2: eapply sscoping_one. 2: eassumption.
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1: eapply erase_scoping. 2: eassumption. 1: assumption.
+      intros [| x] ex.
+      * cbn. reflexivity.
+      * cbn. unfold relv. unfold inscope in ex.
+        cbn - [mode_inb] in ex.
+        rewrite nth_error_map in ex.
+        destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+        cbn - [mode_inb] in ex.
+        destruct (relm m0). 2: discriminate.
+        reflexivity.
+    + unfold close. eapply cmeta_conv_trans_r. 1: constructor.
+      erewrite erase_subst.
+      2: eapply sscoping_one. 2: eassumption.
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1: eapply erase_scoping. 2: eassumption. 1: assumption.
+      intros [| x] ex.
+      * unfold inscope in ex. cbn - [mode_inb] in ex.
+        rewrite e0 in ex. discriminate.
+      * cbn. unfold relv. unfold inscope in ex.
+        cbn - [mode_inb] in ex.
+        rewrite nth_error_map in ex.
+        destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+        cbn - [mode_inb] in ex.
+        destruct (relm m0). 2: discriminate.
+        reflexivity.
+    + erewrite erase_irr.
+      2:{ erewrite md_subst.
+        2:{ eapply sscoping_one. eassumption. }
+        2:{ eapply sscoping_comp_one. }
+        erewrite scoping_md. 2: eassumption.
+        assumption.
+      }
+      constructor.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
+    cbn in H2.
+    destruct_if e.
+    1:{ destruct mp. all: intuition discriminate. }
+    constructor.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
     cbn.
-    (* TODO WRONG
-
-      I can see two options:
-      - Concluding only on stuff with the right relevance.
-      - Producing clever garbage when erasing irrelevant stuff.
-        Like erase reveal t P p to capp (erase p) (erase t).
-
-      Maybe having the restriction is better?
-      Let's move on to typing instead to get the right expectations.
-
-     *)
+    (* Ok, here is the problem when using unit and not Prop!
+      It needs to be fixed somehow…
+    *)
+    give_up.
+  - cbn - [mode_inb]. apply cconv_refl.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in IHh2, IHh4.
+    destruct_ifs.
+    + destruct (relm mx) eqn:e1. 2: discriminate.
+      constructor. all: constructor. all: constructor. all: eauto.
+    + destruct m. all: try discriminate.
+      destruct mx. all: try discriminate.
+      cbn in *. constructor. all: constructor. all: constructor. all: eauto.
+      * eapply cconv_ren. 1: eapply crtyping_S.
+        eapply cconv_subst. 1:eapply cstyping_one_none.
+        eauto.
+      * eapply cconv_subst. 2: eauto.
+        eapply cstyping_nones.
+    + constructor.
+    + destruct (relm mx) eqn:e'. 1: discriminate.
+      eapply cconv_close. eauto.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in IHh2, IHh3.
+    eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
+    destruct_ifs.
+    + constructor. 1: constructor. all: eauto.
+    + eapply cconv_close. eauto.
+    + constructor.
+  - cbn - [mode_inb].
+    eapply conv_md in h1 as e1. simpl in e1. rewrite <- e1.
+    eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
+    destruct_ifs.
+    + constructor. all: eauto.
+    + eauto.
+    + constructor.
+  - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. destruct_if'.
+    + constructor. eauto.
+    + constructor.
+  - constructor.
+  - constructor. eassumption.
+  - eapply cconv_trans. all: eauto.
+  - rewrite 2!erase_irr. 1: constructor.
+    all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
 Abort.
 
-(* TODO MOVE *)
+(** Erasure preserves typing **)
 
-Lemma ccmeta_conv :
-  ∀ Γ t A B,
-    Γ ⊢ᶜ t : A →
-    A = B →
-    Γ ⊢ᶜ t : B.
+Lemma erase_typing_El :
+  ∀ Γ Γ' A m i,
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧ε : ⟦ Γ | Sort m i ⟧τ →
+    isProp m = false →
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧τ : cSort cType i.
 Proof.
-  intros. subst. assumption.
+  intros Γ Γ' A m i h hm.
+  econstructor. cbn in h. rewrite hm in h.
+  econstructor.
+  - eassumption.
+  - constructor.
+  - econstructor.
 Qed.
 
-(** Erasure preserves typing **)
+Lemma erase_typing_Err :
+  ∀ Γ Γ' A m i,
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧ε : ⟦ Γ | Sort m i ⟧τ →
+    isProp m = false →
+    Γ' ⊢ᶜ ⟦ Γ | A ⟧∅ : ⟦ Γ | A ⟧τ.
+Proof.
+  intros Γ Γ' A m i h hm.
+  econstructor. cbn in h. rewrite hm in h.
+  econstructor.
+  - eassumption.
+  - constructor.
+  - econstructor.
+Qed.
 
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
-    irrm (mdc Γ t) = false →
+    relm (mdc Γ t) = true →
     ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | t ⟧ε : ⟦ sc Γ | A ⟧τ.
 Proof.
   intros Γ t A h hm.
   induction h.
-  - cbn. unfold relv. cbn - [mode_inb] in hm. rewrite hm.
+  all: try solve [ cbn in hm ; discriminate ].
+  (* all: try solve [ cbn ; eauto using erase_typing_El, erase_typing_Err with cc_scope cc_type ]. *)
+  - cbn. unfold relv. unfold sc. rewrite nth_error_map.
+    rewrite H. cbn - [mode_inb].
+    cbn - [mode_inb] in hm.
+    erewrite nth_error_nth in hm.
+    2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
+    cbn - [mode_inb] in hm. rewrite hm.
     cbn. eapply ccmeta_conv.
-    + econstructor. eapply erase_ctx_var. 1: eassumption.
-      erewrite nth_error_nth in hm.
-      2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
-      assumption.
+    + econstructor. eapply erase_ctx_var. all: eassumption.
     + cbn - [skipn]. f_equal.
-      erewrite nth_error_nth in hm.
-      2:{ unfold sc. rewrite nth_error_map. rewrite H. reflexivity. }
-      cbn - [mode_inb] in hm.
+      erewrite erase_ren.
+      * reflexivity.
+      * intros y my ey. rewrite <- nth_error_skipn in ey. assumption.
+      * intros y ey. rewrite <- nth_error_skipn in ey. assumption.
+  - cbn. destruct_if e.
+    + econstructor.
+      * constructor. all: constructor.
+      * apply cconv_sym. eapply cconv_trans. 1: econstructor.
+        (* Uh oh, unit is not lifted to the upper level, maybe we can do it
+          in CC though!
+        *)
+        admit.
+      * repeat econstructor.
+    + econstructor.
+      * repeat constructor.
+      * apply cconv_sym. econstructor.
+      * repeat econstructor.
+  - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2.
+    destruct_ifs.
+    (* repeat (d_if ; cbn - [mode_inb]).
+    all: try solve [ destruct m ; discriminate ]. *)
+    + (* Redundant case *)
+      destruct mx. all: discriminate.
+    + destruct (relm mx) eqn:e'. 2: discriminate.
+      econstructor.
+      * econstructor. all: econstructor.
+      (* TODO IH tactic *)
+        -- eapply erase_typing_El.
+          ++ eapply IHh1. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ destruct mx. all: try discriminate. all: reflexivity.
+        -- eapply erase_typing_El. 2: eassumption.
+          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
+          reflexivity.
+        -- eapply erase_typing_El.
+          ++ eapply IHh1. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ destruct mx. all: try discriminate. all: reflexivity.
+        -- eapply erase_typing_Err. 2: eassumption.
+          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
+          reflexivity.
+        -- eapply erase_typing_El. 2: eassumption.
+          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
+          reflexivity.
+      * apply cconv_sym. constructor.
+      * repeat econstructor.
+    + destruct m. all: try discriminate.
+    + destruct m. all: try discriminate.
+      destruct mx. all: try discriminate.
+      ssimpl.
+      econstructor.
+      * econstructor. all: econstructor.
+        -- eapply erase_typing_El. 1: eapply IHh1. 2: reflexivity.
+          erewrite scoping_md. 2: eassumption. reflexivity.
+        -- econstructor. econstructor.
+          ++ eapply ctype_ignore.
+            eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. econstructor.
+          ++ eauto with cc_scope cc_type.
+        -- eapply erase_typing_El.
+          ++ eapply IHh1. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ reflexivity.
+        -- econstructor. econstructor.
+          ++ eapply ctype_ignore.
+            eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. constructor.
+          ++ eauto with cc_scope cc_type.
+        -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+          econstructor.
+          ++ eapply ctype_ignore. eapply IHh2.
+            erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. constructor.
+          ++ eauto with cc_scope cc_type.
+      * eapply cconv_sym. constructor.
+      * eauto with cc_scope cc_type.
+    + econstructor.
+      * eauto with cc_scope cc_type.
+      * eapply cconv_sym. constructor.
+      * eauto with cc_scope cc_type.
+    + destruct (relm mx) eqn:e'. 1: discriminate.
+      econstructor.
+      * eapply ctype_close. eapply IHh2.
+        erewrite scoping_md. 2: eassumption. reflexivity.
+      * cbn. eapply cconv_trans. 1: constructor.
+        apply cconv_sym. constructor.
+        (* Uh oh: Not the right universe level here either! *)
+        admit.
+      * eauto with cc_scope cc_type.
+  - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2, IHh3.
+    repeat (erewrite scoping_md ; [| eassumption]).
+    cbn - [mode_inb] in hm.
+    erewrite scoping_md in hm. 2: eassumption.
+    rewrite hm.
+    erewrite scoping_md in IHh1. 2: eassumption.
+    erewrite scoping_md in IHh2. 2: eassumption.
+    erewrite scoping_md in IHh3. 2: eassumption.
+    rewrite hm in IHh3.
+    destruct_ifs. all: try discriminate.
+    + destruct (isProp m) eqn:e'. 1: discriminate.
+      destruct (isProp mx) eqn:ex.
+      1:{ destruct mx ; discriminate. }
+      econstructor.
+      * econstructor.
+        -- eapply erase_typing_El. 2: eassumption.
+          econstructor.
+          ++ eauto.
+          ++ cbn. rewrite e'. apply cconv_refl.
+          ++ eapply erase_typing_El with (m := mKind). 2: reflexivity.
+            cbn. rewrite e'.
+            econstructor.
+            ** eauto with cc_type.
+            ** apply cconv_sym. constructor.
+            ** eauto with cc_type.
+        -- eauto.
+        -- eapply erase_typing_El.
+          ++ econstructor.
+            ** eauto.
+            ** cbn. rewrite ex. apply cconv_refl.
+            ** cbn. rewrite ex. eauto with cc_type.
+          ++ assumption.
+      * apply cconv_sym. constructor.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        -- econstructor.
+          ++ eauto.
+          ++ constructor.
+          ++ eauto with cc_type.
+        -- eapply erase_typing_El.
+          ++ cbn. rewrite ex. eauto.
+          ++ assumption.
+        -- econstructor.
+          ++ eapply erase_typing_El.
+            ** cbn. rewrite ex. eauto.
+            ** assumption.
+          ++ eapply erase_typing_Err.
+            ** cbn. rewrite ex. eauto.
+            ** assumption.
+          ++ eapply erase_typing_El.
+            ** cbn. rewrite ex. eauto.
+            ** assumption.
+    + destruct m. all: discriminate.
+    + destruct m. all: discriminate.
+    + destruct m. all: discriminate.
+    + destruct m. all: discriminate.
+    + eapply ccmeta_conv.
+      * eapply ctype_close. eauto.
+      * cbn. reflexivity.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md in hm. 2: eassumption.
+    erewrite scoping_md in IHh1. 2: eassumption.
+    erewrite scoping_md in IHh2. 2: eassumption.
+    repeat (erewrite scoping_md ; [| eassumption]).
+    rewrite hm.
+    destruct_ifs.
+    + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
+      simpl "&&" in IHh1. cbn match in IHh1.
+      eapply ccmeta_conv.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        econstructor.
+        -- eauto.
+        -- constructor.
+        -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+          ++ (* Missing info here. *) admit.
+          ++ (* Same *) admit.
+      * cbn. f_equal. erewrite erase_subst.
+        2: eapply sscoping_one. 2: eassumption.
+        2: eapply sscoping_comp_one.
+        ssimpl.
+        eapply ext_cterm_scoped.
+        1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
+        intros [| x] ex.
+        -- cbn. reflexivity.
+        -- cbn. unfold relv. unfold inscope in ex.
+          cbn - [mode_inb] in ex.
+          rewrite nth_error_map in ex.
+          destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+          cbn - [mode_inb] in ex.
+          destruct (relm m0). 2: discriminate.
+          reflexivity.
+    + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
+      simpl "&&" in IHh1. cbn match in IHh1.
+      destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
+      simpl "&&" in IHh1. cbn match in IHh1.
+      eapply ccmeta_conv.
+      * eauto.
+      * f_equal. unfold close.
+        erewrite erase_subst.
+        2: eapply sscoping_one. 2: eassumption.
+        2: eapply sscoping_comp_one.
+        ssimpl.
+        eapply ext_cterm_scoped.
+        1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
+        intros [| x] ex.
+        -- unfold inscope in ex. cbn - [mode_inb] in ex.
+          rewrite e in ex. discriminate.
+        -- cbn. unfold relv. unfold inscope in ex.
+          cbn - [mode_inb] in ex.
+          rewrite nth_error_map in ex.
+          destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
+          cbn - [mode_inb] in ex.
+          destruct (relm m0). 2: discriminate.
+          reflexivity.
+  - erewrite scoping_md in IHh. 2: eassumption.
+    cbn. econstructor.
+    + eauto.
+    + apply cconv_sym. apply cconv_refl.
+    + eauto with cc_type.
+  - cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
+    destruct m. all: discriminate.
+  - cbn - [mode_inb]. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb]. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
+    repeat (erewrite scoping_md ; [| eassumption]). cbn.
+    cbn - [mode_inb] in IHh6.
+    repeat (erewrite scoping_md in IHh6 ; [| eassumption]).
+    rewrite hm in IHh6.
+    cbn in IHh6. eauto.
+  - cbn - [mode_inb]. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb]. cbn - [mode_inb] in hm.
+    rewrite hm. eapply erase_typing_Err.
+    + eapply IHh1. erewrite scoping_md. 2: eassumption.
+      reflexivity.
+    + destruct m. all: try reflexivity. discriminate.
+  - econstructor.
+    + eauto.
+    + (* TODO conv lemma *) admit.
+    + eapply erase_typing_El.
+      * eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
+      * erewrite scoping_md in hm. 2: eassumption.
+        destruct m. all: try reflexivity. discriminate.
 Abort.

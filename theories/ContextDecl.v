@@ -2,6 +2,8 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST CCAST.
 From GhostTT Require Import BasicAST.
 
+Set Primitive Projections.
+
 (** Contexts store for each variable its type and mode.
 
   The mode is redundant information already contained in the type, but we only
@@ -28,14 +30,40 @@ Notation "Γ ,, d" :=
 Notation "Γ ,,, Δ" :=
   (@app decl Δ Γ) (at level 25, Δ at next level, left associativity).
 
+(** Flex declartions for CC
 
-(** Same thing for CC **)
+  Variable handling is going to become much more complicated because erasure
+  removes some variables, while parametricity adds some in a non-uniform way
+  so computing offsets and weakenings will be painful arithmetic.
+  I propose to use flexible contexts that instead of one declaration per
+  position can have zero or one.
+
+  TODO: Mention this idea of flexible variables in the paper.
+
+  We can also consider having a final translation to get rid of those but
+  this will be much nicer probably, we separate matters nicely.
+  I would argue though that we don't really need it.
+
+ **)
 
 Notation cdecl := (cmode * cterm)%type.
 
-Notation ccontext := (list cdecl).
+Notation ccontext := (list (option cdecl)).
 
-Notation cscope := (list cmode).
+Notation cscope := (list (option cmode)).
 
 Definition csc (Γ : ccontext) : cscope :=
-  map fst Γ.
+  map (option_map fst) Γ.
+
+(* TODO MOVE *)
+Definition option_bind {A B} (o : option A) (f : A → option B) :=
+  match o with
+  | Some x => f x
+  | None => None
+  end.
+
+Definition whenSome {A} (P : A → Prop) (o : option A) :=
+  match o with
+  | Some x => P x
+  | None => True
+  end.

@@ -50,13 +50,13 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
 | ccong_Pi :
     ∀ mx A A' B B',
       Γ ⊢ᶜ A ≡ A' →
-      (mx, A) :: Γ ⊢ᶜ B ≡ B' →
+      Some (mx, A) :: Γ ⊢ᶜ B ≡ B' →
       Γ ⊢ᶜ cPi mx A B ≡ cPi mx A' B'
 
 | ccong_clam :
     ∀ mx A A' t t',
       Γ ⊢ᶜ A ≡ A' →
-      (mx, A) :: Γ ⊢ᶜ t ≡ t' →
+      Some (mx, A) :: Γ ⊢ᶜ t ≡ t' →
       Γ ⊢ᶜ clam mx A t ≡ clam mx A' t'
 
 | ccong_app :
@@ -72,6 +72,22 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       (* Needed because syntactically we don't know p and p' are irrelevant *)
       Γ ⊢ᶜ p ≡ p' →
       Γ ⊢ᶜ cbot_elim m A p ≡ cbot_elim m A' p'
+
+| cconv_tyval :
+    ∀ A A' a a',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ a ≡ a' →
+      Γ ⊢ᶜ ctyval A a ≡ ctyval A' a'
+
+| cconv_El :
+    ∀ T T',
+      Γ ⊢ᶜ T ≡ T' →
+      Γ ⊢ᶜ cEl T ≡ cEl T'
+
+| cconv_Err :
+    ∀ T T',
+      Γ ⊢ᶜ T ≡ T' →
+      Γ ⊢ᶜ cErr T ≡ cErr T'
 
 (** Structural rules **)
 
@@ -104,7 +120,7 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 
 | ctype_var :
     ∀ x m A,
-      nth_error Γ x = Some (m, A) →
+      nth_error Γ x = Some (Some (m, A)) →
       Γ ⊢ᶜ cvar x : (plus (S x)) ⋅ A
 
 | ctype_sort :
@@ -114,14 +130,14 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 | ctype_pi :
     ∀ i j m mx A B,
       Γ ⊢ᶜ A : cSort mx i →
-      (mx, A) :: Γ ⊢ᶜ B : cSort m j →
+      Some (mx, A) :: Γ ⊢ᶜ B : cSort m j →
       Γ ⊢ᶜ cPi mx A B : cSort m (max i j)
 
-| ctype_clam :
+| ctype_lam :
     ∀ mx m i j A B t,
       Γ ⊢ᶜ A : cSort mx i →
-      (mx, A) :: Γ ⊢ᶜ B : cSort m j →
-      (mx, A) :: Γ ⊢ᶜ t : B →
+      Some (mx, A) :: Γ ⊢ᶜ t : B →
+      Some (mx, A) :: Γ ⊢ᶜ B : cSort m j →
       Γ ⊢ᶜ clam mx A t : cPi mx A B
 
 | ctype_app :
@@ -151,13 +167,6 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ p : cbot →
       Γ ⊢ᶜ cbot_elim m A p : A
 
-| ctype_conv :
-    ∀ i m A B t,
-      Γ ⊢ᶜ t : A →
-      Γ ⊢ᶜ A ≡ B →
-      Γ ⊢ᶜ B : cSort m i →
-      Γ ⊢ᶜ t : B
-
 | ctype_ty :
     ∀ i,
       Γ ⊢ᶜ cty i : cSort cType (S i)
@@ -182,14 +191,31 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ T : cty i →
       Γ ⊢ᶜ cErr T : cEl T
 
+| ctype_conv :
+    ∀ i m A B t,
+      Γ ⊢ᶜ t : A →
+      Γ ⊢ᶜ A ≡ B →
+      Γ ⊢ᶜ B : cSort m i →
+      Γ ⊢ᶜ t : B
+
 where "Γ ⊢ᶜ t : A" := (ctyping Γ t A).
 
 (** Context formation **)
 
+Definition isType Γ A m :=
+  ∃ i, Γ ⊢ᶜ A : cSort m i.
+
 Inductive cwf : ccontext → Prop :=
 | cwf_nil : cwf nil
 | cwf_cons :
-    ∀ Γ m i A,
+    ∀ Γ d,
       cwf Γ →
-      Γ ⊢ᶜ A : cSort m i →
-      cwf ((m, A) :: Γ).
+      whenSome (λ '(m, A), isType Γ A m) d →
+      cwf (d :: Γ).
+
+Create HintDb cc_type discriminated.
+
+Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
+  ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty
+  ctype_tyval ctype_tyerr ctype_El ctype_Err
+: cc_type.

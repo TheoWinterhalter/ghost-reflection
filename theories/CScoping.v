@@ -16,7 +16,7 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 
 | cscope_var :
     ∀ x m,
-      nth_error Γ x = Some m →
+      nth_error Γ x = Some (Some m) →
       ccscoping Γ (cvar x) m
 
 | scpoe_sort :
@@ -26,13 +26,13 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 | cscope_pi :
     ∀ mx A B,
       ccscoping Γ A cType →
-      ccscoping (mx :: Γ) B cType →
+      ccscoping (Some mx :: Γ) B cType →
       ccscoping Γ (cPi mx A B) cType
 
 | cscope_lam :
     ∀ mx m A t,
       ccscoping Γ A cType →
-      ccscoping (mx :: Γ) t m →
+      ccscoping (Some mx :: Γ) t m →
       ccscoping Γ (clam mx A t) m
 
 | cscope_app :
@@ -68,6 +68,8 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 
 | cscope_tyval :
     ∀ A a,
+      ccscoping Γ A cType →
+      ccscoping Γ a cType →
       ccscoping Γ (ctyval A a) cType
 
 | cscope_tyerr :
@@ -75,11 +77,17 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
 
 | cscope_El :
     ∀ T,
+      ccscoping Γ T cType →
       ccscoping Γ (cEl T) cType
 
 | cscope_Err :
     ∀ T,
+      ccscoping Γ T cType →
       ccscoping Γ (cErr T) cType
 .
 
 Notation ccxscoping Γ := (ccscoping (csc Γ)).
+
+Create HintDb cc_scope discriminated.
+
+Hint Constructors ccscoping : cc_scope.

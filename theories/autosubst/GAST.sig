@@ -13,7 +13,7 @@ lam : mode -> term -> (bind term in term) -> (bind term in term) -> term
 app : term -> term -> term
 
 Erased : term -> term
-erase : term -> term
+hide : term -> term
 reveal : term -> term -> term -> term
 revealP : term -> term -> term
 

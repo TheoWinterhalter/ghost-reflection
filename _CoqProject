@@ -1,5 +1,7 @@
 -Q theories GhostTT
 
+theories/Util.v
+
 theories/BasicAST.v
 
 theories/autosubst/core.v
@@ -18,5 +20,6 @@ theories/BasicMetaTheory.v
 
 theories/CScoping.v
 theories/CTyping.v
+theories/CCMetaTheory.v
 
 theories/Erasure.v
