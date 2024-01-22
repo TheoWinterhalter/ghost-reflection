@@ -614,6 +614,17 @@ Qed.
 
 (** Erasure preserves conversion **)
 
+Lemma cconv_close :
+  ∀ Γ u v,
+    None :: Γ ⊢ᶜ u ≡ v →
+    Γ ⊢ᶜ close u ≡ close v.
+Proof.
+  intros Γ u v h.
+  unfold close. eapply cconv_subst.
+  - eapply cstyping_one_none.
+  - assumption.
+Qed.
+
 Lemma erase_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
@@ -694,9 +705,7 @@ Proof.
         eapply cstyping_nones.
     + constructor.
     + destruct (relm mx) eqn:e'. 1: discriminate.
-      unfold close. eapply cconv_subst.
-      * eapply cstyping_one_none.
-      * eauto.
+      eapply cconv_close. eauto.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2, IHh3.
     (* eapply conv_scoping in h3 as hm.
@@ -705,7 +714,7 @@ Proof.
     destruct_ifs.
     + constructor. 1: constructor. all: eauto.
     + (* Should not happen *) admit.
-    + (* TODO close congruence rule *) admit.
+    + eapply cconv_close. eauto.
     + (* Should not happen *) admit.
     + (* Should not happen *) admit.
     + (* Should not happen *) admit.
