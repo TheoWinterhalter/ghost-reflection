@@ -73,6 +73,22 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ p ≡ p' →
       Γ ⊢ᶜ cbot_elim m A p ≡ cbot_elim m A' p'
 
+| cconv_tyval :
+    ∀ A A' a a',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ a ≡ a' →
+      Γ ⊢ᶜ ctyval A a ≡ ctyval A' a'
+
+| cconv_El :
+    ∀ T T',
+      Γ ⊢ᶜ T ≡ T' →
+      Γ ⊢ᶜ cEl T ≡ cEl T'
+
+| cconv_Err :
+    ∀ T T',
+      Γ ⊢ᶜ T ≡ T' →
+      Γ ⊢ᶜ cErr T ≡ cErr T'
+
 (** Structural rules **)
 
 | cconv_refl :

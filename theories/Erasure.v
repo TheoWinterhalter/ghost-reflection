@@ -677,6 +677,55 @@ Proof.
     (* Ok, here is the problem when using unit and not Prop!
       It needs to be fixed somehow…
     *)
+    give_up.
+  - cbn - [mode_inb]. apply cconv_refl.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in IHh2, IHh4.
+    destruct_ifs.
+    + destruct (relm mx) eqn:e1. 2: discriminate.
+      constructor. all: constructor. all: constructor. all: eauto.
+    + destruct m. all: try discriminate.
+      destruct mx. all: try discriminate.
+      cbn in *. constructor. all: constructor. all: constructor. all: eauto.
+      * eapply cconv_ren. 1: eapply crtyping_S.
+        eapply cconv_subst. 1:eapply cstyping_one_none.
+        eauto.
+      * eapply cconv_subst. 2: eauto.
+        eapply cstyping_nones.
+    + constructor.
+    + destruct (relm mx) eqn:e'. 1: discriminate.
+      unfold close. eapply cconv_subst.
+      * eapply cstyping_one_none.
+      * eauto.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in IHh2, IHh3.
+    (* eapply conv_scoping in h3 as hm.
+    erewrite scoping_md. 2: eapply hm. *)
+    (* Another kind of problem here: conv_scoping does not conclude on md *)
+    destruct_ifs.
+    + constructor. 1: constructor. all: eauto.
+    + (* Should not happen *) admit.
+    + (* TODO close congruence rule *) admit.
+    + (* Should not happen *) admit.
+    + (* Should not happen *) admit.
+    + (* Should not happen *) admit.
+    + constructor.
+  - cbn - [mode_inb].
+    destruct_ifs.
+    all: admit.
+  - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. destruct_if'.
+    + constructor. eauto.
+    + constructor.
+  - constructor.
+  - constructor. eassumption.
+  - eapply cconv_trans. all: eauto.
+  - rewrite 2!erase_irr. 1: constructor.
+    all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
 Abort.
 
 (** Erasure preserves typing **)
@@ -832,7 +881,7 @@ Proof.
         -- eapply erase_typing_El. 2: eassumption.
           econstructor.
           ++ eauto.
-          ++ cbn. rewrite e'. constructor.
+          ++ cbn. rewrite e'. apply cconv_refl.
           ++ eapply erase_typing_El with (m := mKind). 2: reflexivity.
             cbn. rewrite e'.
             econstructor.
@@ -843,7 +892,7 @@ Proof.
         -- eapply erase_typing_El.
           ++ econstructor.
             ** eauto.
-            ** cbn. rewrite ex. constructor.
+            ** cbn. rewrite ex. apply cconv_refl.
             ** cbn. rewrite ex. eauto with cc_type.
           ++ assumption.
       * apply cconv_sym. constructor.
@@ -930,7 +979,7 @@ Proof.
   - erewrite scoping_md in IHh. 2: eassumption.
     cbn. econstructor.
     + eauto.
-    + apply cconv_sym. constructor.
+    + apply cconv_sym. apply cconv_refl.
     + eauto with cc_type.
   - cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
     destruct m. all: discriminate.
