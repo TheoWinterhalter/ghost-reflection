@@ -547,20 +547,18 @@ Proof.
       eapply cconv_close. eauto.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2, IHh3.
-    (* eapply conv_scoping in h3 as hm.
-    erewrite scoping_md. 2: eapply hm. *)
-    (* Another kind of problem here: conv_scoping does not conclude on md *)
+    eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
     destruct_ifs.
     + constructor. 1: constructor. all: eauto.
-    + (* Should not happen *) admit.
     + eapply cconv_close. eauto.
-    + (* Should not happen *) admit.
-    + (* Should not happen *) admit.
-    + (* Should not happen *) admit.
     + constructor.
   - cbn - [mode_inb].
+    eapply conv_md in h1 as e1. simpl in e1. rewrite <- e1.
+    eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
     destruct_ifs.
-    all: admit.
+    + constructor. all: eauto.
+    + eauto.
+    + constructor.
   - cbn - [mode_inb]. eauto.
   - cbn - [mode_inb]. constructor.
   - cbn - [mode_inb]. constructor.
