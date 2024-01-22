@@ -857,7 +857,14 @@ Proof.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
         ssimpl.
-        (* Is it provable? *)
+        eapply subst_cterm_morphism2. intros [].
+        -- cbn. reflexivity.
+        -- cbn. unfold relv.
+        (* Maybe I need to know that n is in scope of Γ (should be ok)
+          but also that it's relevant? The idea is that when n is irrelevant in
+          Γ, then it should not appear in ⟦ Γ ⟧ε.
+          So maybe just assuming that n is in scope of ⟦ Γ ⟧ε is enough?
+        *)
         admit.
     + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
