@@ -429,6 +429,54 @@ Definition sscoping_comp (Γ : scope) σ (Δ : scope) :=
       σ n = var m ∧
       nth_error Γ m = None.
 
+Lemma sscoping_comp_shift :
+  ∀ Γ Δ σ mx,
+    sscoping_comp Γ σ Δ →
+    sscoping_comp (mx :: Γ) (up_term σ) (mx :: Δ).
+Proof.
+  intros Γ Δ σ mx h. intros n e.
+  destruct n.
+  - cbn in e. discriminate.
+  - cbn in e. cbn.
+    eapply h in e as e'. destruct e' as [m [e1 e2]].
+    ssimpl. exists (S m). intuition eauto.
+    rewrite e1. ssimpl. reflexivity.
+Qed.
+
+Lemma rscoping_comp_S :
+  ∀ Γ m,
+    rscoping_comp (m :: Γ) S Γ.
+Proof.
+  intros Γ m. intros n e. cbn. assumption.
+Qed.
+
+Lemma md_subst :
+  ∀ Γ Δ σ t,
+    sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ →
+    md Γ (t <[ σ ]) = md Δ t.
+Proof.
+  intros Γ Δ σ t hσ hcσ.
+  induction t in Γ, Δ, σ, hσ, hcσ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn ; eauto ].
+  - cbn. rewrite nth_nth_error.
+    destruct (nth_error Δ n) eqn:e.
+    + clear hcσ. induction hσ as [| σ Δ mx hσ ih hm] in n, m, e |- *.
+      1: destruct n ; discriminate.
+      destruct n.
+      * cbn in *. noconf e.
+        erewrite scoping_md. 2: eassumption. reflexivity.
+      * cbn in e. eapply ih. assumption.
+    + eapply hcσ in e. destruct e as [m [e1 e2]].
+      rewrite e1. cbn. rewrite nth_nth_error. rewrite e2. reflexivity.
+  - cbn. eapply IHt3.
+    + eapply sscoping_shift. assumption.
+    + eapply sscoping_comp_shift. assumption.
+  - cbn. erewrite IHt3. 2,3: eauto.
+    reflexivity.
+Qed.
+
 Lemma erase_subst :
   ∀ Γ Δ σ t,
     sscoping Γ σ Δ →
@@ -457,22 +505,102 @@ Proof.
   - cbn. destruct_if em.
     + cbn. reflexivity.
     + cbn. reflexivity.
-  - cbn - [mode_inb]. destruct_ifs.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-  - cbn - [mode_inb]. destruct_ifs.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-  - admit.
-  - admit.
-Admitted.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eauto.
+    erewrite IHt2.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
+    destruct_ifs.
+    + cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
+      * cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+        eapply subst_cterm_morphism2. intros [].
+        -- ssimpl. cbn. reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
+      * cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+        eapply subst_cterm_morphism2. intros [].
+        -- ssimpl. cbn. reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
+    + destruct m. all: try discriminate.
+      destruct m0. all: try discriminate.
+      cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
+      * cbn.
+        eapply subst_cterm_morphism2. intros [].
+        -- ssimpl. reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. rewrite rinstInst'_cterm.
+          eapply subst_cterm_morphism2. intro x.
+          cbn. ssimpl. reflexivity.
+      * cbn.
+        eapply subst_cterm_morphism2. intros [].
+        -- ssimpl. reflexivity.
+        -- ssimpl. cbn. ssimpl.
+          erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. rewrite rinstInst'_cterm.
+          eapply subst_cterm_morphism2. intro x.
+          cbn. ssimpl. reflexivity.
+    + reflexivity.
+    + unfold close. ssimpl. cbn - [mode_inb].
+      destruct_if e'. 1: discriminate.
+      cbn. eapply subst_cterm_morphism2. intros [].
+      * cbn. reflexivity.
+      * cbn. ssimpl. erewrite erase_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. rewrite instId'_cterm. reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ eapply sscoping_comp_shift. assumption. }
+    destruct_ifs.
+    + erewrite IHt1. 2,3: eauto.
+      erewrite IHt3.
+      2:{ eapply sscoping_shift. eassumption. }
+      2:{ eapply sscoping_comp_shift. assumption. }
+      ssimpl. cbn - [mode_inb].
+      rewrite e0. f_equal.
+      eapply subst_cterm_morphism2. intros [].
+      * cbn. reflexivity.
+      * cbn. ssimpl.
+        erewrite erase_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. reflexivity.
+    + unfold close. ssimpl.
+      erewrite IHt3.
+      2:{ eapply sscoping_shift. eassumption. }
+      2:{ eapply sscoping_comp_shift. assumption. }
+      ssimpl. cbn - [mode_inb]. rewrite e0. cbn.
+      eapply subst_cterm_morphism2. intros [].
+      * reflexivity.
+      * cbn. ssimpl.
+        erewrite erase_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. rewrite instId'_cterm. reflexivity.
+    + reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eauto.
+    erewrite md_subst. 2,3: eauto.
+    erewrite IHt1. 2,3: eauto.
+    erewrite IHt2. 2,3: eauto.
+    destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    destruct_ifs. all: reflexivity.
+Qed.
 
 Lemma sscoping_comp_one :
   ∀ Γ u mx,
