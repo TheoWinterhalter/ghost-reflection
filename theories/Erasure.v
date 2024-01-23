@@ -521,13 +521,10 @@ Proof.
     1:{ destruct mp. all: intuition discriminate. }
     constructor.
   - cbn - [mode_inb].
+    erewrite !md_ren. 2-5: first [ eapply rscoping_S | eapply rscoping_comp_S ].
     erewrite scoping_md. 2: eassumption.
     erewrite scoping_md. 2: eassumption.
-    cbn.
-    (* Ok, here is the problem when using unit and not Prop!
-      It needs to be fixed somehow…
-    *)
-    give_up.
+    cbn. constructor.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2, IHh4.
@@ -572,7 +569,7 @@ Proof.
   - eapply cconv_trans. all: eauto.
   - rewrite 2!erase_irr. 1: constructor.
     all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
-Abort.
+Qed.
 
 (** Erasure preserves typing **)
 

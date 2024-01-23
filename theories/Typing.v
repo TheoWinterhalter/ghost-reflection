@@ -13,6 +13,8 @@ Notation "A ⇒[ i | j / mx | m ] B" :=
   (Pi i j m mx A (shift ⋅ B))
   (at level 20, i, j, mx, m at next level, right associativity).
 
+Notation top := (bot ⇒[ 0 | 0 / mProp | mProp ] bot).
+
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
 
@@ -43,7 +45,7 @@ Inductive conversion (Γ : context) : term → term → Prop :=
     ∀ t p,
       cscoping Γ p mKind →
       cscoping Γ t mType →
-      Γ ⊢ revealP (hide t) p ≡ app p t
+      Γ ⊢ revealP (hide t) p ≡ top ⇒[ 0 | 0 / mProp | mProp ] app p t
 
 (** Congruence rules **)
 

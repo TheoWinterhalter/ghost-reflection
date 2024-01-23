@@ -332,12 +332,21 @@ Qed.
 
 Ltac scoping_fun :=
   match goal with
-  | h : cscoping ?Γ ?t ?m, h' : cscoping ?Γ ?t ?m' |- _ =>
+  | h : scoping ?Γ ?t ?m, h' : scoping ?Γ ?t ?m' |- _ =>
     assert (m = m') ; [
       eapply scoping_functional ; eassumption
     | first [ subst m' ; clear h' | subst m ; clear h ]
     ]
   end.
+
+(** Scoping of top **)
+
+Lemma scope_top :
+  ∀ Γ,
+    scoping Γ top mKind.
+Proof.
+  intros Γ. constructor. all: constructor.
+Qed.
 
 (** Conversion entails mode equality **)
 
@@ -373,9 +382,15 @@ Proof.
       constructor. assumption.
   - split.
     + intro hu. apply scope_revealP_inv in hu. intuition subst.
-      econstructor. all: eauto.
-    + intro hu. apply scope_app_inv in hu. destruct hu. intuition idtac.
-      scoping_fun. scoping_fun.
+      econstructor.
+      * apply scope_top.
+      * eapply scoping_ren. 2: econstructor ; eauto.
+        apply rscoping_S.
+    + intro hu. apply scope_pi_inv in hu. destruct hu as [? [happ ->]].
+      cbn in happ. apply scope_app_inv in happ. destruct happ as [mx [hp ht]].
+      eapply scoping_ren in H0 as ht'. 2: eapply rscoping_S with (m := mProp).
+      asimpl in ht'. unfold shift in ht'.
+      scoping_fun.
       constructor.
       * constructor. assumption.
       * assumption.
@@ -556,7 +571,6 @@ Proof.
   - cbn. erewrite scoping_md. 2: eassumption.
     cbn in H2. destruct H2 as [| []]. 3: contradiction.
     all: subst. all: reflexivity.
-  - cbn. erewrite scoping_md. 2: eassumption. reflexivity.
   - cbn. rewrite IHh3. reflexivity.
   - etransitivity. all: eassumption.
   - erewrite 2!scoping_md. 2,3: eassumption.
@@ -686,11 +700,18 @@ Proof.
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try scoping_ren_finish.
     asimpl. reflexivity.
+  - asimpl. eapply conv_trans. 1: constructor.
+    + eapply scoping_ren. 2: eassumption.
+      eapply rtyping_scoping. assumption.
+    + eapply scoping_ren. 2: eassumption.
+      eapply rtyping_scoping. assumption.
+    + cbn. ssimpl. unfold Ren_term. rewrite !renRen_term. ssimpl.
+      apply conv_refl.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
-    + asimpl in IHh3. firstorder.
-    + asimpl in IHh4. eapply IHh4. apply rtyping_shift. assumption.
+    + eapply IHh3. eassumption.
+    + eapply IHh4. apply rtyping_shift. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
@@ -842,6 +863,14 @@ Proof.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
+  - ssimpl. unfold Subst_term, Ren_term. cbn. rewrite !renSubst_term.
+    eapply conv_trans. 1: constructor.
+    + eapply scoping_subst. 2: eassumption.
+      eapply styping_scoping. assumption.
+    + eapply scoping_subst. 2: eassumption.
+      eapply styping_scoping. assumption.
+    + cbn. ssimpl. unfold Ren_term. rewrite !substRen_term.
+      apply conv_refl.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply styping_shift. assumption.
