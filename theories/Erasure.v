@@ -11,6 +11,60 @@ Import CombineNotations.
 Set Default Goal Selector "!".
 Set Equations Transparent.
 
+(** Lifting from cty i to cty j **)
+
+Definition cty_lift A :=
+  ctyval (cEl A) (cErr A).
+
+Lemma cscope_ty_lift :
+  ∀ Γ A,
+    ccscoping Γ A cType →
+    ccscoping Γ (cty_lift A) cType.
+Proof.
+  intros Γ A h.
+  unfold cty_lift.
+  constructor. all: constructor. all: assumption.
+Qed.
+
+Hint Resolve cscope_ty_lift : cc_scope.
+
+Lemma ctype_ty_lift :
+  ∀ Γ i j A,
+    Γ ⊢ᶜ A : cty i →
+    i ≤ j →
+    Γ ⊢ᶜ cty_lift A : cty j.
+Proof.
+  intros Γ i j A h hij.
+  unfold cty_lift.
+  constructor.
+  - eapply ctype_cumul.
+    + econstructor. eassumption.
+    + assumption.
+  - econstructor. eassumption.
+Qed.
+
+Lemma cconv_ty_lift :
+  ∀ Γ A B,
+    Γ ⊢ᶜ A ≡ B →
+    Γ ⊢ᶜ cty_lift A ≡ cty_lift B.
+Proof.
+  intros Γ A B h.
+  unfold cty_lift. constructor.
+  all: constructor. all: assumption.
+Qed.
+
+Hint Resolve ctype_ty_lift : cc_type.
+
+(* TODO MOVE *)
+
+Lemma ccmeta_refl :
+  ∀ Γ u v,
+    u = v →
+    Γ ⊢ᶜ u ≡ v.
+Proof.
+  intros Γ u ? ->. constructor.
+Qed.
+
 Definition cDummy := ctt.
 
 (** Test whether a variable is defined and relevant **)
@@ -38,7 +92,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (ignore ⟦ mx :: Γ | B ⟧∅))
     else if isProp m
     then ctt
-    else close ⟦ mx :: Γ | B ⟧ε ;
+    else cty_lift (close ⟦ mx :: Γ | B ⟧ε) ;
   ⟦ Γ | lam mx A B t ⟧ε :=
     if relm (md (mx :: Γ) t)
     then
@@ -198,7 +252,7 @@ Proof.
       unshelve auto with cc_scope shelvedb. 2: eauto.
       ssimpl. eapply cscope_ignore. eauto.
     + destruct (relm mx) eqn:e'. 1: discriminate.
-      auto with cc_scope shelvedb.
+      auto with cc_scope.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
     rewrite hrm. cbn - [mode_inb] in IHh3.
@@ -236,7 +290,7 @@ Proof.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: try solve [ eauto ].
-    2:{ unfold close. ssimpl. cbn. reflexivity. }
+    2:{ unfold close. ssimpl. cbn. unfold cty_lift. ssimpl. reflexivity. }
     ssimpl. cbn. ssimpl. unfold nones. ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
@@ -371,14 +425,21 @@ Proof.
           eapply ext_cterm. intro x.
           cbn. ssimpl. reflexivity.
     + reflexivity.
-    + unfold close. ssimpl. cbn - [mode_inb].
+    + unfold close, cty_lift. ssimpl. cbn - [mode_inb].
       destruct_if e'. 1: discriminate.
-      cbn. eapply ext_cterm. intros [].
-      * cbn. reflexivity.
-      * cbn. ssimpl. erewrite erase_ren.
-        2:{ eapply rscoping_S. }
-        2:{ eapply rscoping_comp_S. }
-        ssimpl. reflexivity.
+      cbn. f_equal.
+      * f_equal. eapply ext_cterm. intros [].
+        -- cbn. reflexivity.
+        -- cbn. ssimpl. erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
+      * f_equal. eapply ext_cterm. intros [].
+        -- cbn. reflexivity.
+        -- cbn. ssimpl. erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst.
     2:{ eapply sscoping_shift. eassumption. }
@@ -509,6 +570,7 @@ Proof.
         eapply cstyping_nones.
     + constructor.
     + destruct (relm mx) eqn:e'. 1: discriminate.
+      eapply cconv_ty_lift.
       eapply cconv_close. eauto.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2, IHh3.
@@ -664,12 +726,15 @@ Proof.
       * eauto with cc_scope cc_type.
     + destruct (relm mx) eqn:e'. 1: discriminate.
       econstructor.
-      * eapply ctype_close. eapply IHh2.
-        erewrite scoping_md. 2: eassumption. reflexivity.
-      * cbn. eapply cconv_trans. 1: constructor.
+      * eapply ctype_ty_lift with (j := max i j).
+        -- econstructor.
+          ++ eapply ctype_close. eapply IHh2.
+            erewrite scoping_md. 2: eassumption. reflexivity.
+          ++ cbn. constructor.
+          ++ eauto with cc_type.
+        -- lia.
+      * unfold umax. rewrite e1.
         apply cconv_sym. constructor.
-        (* Uh oh: Not the right universe level here either! *)
-        admit.
       * eauto with cc_scope cc_type.
   - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2, IHh3.
     repeat (erewrite scoping_md ; [| eassumption]).
@@ -726,9 +791,17 @@ Proof.
     + destruct m. all: discriminate.
     + destruct m. all: discriminate.
     + destruct m. all: discriminate.
-    + eapply ccmeta_conv.
+    + econstructor.
       * eapply ctype_close. eauto.
-      * cbn. reflexivity.
+      * apply cconv_sym. unfold cty_lift.
+        eapply cconv_trans. 1: constructor.
+        unfold close. cbn. apply cconv_refl.
+      * econstructor. eapply ctype_ty_lift.
+        -- econstructor.
+          ++ eapply ctype_close. eauto.
+          ++ cbn. constructor.
+          ++ eauto with cc_type.
+        -- reflexivity.
   - cbn - [mode_inb] in *.
     erewrite scoping_md in hm. 2: eassumption.
     erewrite scoping_md in IHh1. 2: eassumption.
@@ -765,13 +838,14 @@ Proof.
       simpl "&&" in IHh1. cbn match in IHh1.
       destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
-      eapply ccmeta_conv.
+      econstructor.
       * eauto.
-      * f_equal. unfold close.
+      * unfold cty_lift. eapply cconv_trans. 1: constructor.
+        constructor. unfold close.
         erewrite erase_subst.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
-        ssimpl.
+        ssimpl. apply ccmeta_refl.
         eapply ext_cterm_scoped.
         1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
         intros [| x] ex.
@@ -784,6 +858,17 @@ Proof.
           cbn - [mode_inb] in ex.
           destruct (relm m0). 2: discriminate.
           reflexivity.
+      * econstructor.
+        erewrite erase_subst.
+        2: eapply sscoping_one. 2: eassumption.
+        2: eapply sscoping_comp_one.
+        eapply ccmeta_conv.
+        -- eapply ctyping_subst.
+          ++ (* Is there an easy way to get this? *)
+            admit.
+          ++ (* Missing info, could also get from inversion in target *)
+            admit.
+        -- admit.
   - erewrite scoping_md in IHh. 2: eassumption.
     cbn. econstructor.
     + eauto.

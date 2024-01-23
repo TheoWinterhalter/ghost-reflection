@@ -221,6 +221,19 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ B : cSort m i →
       Γ ⊢ᶜ t : B
 
+(** Cumulativity
+
+  We assume a weak form of cumulativity in the target to make our lives easier.
+  This does not propagate under products or anything, simply because we don't
+  need it. Of course, Coq still remains a model of such a theory.
+
+**)
+| ctype_cumul :
+    ∀ i j A,
+      Γ ⊢ᶜ A : cSort cType i →
+      i ≤ j →
+      Γ ⊢ᶜ A : cSort cType j
+
 where "Γ ⊢ᶜ t : A" := (ctyping Γ t A).
 
 (** Context formation **)
