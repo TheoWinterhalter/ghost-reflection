@@ -13,38 +13,6 @@ Set Equations Transparent.
 
 Definition cDummy := ctt.
 
-(* TODO MOVE to utils *)
-Section Inb.
-
-  Context {A} (eqb : A → A → bool).
-
-  Definition inb (a : A) (l : list A) :=
-    existsb (eqb a) l.
-
-  Definition inclb (l l' : list A) : bool :=
-    forallb (λ x, inb x l') l.
-
-End Inb.
-
-(* TODO MOVE *)
-Definition mode_eqb (m m' : mode) : bool :=
-  match m, m' with
-  | mProp, mProp
-  | mGhost, mGhost
-  | mType, mType
-  | mKind, mKind => true
-  | _,_ => false
-  end.
-
-Definition isProp m := mode_eqb m mProp.
-Definition isGhost m := mode_eqb m mGhost.
-
-Definition mode_inb := inb mode_eqb.
-(* Definition mode_inclb := inclb mode_eqb. *)
-
-Notation relm m :=
-  (mode_inb m [ mType ; mKind ]).
-
 (** Test whether a variable is defined and relevant **)
 
 Definition relv (Γ : scope) x :=
@@ -628,14 +596,11 @@ Proof.
     + econstructor.
       * constructor. all: constructor.
       * apply cconv_sym. eapply cconv_trans. 1: econstructor.
-        (* Uh oh, unit is not lifted to the upper level, maybe we can do it
-          in CC though!
-        *)
-        admit.
+        unfold usup. rewrite e. constructor.
       * repeat econstructor.
     + econstructor.
       * repeat constructor.
-      * apply cconv_sym. econstructor.
+      * unfold usup. rewrite e. apply cconv_sym. econstructor.
       * repeat econstructor.
   - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2.
     destruct_ifs.

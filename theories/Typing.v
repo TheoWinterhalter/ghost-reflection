@@ -1,6 +1,6 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import BasicAST SubstNotations ContextDecl CastRemoval
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping.
 
 Import ListNotations.
@@ -8,6 +8,23 @@ Import ListNotations.
 Set Default Goal Selector "!".
 
 Open Scope subst_scope.
+
+Definition mode_eqb (m m' : mode) : bool :=
+  match m, m' with
+  | mProp, mProp
+  | mGhost, mGhost
+  | mType, mType
+  | mKind, mKind => true
+  | _,_ => false
+  end.
+
+Definition isProp m := mode_eqb m mProp.
+Definition isGhost m := mode_eqb m mGhost.
+
+Definition mode_inb := inb mode_eqb.
+
+Notation relm m :=
+  (mode_inb m [ mType ; mKind ]).
 
 Notation "A ⇒[ i | j / mx | m ] B" :=
   (Pi i j m mx A (shift ⋅ B))
@@ -152,6 +169,10 @@ Inductive conversion (Γ : context) : term → term → Prop :=
 
 where "Γ ⊢ u ≡ v" := (conversion Γ u v).
 
+(** Successor of a universe **)
+Definition usup m i :=
+  if isProp m then 0 else S i.
+
 Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_var :
@@ -161,7 +182,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_sort :
     ∀ m i,
-      Γ ⊢ Sort m i : Sort mKind (S i)
+      Γ ⊢ Sort m i : Sort mKind (usup m i)
 
 | type_pi :
     ∀ i j mx m A B,

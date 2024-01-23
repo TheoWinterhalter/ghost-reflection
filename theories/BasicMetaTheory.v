@@ -946,7 +946,7 @@ Qed.
 Lemma type_sort_inv :
   ∀ Γ m i A,
     Γ ⊢ Sort m i : A →
-    Γ ⊢ Sort mKind (S i) ≡ A.
+    Γ ⊢ Sort mKind (usup m i) ≡ A.
 Proof.
   intros ???? h.
   dependent induction h.

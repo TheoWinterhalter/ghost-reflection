@@ -59,3 +59,15 @@ Ltac d_if :=
   | |- context [ if ?b then _ else _ ] =>
     destruct_bool b
   end.
+
+Section Inb.
+
+  Context {A} (eqb : A → A → bool).
+
+  Definition inb (a : A) (l : list A) :=
+    existsb (eqb a) l.
+
+  Definition inclb (l l' : list A) : bool :=
+    forallb (λ x, inb x l') l.
+
+End Inb.
