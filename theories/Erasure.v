@@ -627,7 +627,7 @@ Proof.
         -- eapply erase_typing_El. 2: eassumption.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
-      * apply cconv_sym. constructor.
+      * unfold umax. rewrite e0. apply cconv_sym. constructor.
       * repeat econstructor.
     + destruct m. all: try discriminate.
     + destruct m. all: try discriminate.

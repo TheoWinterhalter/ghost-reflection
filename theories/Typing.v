@@ -173,6 +173,10 @@ where "Γ ⊢ u ≡ v" := (conversion Γ u v).
 Definition usup m i :=
   if isProp m then 0 else S i.
 
+(** Maximum of a universe **)
+Definition umax m i j :=
+  if isProp m then 0 else max i j.
+
 Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_var :
@@ -190,7 +194,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping (Γ ,, (mx, A)) B mKind →
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
-      Γ ⊢ Pi i j m mx A B : Sort m (max i j)
+      Γ ⊢ Pi i j m mx A B : Sort m (umax m i j)
 
 | type_lam :
     ∀ mx m i j A B t,

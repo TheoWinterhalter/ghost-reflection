@@ -961,7 +961,7 @@ Lemma type_pi_inv :
     cscoping (Γ ,, (mx, A)) B mKind ∧
     Γ ⊢ A : Sort mx i ∧
     Γ ,, (mx, A) ⊢ B : Sort m j ∧
-    Γ ⊢ Sort m (max i j) ≡ C.
+    Γ ⊢ Sort m (umax m i j) ≡ C.
 Proof.
   intros ???????? h.
   dependent induction h.
