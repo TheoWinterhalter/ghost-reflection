@@ -238,7 +238,7 @@ Inductive cwf : ccontext → Prop :=
 
 Create HintDb cc_type discriminated.
 
-Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
-  ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty
-  ctype_tyval ctype_tyerr ctype_El ctype_Err
+Hint Resolve ctype_var ctype_sort ctype_Lift ctype_lift ctype_pi ctype_lam
+  ctype_app ctype_unit ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim
+  ctype_ty ctype_tyval ctype_tyerr ctype_El ctype_Err
 : cc_type.
