@@ -631,6 +631,41 @@ Proof.
   - econstructor.
 Qed.
 
+(* TODO is it true, or should I show the other lemma instead?
+  It doesn't seem true actually. Maybe find another way to prove the goal
+  below.
+*)
+Lemma erase_cstyping :
+  ∀ Γ,
+    cstyping ⟦ Γ ⟧ε (var >> erase_term (sc Γ)) ⟦ Γ ⟧ε.
+Proof.
+  intros Γ. induction Γ as [| [m A] Γ ih].
+  - cbn. constructor.
+  - cbn - [mode_inb]. destruct_if e.
+    + constructor.
+      * eapply styping_morphism. 1,3: reflexivity.
+        2: eapply cstyping_weak. 2: eapply ih.
+        intros ?. ssimpl.
+        erewrite <- erase_ren.
+        2: eapply rscoping_S.
+        2: eapply rscoping_comp_S.
+        cbn. reflexivity.
+      * cbn - [mode_inb]. rewrite e. split.
+        -- constructor. reflexivity.
+        -- eapply ccmeta_conv.
+          ++ econstructor. reflexivity.
+          ++ cbn. ssimpl. f_equal.
+            rewrite rinstInst'_cterm.
+            (* ext_cterm_scoped but need more info *)
+            eapply ext_cterm. intro.
+            ssimpl. cbn.
+            unfold relv. cbn - [mode_inb].
+            rewrite nth_error_map. destruct (nth_error Γ x).
+            --- cbn - [mode_inb]. admit.
+            --- cbn. admit.
+    + admit.
+Abort.
+
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
