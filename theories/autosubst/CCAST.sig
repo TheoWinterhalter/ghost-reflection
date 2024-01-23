@@ -8,6 +8,9 @@ cterm(cvar) : Type
 
 cSort : cmode -> level -> cterm
 
+cLift : level -> level -> cterm -> cterm
+clift : level -> level -> cterm -> cterm
+
 cPi : cmode -> cterm -> (bind cterm in cterm) -> cterm
 clam : cmode -> cterm -> (bind cterm in cterm) -> cterm
 capp : cterm -> cterm -> cterm

@@ -71,8 +71,7 @@ Proof.
 exact (eq_trans eq_refl (ap (fun x => Erased x) H0)).
 Qed.
 
-Lemma congr_hide {s0 : term} {t0 : term} (H0 : s0 = t0) :
-  hide s0 = hide t0.
+Lemma congr_hide {s0 : term} {t0 : term} (H0 : s0 = t0) : hide s0 = hide t0.
 Proof.
 exact (eq_trans eq_refl (ap (fun x => hide x) H0)).
 Qed.
@@ -173,7 +172,7 @@ Proof.
 exact (scons (var var_zero) (funcomp (ren_term shift) sigma)).
 Defined.
 
-Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} :
+Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} : 
 term :=
   match s with
   | var s0 => sigma_term s0
@@ -940,7 +939,7 @@ Tactic Notation "auto_unfold" "in" "*" := repeat
                                            unfold VarInstance_term, Var, ids,
                                             Ren_term, Ren1, ren1,
                                             Up_term_term, Up_term, up_term,
-                                            Subst_term, Subst1, subst1
+                                            Subst_term, Subst1, subst1 
                                             in *.
 
 Ltac asimpl' := repeat (first
