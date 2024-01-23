@@ -211,8 +211,11 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping (Γ ,, (mx, A)) B mKind →
       cscoping Γ t m →
       cscoping Γ u mx →
+      cscoping Γ A mKind →
       Γ ⊢ t : Pi i j m mx A B →
       Γ ⊢ u : A →
+      Γ ⊢ A : Sort mx i →
+      Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ⊢ app t u : B <[ u .. ]
 
 | type_erased :
@@ -234,6 +237,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ p m →
       cscoping Γ t mGhost →
       cscoping Γ P mKind →
+      cscoping Γ A mKind →
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
       Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i →
@@ -279,7 +283,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ u : A →
       Γ ⊢ v : A →
       Γ ⊢ e : gheq A u v →
-      Γ ⊢ P : A ⇒[ i | S i / mGhost | mKind ] Sort m i →
+      Γ ⊢ P : A ⇒[ i | usup m i / mGhost | mKind ] Sort m i →
       Γ ⊢ t : app P u →
       Γ ⊢ ghcast e P t : app P v
 

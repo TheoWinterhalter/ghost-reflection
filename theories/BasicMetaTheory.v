@@ -734,8 +734,9 @@ Proof.
   - asimpl. econstructor. all: eauto. all: try scoping_ren_finish.
     + eapply IHht2. eapply rtyping_shift. assumption.
     + eapply IHht3. eapply rtyping_shift. assumption.
-  - asimpl. asimpl in IHht1.
+  - asimpl. asimpl in IHht1. asimpl in IHht4.
     eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_ren_finish.
+    1:{ eapply IHht4. eapply rtyping_shift. assumption. }
     asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     econstructor. all: eauto. all: try scoping_ren_finish.
@@ -899,7 +900,9 @@ Proof.
     + eapply IHht2. eapply styping_shift. assumption.
     + eapply IHht3. eapply styping_shift. assumption.
   - asimpl. asimpl in IHht1.
-    eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_subst_finish.
+    eapply meta_conv. 1: econstructor.
+    all: eauto. all: try scoping_subst_finish.
+    1:{ eapply IHht4. eapply styping_shift. assumption. }
     asimpl. apply ext_term. intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
@@ -997,8 +1000,11 @@ Lemma type_app_inv :
       cscoping (Γ ,, (mx, A)) B mKind ∧
       cscoping Γ t m ∧
       cscoping Γ u mx ∧
+      cscoping Γ A mKind ∧
       Γ ⊢ t : Pi i j m mx A B ∧
       Γ ⊢ u : A ∧
+      Γ ⊢ A : Sort mx i ∧
+      Γ ,, (mx, A) ⊢ B : Sort m j ∧
       Γ ⊢ B <[ u .. ] ≡ C.
 Proof.
   intros Γ t u C h.
@@ -1048,6 +1054,7 @@ Lemma type_reveal_inv :
       cscoping Γ p m ∧
       cscoping Γ t mGhost ∧
       cscoping Γ P mKind ∧
+      cscoping Γ A mKind ∧
       In m [ mProp ; mGhost ] ∧
       Γ ⊢ t : Erased A ∧
       Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
@@ -1129,7 +1136,7 @@ Lemma type_ghcast_inv :
       Γ ⊢ u : A ∧
       Γ ⊢ v : A ∧
       Γ ⊢ e : gheq A u v ∧
-      Γ ⊢ P : A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
+      Γ ⊢ P : A ⇒[ i | usup m i / mGhost | mKind ] Sort m i ∧
       Γ ⊢ t : app P u ∧
       Γ ⊢ app P v ≡ C.
 Proof.
@@ -1302,24 +1309,34 @@ Proof.
         assumption.
   - split.
     + cbn. erewrite scoping_md. 2: eassumption.
-      cbn in H2. destruct H2 as [<- | [<- |]].
+      cbn in H3. destruct H3 as [<- | [<- |]].
       * constructor. all: auto with datatypes.
       * constructor. all: auto with datatypes.
       * contradiction.
-    + eexists. eapply meta_conv. 1: econstructor. all: eauto.
+    + eexists. eapply meta_conv. 1: econstructor. 4: shelve. all: eauto.
       * asimpl. constructor.
+      * pose proof IHh2 as hP.
+        forward hP by auto. destruct hP as [hsP [l hP]].
+        eapply type_pi_inv in hP. intuition assumption.
+      * pose proof IHh2 as hP.
+        forward hP by auto. destruct hP as [hsP [l hP]].
+        eapply type_pi_inv in hP. intuition assumption.
       * cbn - [mdc]. f_equal.
         cbn. erewrite scoping_md. 2: eassumption.
-        destruct H2 as [<- | [<- |]]. 3: contradiction.
+        destruct H3 as [<- | [<- |]]. 3: contradiction.
         all: reflexivity.
+      Unshelve. constructor. assumption.
   - split.
     + cbn. econstructor. all: eauto.
       * erewrite scoping_md. 2: eassumption. assumption.
       * erewrite scoping_md. 2: eassumption. assumption.
-    + eexists. eapply meta_conv. 1: econstructor. all: eauto.
+    + eexists. eapply meta_conv. 1: econstructor. 4: shelve.
+      all: try eassumption.
       * cbn. constructor.
+      * cbn. econstructor.
       * cbn - [mdc]. f_equal.
         cbn. erewrite scoping_md. 2: eassumption. reflexivity.
+      Unshelve. assumption.
   - split.
     + cbn. constructor. all: auto.
     + eexists. cbn. eassumption.

@@ -806,19 +806,28 @@ Proof.
     erewrite scoping_md in hm. 2: eassumption.
     erewrite scoping_md in IHh1. 2: eassumption.
     erewrite scoping_md in IHh2. 2: eassumption.
+    erewrite scoping_md in IHh3. 2: eassumption.
+    erewrite scoping_md in IHh4. 2: eassumption.
     repeat (erewrite scoping_md ; [| eassumption]).
     rewrite hm.
     destruct_ifs.
     + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
+      destruct (isProp mx) eqn:e2. 1:{ destruct mx ; discriminate. }
       eapply ccmeta_conv.
       * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
         econstructor.
         -- eauto.
         -- constructor.
         -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
-          ++ (* Missing info here. *) admit.
-          ++ (* Same *) admit.
+          ++ econstructor.
+            ** eauto.
+            ** constructor.
+            ** eauto with cc_type.
+          ++ econstructor.
+            ** eauto.
+            ** constructor.
+            ** eauto with cc_type.
       * cbn. f_equal. erewrite erase_subst.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
@@ -862,13 +871,13 @@ Proof.
         erewrite erase_subst.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
-        eapply ccmeta_conv.
-        -- eapply ctyping_subst.
-          ++ (* Is there an easy way to get this? *)
-            admit.
-          ++ (* Missing info, could also get from inversion in target *)
-            admit.
-        -- admit.
+        econstructor.
+        -- eapply ctyping_subst. 2: eauto.
+          ssimpl. constructor.
+          ++ ssimpl. admit.
+          ++ cbn. auto.
+        -- cbn. constructor.
+        -- eauto with cc_type.
   - erewrite scoping_md in IHh. 2: eassumption.
     cbn. econstructor.
     + eauto.
