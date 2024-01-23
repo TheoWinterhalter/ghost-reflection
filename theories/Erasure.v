@@ -852,7 +852,7 @@ Proof.
     + destruct m. all: try reflexivity. discriminate.
   - econstructor.
     + eauto.
-    + (* TODO conv lemma *) admit.
+    + constructor. eapply erase_conv. assumption.
     + eapply erase_typing_El.
       * eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
       * erewrite scoping_md in hm. 2: eassumption.
