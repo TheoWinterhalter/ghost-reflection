@@ -688,6 +688,7 @@ Proof.
   intros Γ t m σ θ ht e.
   induction ht in σ, θ, e |- *.
   all: try solve [ cbn ; eauto ].
+  all: try solve [ cbn ; f_equal ; eauto ].
   - cbn. apply e. unfold inscope. rewrite H. reflexivity.
   - cbn.
     erewrite IHht1. 2: eauto.
@@ -696,23 +697,5 @@ Proof.
   - cbn.
     erewrite IHht1. 2: eauto.
     erewrite IHht2. 2: eauto using eq_subst_on_up.
-    reflexivity.
-  - cbn.
-    erewrite IHht1. 2: eauto.
-    erewrite IHht2. 2: eauto using eq_subst_on_up.
-    reflexivity.
-  - cbn.
-    erewrite IHht1. 2: eauto.
-    erewrite IHht2. 2: eauto using eq_subst_on_up.
-    reflexivity.
-  - cbn.
-    erewrite IHht1. 2: eauto.
-    erewrite IHht2. 2: eauto using eq_subst_on_up.
-    reflexivity.
-  - cbn.
-    erewrite IHht. 2: eauto.
-    reflexivity.
-  - cbn.
-    erewrite IHht. 2: eauto.
     reflexivity.
 Qed.
