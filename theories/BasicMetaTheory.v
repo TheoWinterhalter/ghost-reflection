@@ -705,8 +705,7 @@ Proof.
       eapply rtyping_scoping. assumption.
     + eapply scoping_ren. 2: eassumption.
       eapply rtyping_scoping. assumption.
-    + cbn. ssimpl. unfold Ren_term. rewrite !renRen_term. ssimpl.
-      apply conv_refl.
+    + cbn. ssimpl. apply conv_refl.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
@@ -863,14 +862,12 @@ Proof.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
-  - ssimpl. unfold Subst_term, Ren_term. cbn. rewrite !renSubst_term.
-    eapply conv_trans. 1: constructor.
+  - ssimpl. eapply conv_trans. 1: constructor.
     + eapply scoping_subst. 2: eassumption.
       eapply styping_scoping. assumption.
     + eapply scoping_subst. 2: eassumption.
       eapply styping_scoping. assumption.
-    + cbn. ssimpl. unfold Ren_term. rewrite !substRen_term.
-      apply conv_refl.
+    + cbn. ssimpl. apply conv_refl.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply styping_shift. assumption.

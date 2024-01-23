@@ -19,10 +19,11 @@ Notation "s '..'" := (scons s ids) (at level 1, format "s ..") : subst_scope.
 
 Ltac autosubst_unfold :=
   unfold Ren_cterm, upRen_cterm_cterm, Subst_cterm, VarInstance_cterm,
-    upRen_cterm_cterm.
+    upRen_cterm_cterm, Ren_term, Subst_term.
 
 Ltac resubst :=
-  rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm.
+  rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm,
+    ?renRen_term, ?renSubst_term, ?substRen_term.
 
 Ltac ssimpl :=
   asimpl ;
