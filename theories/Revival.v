@@ -91,12 +91,32 @@ Proof.
   - cbn - [mode_inb] in *. rewrite hm. reflexivity.
 Qed.
 
-(** ⟦ Γ ⟧ε is a sub-context of ⟦ Γ ⟧v
+(** ⟦ Γ ⟧ε is a sub-context of ⟦ Γ ⟧v **)
 
-  For now, it's unclear how to even state this. It could be with a trivial
-  substitution, combined with the fact that it's the identity on terms.
+Lemma scoping_sub_rev :
+  ∀ Γ,
+    crscoping (revive_sc Γ) (λ x, x) (erase_sc Γ).
+Proof.
+  intros Γ. intros x m e.
+  unfold erase_sc in e. rewrite nth_error_map in e.
+  unfold revive_sc. rewrite nth_error_map.
+  destruct (nth_error Γ x) as [mx|] eqn:ex. 2: discriminate.
+  cbn - [mode_inb] in e. cbn - [mode_inb].
+  destruct (relm mx) eqn:e1. 2: discriminate.
+  noconf e.
+  destruct (isProp mx) eqn:e2. 1:{ destruct mx. all: discriminate. }
+  reflexivity.
+Qed.
 
-**)
+Lemma scoping_to_rev :
+  ∀ Γ t m,
+    ccscoping (erase_sc Γ) t m →
+    ccscoping (revive_sc Γ) t m.
+Proof.
+  intros Γ t m h.
+  eapply cscoping_ren in h. 2: eapply scoping_sub_rev.
+  rewrite rinstId'_cterm in h. assumption.
+Qed.
 
 (** Revival of context and of variables **)
 
@@ -112,7 +132,7 @@ Qed.
 
 (** Revival preserves scoping **)
 
-Lemma revival_scoping :
+Lemma revive_scoping :
   ∀ Γ t m,
     m = mGhost →
     scoping Γ t m →
@@ -130,7 +150,8 @@ Proof.
     destruct_ifs.
     + eauto with cc_scope.
     + constructor.
-      * (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+      * constructor. eapply scoping_to_rev. eapply erase_scoping. 2: eauto.
+        reflexivity.
       * eauto.
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
@@ -138,12 +159,15 @@ Proof.
     cbn - [mode_inb].
     destruct_ifs. 3: eauto with cc_scope.
     + econstructor. 1: eauto.
-      (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+      eapply scoping_to_rev. eapply erase_scoping. 2: eauto.
+      assumption.
     + destruct mx. all: try discriminate.
       eauto with cc_scope.
   - cbn - [mode_inb].
-    (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+    eapply scoping_to_rev. eapply erase_scoping. 2: eauto.
+    reflexivity.
   - cbn - [mode_inb].
     constructor.
-    (* eapply erase_scoping. *) (* TODO scope lift *) admit.
-Admitted.
+    eapply scoping_to_rev. eapply erase_scoping. 2: eauto.
+    reflexivity.
+Qed.
