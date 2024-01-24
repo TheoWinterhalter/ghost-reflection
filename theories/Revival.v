@@ -965,7 +965,13 @@ Proof.
         -- eauto.
         -- constructor.
         -- constructor.
-          ++ (* Would be easier with extra hyp *) admit.
+          ++ cbn in h4. eapply erase_typing in h4.
+            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+            eapply type_to_rev in h4. cbn in h4.
+            econstructor. econstructor.
+            ** eassumption.
+            ** constructor.
+            ** eauto with cc_type.
           ++ eapply typing_ren in h2. 2: eapply rtyping_S with (m := mType).
             cbn in h2. eapply erase_typing in h2.
             2:{
