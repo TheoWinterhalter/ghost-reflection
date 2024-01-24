@@ -942,9 +942,90 @@ Proof.
         -- eassumption.
         -- constructor.
         -- eauto with cc_type.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - cbn - [mode_inb]. eapply type_to_rev. eapply erase_typing.
+    + assumption.
+    + erewrite scoping_md. 2: eassumption. reflexivity.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
+    cbn. cbn in hm. erewrite scoping_md in hm. 2: eassumption.
+    destruct m. all: try discriminate.
+    erewrite scoping_md in IHh1. 2: eassumption.
+    erewrite scoping_md in IHh3. 2: eassumption.
+    cbn in IHh1. cbn - [mode_inb] in IHh3.
+    erewrite md_ren in IHh3.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    erewrite scoping_md in IHh3. 2: eassumption.
+    cbn in IHh3.
+    cbn. econstructor.
+    + econstructor.
+      * econstructor.
+        -- eauto.
+        -- constructor.
+        -- constructor.
+          ++ (* Would be easier with extra hyp *) admit.
+          ++ eapply typing_ren in h2. 2: eapply rtyping_S with (m := mType).
+            cbn in h2. eapply erase_typing in h2.
+            2:{
+              cbn - [mode_inb].
+              erewrite md_ren.
+              2: eapply rscoping_S.
+              2: eapply rscoping_comp_S.
+              erewrite scoping_md. 2: eassumption. reflexivity.
+            }
+            eapply type_to_rev in h2. cbn in h2.
+            econstructor. econstructor.
+            ** eassumption.
+            ** eapply cconv_trans. 1: constructor.
+              constructor.
+            ** eauto with cc_type.
+      * eauto.
+    + ssimpl. apply ccmeta_refl.
+      erewrite erase_ren.
+      2: eapply rscoping_S.
+      2: eapply rscoping_comp_S.
+      ssimpl. reflexivity.
+    + eapply erase_typing in h2.
+      2:{
+        cbn - [mode_inb].
+        erewrite scoping_md. 2: eassumption. reflexivity.
+      }
+      eapply type_to_rev in h2. cbn in h2.
+      econstructor. econstructor.
+      * eassumption.
+      * eapply cconv_trans. 1: constructor.
+        constructor.
+      * eauto with cc_type.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
+    cbn. cbn - [mode_inb] in IHh6.
+    cbn in hm. erewrite scoping_md in hm. 2: eassumption. subst.
+    erewrite scoping_md in IHh6. 2: eassumption.
+    erewrite scoping_md in IHh6. 2: eassumption.
+    erewrite scoping_md in IHh6. 2: eassumption.
+    cbn in IHh6. eauto.
+  - cbn - [mode_inb].
+    cbn in hm. subst. cbn.
+    eapply erase_typing in h1.
+    2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+    eapply type_to_rev in h1. cbn in h1.
+    econstructor. econstructor.
+    + eassumption.
+    + constructor.
+    + eauto with cc_type.
+  - econstructor.
+    + eauto.
+    + constructor. eapply conv_to_rev. eapply erase_castrm_conv. assumption.
+    + eapply erase_typing in h2.
+      2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+      eapply type_to_rev in h2. cbn in h2.
+      erewrite scoping_md in hm. 2: eassumption. subst.
+      cbn in h2.
+      econstructor. econstructor.
+      * eassumption.
+      * constructor.
+      * eauto with cc_type.
 Abort.
