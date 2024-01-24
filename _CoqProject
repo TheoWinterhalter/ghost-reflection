@@ -23,3 +23,4 @@ theories/CTyping.v
 theories/CCMetaTheory.v
 
 theories/Erasure.v
+theories/Revival.v
