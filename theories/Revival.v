@@ -27,8 +27,8 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
     if isGhost (md (mx :: Γ) t)
     then
       if isProp mx
-      then clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧v
-      else close ⟦ mx :: Γ | t ⟧v
+      then close ⟦ mx :: Γ | t ⟧v
+      else clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | t ⟧v
     else cDummy ;
   ⟦ Γ | app u v ⟧v :=
     if isGhost (md Γ u)
@@ -90,3 +90,60 @@ Proof.
   - cbn - [mode_inb] in *. eauto.
   - cbn - [mode_inb] in *. rewrite hm. reflexivity.
 Qed.
+
+(** ⟦ Γ ⟧ε is a sub-context of ⟦ Γ ⟧v
+
+  For now, it's unclear how to even state this. It could be with a trivial
+  substitution, combined with the fact that it's the identity on terms.
+
+**)
+
+(** Revival of context and of variables **)
+
+Lemma revive_sc_var :
+  ∀ Γ x,
+    nth_error Γ x = Some mGhost →
+    nth_error (revive_sc Γ) x = Some (Some cType).
+Proof.
+  intros Γ x e.
+  unfold revive_sc. rewrite nth_error_map.
+  rewrite e. cbn. reflexivity.
+Qed.
+
+(** Revival preserves scoping **)
+
+Lemma revival_scoping :
+  ∀ Γ t m,
+    m = mGhost →
+    scoping Γ t m →
+    ccscoping (revive_sc Γ) ⟦ Γ | t ⟧v cType.
+Proof.
+  intros Γ t m em h.
+  induction h in em |- *. all: subst.
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
+  - cbn. destruct_if e. 2: constructor.
+    constructor. eapply revive_sc_var. assumption.
+  - cbn - [mode_inb].
+    cbn - [mode_inb] in IHh3. fold (revive_sc Γ) in IHh3.
+    erewrite scoping_md. 2: eassumption. cbn.
+    destruct_ifs.
+    + eauto with cc_scope.
+    + constructor.
+      * (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+      * eauto.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
+    cbn - [mode_inb].
+    destruct_ifs. 3: eauto with cc_scope.
+    + econstructor. 1: eauto.
+      (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+    + destruct mx. all: try discriminate.
+      eauto with cc_scope.
+  - cbn - [mode_inb].
+    (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+  - cbn - [mode_inb].
+    constructor.
+    (* eapply erase_scoping. *) (* TODO scope lift *) admit.
+Admitted.
