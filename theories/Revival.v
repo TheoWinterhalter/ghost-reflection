@@ -228,6 +228,21 @@ Qed.
 Definition rev_subst Δ Γ σ n :=
   if ghv Δ n then ⟦ Γ | σ n ⟧v else ⟦ Γ | σ n ⟧ε.
 
+Lemma erase_rev_subst :
+  ∀ Γ Δ t σ,
+    ⟦ Δ | t ⟧ε <[ σ >> erase_term Γ ] = ⟦ Δ | t ⟧ε <[ rev_subst Δ Γ σ ].
+Proof.
+  intros Γ Δ t σ.
+  eapply ext_cterm_scoped. 1: eapply erase_scoping_strong. intros x hx.
+  unfold rev_subst. unfold ghv.
+  unfold inscope in hx. unfold erase_sc in hx. rewrite nth_error_map in hx.
+  destruct nth_error as [m |] eqn:e1. 2: discriminate.
+  cbn - [mode_inb] in hx.
+  destruct (relm m) eqn:e2. 2: discriminate.
+  destruct_if e3. 1:{ destruct m. all: discriminate. }
+  reflexivity.
+Qed.
+
 Lemma revive_subst :
   ∀ Γ Δ σ t,
     sscoping Γ σ Δ →
@@ -280,13 +295,7 @@ Proof.
           2:{ eapply rscoping_comp_S. }
           ssimpl. reflexivity.
     + cbn. ssimpl. f_equal.
-      * f_equal. eapply ext_cterm. intro x.
-        unfold rev_subst. ssimpl.
-        unfold ghv. destruct (nth_error _ _) eqn:e1.
-        -- destruct_if e2. 2: reflexivity.
-          (* Lhs is dummy but we don't know anything about rhs right? *)
-          admit.
-        -- reflexivity.
+      * f_equal. eapply erase_rev_subst.
       * eapply ext_cterm. intros [].
         -- cbn. unfold rev_subst. unfold ghv. cbn - [mode_inb].
           destruct_if e1. 1: reflexivity.
@@ -315,27 +324,13 @@ Proof.
     erewrite IHt2. 2,3: eauto.
     destruct_ifs.
     + cbn. ssimpl. f_equal. erewrite erase_subst. 2,3: eassumption.
-      (* Why would this be true?
-        Maybe we should have an alternative to erase_subst that would use
-        rev_subst? Or something more general that says it ignores anything
-        irrelevant in the substitution? In a sense it already does so maybe
-        there is hope after all? We might have to adapt rev_subst slightly
-        so that it matches.
-
-        It could be an ext lemma that assumes we're looking at something
-        relevant and knows the rest is dummy?
-
-        Could also be ext_cterm_scoped by exploiting the fact that erasure
-        always produces well-scoped terms even when starting from
-        ill-scoped terms?
-      *)
-      admit.
+      apply erase_rev_subst.
     + cbn. reflexivity.
     + reflexivity.
     + reflexivity.
   - cbn - [mode_inb].
     erewrite erase_subst. 2,3: eassumption.
-    admit.
+    apply erase_rev_subst.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
     destruct_ifs. 2: reflexivity.
@@ -345,5 +340,5 @@ Proof.
   - cbn - [mode_inb].
     destruct_ifs. 2: reflexivity.
     erewrite erase_subst. 2,3: eassumption.
-    cbn. f_equal. admit.
-Abort.
+    cbn. f_equal. apply erase_rev_subst.
+Qed.
