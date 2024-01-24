@@ -631,41 +631,6 @@ Proof.
   - econstructor.
 Qed.
 
-(* TODO is it true, or should I show the other lemma instead?
-  It doesn't seem true actually. Maybe find another way to prove the goal
-  below.
-*)
-Lemma erase_cstyping :
-  ∀ Γ,
-    cstyping ⟦ Γ ⟧ε (var >> erase_term (sc Γ)) ⟦ Γ ⟧ε.
-Proof.
-  intros Γ. induction Γ as [| [m A] Γ ih].
-  - cbn. constructor.
-  - cbn - [mode_inb]. destruct_if e.
-    + constructor.
-      * eapply styping_morphism. 1,3: reflexivity.
-        2: eapply cstyping_weak. 2: eapply ih.
-        intros ?. ssimpl.
-        erewrite <- erase_ren.
-        2: eapply rscoping_S.
-        2: eapply rscoping_comp_S.
-        cbn. reflexivity.
-      * cbn - [mode_inb]. rewrite e. split.
-        -- constructor. reflexivity.
-        -- eapply ccmeta_conv.
-          ++ econstructor. reflexivity.
-          ++ cbn. ssimpl. f_equal.
-            rewrite rinstInst'_cterm.
-            (* ext_cterm_scoped but need more info *)
-            eapply ext_cterm. intro.
-            ssimpl. cbn.
-            unfold relv. cbn - [mode_inb].
-            rewrite nth_error_map. destruct (nth_error Γ x).
-            --- cbn - [mode_inb]. admit.
-            --- cbn. admit.
-    + admit.
-Abort.
-
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -882,35 +847,30 @@ Proof.
       simpl "&&" in IHh1. cbn match in IHh1.
       destruct (isGhost m) eqn:e2. 1:{ destruct m ; discriminate. }
       simpl "&&" in IHh1. cbn match in IHh1.
-      econstructor.
-      * eauto.
-      * unfold cty_lift. eapply cconv_trans. 1: constructor.
-        constructor. unfold close.
-        erewrite erase_subst.
-        2: eapply sscoping_one. 2: eassumption.
-        2: eapply sscoping_comp_one.
-        ssimpl. apply ccmeta_refl.
-        eapply ext_cterm_scoped.
-        1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
+      erewrite erase_subst.
+      2: eapply sscoping_one. 2: eassumption.
+      2: eapply sscoping_comp_one.
+      erewrite ext_cterm_scoped with (θ := ctt..).
+      2: eapply erase_scoping. 3: eassumption. 2: reflexivity.
+      2:{
         intros [| x] ex.
-        -- unfold inscope in ex. cbn - [mode_inb] in ex.
+        - unfold inscope in ex. cbn - [mode_inb] in ex.
           rewrite e in ex. discriminate.
-        -- cbn. unfold relv. unfold inscope in ex.
+        - cbn. unfold relv. unfold inscope in ex.
           cbn - [mode_inb] in ex.
           rewrite nth_error_map in ex.
           destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
           cbn - [mode_inb] in ex.
           destruct (relm m0). 2: discriminate.
           reflexivity.
+      }
+      econstructor.
+      * eauto.
+      * unfold cty_lift. eapply cconv_trans. 1: constructor.
+        apply cconv_refl.
       * econstructor.
-        erewrite erase_subst.
-        2: eapply sscoping_one. 2: eassumption.
-        2: eapply sscoping_comp_one.
         econstructor.
-        -- eapply ctyping_subst. 2: eauto.
-          ssimpl. constructor.
-          ++ ssimpl. admit.
-          ++ cbn. auto.
+        -- eapply ctype_close. eauto.
         -- cbn. constructor.
         -- eauto with cc_type.
   - erewrite scoping_md in IHh. 2: eassumption.
@@ -951,4 +911,4 @@ Proof.
       * eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
       * erewrite scoping_md in hm. 2: eassumption.
         destruct m. all: try reflexivity. discriminate.
-Abort.
+Qed.
