@@ -175,6 +175,16 @@ Proof.
   revert h. ssimpl. auto.
 Qed.
 
+Lemma type_to_rev :
+  ∀ Γ t A,
+    ⟦ Γ ⟧ε ⊢ᶜ t : A →
+    ⟦ Γ ⟧v ⊢ᶜ t : A.
+Proof.
+  intros Γ u v h.
+  eapply ctyping_ren in h. 2: eapply typing_sub_rev.
+  revert h. ssimpl. auto.
+Qed.
+
 (** Revival of context and of variables **)
 
 Lemma revive_sc_var :
@@ -555,3 +565,139 @@ Proof.
   rewrite !revive_castrm in h.
   assumption.
 Qed.
+
+(** Revival preserves typing **)
+
+Lemma revive_ctx_var :
+  ∀ Γ x A,
+    nth_error Γ x = Some (mGhost, A) →
+    nth_error ⟦ Γ ⟧v x = Some (Some (cType, ⟦ skipn (S x) (sc Γ) | A ⟧τ)).
+Proof.
+  intros Γ x A e.
+  induction Γ as [| [my B] Γ ih ] in x, A, e |- *.
+  1: destruct x ; discriminate.
+  destruct x.
+  - cbn in e. noconf e.
+    cbn. reflexivity.
+  - cbn in e. cbn - [mode_inb skipn].
+    destruct_if e1.
+    + erewrite ih. 2: eauto. reflexivity.
+    + erewrite ih. 2: eauto. reflexivity.
+Qed.
+
+Theorem revive_typing :
+  ∀ Γ t A,
+    Γ ⊢ t : A →
+    mdc Γ t = mGhost →
+    ⟦ Γ ⟧v ⊢ᶜ ⟦ sc Γ | t ⟧v : ⟦ sc Γ | A ⟧τ.
+Proof.
+  intros Γ t A h hm.
+  induction h.
+  all: try solve [ cbn in hm ; discriminate ].
+  - cbn. unfold ghv. unfold sc. rewrite nth_error_map.
+    rewrite H. cbn - [mode_inb].
+    cbn in hm.
+    erewrite nth_error_nth in hm.
+    2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
+    cbn - [mode_inb] in hm. subst.
+    cbn. eapply ccmeta_conv.
+    + econstructor. eapply revive_ctx_var. eassumption.
+    + cbn - [skipn]. f_equal.
+      erewrite erase_ren.
+      * reflexivity.
+      * intros y my ey. rewrite <- nth_error_skipn in ey. assumption.
+      * intros y ey. rewrite <- nth_error_skipn in ey. assumption.
+  - cbn - [mode_inb]. cbn - [mode_inb] in IHh3.
+    repeat (erewrite scoping_md ; [| eassumption]).
+    cbn - [mode_inb] in hm.
+    erewrite scoping_md in hm. 2: eassumption. subst.
+    erewrite scoping_md in IHh3. 2: eassumption.
+    simpl isGhost. cbn match. change (true && ?c) with c.
+    destruct_ifs. all: mode_eqs. all: try discriminate.
+    + econstructor.
+      * eapply ctype_close. eauto.
+      * unfold close. apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. apply cconv_refl.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        -- econstructor.
+          ++ eapply ctype_close.
+            eapply erase_typing in h2.
+            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+            eapply type_to_rev in h2.
+            cbn in h2. eassumption.
+          ++ unfold close. cbn. constructor.
+          ++ eauto with cc_type.
+        -- econstructor.
+          ++ eapply ctype_close.
+            eapply erase_typing in h2.
+            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+            eapply type_to_rev in h2.
+            cbn in h2. eassumption.
+          ++ unfold close. cbn. constructor.
+          ++ eauto with cc_type.
+    + econstructor.
+      * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
+        -- econstructor.
+          ++ eapply erase_typing in h1.
+            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+            eapply type_to_rev in h1.
+            cbn in h1. rewrite e in h1. eassumption.
+          ++ constructor.
+          ++ eauto with cc_type.
+        -- econstructor.
+          ++ eapply erase_typing in h2.
+            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+            eapply type_to_rev in h2.
+            cbn in h2. rewrite e in h2. eassumption.
+          ++ constructor.
+          ++ eauto with cc_type.
+      * apply cconv_sym.
+        eapply cconv_trans. 1: constructor.
+        apply cconv_refl.
+      * econstructor. econstructor.
+        -- econstructor.
+          ++ econstructor. econstructor.
+            ** eapply erase_typing in h1.
+              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+              eapply type_to_rev in h1.
+              cbn in h1. rewrite e in h1. eassumption.
+            ** constructor.
+            ** eauto with cc_type.
+          ++ constructor. econstructor.
+            ** eapply erase_typing in h2.
+              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+              eapply type_to_rev in h2.
+              cbn in h2. rewrite e in h2. eassumption.
+            ** constructor.
+            ** eauto with cc_type.
+        -- econstructor.
+          ++ econstructor. econstructor.
+            ** eapply erase_typing in h1.
+              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+              eapply type_to_rev in h1.
+              cbn in h1. rewrite e in h1. eassumption.
+            ** constructor.
+            ** eauto with cc_type.
+          ++ econstructor. econstructor.
+            ** eapply erase_typing in h2.
+              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+              eapply type_to_rev in h2.
+              cbn in h2. rewrite e in h2. eassumption.
+            ** constructor.
+            ** eauto with cc_type.
+          ++ econstructor. econstructor.
+            ** eapply erase_typing in h2.
+              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+              eapply type_to_rev in h2.
+              cbn in h2. rewrite e in h2. eassumption.
+            ** constructor.
+            ** eauto with cc_type.
+    + admit.
+    + admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Abort.
