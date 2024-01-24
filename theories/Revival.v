@@ -171,3 +171,54 @@ Proof.
     eapply scoping_to_rev. eapply erase_scoping. 2: eauto.
     reflexivity.
 Qed.
+
+(** Revival commutes with renaming **)
+
+Lemma revive_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
+    ⟦ Γ | ρ ⋅ t ⟧v = ρ ⋅ ⟦ Δ | t ⟧v.
+Proof.
+  intros Γ Δ ρ t hρ hcρ.
+  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - cbn - [mode_inb].
+    unfold ghv.
+    destruct (nth_error Δ n) eqn:e.
+    + eapply hρ in e. rewrite e.
+      destruct (isGhost m). all: reflexivity.
+    + eapply hcρ in e. rewrite e. reflexivity.
+  - cbn - [mode_inb]. ssimpl.
+    erewrite IHt3.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. assumption. }
+    erewrite md_ren.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. eassumption. }
+    destruct_ifs. 3: reflexivity.
+    + unfold close. ssimpl. reflexivity.
+    + ssimpl. f_equal. erewrite erase_ren. 2,3: eassumption.
+      reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. all: try solve [ eauto ].
+    ssimpl. f_equal.
+    erewrite erase_ren. 2,3: eassumption.
+    reflexivity.
+  - cbn - [mode_inb].
+    erewrite erase_ren. 2,3: eassumption.
+    reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3. 2,3: eassumption.
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    destruct_ifs. 2: eauto.
+    erewrite erase_ren. 2,3: eassumption.
+    reflexivity.
+Qed.
