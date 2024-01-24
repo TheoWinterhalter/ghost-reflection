@@ -766,27 +766,7 @@ Proof.
               cbn in h2. eassumption.
             ** constructor.
             ** eauto with cc_type.
-    + econstructor.
-      * econstructor.
-        -- econstructor. econstructor.
-          ++ eapply erase_typing in h1.
-            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
-            eapply type_to_rev in h1.
-            cbn in h1. rewrite e in h1. eassumption.
-          ++ constructor.
-          ++ eauto with cc_type.
-        -- eauto.
-        -- constructor. econstructor.
-          ++ eapply erase_typing in h2.
-            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
-            eapply type_to_rev in h2.
-            cbn in h2. rewrite e in h2. eassumption.
-          ++ constructor.
-          ++ eauto with cc_type.
-      * apply cconv_sym. unfold cty_lift.
-        eapply cconv_trans. 1: constructor.
-        (* WRONG ???? *) admit.
-      * admit.
+    + destruct mx. all: discriminate.
   - cbn - [mode_inb] in *.
     erewrite scoping_md in hm. 2: eassumption. subst.
     erewrite scoping_md in IHh1. 2: eassumption.
@@ -1034,4 +1014,4 @@ Proof.
       * eassumption.
       * constructor.
       * eauto with cc_type.
-Abort.
+Qed.
