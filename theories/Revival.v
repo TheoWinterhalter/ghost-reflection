@@ -133,32 +133,27 @@ Lemma typing_sub_rev :
     crtyping ⟦ Γ ⟧v (λ x, x) ⟦ Γ ⟧ε.
 Proof.
   intros Γ. intros x m A e.
-  induction Γ as [| [my B] Γ ih] in x, m, A, e |- *.
-  1:{ destruct x. all: discriminate. }
-  destruct x.
-  - cbn - [mode_inb] in e.
-    destruct (relm my) eqn:ey. 2: discriminate.
-    noconf e. cbn.
-    destruct_if e1. 1:{ mode_eqs. discriminate. }
-    eexists. split.
-    + reflexivity.
-    + cbn. reflexivity.
-  - cbn - [mode_inb] in e.
-    destruct (relm my) eqn:ey.
-    + cbn. destruct_if e1. 1:{ mode_eqs. discriminate. }
-      eapply ih in e as h. destruct h as [C [eC ee]].
-      eexists. split.
-      * eassumption.
-      * ssimpl. eapply (f_equal (λ t, S ⋅ t)) in ee.
-        revert ee. ssimpl. intro ee.
-        etransitivity. 1: etransitivity. 2: exact ee.
-        -- eapply extRen_cterm. cbn. intros y. ssimpl. reflexivity.
-        -- eapply extRen_cterm. cbn. intros y. ssimpl. reflexivity.
-    + cbn. eapply ih in e as h. destruct h as [C [eC ee]].
-      destruct_if e1.
-      * give_up.
-      * admit.
-Abort.
+  assert (h : nth_error ⟦ Γ ⟧v x = Some (Some (m, A))).
+  { induction Γ as [| [my B] Γ ih] in x, m, A, e |- *.
+    1:{ destruct x. all: discriminate. }
+    destruct x.
+    - cbn - [mode_inb] in e.
+      destruct (relm my) eqn:ey. 2: discriminate.
+      noconf e. cbn.
+      destruct_if e1. 1:{ mode_eqs. discriminate. }
+      reflexivity.
+    - cbn - [mode_inb] in e.
+      destruct (relm my) eqn:ey.
+      + cbn. destruct_if e1. 1:{ mode_eqs. discriminate. }
+        eapply ih. assumption.
+      + cbn. destruct_if e1.
+        * eapply ih. assumption.
+        * eapply ih. assumption.
+  }
+  eexists. split.
+  - eassumption.
+  - ssimpl. reflexivity.
+Qed.
 
 Lemma scoping_to_rev :
   ∀ Γ t m,
@@ -176,8 +171,9 @@ Lemma conv_to_rev :
     ⟦ Γ ⟧v ⊢ᶜ u ≡ v.
 Proof.
   intros Γ u v h.
-  (* eapply cconv_ren in h. 2: eapply typing_sub_rev. *)
-Abort.
+  eapply cconv_ren in h. 2: eapply typing_sub_rev.
+  revert h. ssimpl. auto.
+Qed.
 
 (** Revival of context and of variables **)
 
