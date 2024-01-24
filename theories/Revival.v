@@ -67,7 +67,7 @@ Definition revive_sc (Γ : scope) : cscope :=
 
 (** Revival of non-ghost terms is cDummy **)
 
-Lemma revival_ng :
+Lemma revive_ng :
   ∀ Γ t,
     isGhost (md Γ t) = false →
     ⟦ Γ | t ⟧v = cDummy.
@@ -222,3 +222,77 @@ Proof.
     erewrite erase_ren. 2,3: eassumption.
     reflexivity.
 Qed.
+
+(** Revival commutes with substitution **)
+
+Lemma revive_subst :
+  ∀ Γ Δ σ t,
+    sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ →
+    ⟦ Γ | t <[ σ ] ⟧v = ⟦ Δ | t ⟧v <[ σ >> revive_term Γ ].
+Proof.
+  intros Γ Δ σ t hσ hcσ.
+  induction t in Γ, Δ, σ, hσ, hcσ |- *.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - ssimpl. cbn. unfold ghv. destruct (nth_error Δ n) eqn:e.
+    + destruct (isGhost m) eqn:em.
+      * cbn. ssimpl. reflexivity.
+      * cbn. eapply revive_ng. clear hcσ.
+        induction hσ as [| σ Δ mx hσ ih hm] in n, m, e, em |- *.
+        1: destruct n ; discriminate.
+        destruct n.
+        -- cbn - [mode_inb] in *.
+          erewrite scoping_md. 2: eassumption.
+          noconf e. assumption.
+        -- cbn in e. eapply ih. all: eassumption.
+    + cbn. eapply hcσ in e as e'. destruct e' as [m [e1 e2]].
+      rewrite e1. cbn.
+      unfold ghv. rewrite e2. reflexivity.
+  - cbn.
+    erewrite md_subst.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
+    erewrite erase_subst. 2,3: eassumption.
+    erewrite IHt3.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
+    destruct_ifs.
+    + destruct m. all: try discriminate.
+      unfold close. ssimpl.
+      eapply ext_cterm. intros [].
+      * cbn. reflexivity.
+      * cbn. ssimpl. erewrite revive_ren.
+        2:{ eapply rscoping_S. }
+        2:{ eapply rscoping_comp_S. }
+        ssimpl. reflexivity.
+    + cbn. ssimpl. f_equal.
+      (* Mistmatch between erase_term and revive_term which was expected
+        but how can I solve it?
+      *)
+      all: admit.
+    + reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt1. 2,3: eauto.
+    erewrite IHt2. 2,3: eauto.
+    destruct_ifs.
+    + cbn. ssimpl. f_equal. erewrite erase_subst. 2,3: eassumption.
+      admit.
+    + cbn. reflexivity.
+    + reflexivity.
+    + reflexivity.
+  - cbn - [mode_inb].
+    erewrite erase_subst. 2,3: eassumption.
+    admit.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    destruct_ifs. 2: reflexivity.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3. 2,3: eassumption.
+    ssimpl. reflexivity.
+  - cbn - [mode_inb].
+    destruct_ifs. 2: reflexivity.
+    erewrite erase_subst. 2,3: eassumption.
+    cbn. f_equal. admit.
+Abort.
