@@ -496,7 +496,7 @@ Proof.
     destruct_ifs.
     + eapply cconv_close. eauto.
     + constructor.
-      * constructor. (* eapply erase_conv. *) admit.
+      * constructor. eapply conv_to_rev. eapply erase_conv. assumption.
       * eauto.
     + constructor.
   - cbn - [mode_inb].
@@ -504,11 +504,11 @@ Proof.
     eapply conv_md in h2 as e2. rewrite <- e2.
     destruct_ifs.
     + constructor. all: eauto.
-      admit.
+      eapply conv_to_rev. eapply erase_conv. assumption.
     + constructor. all: eauto.
     + eauto.
     + constructor.
-  - cbn - [mode_inb]. admit.
+  - cbn - [mode_inb]. eapply conv_to_rev. eapply erase_conv. assumption.
   - cbn - [mode_inb].
     eapply conv_md in h3 as e1. rewrite <- e1.
     destruct_if'.
@@ -516,9 +516,9 @@ Proof.
     + constructor.
   - cbn - [mode_inb].
     destruct_ifs. 2: constructor.
-    constructor. admit.
+    constructor. eapply conv_to_rev. eapply erase_conv. assumption.
   - constructor. eassumption.
   - eapply cconv_trans. all: eauto.
   - rewrite 2!revive_ng. 1: constructor.
     all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
-Admitted.
+Qed.
