@@ -252,6 +252,39 @@ Proof.
     eauto with cc_scope.
 Qed.
 
+Lemma erase_scoping_strong :
+  ∀ Γ t,
+    ccscoping (erase_sc Γ) ⟦ Γ | t ⟧ε cType.
+Proof.
+  intros Γ t.
+  induction t in Γ |- *.
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
+  - cbn. destruct_if e. 2: constructor.
+    constructor. unfold relv in e.
+    destruct nth_error eqn:e1. 2: discriminate.
+    eapply erase_sc_var. all: eauto.
+  - cbn - [mode_inb].
+    specialize IHt2 with (Γ := m0 :: Γ). cbn - [mode_inb] in IHt2.
+    fold (erase_sc Γ) in IHt2.
+    destruct_ifs.
+    all: try solve [ eauto with cc_scope cc_type ].
+    + destruct (relm m0) eqn:e1. 2: discriminate.
+      constructor. all: constructor. all: constructor. all: eauto.
+    + destruct m. all: try discriminate.
+      destruct m0. all: try discriminate. simpl relm in IHt2. cbn match in IHt2.
+      constructor. all: constructor. all: constructor. all: eauto.
+      * eapply cscoping_ren. 1: eapply crscoping_S.
+        eapply cscope_close. eauto.
+      * eapply cscope_ignore. eauto.
+    + destruct (relm m0) eqn:e2. 1: discriminate.
+      eauto with cc_scope.
+  - cbn - [mode_inb].
+    specialize IHt3 with (Γ := m :: Γ). cbn - [mode_inb] in IHt3.
+    fold (erase_sc Γ) in IHt3.
+    destruct_ifs. all: eauto with cc_scope.
+Qed.
+
 (** Erasure commutes with renaming **)
 
 Lemma erase_ren :

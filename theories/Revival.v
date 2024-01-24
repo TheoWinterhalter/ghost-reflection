@@ -321,6 +321,13 @@ Proof.
         irrelevant in the substitution? In a sense it already does so maybe
         there is hope after all? We might have to adapt rev_subst slightly
         so that it matches.
+
+        It could be an ext lemma that assumes we're looking at something
+        relevant and knows the rest is dummy?
+
+        Could also be ext_cterm_scoped by exploiting the fact that erasure
+        always produces well-scoped terms even when starting from
+        ill-scoped terms?
       *)
       admit.
     + cbn. reflexivity.
