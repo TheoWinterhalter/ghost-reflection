@@ -1,8 +1,8 @@
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CScoping
-  Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory Erasure.
+From GhostTT Require Import Util BasicAST CastRemoval SubstNotations ContextDecl
+  CScoping Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory Erasure.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -521,4 +521,37 @@ Proof.
   - eapply cconv_trans. all: eauto.
   - rewrite 2!revive_ng. 1: constructor.
     all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
+Qed.
+
+(** Revival ignores casts **)
+
+Lemma revive_castrm :
+  ∀ Γ t,
+    ⟦ Γ | ε|t| ⟧v = ⟦ Γ | t ⟧v.
+Proof.
+  intros Γ t.
+  induction t in Γ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn - [mode_inb] ; eauto ].
+  - cbn - [mode_inb]. erewrite IHt3. erewrite !erase_castrm.
+    rewrite <- md_castrm. reflexivity.
+  - cbn - [mode_inb]. erewrite IHt1, IHt2. erewrite !erase_castrm.
+    rewrite <- !md_castrm. reflexivity.
+  - cbn - [mode_inb]. erewrite !erase_castrm. reflexivity.
+  - cbn - [mode_inb]. erewrite IHt1, IHt3.
+    rewrite <- !md_castrm. reflexivity.
+  - cbn - [mode_inb]. erewrite !erase_castrm. reflexivity.
+Qed.
+
+(** Revival of erased conversion **)
+
+Lemma revive_castrm_conv :
+  ∀ Γ u v,
+    Γ ⊢ u ε≡ v →
+    ⟦ Γ ⟧v ⊢ᶜ ⟦ sc Γ | u ⟧v ≡ ⟦ sc Γ | v ⟧v.
+Proof.
+  intros Γ u v h.
+  eapply revive_conv in h.
+  rewrite !revive_castrm in h.
+  assumption.
 Qed.
