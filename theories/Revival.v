@@ -108,6 +108,58 @@ Proof.
   reflexivity.
 Qed.
 
+Lemma isGhost_eq :
+  ∀ m, isGhost m = true → m = mGhost.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isProp_eq :
+  ∀ m, isProp m = true → m = mProp.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Ltac mode_eqs :=
+  repeat lazymatch goal with
+  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; subst m
+  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; subst m
+  end.
+
+Lemma typing_sub_rev :
+  ∀ Γ,
+    crtyping ⟦ Γ ⟧v (λ x, x) ⟦ Γ ⟧ε.
+Proof.
+  intros Γ. intros x m A e.
+  induction Γ as [| [my B] Γ ih] in x, m, A, e |- *.
+  1:{ destruct x. all: discriminate. }
+  destruct x.
+  - cbn - [mode_inb] in e.
+    destruct (relm my) eqn:ey. 2: discriminate.
+    noconf e. cbn.
+    destruct_if e1. 1:{ mode_eqs. discriminate. }
+    eexists. split.
+    + reflexivity.
+    + cbn. reflexivity.
+  - cbn - [mode_inb] in e.
+    destruct (relm my) eqn:ey.
+    + cbn. destruct_if e1. 1:{ mode_eqs. discriminate. }
+      eapply ih in e as h. destruct h as [C [eC ee]].
+      eexists. split.
+      * eassumption.
+      * ssimpl. eapply (f_equal (λ t, S ⋅ t)) in ee.
+        revert ee. ssimpl. intro ee.
+        etransitivity. 1: etransitivity. 2: exact ee.
+        -- eapply extRen_cterm. cbn. intros y. ssimpl. reflexivity.
+        -- eapply extRen_cterm. cbn. intros y. ssimpl. reflexivity.
+    + cbn. eapply ih in e as h. destruct h as [C [eC ee]].
+      destruct_if e1.
+      * give_up.
+      * admit.
+Abort.
+
 Lemma scoping_to_rev :
   ∀ Γ t m,
     ccscoping (erase_sc Γ) t m →
@@ -117,6 +169,15 @@ Proof.
   eapply cscoping_ren in h. 2: eapply scoping_sub_rev.
   rewrite rinstId'_cterm in h. assumption.
 Qed.
+
+Lemma conv_to_rev :
+  ∀ Γ u v,
+    ⟦ Γ ⟧ε ⊢ᶜ u ≡ v →
+    ⟦ Γ ⟧v ⊢ᶜ u ≡ v.
+Proof.
+  intros Γ u v h.
+  (* eapply cconv_ren in h. 2: eapply typing_sub_rev. *)
+Abort.
 
 (** Revival of context and of variables **)
 
@@ -346,26 +407,6 @@ Qed.
 (** Revival ignores casts **)
 
 (** Revival preserves conversion **)
-
-Lemma isGhost_eq :
-  ∀ m, isGhost m = true → m = mGhost.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Lemma isProp_eq :
-  ∀ m, isProp m = true → m = mProp.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Ltac mode_eqs :=
-  repeat lazymatch goal with
-  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; subst m
-  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; subst m
-  end.
 
 Lemma revive_conv :
   ∀ Γ u v,
