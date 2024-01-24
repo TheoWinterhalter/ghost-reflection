@@ -1,8 +1,8 @@
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CScoping
-  Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory.
+From GhostTT Require Import Util BasicAST CastRemoval SubstNotations ContextDecl
+  CScoping Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -576,6 +576,37 @@ Proof.
     all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
 Qed.
 
+(** Erasure ignores casts **)
+
+Lemma erase_castrm :
+  ∀ Γ t,
+    ⟦ Γ | (ε|t|) ⟧ε = ⟦ Γ | t ⟧ε.
+Proof.
+  intros Γ t.
+  induction t in Γ |- *.
+  all: try reflexivity.
+  - cbn - [mode_inb]. erewrite IHt1, IHt2. reflexivity.
+  - cbn - [mode_inb]. erewrite IHt1, IHt3.
+    rewrite <- md_castrm. reflexivity.
+  - cbn - [mode_inb]. erewrite IHt1, IHt2. rewrite <- !md_castrm. reflexivity.
+  - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. erewrite IHt1. reflexivity.
+Qed.
+
+(** Erasure of erased conversion **)
+
+Lemma erase_castrm_conv :
+  ∀ Γ u v,
+    Γ ⊢ u ε≡ v →
+    ⟦ Γ ⟧ε ⊢ᶜ ⟦ sc Γ | u ⟧ε ≡ ⟦ sc Γ | v ⟧ε.
+Proof.
+  intros Γ u v h.
+  eapply erase_conv in h.
+  rewrite !erase_castrm in h.
+  assumption.
+Qed.
+
 (** Erasure preserves typing **)
 
 Lemma erase_typing_El :
@@ -881,7 +912,7 @@ Proof.
     + destruct m. all: try reflexivity. discriminate.
   - econstructor.
     + eauto.
-    + constructor. eapply erase_conv. assumption.
+    + constructor. eapply erase_castrm_conv. assumption.
     + eapply erase_typing_El.
       * eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
       * erewrite scoping_md in hm. 2: eassumption.

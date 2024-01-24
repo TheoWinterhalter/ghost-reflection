@@ -157,7 +157,7 @@ Qed.
 
 (** Cast removal preserves modes **)
 
-Lemma md_castrm :
+Lemma scoping_castrm :
   ∀ Γ t m,
     scoping Γ t m →
     scoping Γ (castrm t) m.
@@ -166,6 +166,17 @@ Proof.
   induction h.
   all: try solve [ simpl ; econstructor ; eauto ].
   cbn. assumption.
+Qed.
+
+Lemma md_castrm :
+  ∀ Γ t,
+    md Γ t = md Γ (castrm t).
+Proof.
+  intros Γ t.
+  induction t in Γ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn ; eauto ].
+  cbn. rewrite <- IHt3. destruct md. all: reflexivity.
 Qed.
 
 (** Cast removal commutes with renamings **)
@@ -744,6 +755,7 @@ Proof.
     f_equal. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_ren_finish.
+    rewrite 2!castrm_ren.
     eapply conv_ren. all: eassumption.
 Qed.
 
@@ -848,36 +860,50 @@ Ltac scoping_subst_finish :=
   try apply sscoping_shift ;
   apply styping_scoping ; assumption.
 
+Ltac conv_subst_finish :=
+  eapply scoping_subst ; [| eassumption] ;
+  try apply sscoping_shift ;
+  assumption.
+
 Lemma conv_subst :
   ∀ Γ Δ σ u v,
-    styping Γ σ Δ →
+    sscoping (sc Γ) σ (sc Δ) →
     Δ ⊢ u ≡ v →
     Γ ⊢ u <[ σ ] ≡ v <[ σ ].
 Proof.
   intros Γ Δ σ u v hσ h.
   induction h in Γ, σ, hσ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ; scoping_subst_finish ].
+  all: try solve [ asimpl ; econstructor ; eauto ; conv_subst_finish ].
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
-    all: try scoping_subst_finish.
-    asimpl. apply ext_term.
+    all: try conv_subst_finish.
+    ssimpl. apply ext_term.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
-  - ssimpl. eapply conv_trans. 1: constructor.
-    + eapply scoping_subst. 2: eassumption.
-      eapply styping_scoping. assumption.
-    + eapply scoping_subst. 2: eassumption.
-      eapply styping_scoping. assumption.
-    + cbn. ssimpl. apply conv_refl.
+  - ssimpl. cbn. eapply conv_trans. 1: constructor. 1,2: conv_subst_finish.
+    cbn. ssimpl. apply conv_refl.
   - asimpl. constructor.
     + auto.
-    + eapply IHh2. apply styping_shift. assumption.
+    + eapply IHh2. cbn. apply sscoping_shift. assumption.
     + asimpl in IHh3. firstorder.
-    + asimpl in IHh4. eapply IHh4. apply styping_shift. assumption.
+    + asimpl in IHh4. eapply IHh4. cbn. apply sscoping_shift. eassumption.
   - asimpl. constructor.
     + auto.
-    + eapply IHh2. apply styping_shift. assumption.
-    + eapply IHh3. apply styping_shift. assumption.
+    + eapply IHh2. cbn. apply sscoping_shift. assumption.
+    + eapply IHh3. cbn. apply sscoping_shift. assumption.
+Qed.
+
+Lemma sscoping_castrm :
+  ∀ Γ σ Δ,
+    sscoping Γ σ Δ →
+    sscoping Γ (σ >> castrm) Δ.
+Proof.
+  intros Γ σ Δ h.
+  induction h.
+  - constructor.
+  - constructor.
+    + assumption.
+    + ssimpl. eapply scoping_castrm. assumption.
 Qed.
 
 Lemma typing_subst :
@@ -912,7 +938,9 @@ Proof.
     f_equal. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_subst_finish.
-    eapply conv_subst. all: eassumption.
+    rewrite 2!castrm_subst.
+    eapply conv_subst. 2: eassumption.
+    apply sscoping_castrm. eapply styping_scoping. assumption.
 Qed.
 
 (** Inversion of typing **)
@@ -930,12 +958,16 @@ Ltac destruct_exists h :=
   | _ => idtac
   end.
 
+Notation "Γ ⊢ u ε≡ v" :=
+  (Γ ⊢ ε|u| ≡ ε|v|)
+  (at level 80, u, v at next level, format "Γ  ⊢  u  ε≡  v").
+
 Lemma type_var_inv :
   ∀ Γ x A,
     Γ ⊢ var x : A →
     ∃ m B,
       nth_error Γ x = Some (m, B) ∧
-      Γ ⊢ (plus (S x)) ⋅ B ≡ A.
+      Γ ⊢ (plus (S x)) ⋅ B ε≡ A.
 Proof.
   intros Γ x A h.
   dependent induction h.
@@ -949,7 +981,7 @@ Qed.
 Lemma type_sort_inv :
   ∀ Γ m i A,
     Γ ⊢ Sort m i : A →
-    Γ ⊢ Sort mKind (usup m i) ≡ A.
+    Γ ⊢ Sort mKind (usup m i) ε≡ A.
 Proof.
   intros ???? h.
   dependent induction h.
@@ -964,7 +996,7 @@ Lemma type_pi_inv :
     cscoping (Γ ,, (mx, A)) B mKind ∧
     Γ ⊢ A : Sort mx i ∧
     Γ ,, (mx, A) ⊢ B : Sort m j ∧
-    Γ ⊢ Sort m (umax m i j) ≡ C.
+    Γ ⊢ Sort m (umax m i j) ε≡ C.
 Proof.
   intros ???????? h.
   dependent induction h.
@@ -983,7 +1015,7 @@ Lemma type_lam_inv :
       Γ ⊢ A : Sort mx i ∧
       Γ ,, (mx, A) ⊢ B : Sort m j ∧
       Γ ,, (mx, A) ⊢ t : B ∧
-      Γ ⊢ Pi i j m mx A B ≡ C.
+      Γ ⊢ Pi i j m mx A B ε≡ C.
 Proof.
   intros Γ mx A B t C h.
   dependent induction h.
@@ -1005,7 +1037,7 @@ Lemma type_app_inv :
       Γ ⊢ u : A ∧
       Γ ⊢ A : Sort mx i ∧
       Γ ,, (mx, A) ⊢ B : Sort m j ∧
-      Γ ⊢ B <[ u .. ] ≡ C.
+      Γ ⊢ B <[ u .. ] ε≡ C.
 Proof.
   intros Γ t u C h.
   dependent induction h.
@@ -1021,7 +1053,7 @@ Lemma type_erased_inv :
     ∃ i,
       cscoping Γ A mKind ∧
       Γ ⊢ A : Sort mType i ∧
-      Γ ⊢ Sort mGhost i ≡ C.
+      Γ ⊢ Sort mGhost i ε≡ C.
 Proof.
   intros Γ A C h.
   dependent induction h.
@@ -1038,7 +1070,7 @@ Lemma type_hide_inv :
       cscoping Γ t mType ∧
       Γ ⊢ A : Sort mType i ∧
       Γ ⊢ t : A ∧
-      Γ ⊢ Erased A ≡ C.
+      Γ ⊢ Erased A ε≡ C.
 Proof.
   intros Γ t C h.
   dependent induction h.
@@ -1059,7 +1091,7 @@ Lemma type_reveal_inv :
       Γ ⊢ t : Erased A ∧
       Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
       Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (hide (var 0))) ∧
-      Γ ⊢ app P t ≡ C.
+      Γ ⊢ app P t ε≡ C.
 Proof.
   intros Γ t P p C h.
   dependent induction h.
@@ -1076,7 +1108,7 @@ Lemma type_revealP_inv :
       cscoping Γ p mKind ∧
       Γ ⊢ t : Erased A ∧
       Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
-      Γ ⊢ Sort mProp 0 ≡ C.
+      Γ ⊢ Sort mProp 0 ε≡ C.
 Proof.
   intros Γ t p C h.
   dependent induction h.
@@ -1095,7 +1127,7 @@ Lemma type_gheq_inv :
       Γ ⊢ A : Sort mGhost i ∧
       Γ ⊢ u : A ∧
       Γ ⊢ v : A ∧
-      Γ ⊢ Sort mProp 0 ≡ C.
+      Γ ⊢ Sort mProp 0 ε≡ C.
 Proof.
   intros Γ A u v C h.
   dependent induction h.
@@ -1112,7 +1144,7 @@ Lemma type_ghrefl_inv :
       cscoping Γ u mGhost ∧
       Γ ⊢ A : Sort mGhost i ∧
       Γ ⊢ u : A ∧
-      Γ ⊢ gheq A u u ≡ C.
+      Γ ⊢ gheq A u u ε≡ C.
 Proof.
   intros Γ A u C h.
   dependent induction h.
@@ -1138,7 +1170,7 @@ Lemma type_ghcast_inv :
       Γ ⊢ e : gheq A u v ∧
       Γ ⊢ P : A ⇒[ i | usup m i / mGhost | mKind ] Sort m i ∧
       Γ ⊢ t : app P u ∧
-      Γ ⊢ app P v ≡ C.
+      Γ ⊢ app P v ε≡ C.
 Proof.
   intros Γ e P t C h.
   dependent induction h.
@@ -1152,7 +1184,7 @@ Qed.
 Lemma type_bot_inv :
   ∀ Γ C,
     Γ ⊢ bot : C →
-    Γ ⊢ Sort mProp 0 ≡ C.
+    Γ ⊢ Sort mProp 0 ε≡ C.
 Proof.
   intros Γ C h.
   dependent induction h.
@@ -1168,7 +1200,7 @@ Lemma type_bot_elim_inv :
       cscoping Γ p mProp ∧
       Γ ⊢ A : Sort m i ∧
       Γ ⊢ p : bot ∧
-      Γ ⊢ A ≡ C.
+      Γ ⊢ A ε≡ C.
 Proof.
   intros Γ m A p C h.
   dependent induction h.
@@ -1216,7 +1248,7 @@ Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
     Γ ⊢ t : B →
-    Γ ⊢ A ≡ B.
+    Γ ⊢ A ε≡ B.
 Proof.
   intros Γ t A B hA hB.
   induction t in Γ, A, B, hA, hB |- *.
@@ -1226,11 +1258,12 @@ Proof.
   - repeat scoping_fun.
     eapply IHt2 in H7. 2: eassumption.
     eapply conv_trans. 2: eassumption.
+    cbn.
     constructor.
     + apply conv_refl.
     + apply conv_refl.
-    + eapply IHt1. all: assumption.
-    + eapply conv_sym. assumption.
+    + eapply IHt1 in H6. 2: exact H5. assumption.
+    + (* eapply conv_sym. assumption.
   - repeat scoping_fun.
     eapply conv_trans. 2: eassumption.
     eapply conv_subst.
@@ -1253,7 +1286,7 @@ Proof.
     constructor. 1: apply conv_refl.
     eapply IHt1 in H19. 2: eassumption.
     (* Missing injectivity of gheq too. Once again, we could add arguements *)
-    admit.
+    admit. *)
 Abort.
 
 (** Validity (or presupposition) **)

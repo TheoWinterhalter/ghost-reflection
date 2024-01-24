@@ -23,7 +23,7 @@ Ltac autosubst_unfold :=
 
 Ltac resubst :=
   rewrite ?renRen_cterm, ?renSubst_cterm, ?substRen_cterm, ?substSubst_cterm,
-    ?renRen_term, ?renSubst_term, ?substRen_term.
+    ?renRen_term, ?renSubst_term, ?substRen_term, ?substSubst_term.
 
 Ltac ssimpl :=
   asimpl ;

@@ -303,7 +303,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ B mKind →
       cscoping Γ t m →
       Γ ⊢ t : A →
-      Γ ⊢ A ≡ B →
+      Γ ⊢ ε|A| ≡ ε|B| →
       Γ ⊢ B : Sort m i →
       Γ ⊢ t : B
 
