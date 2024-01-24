@@ -225,18 +225,21 @@ Qed.
 
 (** Revival commutes with substitution **)
 
+Definition rev_subst Δ Γ σ n :=
+  if ghv Δ n then ⟦ Γ | σ n ⟧v else ⟦ Γ | σ n ⟧ε.
+
 Lemma revive_subst :
   ∀ Γ Δ σ t,
     sscoping Γ σ Δ →
     sscoping_comp Γ σ Δ →
-    ⟦ Γ | t <[ σ ] ⟧v = ⟦ Δ | t ⟧v <[ σ >> revive_term Γ ].
+    ⟦ Γ | t <[ σ ] ⟧v = ⟦ Δ | t ⟧v <[ rev_subst Δ Γ σ ].
 Proof.
   intros Γ Δ σ t hσ hcσ.
   induction t in Γ, Δ, σ, hσ, hcσ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
-  - ssimpl. cbn. unfold ghv. destruct (nth_error Δ n) eqn:e.
+  - ssimpl. cbn. unfold ghv. unfold rev_subst. destruct (nth_error Δ n) eqn:e.
     + destruct (isGhost m) eqn:em.
-      * cbn. ssimpl. reflexivity.
+      * cbn. unfold ghv. rewrite e. rewrite em. reflexivity.
       * cbn. eapply revive_ng. clear hcσ.
         induction hσ as [| σ Δ mx hσ ih hm] in n, m, e, em |- *.
         1: destruct n ; discriminate.
@@ -261,15 +264,49 @@ Proof.
       unfold close. ssimpl.
       eapply ext_cterm. intros [].
       * cbn. reflexivity.
-      * cbn. ssimpl. erewrite revive_ren.
-        2:{ eapply rscoping_S. }
-        2:{ eapply rscoping_comp_S. }
-        ssimpl. reflexivity.
+      * cbn. unfold rev_subst. ssimpl. unfold ghv. cbn.
+        destruct (nth_error Δ n) eqn:e1.
+        -- destruct_if e2.
+          ++ ssimpl. erewrite revive_ren.
+            2:{ eapply rscoping_S. }
+            2:{ eapply rscoping_comp_S. }
+            ssimpl. reflexivity.
+          ++ ssimpl. erewrite erase_ren.
+            2:{ eapply rscoping_S. }
+            2:{ eapply rscoping_comp_S. }
+            ssimpl. reflexivity.
+        -- ssimpl. erewrite erase_ren.
+          2:{ eapply rscoping_S. }
+          2:{ eapply rscoping_comp_S. }
+          ssimpl. reflexivity.
     + cbn. ssimpl. f_equal.
-      (* Mistmatch between erase_term and revive_term which was expected
-        but how can I solve it?
-      *)
-      all: admit.
+      * f_equal. eapply ext_cterm. intro x.
+        unfold rev_subst. ssimpl.
+        unfold ghv. destruct (nth_error _ _) eqn:e1.
+        -- destruct_if e2. 2: reflexivity.
+          (* Lhs is dummy but we don't know anything about rhs right? *)
+          admit.
+        -- reflexivity.
+      * eapply ext_cterm. intros [].
+        -- cbn. unfold rev_subst. unfold ghv. cbn - [mode_inb].
+          destruct_if e1. 1: reflexivity.
+          destruct_if e2. 2:{ destruct m. all: discriminate. }
+          reflexivity.
+        -- cbn. unfold rev_subst. unfold ghv. cbn.
+          destruct (nth_error _ _) eqn:e1.
+          ++ destruct_if e2.
+            ** ssimpl. erewrite revive_ren.
+              2: eapply rscoping_S.
+              2: eapply rscoping_comp_S.
+              reflexivity.
+            ** ssimpl. erewrite erase_ren.
+              2: eapply rscoping_S.
+              2: eapply rscoping_comp_S.
+              reflexivity.
+          ++ ssimpl. erewrite erase_ren.
+            2: eapply rscoping_S.
+            2: eapply rscoping_comp_S.
+            reflexivity.
     + reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
@@ -278,6 +315,13 @@ Proof.
     erewrite IHt2. 2,3: eauto.
     destruct_ifs.
     + cbn. ssimpl. f_equal. erewrite erase_subst. 2,3: eassumption.
+      (* Why would this be true?
+        Maybe we should have an alternative to erase_subst that would use
+        rev_subst? Or something more general that says it ignores anything
+        irrelevant in the substitution? In a sense it already does so maybe
+        there is hope after all? We might have to adapt rev_subst slightly
+        so that it matches.
+      *)
       admit.
     + cbn. reflexivity.
     + reflexivity.
