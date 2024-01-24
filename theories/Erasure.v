@@ -186,19 +186,6 @@ Proof.
     + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
-(* TODO MOVE *)
-Notation "#| l |" := (length l).
-
-Lemma nth_error_app_r :
-  ∀ A (l l' : list A) n,
-    nth_error (l ++ l') (#|l| + n) = nth_error l' n.
-Proof.
-  intros A l l' n.
-  induction l as [| a l ih] in l', n |- *.
-  - reflexivity.
-  - cbn. apply ih.
-Qed.
-
 Lemma rscoping_weak :
   ∀ Γ Δ,
     rscoping (Δ ++ Γ) (plus #|Δ|) Γ.
@@ -311,40 +298,6 @@ Proof.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: eauto.
-Qed.
-
-Lemma nth_skipn :
-  ∀ A (l : list A) x y d,
-    nth (x + y) l d = nth y (skipn x l) d.
-Proof.
-  intros A l x y d.
-  induction l as [| a l ih] in x, y |- *.
-  1:{ destruct x, y. all: reflexivity. }
-  destruct x, y. all: cbn. 1,2: reflexivity.
-  - apply ih.
-  - apply ih.
-Qed.
-
-Lemma nth_error_skipn :
-  ∀ A (l : list A) x y,
-    nth_error l (x + y) = nth_error (skipn x l) y.
-Proof.
-  intros A l x y.
-  induction l as [| a l ih] in x, y |- *.
-  1:{ destruct x, y. all: reflexivity. }
-  destruct x, y. all: cbn. 1,2: reflexivity.
-  - apply ih.
-  - apply ih.
-Qed.
-
-Lemma nth_app_r :
-  ∀ A (l l' : list A) d n,
-    nth (#|l| + n) (l ++ l') d = nth n l' d.
-Proof.
-  intros A l l' d n.
-  induction l as [| a l ih] in l', n |- *.
-  - reflexivity.
-  - cbn. apply ih.
 Qed.
 
 (** Erasure commutes with substitution **)
