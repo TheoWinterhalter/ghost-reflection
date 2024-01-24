@@ -787,7 +787,161 @@ Proof.
         eapply cconv_trans. 1: constructor.
         (* WRONG ???? *) admit.
       * admit.
-  - admit.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md in hm. 2: eassumption. subst.
+    erewrite scoping_md in IHh1. 2: eassumption.
+    erewrite scoping_md in IHh2. 2: eassumption.
+    repeat (erewrite scoping_md ; [| eassumption]).
+    simpl isGhost. cbn match.
+    destruct_ifs. all: mode_eqs.
+    + cbn in IHh1.
+      destruct (isProp mx) eqn:e1. 1:{ mode_eqs. discriminate. }
+      econstructor.
+      * econstructor.
+        -- econstructor.
+          ++ eauto.
+          ++ constructor.
+          ++ constructor.
+            ** constructor. econstructor.
+              --- eapply erase_typing in h3.
+                  2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+                  eapply type_to_rev in h3.
+                  cbn in h3. rewrite e1 in h3. eassumption.
+              --- constructor.
+              --- eauto with cc_type.
+            ** constructor. econstructor.
+              --- eapply erase_typing in h4.
+                  2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+                  eapply type_to_rev in h4.
+                  cbn in h4. rewrite e1 in h4. eassumption.
+              --- constructor.
+              --- eauto with cc_type.
+        -- eapply erase_typing in h2.
+          2:{ erewrite scoping_md. 2: eassumption. assumption. }
+          eapply type_to_rev in h2. eassumption.
+      * erewrite erase_subst.
+        2:{ eapply sscoping_one. eauto. }
+        2: eapply sscoping_comp_one.
+        cbn. apply ccmeta_refl. f_equal.
+        eapply ext_cterm_scoped. 1: eapply erase_scoping_strong.
+        intros [] ex.
+        -- cbn. reflexivity.
+        -- cbn. unfold relv. unfold inscope in ex.
+          cbn - [mode_inb] in ex. rewrite nth_error_map in ex.
+          destruct nth_error eqn:e2. 2: discriminate.
+          cbn - [mode_inb] in ex.
+          destruct_ifs. 2: discriminate.
+          reflexivity.
+      * eapply typing_subst in h4.
+        2:{ eapply styping_one. 2: eassumption. assumption. }
+        cbn in h4. eapply erase_typing in h4.
+        2:{
+          erewrite md_subst.
+          2:{ eapply sscoping_one. eassumption. }
+          2: eapply sscoping_comp_one.
+          erewrite scoping_md. 2: eassumption. reflexivity.
+        }
+        eapply type_to_rev in h4. cbn in h4.
+        econstructor. econstructor.
+        -- eassumption.
+        -- constructor.
+        -- eauto with cc_type.
+    + cbn in IHh1.
+      revert IHh1.
+      ssimpl. erewrite ext_cterm_scoped with (θ := ids).
+      2: eapply erase_scoping_strong.
+      2:{
+        intros [] ex.
+        - cbn. discriminate.
+        - cbn. ssimpl. reflexivity.
+      }
+      ssimpl.
+      unfold nones. ssimpl.
+      erewrite ext_cterm_scoped with (θ := ids).
+      2: eapply erase_scoping_strong.
+      2:{
+        intros [] ex.
+        - cbn. discriminate.
+        - cbn. ssimpl. reflexivity.
+      }
+      ssimpl. intro ih.
+      econstructor.
+      * econstructor.
+        -- econstructor.
+          ++ eauto.
+          ++ constructor.
+          ++ constructor.
+            ** constructor. econstructor.
+              --- eapply erase_typing in h3.
+                  2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+                  eapply type_to_rev in h3.
+                  cbn in h3. eassumption.
+              --- constructor.
+              --- eauto with cc_type.
+            ** constructor. econstructor.
+              --- eapply erase_typing in h4.
+                  2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
+                  eapply type_to_rev in h4.
+                  cbn in h4. eassumption.
+              --- constructor.
+              --- eauto with cc_type.
+        -- eauto.
+      * cbn. erewrite erase_subst.
+        2:{ eapply sscoping_one. eauto. }
+        2: eapply sscoping_comp_one.
+        apply ccmeta_refl. f_equal.
+        eapply ext_cterm_scoped. 1: eapply erase_scoping_strong.
+        intros [] ex. 1: discriminate.
+        cbn. unfold relv. unfold inscope in ex.
+        cbn - [mode_inb] in ex. rewrite nth_error_map in ex.
+        destruct nth_error eqn:e2. 2: discriminate.
+        cbn - [mode_inb] in ex.
+        destruct_ifs. 2: discriminate.
+        reflexivity.
+      * eapply typing_subst in h4.
+        2:{ eapply styping_one. 2: eassumption. assumption. }
+        cbn in h4. eapply erase_typing in h4.
+        2:{
+          erewrite md_subst.
+          2:{ eapply sscoping_one. eassumption. }
+          2: eapply sscoping_comp_one.
+          erewrite scoping_md. 2: eassumption. reflexivity.
+        }
+        eapply type_to_rev in h4. cbn in h4.
+        econstructor. econstructor.
+        -- eassumption.
+        -- constructor.
+        -- eauto with cc_type.
+    + cbn in IHh1. econstructor.
+      * eauto.
+      * eapply cconv_trans. 1: constructor.
+        apply ccmeta_refl. f_equal.
+        unfold close. erewrite erase_subst.
+        2:{ eapply sscoping_one. eassumption. }
+        2: eapply sscoping_comp_one.
+        ssimpl. eapply ext_cterm_scoped. 1: eapply erase_scoping_strong.
+        intros [] ex.
+        -- cbn - [mode_inb] in ex. rewrite e in ex. discriminate.
+        -- cbn. unfold relv. unfold inscope in ex. unfold erase_sc in ex.
+          rewrite nth_error_map in ex. cbn - [mode_inb] in ex.
+          destruct nth_error eqn:e2. 2: discriminate.
+          cbn - [mode_inb] in ex.
+          destruct_ifs. 2: discriminate.
+          reflexivity.
+      * eapply typing_subst in h4.
+        2:{ eapply styping_one. 2: eassumption. assumption. }
+        cbn in h4. eapply erase_typing in h4.
+        2:{
+          erewrite md_subst.
+          2:{ eapply sscoping_one. eassumption. }
+          2: eapply sscoping_comp_one.
+          erewrite scoping_md. 2: eassumption. reflexivity.
+        }
+        eapply type_to_rev in h4. cbn in h4.
+        econstructor. econstructor.
+        -- eassumption.
+        -- constructor.
+        -- eauto with cc_type.
   - admit.
   - admit.
   - admit.
