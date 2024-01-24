@@ -573,6 +573,17 @@ Qed.
 
 Hint Resolve ctype_close : cc_type.
 
+Lemma cconv_close :
+  ∀ Γ u v,
+    None :: Γ ⊢ᶜ u ≡ v →
+    Γ ⊢ᶜ close u ≡ close v.
+Proof.
+  intros Γ u v h.
+  unfold close. eapply cconv_subst.
+  - eapply cstyping_one_none.
+  - assumption.
+Qed.
+
 (** We can also lift from Γ, None to Γ, Some (m, A) **)
 
 Definition nones := ctt .: cvar >> ren_cterm S.

@@ -468,17 +468,6 @@ Qed.
 
 (** Erasure preserves conversion **)
 
-Lemma cconv_close :
-  ∀ Γ u v,
-    None :: Γ ⊢ᶜ u ≡ v →
-    Γ ⊢ᶜ close u ≡ close v.
-Proof.
-  intros Γ u v h.
-  unfold close. eapply cconv_subst.
-  - eapply cstyping_one_none.
-  - assumption.
-Qed.
-
 Lemma erase_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
