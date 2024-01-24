@@ -47,16 +47,6 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ i j,
       Γ ⊢ᶜ cSort cProp i ≡ cSort cProp j
 
-| ccong_Lift :
-    ∀ i j A B,
-      Γ ⊢ᶜ A ≡ B →
-      Γ ⊢ᶜ cLift i j A ≡ cLift i j B
-
-| ccong_lift :
-    ∀ i j a b,
-      Γ ⊢ᶜ a ≡ b →
-      Γ ⊢ᶜ cLift i j a ≡ cLift i j b
-
 | ccong_Pi :
     ∀ mx A A' B B',
       Γ ⊢ᶜ A ≡ A' →
@@ -136,19 +126,6 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 | ctype_sort :
     ∀ m i,
       Γ ⊢ᶜ cSort m i : cSort cType (S i)
-
-| ctype_Lift :
-    ∀ i j A,
-      Γ ⊢ᶜ A : cSort cType i →
-      i < j →
-      Γ ⊢ᶜ cLift i j A : cSort cType j
-
-| ctype_lift :
-    ∀ i j a A,
-      Γ ⊢ᶜ a : A →
-      Γ ⊢ᶜ A : cSort cType i →
-      i < j →
-      Γ ⊢ᶜ clift i j a : cLift i j A
 
 | ctype_pi :
     ∀ i j m mx A B,
@@ -251,7 +228,7 @@ Inductive cwf : ccontext → Prop :=
 
 Create HintDb cc_type discriminated.
 
-Hint Resolve ctype_var ctype_sort ctype_Lift ctype_lift ctype_pi ctype_lam
-  ctype_app ctype_unit ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim
-  ctype_ty ctype_tyval ctype_tyerr ctype_El ctype_Err
+Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
+  ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty ctype_tyval
+  ctype_tyerr ctype_El ctype_Err
 : cc_type.
