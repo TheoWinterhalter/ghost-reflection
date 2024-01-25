@@ -40,6 +40,10 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
 | cconv_Err_err :
     Γ ⊢ᶜ cErr ctyerr ≡ ctt
 
+| cconv_J_refl :
+    ∀ A u P t,
+      Γ ⊢ᶜ tJ (trefl A u) P t ≡ t
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -73,21 +77,46 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ p ≡ p' →
       Γ ⊢ᶜ cbot_elim m A p ≡ cbot_elim m A' p'
 
-| cconv_tyval :
+| ccong_tyval :
     ∀ A A' a a',
       Γ ⊢ᶜ A ≡ A' →
       Γ ⊢ᶜ a ≡ a' →
       Γ ⊢ᶜ ctyval A a ≡ ctyval A' a'
 
-| cconv_El :
+| ccong_El :
     ∀ T T',
       Γ ⊢ᶜ T ≡ T' →
       Γ ⊢ᶜ cEl T ≡ cEl T'
 
-| cconv_Err :
+| ccong_Err :
     ∀ T T',
       Γ ⊢ᶜ T ≡ T' →
       Γ ⊢ᶜ cErr T ≡ cErr T'
+
+| ccong_squash :
+    ∀ A A',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ squash A ≡ squash A'
+
+| ccong_teq :
+    ∀ A A' u u' v v',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ u ≡ u' →
+      Γ ⊢ᶜ v ≡ v' →
+      Γ ⊢ᶜ teq A u v ≡ teq A' u' v'
+
+| ccong_trefl :
+    ∀ A A' u u',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ u ≡ u' →
+      Γ ⊢ᶜ trefl A u ≡ trefl A' u'
+
+| ccong_tJ :
+    ∀ e e' P P' t t',
+      Γ ⊢ᶜ e ≡ e' →
+      Γ ⊢ᶜ P ≡ P' →
+      Γ ⊢ᶜ t ≡ t' →
+      Γ ⊢ᶜ tJ e P t ≡ tJ e' P' t'
 
 (** Structural rules **)
 
@@ -190,6 +219,44 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ i T,
       Γ ⊢ᶜ T : cty i →
       Γ ⊢ᶜ cErr T : cEl T
+
+| ctype_squash :
+    ∀ i A,
+      Γ ⊢ᶜ A : cSort cType i →
+      Γ ⊢ᶜ squash A : cSort cProp 0
+
+| ctype_sq :
+    ∀ i A a,
+      Γ ⊢ᶜ a : A →
+      Γ ⊢ᶜ A : cSort cType i →
+      Γ ⊢ᶜ sq a : squash A
+
+| ctype_sq_elim :
+    ∀ A e P t,
+      Γ ⊢ᶜ e : squash A →
+      Γ ⊢ᶜ P : squash A ⇒[ cProp ] cSort cProp 0 →
+      Γ ⊢ᶜ t : cPi cType A (capp (S ⋅ P) (sq (cvar 0))) →
+      Γ ⊢ᶜ sq_elim e P t : capp P e
+
+| ctype_teq :
+    ∀ i A u v,
+      Γ ⊢ᶜ A : cSort cType i →
+      Γ ⊢ᶜ u : A →
+      Γ ⊢ᶜ v : A →
+      Γ ⊢ᶜ teq A u v : cSort cType i
+
+| type_trefl :
+    ∀ i A u,
+      Γ ⊢ᶜ A : cSort cType i →
+      Γ ⊢ᶜ u : A →
+      Γ ⊢ᶜ trefl A u : teq A u u
+
+| ctype_tJ :
+    ∀ m i A u v e P t,
+      Γ ⊢ᶜ e : teq A u v →
+      Γ ⊢ᶜ P : cPi cType A (cPi cType (teq (S ⋅ A) (S ⋅ u) (cvar 0)) (cSort m i)) →
+      Γ ⊢ᶜ t : capp (capp P u) (trefl A u) →
+      Γ ⊢ᶜ tJ e P t : capp (capp P v) e
 
 | ctype_conv :
     ∀ i m A B t,

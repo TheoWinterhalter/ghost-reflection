@@ -35,4 +35,4 @@ sq_elim : cterm -> cterm -> cterm -> cterm
 
 teq : cterm -> cterm -> cterm -> cterm
 trefl : cterm -> cterm -> cterm
-tJ : cterm -> cterm -> cterm
+tJ : cterm -> cterm -> cterm -> cterm

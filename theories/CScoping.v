@@ -84,6 +84,43 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
     ∀ T,
       ccscoping Γ T cType →
       ccscoping Γ (cErr T) cType
+
+| cscope_squash :
+    ∀ A,
+      ccscoping Γ A cType →
+      ccscoping Γ (squash A) cType
+
+| cscope_sq :
+    ∀ t,
+      ccscoping Γ t cType →
+      ccscoping Γ (sq t) cProp
+
+| cscope_sq_elim :
+    ∀ e P t,
+      ccscoping Γ e cProp →
+      ccscoping Γ P cType →
+      ccscoping Γ t cProp →
+      ccscoping Γ (sq_elim e P t) cProp
+
+| scope_teq :
+    ∀ A u v,
+      ccscoping Γ A cType →
+      ccscoping Γ u cType →
+      ccscoping Γ v cType →
+      ccscoping Γ (teq A u v) cType
+
+| scope_trefl :
+    ∀ A u,
+      ccscoping Γ A cType →
+      ccscoping Γ u cType →
+      ccscoping Γ (trefl A u) cType
+
+| scope_tJ :
+    ∀ e P t,
+      ccscoping Γ e cType →
+      ccscoping Γ P cType →
+      ccscoping Γ t cType →
+      ccscoping Γ (tJ e P t) cType
 .
 
 Notation ccxscoping Γ := (ccscoping (csc Γ)).

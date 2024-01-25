@@ -322,6 +322,13 @@ Proof.
   - asimpl. asimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    asimpl. eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    instantiate (1 := i). instantiate (1 := m).
+    asimpl. eauto.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_ren. all: eassumption.
@@ -519,6 +526,13 @@ Proof.
     asimpl. apply ext_cterm. intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    asimpl. eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    instantiate (1 := i). instantiate (1 := m).
+    asimpl. eauto.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.
