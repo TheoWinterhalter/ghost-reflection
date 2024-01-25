@@ -17,7 +17,7 @@ Inductive term : Type :=
   | revealP : term -> term -> term
   | gheq : term -> term -> term -> term
   | ghrefl : term -> term -> term
-  | ghcast : term -> term -> term -> term
+  | ghcast : term -> term -> term -> term -> term -> term -> term
   | bot : term
   | bot_elim : mode -> term -> term -> term.
 
@@ -109,14 +109,24 @@ exact (eq_trans (eq_trans eq_refl (ap (fun x => ghrefl x s1) H0))
          (ap (fun x => ghrefl t0 x) H1)).
 Qed.
 
-Lemma congr_ghcast {s0 : term} {s1 : term} {s2 : term} {t0 : term}
-  {t1 : term} {t2 : term} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
-  ghcast s0 s1 s2 = ghcast t0 t1 t2.
+Lemma congr_ghcast {s0 : term} {s1 : term} {s2 : term} {s3 : term}
+  {s4 : term} {s5 : term} {t0 : term} {t1 : term} {t2 : term} {t3 : term}
+  {t4 : term} {t5 : term} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2)
+  (H3 : s3 = t3) (H4 : s4 = t4) (H5 : s5 = t5) :
+  ghcast s0 s1 s2 s3 s4 s5 = ghcast t0 t1 t2 t3 t4 t5.
 Proof.
 exact (eq_trans
-         (eq_trans (eq_trans eq_refl (ap (fun x => ghcast x s1 s2) H0))
-            (ap (fun x => ghcast t0 x s2) H1))
-         (ap (fun x => ghcast t0 t1 x) H2)).
+         (eq_trans
+            (eq_trans
+               (eq_trans
+                  (eq_trans
+                     (eq_trans eq_refl
+                        (ap (fun x => ghcast x s1 s2 s3 s4 s5) H0))
+                     (ap (fun x => ghcast t0 x s2 s3 s4 s5) H1))
+                  (ap (fun x => ghcast t0 t1 x s3 s4 s5) H2))
+               (ap (fun x => ghcast t0 t1 t2 x s4 s5) H3))
+            (ap (fun x => ghcast t0 t1 t2 t3 x s5) H4))
+         (ap (fun x => ghcast t0 t1 t2 t3 t4 x) H5)).
 Qed.
 
 Lemma congr_bot : bot = bot.
@@ -159,9 +169,10 @@ Fixpoint ren_term (xi_term : nat -> nat) (s : term) {struct s} : term :=
   | gheq s0 s1 s2 =>
       gheq (ren_term xi_term s0) (ren_term xi_term s1) (ren_term xi_term s2)
   | ghrefl s0 s1 => ghrefl (ren_term xi_term s0) (ren_term xi_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       ghcast (ren_term xi_term s0) (ren_term xi_term s1)
-        (ren_term xi_term s2)
+        (ren_term xi_term s2) (ren_term xi_term s3) (ren_term xi_term s4)
+        (ren_term xi_term s5)
   | bot => bot
   | bot_elim s0 s1 s2 =>
       bot_elim s0 (ren_term xi_term s1) (ren_term xi_term s2)
@@ -172,7 +183,7 @@ Proof.
 exact (scons (var var_zero) (funcomp (ren_term shift) sigma)).
 Defined.
 
-Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} :
+Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} : 
 term :=
   match s with
   | var s0 => sigma_term s0
@@ -197,9 +208,10 @@ term :=
         (subst_term sigma_term s2)
   | ghrefl s0 s1 =>
       ghrefl (subst_term sigma_term s0) (subst_term sigma_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       ghcast (subst_term sigma_term s0) (subst_term sigma_term s1)
-        (subst_term sigma_term s2)
+        (subst_term sigma_term s2) (subst_term sigma_term s3)
+        (subst_term sigma_term s4) (subst_term sigma_term s5)
   | bot => bot
   | bot_elim s0 s1 s2 =>
       bot_elim s0 (subst_term sigma_term s1) (subst_term sigma_term s2)
@@ -248,10 +260,13 @@ subst_term sigma_term s = s :=
   | ghrefl s0 s1 =>
       congr_ghrefl (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
         (idSubst_term sigma_term Eq_term s2)
+        (idSubst_term sigma_term Eq_term s3)
+        (idSubst_term sigma_term Eq_term s4)
+        (idSubst_term sigma_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0) (idSubst_term sigma_term Eq_term s1)
@@ -304,10 +319,13 @@ ren_term xi_term s = ren_term zeta_term s :=
   | ghrefl s0 s1 =>
       congr_ghrefl (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
         (extRen_term xi_term zeta_term Eq_term s2)
+        (extRen_term xi_term zeta_term Eq_term s3)
+        (extRen_term xi_term zeta_term Eq_term s4)
+        (extRen_term xi_term zeta_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0) (extRen_term xi_term zeta_term Eq_term s1)
@@ -361,10 +379,13 @@ subst_term sigma_term s = subst_term tau_term s :=
   | ghrefl s0 s1 =>
       congr_ghrefl (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
         (ext_term sigma_term tau_term Eq_term s2)
+        (ext_term sigma_term tau_term Eq_term s3)
+        (ext_term sigma_term tau_term Eq_term s4)
+        (ext_term sigma_term tau_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0) (ext_term sigma_term tau_term Eq_term s1)
@@ -423,10 +444,13 @@ Fixpoint compRenRen_term (xi_term : nat -> nat) (zeta_term : nat -> nat)
   | ghrefl s0 s1 =>
       congr_ghrefl (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s2)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s3)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s4)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -491,10 +515,13 @@ subst_term tau_term (ren_term xi_term s) = subst_term theta_term s :=
   | ghrefl s0 s1 =>
       congr_ghrefl (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s2)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s3)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s4)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -575,11 +602,14 @@ ren_term zeta_term (subst_term sigma_term s) = subst_term theta_term s :=
       congr_ghrefl
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s2)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s3)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s4)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -662,11 +692,14 @@ subst_term tau_term (subst_term sigma_term s) = subst_term theta_term s :=
       congr_ghrefl
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s2)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s3)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s4)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -788,10 +821,13 @@ Fixpoint rinst_inst_term (xi_term : nat -> nat) (sigma_term : nat -> term)
   | ghrefl s0 s1 =>
       congr_ghrefl (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       congr_ghcast (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
         (rinst_inst_term xi_term sigma_term Eq_term s2)
+        (rinst_inst_term xi_term sigma_term Eq_term s3)
+        (rinst_inst_term xi_term sigma_term Eq_term s4)
+        (rinst_inst_term xi_term sigma_term Eq_term s5)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -939,7 +975,7 @@ Tactic Notation "auto_unfold" "in" "*" := repeat
                                            unfold VarInstance_term, Var, ids,
                                             Ren_term, Ren1, ren1,
                                             Up_term_term, Up_term, up_term,
-                                            Subst_term, Subst1, subst1
+                                            Subst_term, Subst1, subst1 
                                             in *.
 
 Ltac asimpl' := repeat (first
@@ -1021,9 +1057,13 @@ Fixpoint allfv_term (p_term : nat -> Prop) (s : term) {struct s} : Prop :=
         (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
   | ghrefl s0 s1 =>
       and (allfv_term p_term s0) (and (allfv_term p_term s1) True)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       and (allfv_term p_term s0)
-        (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
+        (and (allfv_term p_term s1)
+           (and (allfv_term p_term s2)
+              (and (allfv_term p_term s3)
+                 (and (allfv_term p_term s4)
+                    (and (allfv_term p_term s5) True)))))
   | bot => True
   | bot_elim s0 s1 s2 =>
       and True (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
@@ -1080,10 +1120,13 @@ Fixpoint allfvTriv_term (p_term : nat -> Prop) (H_term : forall x, p_term x)
   | ghrefl s0 s1 =>
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1) I)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1)
-           (conj (allfvTriv_term p_term H_term s2) I))
+           (conj (allfvTriv_term p_term H_term s2)
+              (conj (allfvTriv_term p_term H_term s3)
+                 (conj (allfvTriv_term p_term H_term s4)
+                    (conj (allfvTriv_term p_term H_term s5) I)))))
   | bot => I
   | bot_elim s0 s1 s2 =>
       conj I
@@ -1293,7 +1336,7 @@ allfv_term p_term s -> allfv_term q_term s :=
                              | conj HP _ => HP
                              end
               end) I)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       fun HP =>
       conj
         (allfvImpl_term p_term q_term H_term s0
@@ -1316,7 +1359,58 @@ allfv_term p_term s -> allfv_term q_term s :=
                                     | conj HP _ => HP
                                     end
                      end
-                 end) I))
+                 end)
+              (conj
+                 (allfvImpl_term p_term q_term H_term s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvImpl_term p_term q_term H_term s4
+                       match HP with
+                       | conj _ HP =>
+                           match HP with
+                           | conj _ HP =>
+                               match HP with
+                               | conj _ HP =>
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj HP _ => HP
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvImpl_term p_term q_term H_term s5
+                          match HP with
+                          | conj _ HP =>
+                              match HP with
+                              | conj _ HP =>
+                                  match HP with
+                                  | conj _ HP =>
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj HP _ => HP
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end) I)))))
   | bot => fun HP => I
   | bot_elim s0 s1 s2 =>
       fun HP =>
@@ -1539,7 +1633,7 @@ allfv_term (funcomp p_term xi_term) s :=
                             | conj H _ => H
                             end
               end) I)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       fun H =>
       conj
         (allfvRenL_term p_term xi_term s0 match H with
@@ -1561,7 +1655,57 @@ allfv_term (funcomp p_term xi_term) s :=
                                    | conj H _ => H
                                    end
                      end
-                 end) I))
+                 end)
+              (conj
+                 (allfvRenL_term p_term xi_term s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenL_term p_term xi_term s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenL_term p_term xi_term s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end) I)))))
   | bot => fun H => I
   | bot_elim s0 s1 s2 =>
       fun H =>
@@ -1785,7 +1929,7 @@ allfv_term p_term (ren_term xi_term s) :=
                             | conj H _ => H
                             end
               end) I)
-  | ghcast s0 s1 s2 =>
+  | ghcast s0 s1 s2 s3 s4 s5 =>
       fun H =>
       conj
         (allfvRenR_term p_term xi_term s0 match H with
@@ -1807,7 +1951,57 @@ allfv_term p_term (ren_term xi_term s) :=
                                    | conj H _ => H
                                    end
                      end
-                 end) I))
+                 end)
+              (conj
+                 (allfvRenR_term p_term xi_term s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenR_term p_term xi_term s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenR_term p_term xi_term s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end) I)))))
   | bot => fun H => I
   | bot_elim s0 s1 s2 =>
       fun H =>

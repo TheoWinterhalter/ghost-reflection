@@ -323,7 +323,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ e : gheq A u v →
       Γ ⊢ P : A ⇒[ i | usup m i / mGhost | mKind ] Sort m i →
       Γ ⊢ t : app P u →
-      Γ ⊢ ghcast e P t : app P v
+      Γ ⊢ ghcast A u v e P t : app P v
 
 | type_bot :
     Γ ⊢ bot : Sort mProp 0

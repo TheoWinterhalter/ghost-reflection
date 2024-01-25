@@ -21,7 +21,7 @@ Equations castrm : term → term := {
   ε| revealP t p | := revealP ε|t| ε|p| ;
   ε| gheq A u v | := gheq ε|A| ε|u| ε|v| ;
   ε| ghrefl A u | := ghrefl ε|A| ε|u| ;
-  ε| ghcast e P t | := ε|t| ;
+  ε| ghcast A u v e P t | := ε|t| ;
   ε| bot | := bot ;
   ε| bot_elim m A p | := bot_elim m ε|A| ε|p|
 }

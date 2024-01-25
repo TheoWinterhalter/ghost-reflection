@@ -88,7 +88,7 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ e mProp →
       scoping Γ P mKind →
       scoping Γ t m →
-      scoping Γ (ghcast e P t) m
+      scoping Γ (ghcast A u v e P t) m
 
 | scope_bot :
     scoping Γ bot mKind

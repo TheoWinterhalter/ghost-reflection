@@ -47,7 +47,7 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
     if isGhost (md Γ p)
     then capp ⟦ Γ | p ⟧v ⟦ Γ | t ⟧v
     else cDummy ;
-  ⟦ Γ | ghcast e P t ⟧v := ⟦ Γ | t ⟧v ;
+  ⟦ Γ | ghcast A u v e P t ⟧v := ⟦ Γ | t ⟧v ;
   ⟦ Γ | bot_elim m A p ⟧v := if isGhost m then ⟦ Γ | A ⟧∅ else cDummy ;
   ⟦ _ | _ ⟧v := cDummy
 }

@@ -1154,9 +1154,9 @@ Proof.
 Qed.
 
 Lemma type_ghcast_inv :
-  ∀ Γ e P t C,
-    Γ ⊢ ghcast e P t : C →
-    ∃ i m A u v,
+  ∀ Γ A u v e P t C,
+    Γ ⊢ ghcast A u v e P t : C →
+    ∃ i m,
       cscoping Γ A mKind ∧
       cscoping Γ P mKind ∧
       cscoping Γ u mGhost ∧
@@ -1172,12 +1172,12 @@ Lemma type_ghcast_inv :
       Γ ⊢ t : app P u ∧
       Γ ⊢ app P v ε≡ C.
 Proof.
-  intros Γ e P t C h.
+  intros Γ A u v e P t C h.
   dependent induction h.
-  - eexists _,_,_,_,_. intuition idtac. 4,9,10: eauto. all: eauto.
+  - eexists _,_. intuition idtac. all: eauto.
     apply conv_refl.
-  - destruct_exists IHh1. eexists _,_,_,_,_.
-    intuition idtac. 4,9,10: eauto. all: eauto.
+  - destruct_exists IHh1. eexists _,_.
+    intuition idtac. all: eauto.
     eapply conv_trans. all: eauto.
 Qed.
 

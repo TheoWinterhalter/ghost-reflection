@@ -122,15 +122,14 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
   ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v ⟦ Γ | v ⟧v) ;
   ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v) ;
-  ⟦ Γ | ghcast e P t ⟧p :=
+  ⟦ Γ | ghcast A u v e P t ⟧p :=
     let eP := ⟦ Γ | e ⟧p in
     let PP := ⟦ Γ | P ⟧p in
-    (* let uv := ⟦ Γ | u ⟧v in
+    let uv := ⟦ Γ | u ⟧v in
     let vv := ⟦ Γ | v ⟧v in
     let vP := ⟦ Γ | v ⟧p in
     let Ae := ⟦ Γ | A ⟧ε in
-    let AP := ⟦ Γ | A ⟧p in *)
-    (* Uh oh, we need more annotations to build the translation! *)
+    let AP := ⟦ Γ | A ⟧p in
     let tP := ⟦ Γ | t ⟧p in
     match md Γ t with
     | mKind => cDummy

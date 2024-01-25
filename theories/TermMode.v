@@ -33,7 +33,7 @@ Section Mode.
     | revealP t p => mKind
     | gheq A u v => mKind
     | ghrefl A u => mProp
-    | ghcast e P t => md Γ t
+    | ghcast A u v e P t => md Γ t
     | bot => mKind
     | bot_elim m A p => m
     end.
