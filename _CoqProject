@@ -24,3 +24,4 @@ theories/CCMetaTheory.v
 
 theories/Erasure.v
 theories/Revival.v
+theories/Param.v

@@ -75,6 +75,8 @@ Definition relv (Γ : scope) x :=
   | None => false
   end.
 
+(** Erasure translation **)
+
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧τ'" (at level 9, G, u at next level).
 Reserved Notation "⟦ G | u '⟧∅'" (at level 9, G, u at next level).

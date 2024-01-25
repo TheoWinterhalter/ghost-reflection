@@ -20,6 +20,35 @@ Definition mode_eqb (m m' : mode) : bool :=
 
 Definition isProp m := mode_eqb m mProp.
 Definition isGhost m := mode_eqb m mGhost.
+Definition isKind m := mode_eqb m mKind.
+
+Lemma isKind_eq :
+  ∀ m, isKind m = true → m = mKind.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isGhost_eq :
+  ∀ m, isGhost m = true → m = mGhost.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isProp_eq :
+  ∀ m, isProp m = true → m = mProp.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Ltac mode_eqs :=
+  repeat lazymatch goal with
+  | e : isKind ?m = true |- _ => eapply isKind_eq in e ; subst m
+  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; subst m
+  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; subst m
+  end.
 
 Definition mode_inb := inb mode_eqb.
 

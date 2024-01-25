@@ -19,6 +19,8 @@ Definition ghv (Γ : scope) x :=
   | None => false
   end.
 
+(** Revival translation **)
+
 Reserved Notation "⟦ G | u '⟧v'" (at level 9, G, u at next level).
 
 Equations revive_term (Γ : scope) (t : term) : cterm := {
@@ -107,26 +109,6 @@ Proof.
   destruct (isProp mx) eqn:e2. 1:{ destruct mx. all: discriminate. }
   reflexivity.
 Qed.
-
-Lemma isGhost_eq :
-  ∀ m, isGhost m = true → m = mGhost.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Lemma isProp_eq :
-  ∀ m, isProp m = true → m = mProp.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Ltac mode_eqs :=
-  repeat lazymatch goal with
-  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; subst m
-  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; subst m
-  end.
 
 Lemma typing_sub_rev :
   ∀ Γ,
