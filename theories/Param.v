@@ -44,6 +44,9 @@ Definition pProp i :=
 Definition pPi mp A B C :=
   cPi cType A (cPi mp (capp (S ⋅ B) (cvar 0)) C).
 
+Definition plam mp A B t :=
+  clam cType A (clam mp (capp (S ⋅ B) (cvar 0)) t).
+
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
     match nth_error Γ x with
@@ -91,6 +94,29 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
       else if isKind mx then pPi cType Ae Ap Bp
       else pPi cProp Ae Ap Bp
     end ;
-  ⟦ _ | _ ⟧p := cDummy
+  ⟦ Γ | lam mx A B t ⟧p :=
+    if isProp mx then clam cProp ⟦ Γ | A ⟧p (close ⟦ mx :: Γ | t ⟧p)
+    else if isKind mx then plam cType ⟦ Γ | A ⟧ε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
+    else plam cProp ⟦ Γ | A ⟧ε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
+  ⟦ Γ | app u v ⟧p :=
+    if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧ε) ⟦ Γ | v ⟧p
+    else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧v) ⟦ Γ | v ⟧p
+    else capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧p
+  ;
+  ⟦ Γ | Erased A ⟧p :=
+    if isKind (md Γ A) then ⟦ Γ | A ⟧p else cDummy ;
+  ⟦ Γ | hide t ⟧p :=
+    if isType (md Γ t) then ⟦ Γ | t ⟧p else cDummy ;
+  ⟦ Γ | reveal t P p ⟧p :=
+    if relm (md Γ p) then cDummy
+    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
+  ⟦ Γ | revealP t p ⟧p :=
+    if isKind (md Γ p) then cDummy
+    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
+  ⟦ Γ | gheq A u v ⟧p := cDummy ; (* TODO *)
+  ⟦ Γ | ghrefl A u ⟧p := cDummy ; (* TODO *)
+  ⟦ Γ | ghcast e P t ⟧p := cDummy ; (* TODO *)
+  ⟦ Γ | bot ⟧p := cDummy ; (* TODO *)
+  ⟦ Γ | bot_elim m A p ⟧p := cDummy (* TODO *)
 }
 where "⟦ G | u '⟧p'" := (param_term G u).

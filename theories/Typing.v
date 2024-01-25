@@ -20,10 +20,18 @@ Definition mode_eqb (m m' : mode) : bool :=
 
 Definition isProp m := mode_eqb m mProp.
 Definition isGhost m := mode_eqb m mGhost.
+Definition isType m := mode_eqb m mType.
 Definition isKind m := mode_eqb m mKind.
 
 Lemma isKind_eq :
   ∀ m, isKind m = true → m = mKind.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isType_eq :
+  ∀ m, isType m = true → m = mType.
 Proof.
   intros [] e. all: try discriminate.
   reflexivity.
