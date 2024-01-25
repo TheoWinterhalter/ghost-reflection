@@ -28,3 +28,11 @@ ctyval : cterm -> cterm -> cterm
 ctyerr : cterm
 cEl : cterm -> cterm
 cErr : cterm -> cterm
+
+squash : cterm -> cterm
+sq : cterm -> cterm
+sq_elim : cterm -> cterm -> cterm -> cterm
+
+teq : cterm -> cterm -> cterm -> cterm
+trefl : cterm -> cterm -> cterm
+tJ : cterm -> cterm -> cterm

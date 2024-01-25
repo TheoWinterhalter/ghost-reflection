@@ -21,7 +21,13 @@ Inductive cterm : Type :=
   | ctyval : cterm -> cterm -> cterm
   | ctyerr : cterm
   | cEl : cterm -> cterm
-  | cErr : cterm -> cterm.
+  | cErr : cterm -> cterm
+  | squash : cterm -> cterm
+  | sq : cterm -> cterm
+  | sq_elim : cterm -> cterm -> cterm -> cterm
+  | teq : cterm -> cterm -> cterm -> cterm
+  | trefl : cterm -> cterm -> cterm
+  | tJ : cterm -> cterm -> cterm.
 
 Lemma congr_cSort {s0 : cmode} {s1 : level} {t0 : cmode} {t1 : level}
   (H0 : s0 = t0) (H1 : s1 = t1) : cSort s0 s1 = cSort t0 t1.
@@ -117,6 +123,50 @@ Proof.
 exact (eq_trans eq_refl (ap (fun x => cErr x) H0)).
 Qed.
 
+Lemma congr_squash {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
+  squash s0 = squash t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => squash x) H0)).
+Qed.
+
+Lemma congr_sq {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) : sq s0 = sq t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => sq x) H0)).
+Qed.
+
+Lemma congr_sq_elim {s0 : cterm} {s1 : cterm} {s2 : cterm} {t0 : cterm}
+  {t1 : cterm} {t2 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  sq_elim s0 s1 s2 = sq_elim t0 t1 t2.
+Proof.
+exact (eq_trans
+         (eq_trans (eq_trans eq_refl (ap (fun x => sq_elim x s1 s2) H0))
+            (ap (fun x => sq_elim t0 x s2) H1))
+         (ap (fun x => sq_elim t0 t1 x) H2)).
+Qed.
+
+Lemma congr_teq {s0 : cterm} {s1 : cterm} {s2 : cterm} {t0 : cterm}
+  {t1 : cterm} {t2 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  teq s0 s1 s2 = teq t0 t1 t2.
+Proof.
+exact (eq_trans
+         (eq_trans (eq_trans eq_refl (ap (fun x => teq x s1 s2) H0))
+            (ap (fun x => teq t0 x s2) H1)) (ap (fun x => teq t0 t1 x) H2)).
+Qed.
+
+Lemma congr_trefl {s0 : cterm} {s1 : cterm} {t0 : cterm} {t1 : cterm}
+  (H0 : s0 = t0) (H1 : s1 = t1) : trefl s0 s1 = trefl t0 t1.
+Proof.
+exact (eq_trans (eq_trans eq_refl (ap (fun x => trefl x s1) H0))
+         (ap (fun x => trefl t0 x) H1)).
+Qed.
+
+Lemma congr_tJ {s0 : cterm} {s1 : cterm} {t0 : cterm} {t1 : cterm}
+  (H0 : s0 = t0) (H1 : s1 = t1) : tJ s0 s1 = tJ t0 t1.
+Proof.
+exact (eq_trans (eq_trans eq_refl (ap (fun x => tJ x s1) H0))
+         (ap (fun x => tJ t0 x) H1)).
+Qed.
+
 Lemma upRen_cterm_cterm (xi : nat -> nat) : nat -> nat.
 Proof.
 exact (up_ren xi).
@@ -145,6 +195,16 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   | ctyerr => ctyerr
   | cEl s0 => cEl (ren_cterm xi_cterm s0)
   | cErr s0 => cErr (ren_cterm xi_cterm s0)
+  | squash s0 => squash (ren_cterm xi_cterm s0)
+  | sq s0 => sq (ren_cterm xi_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      sq_elim (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2)
+  | teq s0 s1 s2 =>
+      teq (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2)
+  | trefl s0 s1 => trefl (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+  | tJ s0 s1 => tJ (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
   end.
 
 Lemma up_cterm_cterm (sigma : nat -> cterm) : nat -> cterm.
@@ -178,6 +238,17 @@ cterm :=
   | ctyerr => ctyerr
   | cEl s0 => cEl (subst_cterm sigma_cterm s0)
   | cErr s0 => cErr (subst_cterm sigma_cterm s0)
+  | squash s0 => squash (subst_cterm sigma_cterm s0)
+  | sq s0 => sq (subst_cterm sigma_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      sq_elim (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2)
+  | teq s0 s1 s2 =>
+      teq (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2)
+  | trefl s0 s1 =>
+      trefl (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+  | tJ s0 s1 => tJ (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
   end.
 
 Lemma upId_cterm_cterm (sigma : nat -> cterm)
@@ -223,6 +294,22 @@ subst_cterm sigma_cterm s = s :=
   | ctyerr => congr_ctyerr
   | cEl s0 => congr_cEl (idSubst_cterm sigma_cterm Eq_cterm s0)
   | cErr s0 => congr_cErr (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | squash s0 => congr_squash (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | sq s0 => congr_sq (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
   end.
 
 Lemma upExtRen_cterm_cterm (xi : nat -> nat) (zeta : nat -> nat)
@@ -270,6 +357,22 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
   | ctyerr => congr_ctyerr
   | cEl s0 => congr_cEl (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
   | cErr s0 => congr_cErr (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | squash s0 => congr_squash (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | sq s0 => congr_sq (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
   end.
 
 Lemma upExt_cterm_cterm (sigma : nat -> cterm) (tau : nat -> cterm)
@@ -316,6 +419,22 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
   | ctyerr => congr_ctyerr
   | cEl s0 => congr_cEl (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
   | cErr s0 => congr_cErr (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | squash s0 => congr_squash (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | sq s0 => congr_sq (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
   end.
 
 Lemma up_ren_ren_cterm_cterm (xi : nat -> nat) (zeta : nat -> nat)
@@ -369,6 +488,27 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
       congr_cEl (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
   | cErr s0 =>
       congr_cErr (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | squash s0 =>
+      congr_squash
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | sq s0 =>
+      congr_sq (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
   end.
 
 Lemma up_ren_subst_cterm_cterm (xi : nat -> nat) (tau : nat -> cterm)
@@ -429,6 +569,30 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
   | cErr s0 =>
       congr_cErr
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | squash s0 =>
+      congr_squash
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | sq s0 =>
+      congr_sq
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
   end.
 
 Lemma up_subst_ren_cterm_cterm (sigma : nat -> cterm)
@@ -500,6 +664,30 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
   | cErr s0 =>
       congr_cErr
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | squash s0 =>
+      congr_squash
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | sq s0 =>
+      congr_sq
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
   end.
 
 Lemma up_subst_subst_cterm_cterm (sigma : nat -> cterm)
@@ -573,6 +761,30 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
   | cErr s0 =>
       congr_cErr
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | squash s0 =>
+      congr_squash
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | sq s0 =>
+      congr_sq
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
   end.
 
 Lemma renRen_cterm (xi_cterm : nat -> nat) (zeta_cterm : nat -> nat)
@@ -694,6 +906,23 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
   | ctyerr => congr_ctyerr
   | cEl s0 => congr_cEl (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
   | cErr s0 => congr_cErr (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | squash s0 =>
+      congr_squash (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | sq s0 => congr_sq (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | sq_elim s0 s1 s2 =>
+      congr_sq_elim (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+  | teq s0 s1 s2 =>
+      congr_teq (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+  | trefl s0 s1 =>
+      congr_trefl (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+  | tJ s0 s1 =>
+      congr_tJ (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
   end.
 
 Lemma rinstInst'_cterm (xi_cterm : nat -> nat) (s : cterm) :
@@ -921,6 +1150,18 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
   | ctyerr => True
   | cEl s0 => and (allfv_cterm p_cterm s0) True
   | cErr s0 => and (allfv_cterm p_cterm s0) True
+  | squash s0 => and (allfv_cterm p_cterm s0) True
+  | sq s0 => and (allfv_cterm p_cterm s0) True
+  | sq_elim s0 s1 s2 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1) (and (allfv_cterm p_cterm s2) True))
+  | teq s0 s1 s2 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1) (and (allfv_cterm p_cterm s2) True))
+  | trefl s0 s1 =>
+      and (allfv_cterm p_cterm s0) (and (allfv_cterm p_cterm s1) True)
+  | tJ s0 s1 =>
+      and (allfv_cterm p_cterm s0) (and (allfv_cterm p_cterm s1) True)
   end.
 
 Lemma upAllfvTriv_cterm_cterm {p : nat -> Prop} (H : forall x, p x) :
@@ -969,6 +1210,22 @@ allfv_cterm p_cterm s :=
   | ctyerr => I
   | cEl s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
   | cErr s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | squash s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | sq s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | sq_elim s0 s1 s2 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2) I))
+  | teq s0 s1 s2 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2) I))
+  | trefl s0 s1 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1) I)
+  | tJ s0 s1 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1) I)
   end.
 
 Lemma upAllfvImpl_cterm_cterm {p : nat -> Prop} {q : nat -> Prop}
@@ -1100,6 +1357,96 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
            match HP with
            | conj HP _ => HP
            end) I
+  | squash s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | sq s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | sq_elim s0 s1 s2 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end) I))
+  | teq s0 s1 s2 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end) I))
+  | trefl s0 s1 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end) I)
+  | tJ s0 s1 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end) I)
   end.
 
 Lemma upAllfvRenL_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -1231,6 +1578,90 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
         (allfvRenL_cterm p_cterm xi_cterm s0 match H with
                                              | conj H _ => H
                                              end) I
+  | squash s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | sq s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | sq_elim s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | teq s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | trefl s0 s1 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end) I)
+  | tJ s0 s1 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end) I)
   end.
 
 Lemma upAllfvRenR_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -1362,6 +1793,90 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
         (allfvRenR_cterm p_cterm xi_cterm s0 match H with
                                              | conj H _ => H
                                              end) I
+  | squash s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | sq s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | sq_elim s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | teq s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | trefl s0 s1 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end) I)
+  | tJ s0 s1 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end) I)
   end.
 
 End Allfv.
