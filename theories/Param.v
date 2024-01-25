@@ -27,9 +27,11 @@ Set Equations Transparent.
 Definition vreg x := 2 * x.
 Definition vpar x := 2 * x + 1.
 
-(** Parametricity translation **)
+(** Parametricity translation
 
-Reserved Notation "⟦ G | u '⟧p'" (at level 9, G, u at next level).
+  We start by defining useful shorthands.
+
+**)
 
 Definition pKind i :=
   clam cType (cty i) (cEl (cvar 0) ⇒[ cType ] cSort cType i).
@@ -46,6 +48,11 @@ Definition pPi mp A B C :=
 
 Definition plam mp A B t :=
   clam cType A (clam mp (capp (S ⋅ B) (cvar 0)) t).
+
+Definition pcast eP :=
+  sq_elim eP. (* TODO *)
+
+Reserved Notation "⟦ G | u '⟧p'" (at level 9, G, u at next level).
 
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
@@ -115,7 +122,22 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
   ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v ⟦ Γ | v ⟧v) ;
   ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v) ;
-  ⟦ Γ | ghcast e P t ⟧p := cDummy ; (* TODO *)
+  ⟦ Γ | ghcast e P t ⟧p :=
+    let eP := ⟦ Γ | e ⟧p in
+    let PP := ⟦ Γ | P ⟧p in
+    (* let uv := ⟦ Γ | u ⟧v in
+    let vv := ⟦ Γ | v ⟧v in
+    let vP := ⟦ Γ | v ⟧p in
+    let Ae := ⟦ Γ | A ⟧ε in
+    let AP := ⟦ Γ | A ⟧p in *)
+    (* Uh oh, we need more annotations to build the translation! *)
+    let tP := ⟦ Γ | t ⟧p in
+    match md Γ t with
+    | mKind => cDummy
+    | mType => cDummy (* TODO *)
+    | mGhost => cDummy (* TODO *)
+    | mProp => cDummy (* TODO *)
+    end ;
   ⟦ Γ | bot ⟧p := cbot ;
   ⟦ Γ | bot_elim m A p ⟧p :=
     if isProp m then cbot_elim cProp ⟦ Γ | A ⟧p ⟦ Γ | p ⟧p
