@@ -113,10 +113,13 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | revealP t p ⟧p :=
     if isKind (md Γ p) then cDummy
     else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
-  ⟦ Γ | gheq A u v ⟧p := cDummy ; (* TODO *)
-  ⟦ Γ | ghrefl A u ⟧p := cDummy ; (* TODO *)
+  ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v ⟦ Γ | v ⟧v) ;
+  ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v) ;
   ⟦ Γ | ghcast e P t ⟧p := cDummy ; (* TODO *)
-  ⟦ Γ | bot ⟧p := cDummy ; (* TODO *)
-  ⟦ Γ | bot_elim m A p ⟧p := cDummy (* TODO *)
+  ⟦ Γ | bot ⟧p := cbot ;
+  ⟦ Γ | bot_elim m A p ⟧p :=
+    if isProp m then cbot_elim cProp ⟦ Γ | A ⟧p ⟦ Γ | p ⟧p
+    else if isKind m then cbot_elim cType (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧∅) ⟦ Γ | p ⟧p
+    else cbot_elim cProp (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧∅) ⟦ Γ | p ⟧p
 }
 where "⟦ G | u '⟧p'" := (param_term G u).
