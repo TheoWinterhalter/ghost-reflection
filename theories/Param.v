@@ -366,15 +366,29 @@ Qed.
 
 (** Parametricity preserves scoping **)
 
+Lemma scoping_epm_lift :
+  ∀ Γ Γ' t,
+    ccscoping (erase_sc Γ) t cType →
+    Γ' = param_sc Γ →
+    ccscoping Γ' (epm_lift t) cType.
+Proof.
+  intros Γ Γ' t h ->.
+  eapply cscoping_ren.
+  - eapply scoping_er_sub_param.
+  - assumption.
+Qed.
+
+Hint Resolve scoping_epm_lift | 100 : cc_scope.
+
 Lemma pscoping_erase_term :
   ∀ Γ Γ' t,
     Γ' = param_sc Γ →
     ccscoping Γ' ⟦ Γ | t ⟧pε cType.
 Proof.
   intros Γ Γ' t ->.
-  eapply cscoping_ren.
-  - eapply scoping_er_sub_param.
+  eapply scoping_epm_lift.
   - eapply erase_scoping_strong.
+  - reflexivity.
 Qed.
 
 Hint Resolve pscoping_erase_term : cc_scope.
@@ -385,9 +399,9 @@ Lemma pscoping_erase_type :
     ccscoping Γ' ⟦ Γ | t ⟧pτ cType.
 Proof.
   intros Γ Γ' t ->.
-  eapply cscoping_ren.
-  - eapply scoping_er_sub_param.
+  eapply scoping_epm_lift.
   - constructor. eapply erase_scoping_strong.
+  - reflexivity.
 Qed.
 
 Hint Resolve pscoping_erase_type : cc_scope.
@@ -398,12 +412,26 @@ Lemma pscoping_erase_err :
     ccscoping Γ' ⟦ Γ | t ⟧p∅ cType.
 Proof.
   intros Γ Γ' t ->.
-  eapply cscoping_ren.
-  - eapply scoping_er_sub_param.
+  eapply scoping_epm_lift.
   - constructor. eapply erase_scoping_strong.
+  - reflexivity.
 Qed.
 
 Hint Resolve pscoping_erase_err : cc_scope.
+
+Lemma scoping_rpm_lift :
+  ∀ Γ Γ' t,
+    ccscoping (revive_sc Γ) t cType →
+    Γ' = param_sc Γ →
+    ccscoping Γ' (rpm_lift t) cType.
+Proof.
+  intros Γ Γ' t h ->.
+  eapply cscoping_ren.
+  - eapply scoping_rev_sub_param.
+  - assumption.
+Qed.
+
+Hint Resolve scoping_rpm_lift | 100 : cc_scope.
 
 Lemma pscoping_revive :
   ∀ Γ Γ' t,
@@ -412,9 +440,9 @@ Lemma pscoping_revive :
     ccscoping Γ' ⟦ Γ | t ⟧pv cType.
 Proof.
   intros Γ Γ' t h ->.
-  eapply cscoping_ren.
-  - eapply scoping_rev_sub_param.
+  eapply scoping_rpm_lift.
   - eapply revive_scoping. 2: eassumption. reflexivity.
+  - reflexivity.
 Qed.
 
 Hint Resolve pscoping_revive : cc_scope.
@@ -460,9 +488,8 @@ Proof.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
-      1: admit.
-      (* epm_lift is still here, so maybe I should have hints, in case this
-        is what I ended up with.
+      1-4: admit.
+      (* epm_lift is now gone, but we have something worse than before…
       *)
       eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
     + admit.
