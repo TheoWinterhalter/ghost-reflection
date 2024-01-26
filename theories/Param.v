@@ -252,3 +252,40 @@ Proof.
   destruct_ifs. 1: discriminate.
   assumption.
 Qed.
+
+(** Parametricity preserves scoping **)
+
+Lemma param_scoping :
+  ∀ Γ t m,
+    scoping Γ t m →
+    ccscoping (param_sc Γ) ⟦ Γ | t ⟧p (if isKind m then cType else cProp).
+Proof.
+  intros Γ t m h.
+  induction h.
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
+  - cbn. rewrite H. destruct_if e.
+    + mode_eqs. cbn. constructor.
+      rewrite nth_error_param_vreg. rewrite H. reflexivity.
+    + constructor. rewrite nth_error_param_vpar. rewrite H.
+      cbn. rewrite e. destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb].
+    destruct m, mx. all: cbn in *. all: try solve [ eauto 12 with cc_scope ].
+    + unshelve eauto 12 with cc_scope shelvedb ; shelve_unifiable.
+      (* Need more hints, to use also erase_scoping and prove something for pPi *)
+      all: admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+Abort.
