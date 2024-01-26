@@ -36,17 +36,23 @@ Definition vpar x := x * 2.
 
 **)
 
+Definition epm_lift (t : cterm) :=
+  vreg ⋅ t.
+
+Definition rpm_lift (t : cterm) :=
+  vreg ⋅ t.
+
 Notation "⟦ G | u '⟧pε'":=
-  (vreg ⋅ ⟦ G | u ⟧ε) (at level 9, G, u at next level).
+  (epm_lift ⟦ G | u ⟧ε) (at level 9, G, u at next level).
 
 Notation "⟦ G | u '⟧pτ'":=
-  (vreg ⋅ ⟦ G | u ⟧τ) (at level 9, G, u at next level).
+  (epm_lift ⟦ G | u ⟧τ) (at level 9, G, u at next level).
 
 Notation "⟦ G | u '⟧p∅'":=
-  (vreg ⋅ ⟦ G | u ⟧∅) (at level 9, G, u at next level).
+  (epm_lift ⟦ G | u ⟧∅) (at level 9, G, u at next level).
 
 Notation "⟦ G | u '⟧pv'":=
-  (vreg ⋅ ⟦ G | u ⟧v) (at level 9, G, u at next level).
+  (rpm_lift ⟦ G | u ⟧v) (at level 9, G, u at next level).
 
 (** Parametricity translation
 
@@ -451,8 +457,8 @@ Proof.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
-      (* TODO!!!! Make the lifting opaque first, so that it triggers
-        the proper rule instead of renaming.
+      (* Somehow, epm_lift and rpm_lift are still unfolded, maybe they should
+      be opaque?
       *)
       (* Now it applies the lifting lemma too eagerly, and we end up with
         revive_sc vs erasure.
@@ -462,7 +468,7 @@ Proof.
         Maybe with some pε, p∅, pτ, pv notations?
       *)
       (* Need more hints, to use also erase_scopingw *)
-      (* all: admit. *)
+      all: admit.
     + admit.
     + admit.
     + admit.
