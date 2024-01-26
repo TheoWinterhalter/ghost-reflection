@@ -205,6 +205,8 @@ Fixpoint param_sc (Γ : scope) : cscope :=
     else Some cProp :: Some cType :: param_sc Γ
   end.
 
+(** Scope lookups **)
+
 Lemma nth_error_param_vreg :
   ∀ Γ x,
     nth_error (param_sc Γ) (vreg x) =
@@ -217,6 +219,23 @@ Proof.
     + cbn. destruct_ifs. all: reflexivity.
     + unfold vreg. simpl "*". remember (S (x * 2)) as y eqn:e.
       cbn. subst. destruct_ifs. all: eapply ih.
+Qed.
+
+Lemma nth_error_param_vpar :
+  ∀ Γ x,
+    nth_error (param_sc Γ) (vpar x) =
+    option_map (λ m,
+      if isProp m then None
+      else if isKind m then Some cType
+      else Some cProp
+    ) (nth_error Γ x).
+Proof.
+  intros Γ x.
+  induction Γ as [| m Γ ih] in x |- *.
+  - destruct x. all: reflexivity.
+  - destruct x.
+    + cbn. destruct_ifs. all: reflexivity.
+    + cbn. destruct_ifs. all: eapply ih.
 Qed.
 
 (** ⟦ Γ ⟧v is a sub-context of ⟦ Γ ⟧p **)
