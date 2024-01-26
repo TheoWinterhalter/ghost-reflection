@@ -360,7 +360,61 @@ Qed.
 
 (** Parametricity preserves scoping **)
 
-Hint Resolve erase_scoping : cc_scope.
+Lemma pscoping_erase_term :
+  ∀ Γ Γ' t,
+    Γ' = param_sc Γ →
+    ccscoping Γ' ⟦ Γ | t ⟧pε cType.
+Proof.
+  intros Γ Γ' t ->.
+  eapply cscoping_ren.
+  - eapply scoping_er_sub_param.
+  - eapply erase_scoping_strong.
+Qed.
+
+Hint Resolve pscoping_erase_term : cc_scope.
+
+Lemma pscoping_erase_type :
+  ∀ Γ Γ' t,
+    Γ' = param_sc Γ →
+    ccscoping Γ' ⟦ Γ | t ⟧pτ cType.
+Proof.
+  intros Γ Γ' t ->.
+  eapply cscoping_ren.
+  - eapply scoping_er_sub_param.
+  - constructor. eapply erase_scoping_strong.
+Qed.
+
+Hint Resolve pscoping_erase_type : cc_scope.
+
+Lemma pscoping_erase_err :
+  ∀ Γ Γ' t,
+    Γ' = param_sc Γ →
+    ccscoping Γ' ⟦ Γ | t ⟧p∅ cType.
+Proof.
+  intros Γ Γ' t ->.
+  eapply cscoping_ren.
+  - eapply scoping_er_sub_param.
+  - constructor. eapply erase_scoping_strong.
+Qed.
+
+Hint Resolve pscoping_erase_err : cc_scope.
+
+Lemma pscoping_revive :
+  ∀ Γ Γ' t,
+    scoping Γ t mGhost →
+    Γ' = param_sc Γ →
+    ccscoping Γ' ⟦ Γ | t ⟧pv cType.
+Proof.
+  intros Γ Γ' t h ->.
+  eapply cscoping_ren.
+  - eapply scoping_rev_sub_param.
+  - eapply revive_scoping. 2: eassumption. reflexivity.
+Qed.
+
+Hint Resolve pscoping_revive : cc_scope.
+
+Hint Resolve erase_scoping_strong : cc_scope.
+Hint Resolve revive_scoping : cc_scope.
 Hint Resolve cscoping_ren : cc_scope.
 Hint Resolve crscoping_S : cc_scope.
 
@@ -397,6 +451,9 @@ Proof.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
+      (* TODO!!!! Make the lifting opaque first, so that it triggers
+        the proper rule instead of renaming.
+      *)
       (* Now it applies the lifting lemma too eagerly, and we end up with
         revive_sc vs erasure.
       *)
