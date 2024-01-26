@@ -27,6 +27,27 @@ Set Equations Transparent.
 Definition vreg x := S (x * 2).
 Definition vpar x := x * 2.
 
+(** Lifting erasure and revival
+
+  Because erasure and revival produce terms in ⟦ Γ ⟧ε and ⟦ Γ ⟧v respectively
+  when we expect ⟦ Γ ⟧p, we need to do some lifting. Thankfully this lifting
+  can be done simply by using vreg as a renaming.
+  We define handy notations to make it all work.
+
+**)
+
+Notation "⟦ G | u '⟧pε'":=
+  (vreg ⋅ ⟦ G | u ⟧ε) (at level 9, G, u at next level).
+
+Notation "⟦ G | u '⟧pτ'":=
+  (vreg ⋅ ⟦ G | u ⟧τ) (at level 9, G, u at next level).
+
+Notation "⟦ G | u '⟧p∅'":=
+  (vreg ⋅ ⟦ G | u ⟧∅) (at level 9, G, u at next level).
+
+Notation "⟦ G | u '⟧pv'":=
+  (vreg ⋅ ⟦ G | u ⟧v) (at level 9, G, u at next level).
+
 (** Parametricity translation
 
   We start by defining useful shorthands.
@@ -100,8 +121,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else if isProp m then pProp i
     else pType i ;
   ⟦ Γ | Pi i j m mx A B ⟧p :=
-    let Te := ⟦ Γ | Pi i j m mx A B ⟧ε in
-    let Ae := ⟦ Γ | A ⟧ε in
+    let Te := ⟦ Γ | Pi i j m mx A B ⟧pε in
+    let Ae := ⟦ Γ | A ⟧pε in
     let Ap := ⟦ Γ | A ⟧p in
     let Bp := ⟦ mx :: Γ | B ⟧p in
     let k := umax m i j in
@@ -140,7 +161,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else if isKind mx then plam cType ⟦ Γ | A ⟧ε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
     else plam cProp ⟦ Γ | A ⟧ε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
   ⟦ Γ | app u v ⟧p :=
-    if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧ε) ⟦ Γ | v ⟧p
+    if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pε) ⟦ Γ | v ⟧p
     else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧v) ⟦ Γ | v ⟧p
     else capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧p
   ;
@@ -150,22 +171,22 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     if isType (md Γ t) then ⟦ Γ | t ⟧p else cDummy ;
   ⟦ Γ | reveal t P p ⟧p :=
     if relm (md Γ p) then cDummy
-    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
+    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p ;
   ⟦ Γ | revealP t p ⟧p :=
     if isKind (md Γ p) then cDummy
-    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧v) ⟦ Γ | t ⟧p ;
-  ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v ⟦ Γ | v ⟧v) ;
-  ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧ε ⟦ Γ | u ⟧v) ;
+    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p ;
+  ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv ⟦ Γ | v ⟧pv) ;
+  ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv) ;
   ⟦ Γ | ghcast A u v e P t ⟧p :=
     let eP := ⟦ Γ | e ⟧p in
     let PP := ⟦ Γ | P ⟧p in
-    let uv := ⟦ Γ | u ⟧v in
-    let vv := ⟦ Γ | v ⟧v in
+    let uv := ⟦ Γ | u ⟧pv in
+    let vv := ⟦ Γ | v ⟧pv in
     let vP := ⟦ Γ | v ⟧p in
-    let Ae := ⟦ Γ | A ⟧ε in
+    let Ae := ⟦ Γ | A ⟧pε in
     let AP := ⟦ Γ | A ⟧p in
-    let te := ⟦ Γ | t ⟧ε in
-    let tv := ⟦ Γ | t ⟧v in
+    let te := ⟦ Γ | t ⟧pε in
+    let tv := ⟦ Γ | t ⟧pv in
     let tP := ⟦ Γ | t ⟧p in
     match md Γ t with
     | mKind => tP (* Not cDummy for technical reasons *)
@@ -176,8 +197,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | bot ⟧p := cbot ;
   ⟦ Γ | bot_elim m A p ⟧p :=
     if isProp m then cbot_elim cProp ⟦ Γ | A ⟧p ⟦ Γ | p ⟧p
-    else if isKind m then cbot_elim cType (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧∅) ⟦ Γ | p ⟧p
-    else cbot_elim cProp (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧∅) ⟦ Γ | p ⟧p
+    else if isKind m then cbot_elim cType (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧p∅) ⟦ Γ | p ⟧p
+    else cbot_elim cProp (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧p∅) ⟦ Γ | p ⟧p
 }
 where "⟦ G | u '⟧p'" := (param_term G u).
 
@@ -189,10 +210,10 @@ Equations param_ctx (Γ : context) : ccontext := {
     if isProp mx then None :: Some (cProp, ⟦ sc Γ | A ⟧p) :: ⟦ Γ ⟧p
     else if isKind mx then
       Some (cType, capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)) ::
-      Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧p
+      Some (cType, ⟦ sc Γ | A ⟧pτ) :: ⟦ Γ ⟧p
     else
       Some (cProp, capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)) ::
-      Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧p
+      Some (cType, ⟦ sc Γ | A ⟧pτ) :: ⟦ Γ ⟧p
 }
 where "⟦ G '⟧p'" := (param_ctx G).
 
@@ -258,7 +279,7 @@ Lemma typing_rev_sub_param :
     crtyping ⟦ Γ ⟧p vreg ⟦ Γ ⟧v.
 Proof.
   intros Γ. intros x m A e.
-  assert (h : nth_error ⟦ Γ ⟧p (vreg x) = Some (Some (m, A))).
+  assert (h : nth_error ⟦ Γ ⟧p (vreg x) = Some (Some (m, vreg ⋅ A))).
   { induction Γ as [| [my B] Γ ih] in x, m, A, e |- *.
     1:{ destruct x. all: discriminate. }
     destruct x.
@@ -277,10 +298,9 @@ Proof.
   }
   eexists. split.
   - eassumption.
-  - ssimpl. eapply extRen_cterm. intro. ssimpl. unfold vreg.
-    cbn.
-    (* Of course, this subgoal is wrong, but is the whole thing wrong too? *)
-Abort.
+  - ssimpl. unfold vreg. cbn. ssimpl. eapply extRen_cterm.
+    intro. ssimpl. lia.
+Qed.
 
 (** Parametricity preserves scoping **)
 
@@ -320,7 +340,7 @@ Proof.
     destruct m, mx. all: cbn in *. all: try solve [ eauto 50 with cc_scope ].
     + unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
-      6:{ eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope. }
+      (* 6:{ eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope. } *)
       (* TODO, erasure and revival should be in the correct scope!
         Maybe with some pε, p∅, pτ, pv notations?
       *)
