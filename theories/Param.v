@@ -255,6 +255,24 @@ Qed.
 
 (** Parametricity preserves scoping **)
 
+Hint Resolve erase_scoping : cc_scope.
+Hint Resolve cscoping_ren : cc_scope.
+Hint Resolve crscoping_S : cc_scope.
+
+Lemma pPi_scoping :
+  ∀ Γ mx m A B C,
+    ccscoping Γ A cType →
+    ccscoping Γ B mx →
+    ccscoping (Some mx :: Some cType :: Γ) C m →
+    ccscoping Γ (pPi mx A B C) m.
+Proof.
+  intros Γ mx m A B C hA hB hC.
+  unshelve eauto with cc_scope shelvedb ; shelve_unifiable.
+  constructor. reflexivity.
+Qed.
+
+Hint Resolve pPi_scoping : cc_scope.
+
 Lemma param_scoping :
   ∀ Γ t m,
     scoping Γ t m →
@@ -262,17 +280,22 @@ Lemma param_scoping :
 Proof.
   intros Γ t m h.
   induction h.
-  all: try solve [ cbn ; eauto with cc_scope ].
-  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
+  all: try solve [ cbn ; eauto 50 with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto 50 with cc_scope ].
   - cbn. rewrite H. destruct_if e.
     + mode_eqs. cbn. constructor.
       rewrite nth_error_param_vreg. rewrite H. reflexivity.
     + constructor. rewrite nth_error_param_vpar. rewrite H.
       cbn. rewrite e. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
-    destruct m, mx. all: cbn in *. all: try solve [ eauto 12 with cc_scope ].
-    + unshelve eauto 12 with cc_scope shelvedb ; shelve_unifiable.
-      (* Need more hints, to use also erase_scoping and prove something for pPi *)
+    destruct m, mx. all: cbn in *. all: try solve [ eauto 50 with cc_scope ].
+    + unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      6:{ eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope. }
+      (* TODO, erasure and revival should be in the correct scope!
+        Maybe with some pε, p∅, pτ, pv notations?
+      *)
+      (* Need more hints, to use also erase_scopingw *)
       all: admit.
     + admit.
     + admit.
