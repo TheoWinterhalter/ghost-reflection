@@ -378,7 +378,7 @@ Proof.
   - assumption.
 Qed.
 
-Hint Resolve scoping_epm_lift | 100 : cc_scope.
+(* Hint Resolve scoping_epm_lift | 1000 : cc_scope. *)
 
 Lemma pscoping_erase_term :
   ∀ Γ Γ' t,
@@ -431,7 +431,7 @@ Proof.
   - assumption.
 Qed.
 
-Hint Resolve scoping_rpm_lift | 100 : cc_scope.
+(* Hint Resolve scoping_rpm_lift | 1000 : cc_scope. *)
 
 Lemma pscoping_revive :
   ∀ Γ Γ' t,
@@ -488,7 +488,13 @@ Proof.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
-      1-4: admit.
+      1:{
+        eapply scoping_epm_lift.
+        all: unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        3: reflexivity.
+        (* TODO Need smarter erase_scoping rule which asks for equality too *)
+        all: admit.
+      }
       (* epm_lift is now gone, but we have something worse than before…
       *)
       eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
