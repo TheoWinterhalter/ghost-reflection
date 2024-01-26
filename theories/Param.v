@@ -19,13 +19,13 @@ Set Equations Transparent.
   x : A in the context is translated to x : A, xP : AP when A is not a Prop.
   When x : P : Prop then x is translated to only one variable. To keep the
   context regular we will still make use of our flexible contexts.
-  Variables are then either even and regular or odd and correspond to
+  Variables are then either odd and regular or even and correspond to
   parametricity.
 
 **)
 
-Definition vreg x := 2 * x.
-Definition vpar x := 2 * x + 1.
+Definition vreg x := S (x * 2).
+Definition vpar x := x * 2.
 
 (** Parametricity translation
 
@@ -204,3 +204,32 @@ Fixpoint param_sc (Γ : scope) : cscope :=
     else if isKind m then Some cType :: Some cType :: param_sc Γ
     else Some cProp :: Some cType :: param_sc Γ
   end.
+
+Lemma nth_error_param_vreg :
+  ∀ Γ x,
+    nth_error (param_sc Γ) (vreg x) =
+    option_map (λ m, if isProp m then Some cProp else Some cType) (nth_error Γ x).
+Proof.
+  intros Γ x.
+  induction Γ as [| m Γ ih] in x |- *.
+  - destruct x. all: reflexivity.
+  - destruct x.
+    + cbn. destruct_ifs. all: reflexivity.
+    + unfold vreg. simpl "*". remember (S (x * 2)) as y eqn:e.
+      cbn. subst. destruct_ifs. all: eapply ih.
+Qed.
+
+(** ⟦ Γ ⟧v is a sub-context of ⟦ Γ ⟧p **)
+
+Lemma scoping_rev_sub_param :
+  ∀ Γ,
+    crscoping (param_sc Γ) vreg (revive_sc Γ).
+Proof.
+  intros Γ. intros x m e.
+  unfold revive_sc in e. rewrite nth_error_map in e.
+  rewrite nth_error_param_vreg.
+  destruct (nth_error Γ x) as [mx|] eqn:ex. 2: discriminate.
+  cbn - [mode_inb] in e. cbn - [mode_inb].
+  destruct_ifs. 1: discriminate.
+  assumption.
+Qed.
