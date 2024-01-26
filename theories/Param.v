@@ -385,8 +385,8 @@ Lemma param_scoping :
 Proof.
   intros Γ t m h.
   induction h.
-  all: try solve [ cbn ; eauto 50 with cc_scope ].
-  all: try solve [ cbn ; destruct_ifs ; eauto 50 with cc_scope ].
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
   - cbn. rewrite H. destruct_if e.
     + mode_eqs. cbn. constructor.
       rewrite nth_error_param_vreg. rewrite H. reflexivity.
