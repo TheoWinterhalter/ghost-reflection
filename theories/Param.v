@@ -274,6 +274,8 @@ Proof.
   assumption.
 Qed.
 
+Hint Resolve scoping_rev_sub_param : cc_scope.
+
 Lemma typing_rev_sub_param :
   ∀ Γ,
     crtyping ⟦ Γ ⟧p vreg ⟦ Γ ⟧v.
@@ -337,18 +339,13 @@ Proof.
     + constructor. rewrite nth_error_param_vpar. rewrite H.
       cbn. rewrite e. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
-    destruct m, mx. all: cbn in *. all: try solve [ eauto 50 with cc_scope ].
-    + unshelve auto 50 with cc_scope shelvedb ; shelve_unifiable.
-      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-        all: admit. (* False, why??? *)
-      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-        all: admit.
-      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-        2,3: reflexivity.
-        eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
-
-      (* all: try reflexivity. *)
+    destruct m, mx. all: cbn in *.
+    all: try solve [ typeclasses eauto 50 with cc_scope ].
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      (* Now it applies the lifting lemma too eagerly, and we end up with
+        revive_sc vs erasure.
+      *)
       (* 6:{ eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope. } *)
       (* TODO, erasure and revival should be in the correct scope!
         Maybe with some pε, p∅, pτ, pv notations?
