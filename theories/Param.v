@@ -304,6 +304,60 @@ Proof.
     intro. ssimpl. lia.
 Qed.
 
+(** ⟦ Γ ⟧ε is a sub-context of ⟦ Γ ⟧p **)
+
+Lemma crscoping_comp :
+  ∀ Γ Δ Ξ ρ δ,
+    crscoping Γ ρ Δ →
+    crscoping Δ δ Ξ →
+    crscoping Γ (δ >> ρ) Ξ.
+Proof.
+  intros Γ Δ Ξ ρ δ hρ hδ.
+  intros x m e.
+  unfold_funcomp. eapply hρ. eapply hδ. assumption.
+Qed.
+
+Lemma scoping_er_sub_param :
+  ∀ Γ,
+    crscoping (param_sc Γ) vreg (erase_sc Γ).
+Proof.
+  intros Γ.
+  pose proof (scoping_sub_rev Γ) as lem.
+  eapply crscoping_comp in lem. 2: eapply scoping_rev_sub_param.
+  eapply crscoping_morphism. all: eauto.
+  intros x. reflexivity.
+Qed.
+
+Hint Resolve scoping_er_sub_param : cc_scope.
+
+Lemma crtyping_comp :
+  ∀ Γ Δ Ξ ρ δ,
+    crtyping Γ ρ Δ →
+    crtyping Δ δ Ξ →
+    crtyping Γ (δ >> ρ) Ξ.
+Proof.
+  intros Γ Δ Ξ ρ δ hρ hδ.
+  intros x m A e.
+  eapply hδ in e as [B [e eB]].
+  eapply hρ in e as [C [e eC]].
+  eexists. split.
+  - eassumption.
+  - eapply (f_equal (λ A, ρ ⋅ A)) in eB.
+    revert eB eC. ssimpl. intros eB eC.
+    rewrite eB. assumption.
+Qed.
+
+Lemma typing_er_sub_param :
+  ∀ Γ,
+    crtyping ⟦ Γ ⟧p vreg ⟦ Γ ⟧ε.
+Proof.
+  intros Γ.
+  pose proof (typing_sub_rev Γ) as lem.
+  eapply crtyping_comp in lem. 2: eapply typing_rev_sub_param.
+  eapply crtyping_morphism. all: eauto.
+  intros x. reflexivity.
+Qed.
+
 (** Parametricity preserves scoping **)
 
 Hint Resolve erase_scoping : cc_scope.
