@@ -180,3 +180,27 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else cbot_elim cProp (capp ⟦ Γ | A ⟧p ⟦ Γ | A ⟧∅) ⟦ Γ | p ⟧p
 }
 where "⟦ G | u '⟧p'" := (param_term G u).
+
+Reserved Notation "⟦ G '⟧p'" (at level 9, G at next level).
+
+Equations param_ctx (Γ : context) : ccontext := {
+  ⟦ [] ⟧p := [] ;
+  ⟦ Γ ,, (mx, A) ⟧p :=
+    if isProp mx then None :: Some (cProp, ⟦ sc Γ | A ⟧p) :: ⟦ Γ ⟧p
+    else if isKind mx then
+      Some (cType, capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)) ::
+      Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧p
+    else
+      Some (cProp, capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)) ::
+      Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧p
+}
+where "⟦ G '⟧p'" := (param_ctx G).
+
+Fixpoint param_sc (Γ : scope) : cscope :=
+  match Γ with
+  | [] => []
+  | m :: Γ =>
+    if isProp m then None :: Some cProp :: param_sc Γ
+    else if isKind m then Some cType :: Some cType :: param_sc Γ
+    else Some cProp :: Some cType :: param_sc Γ
+  end.
