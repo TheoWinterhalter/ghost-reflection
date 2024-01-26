@@ -49,8 +49,43 @@ Definition pPi mp A B C :=
 Definition plam mp A B t :=
   clam cType A (clam mp (capp (S ⋅ B) (cvar 0)) t).
 
-Definition pcast eP :=
-  sq_elim eP. (* TODO *)
+Definition pcastTG Ae AP uv vv vP eP PP te tP :=
+  sq_elim
+    eP
+    (clam cProp (squash (teq Ae uv vv)) (S ⋅ (capp (capp (capp PP vv) vP) te)))
+    (clam cType (teq Ae uv vv) (
+      capp
+        (tJ
+          (cvar 0)
+          (S ⋅ (clam cType Ae (
+            clam cType (teq (S ⋅ Ae) (S ⋅ uv) (cvar 0)) (
+              cPi cProp (capp (plus 2 ⋅ AP) (cvar 1)) (
+                capp (capp (capp (plus 3 ⋅ PP) (cvar 2)) (cvar 0)) (plus 3 ⋅ te)
+              )
+            )
+          )))
+          (S ⋅ (clam cProp (capp AP uv) tP)))
+        (S ⋅ vP)
+    )).
+
+Definition pcastP Ae AP uv vv vP eP PP tP :=
+  sq_elim
+    eP
+    (clam cProp (squash (teq Ae uv vv)) (S ⋅ (capp (capp PP vv) vP)))
+    (clam cType (teq Ae uv vv) (
+      capp
+        (tJ
+          (cvar 0)
+          (S ⋅ (clam cType Ae (
+            clam cType (teq (S ⋅ Ae) (S ⋅ uv) (cvar 0)) (
+              cPi cProp (capp (plus 2 ⋅ AP) (cvar 1)) (
+                capp (capp (plus 3 ⋅ PP) (cvar 2)) (cvar 0)
+              )
+            )
+          )))
+          (S ⋅ (clam cProp (capp AP uv) tP)))
+        (S ⋅ vP)
+    )).
 
 Reserved Notation "⟦ G | u '⟧p'" (at level 9, G, u at next level).
 
@@ -68,7 +103,6 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let Te := ⟦ Γ | Pi i j m mx A B ⟧ε in
     let Ae := ⟦ Γ | A ⟧ε in
     let Ap := ⟦ Γ | A ⟧p in
-    (* let Be := ⟦ mx :: Γ | B ⟧ε in *)
     let Bp := ⟦ mx :: Γ | B ⟧p in
     let k := umax m i j in
     match m with
@@ -130,12 +164,14 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let vP := ⟦ Γ | v ⟧p in
     let Ae := ⟦ Γ | A ⟧ε in
     let AP := ⟦ Γ | A ⟧p in
+    let te := ⟦ Γ | t ⟧ε in
+    let tv := ⟦ Γ | t ⟧v in
     let tP := ⟦ Γ | t ⟧p in
     match md Γ t with
-    | mKind => cDummy
-    | mType => cDummy (* TODO *)
-    | mGhost => cDummy (* TODO *)
-    | mProp => cDummy (* TODO *)
+    | mKind => tP (* Not cDummy for technical reasons *)
+    | mType => pcastTG Ae AP uv vv vP eP PP te tP
+    | mGhost => pcastTG Ae AP uv vv vP eP PP tv tP
+    | mProp => pcastP Ae AP uv vv vP eP PP tP
     end ;
   ⟦ Γ | bot ⟧p := cbot ;
   ⟦ Γ | bot_elim m A p ⟧p :=
