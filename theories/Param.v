@@ -253,6 +253,35 @@ Proof.
   assumption.
 Qed.
 
+Lemma typing_rev_sub_param :
+  ∀ Γ,
+    crtyping ⟦ Γ ⟧p vreg ⟦ Γ ⟧v.
+Proof.
+  intros Γ. intros x m A e.
+  assert (h : nth_error ⟦ Γ ⟧p (vreg x) = Some (Some (m, A))).
+  { induction Γ as [| [my B] Γ ih] in x, m, A, e |- *.
+    1:{ destruct x. all: discriminate. }
+    destruct x.
+    - cbn - [mode_inb] in e.
+      destruct (isProp my) eqn:ey. 1: discriminate.
+      noconf e. cbn. rewrite ey.
+      destruct_if e1. all: reflexivity.
+    - cbn - [mode_inb] in e.
+      unfold vreg. simpl "*". remember (S (x * 2)) as z eqn:ez.
+      cbn - [mode_inb]. subst.
+      destruct_if ey.
+      + eapply ih. assumption.
+      + destruct_if e1.
+        * eapply ih. assumption.
+        * eapply ih. assumption.
+  }
+  eexists. split.
+  - eassumption.
+  - ssimpl. eapply extRen_cterm. intro. ssimpl. unfold vreg.
+    cbn.
+    (* Of course, this subgoal is wrong, but is the whole thing wrong too? *)
+Abort.
+
 (** Parametricity preserves scoping **)
 
 Hint Resolve erase_scoping : cc_scope.
