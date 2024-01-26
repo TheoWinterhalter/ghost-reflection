@@ -338,14 +338,23 @@ Proof.
       cbn. rewrite e. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     destruct m, mx. all: cbn in *. all: try solve [ eauto 50 with cc_scope ].
-    + unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-      all: try reflexivity.
+    + unshelve auto 50 with cc_scope shelvedb ; shelve_unifiable.
+      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: admit. (* False, why??? *)
+      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: admit.
+      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      * unshelve eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        2,3: reflexivity.
+        eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+
+      (* all: try reflexivity. *)
       (* 6:{ eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope. } *)
       (* TODO, erasure and revival should be in the correct scope!
         Maybe with some pε, p∅, pτ, pv notations?
       *)
       (* Need more hints, to use also erase_scopingw *)
-      all: admit.
+      (* all: admit. *)
     + admit.
     + admit.
     + admit.
