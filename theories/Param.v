@@ -438,6 +438,9 @@ Qed.
 
 Hint Resolve pPi_scoping : cc_scope.
 
+(* So that they're not unfolded too eagerly *)
+Opaque epm_lift rpm_lift.
+
 Lemma param_scoping :
   ∀ Γ t m,
     scoping Γ t m →
@@ -457,18 +460,12 @@ Proof.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
-      (* Somehow, epm_lift and rpm_lift are still unfolded, maybe they should
-      be opaque?
+      1: admit.
+      (* epm_lift is still here, so maybe I should have hints, in case this
+        is what I ended up with.
       *)
-      (* Now it applies the lifting lemma too eagerly, and we end up with
-        revive_sc vs erasure.
-      *)
-      (* 6:{ eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope. } *)
-      (* TODO, erasure and revival should be in the correct scope!
-        Maybe with some pε, p∅, pτ, pv notations?
-      *)
-      (* Need more hints, to use also erase_scopingw *)
-      all: admit.
+      eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + admit.
     + admit.
     + admit.
     + admit.
