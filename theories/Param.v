@@ -508,7 +508,11 @@ Proof.
       * eapply scoping_epm_lift. 2: reflexivity.
         unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
         all: reflexivity.
-      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma?
+        Isn't pPi_scoping wrong actually? It might even be scoping for Pi
+        that's broken! It's the case, but only in CScoping, maybe other need
+        to be fixed. It'd be good to have a look at all the typing rules too.
+      *)
         admit.
       * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
