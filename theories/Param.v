@@ -447,7 +447,16 @@ Qed.
 
 Hint Resolve pscoping_revive : cc_scope.
 
-Hint Resolve erase_scoping_strong : cc_scope.
+Lemma erase_scoping_strong_eq :
+  ∀ Γ Γ' t,
+    Γ' = erase_sc Γ →
+    ccscoping Γ' ⟦ Γ | t ⟧ε cType.
+Proof.
+  intros Γ ? t ->.
+  eapply erase_scoping_strong.
+Qed.
+
+Hint Resolve erase_scoping_strong_eq : cc_scope.
 Hint Resolve revive_scoping : cc_scope.
 Hint Resolve cscoping_ren : cc_scope.
 Hint Resolve crscoping_S : cc_scope.
@@ -489,28 +498,104 @@ Proof.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
       1:{
-        eapply scoping_epm_lift.
-        all: unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-        3: reflexivity.
-        (* TODO Need smarter erase_scoping rule which asks for equality too *)
-        all: admit.
+        eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
       }
-      (* epm_lift is now gone, but we have something worse than before…
-      *)
       eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * (* TODO Wrong scope! *)
+        admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        all: reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * eapply crscoping_shift. eapply crscoping_shift. eauto with cc_scope.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      * eapply scoping_epm_lift. 2: reflexivity.
+        unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+        reflexivity.
+      * (* TODO Mistake here! Is it wrong from the start or a wrong lemma? *)
+        admit.
+      * admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      admit.
 Abort.
