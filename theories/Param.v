@@ -154,7 +154,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     | mGhost =>
       clam cProp (capp (pKind k) Te) (
         if isKind mx then pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-        else if isProp mx then cPi cProp Ap (capp Bp (cvar 1))
+        else if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
         else pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
       )
     | mProp =>
@@ -494,7 +494,8 @@ Proof.
       cbn. rewrite e. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     (* For debug *)
-    (* remember m as m' eqn:em. *)
+    (* remember m as m' eqn:em. remember mx as mx' eqn:emx.
+    destruct m', mx'. all: cbn in *. *)
     (* End debug *)
     destruct m, mx. all: cbn in *.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
@@ -571,10 +572,7 @@ Proof.
       * eapply scoping_epm_lift. 2: reflexivity.
         unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
         reflexivity.
-      * (* Wrong scope *)
-        admit.
-      * (* Wrong scope, but might be a faulty lemma? *)
-        admit.
+      * eapply crscoping_shift. eauto with cc_scope.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: reflexivity.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
