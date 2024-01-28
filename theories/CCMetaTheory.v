@@ -47,6 +47,17 @@ Proof.
   - simpl in *. apply h'. assumption.
 Qed.
 
+Lemma crscoping_shift_none :
+  ∀ Γ Δ ρ d,
+    crscoping Γ ρ Δ →
+    crscoping (d :: Γ) (up_ren ρ) (None :: Δ).
+Proof.
+  intros Γ Δ ρ d h. intros x mx e.
+  destruct x.
+  - cbn in *. noconf e.
+  - cbn in *. apply h. assumption.
+Qed.
+
 Lemma cscoping_ren :
   ∀ Γ Δ ρ t m,
     crscoping Γ ρ Δ →

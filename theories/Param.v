@@ -139,7 +139,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        | mProp => (S ⋅ Ap) ⇒[ cProp ] capp (S ⋅ Bp) (cvar 0)
+        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ Bp) (cvar 1))
         end
       )
     | mType =>
@@ -148,7 +148,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        | mProp => (S ⋅ Ap) ⇒[ cProp ] capp (S ⋅ Bp) (cvar 0)
+        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ Bp) (cvar 1))
         end
       )
     | mGhost =>
@@ -493,6 +493,9 @@ Proof.
     + constructor. rewrite nth_error_param_vpar. rewrite H.
       cbn. rewrite e. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
+    (* For debug *)
+    (* remember m as m' eqn:em. *)
+    (* End debug *)
     destruct m, mx. all: cbn in *.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
@@ -520,8 +523,9 @@ Proof.
       * eapply scoping_epm_lift. 2: reflexivity.
         unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
         reflexivity.
-      * (* TODO Wrong scope! *)
-        admit.
+      * eapply crscoping_shift_none. (* up_ren is not enough to account for
+        the extra None. Need something like epm_lift but not quite?
+      *) admit.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
       * eapply scoping_epm_lift. 2: reflexivity.
