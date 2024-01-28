@@ -139,7 +139,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ Bp) (cvar 1))
+        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
         end
       )
     | mType =>
@@ -148,7 +148,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ Bp) (cvar 1))
+        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
         end
       )
     | mGhost =>
@@ -523,9 +523,7 @@ Proof.
       * eapply scoping_epm_lift. 2: reflexivity.
         unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
         reflexivity.
-      * eapply crscoping_shift_none. (* up_ren is not enough to account for
-        the extra None. Need something like epm_lift but not quite?
-      *) admit.
+      * eapply crscoping_shift. eauto with cc_scope.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
       * eapply scoping_epm_lift. 2: reflexivity.
@@ -549,8 +547,7 @@ Proof.
       * eapply scoping_epm_lift. 2: reflexivity.
         unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
         reflexivity.
-      * (* Wrong scope *)
-        admit.
+      * eapply crscoping_shift. eauto with cc_scope.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
       * eapply scoping_epm_lift. 2: reflexivity.
