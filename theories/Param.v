@@ -164,8 +164,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     end ;
   ⟦ Γ | lam mx A B t ⟧p :=
     if isProp mx then clam cProp ⟦ Γ | A ⟧p (close ⟦ mx :: Γ | t ⟧p)
-    else if isKind mx then plam cType ⟦ Γ | A ⟧ε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
-    else plam cProp ⟦ Γ | A ⟧ε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
+    else if isKind mx then plam cType ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
+    else plam cProp ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
   ⟦ Γ | app u v ⟧p :=
     if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pε) ⟦ Γ | v ⟧p
     else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧v) ⟦ Γ | v ⟧p
@@ -579,4 +579,20 @@ Proof.
       all: reflexivity.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: reflexivity.
+  - cbn - [mode_inb] in *. destruct_ifs. all: mode_eqs. all: cbn in *.
+    all: try solve [ typeclasses eauto 50 with cc_scope ].
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: reflexivity.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
 Abort.
