@@ -601,9 +601,36 @@ Proof.
       reflexivity.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       reflexivity.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md. 2: eassumption.
+    cbn. assumption.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md. 2: eassumption.
+    destruct_ifs. all: mode_eqs. all: try intuition discriminate.
+    1:{ destruct m. all: intuition discriminate. }
+    unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+    reflexivity.
+  - cbn - [mode_inb] in *.
+    unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+    all: reflexivity.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md. 2: eassumption.
+    destruct m. 1: contradiction.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      (* Why is it left? *)
+      admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      admit.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      all: try reflexivity.
+      admit.
+  - cbn - [mode_inb] in *.
+    destruct_ifs. all: mode_eqs. all: try discriminate.
+    all: try solve [ typeclasses eauto 50 with cc_scope ].
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      reflexivity.
 Abort.
