@@ -678,6 +678,31 @@ Proof.
         rewrite PeanoNat.Nat.div2_double.
         rewrite PeanoNat.Nat.odd_mul. cbn. lia.
     + eapply hcρ in e as e'. rewrite e'. reflexivity.
+  - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb]. unfold pPi.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. eassumption. }
+    Transparent epm_lift rpm_lift.
+    unfold epm_lift, rpm_lift.
+    erewrite ?erase_ren, ?revive_ren.
+    2-5: eauto using rscoping_upren, rscoping_comp_upren.
+    destruct m, m0. all: cbn in *. (* all: try reflexivity. *)
+    + f_equal. all: f_equal.
+      2:{
+        ssimpl. eapply extRen_cterm. intro x.
+        unfold vreg, pren. ssimpl.
+        replace (x * 2) with (2 * x) by lia.
+        rewrite PeanoNat.Nat.div2_succ_double.
+        rewrite PeanoNat.Nat.odd_succ.
+        rewrite PeanoNat.Nat.even_mul. cbn. lia.
+        (* Take out as a lemma, maybe a commutation with epm_lift and rpm_lift
+          would work as well.
+          That way I wouldn't have to make them transparent again.
+        *)
+      }
+      all: f_equal. all: f_equal.
 Abort.
 
 (** Parametricity preserves typing **)
