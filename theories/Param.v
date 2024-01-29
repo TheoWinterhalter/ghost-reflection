@@ -91,7 +91,7 @@ Definition pcastTG Ae AP uv vv vP eP PP te tP :=
               )
             )
           )))
-          (S ⋅ (clam cProp (capp AP uv) tP)))
+          (S ⋅ (clam cProp (capp AP uv) (S ⋅ tP))))
         (S ⋅ vP)
     )).
 
@@ -110,7 +110,7 @@ Definition pcastP Ae AP uv vv vP eP PP tP :=
               )
             )
           )))
-          (S ⋅ (clam cProp (capp AP uv) tP)))
+          (S ⋅ (clam cProp (capp AP uv) (S ⋅ tP))))
         (S ⋅ vP)
     )).
 
@@ -621,18 +621,14 @@ Proof.
       all: try reflexivity.
       all: repeat try eapply crscoping_shift.
       all: eauto with cc_scope.
-      (* This was originally here, where is it from? *)
-      admit.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
       all: repeat try eapply crscoping_shift.
       all: eauto with cc_scope.
-      admit.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
       all: repeat try eapply crscoping_shift.
       all: eauto with cc_scope.
-      admit.
   - cbn - [mode_inb] in *.
     destruct_ifs. all: mode_eqs. all: try discriminate.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
@@ -640,4 +636,4 @@ Proof.
       reflexivity.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       reflexivity.
-Abort.
+Qed.
