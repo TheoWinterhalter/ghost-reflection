@@ -652,21 +652,31 @@ Qed.
 
 *)
 
+Definition pren (ρ : nat → nat) :=
+  λ n, PeanoNat.Nat.b2n (Nat.odd n) + 2 * ρ (Nat.div2 n).
+
 Lemma param_ren :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
     rscoping_comp Γ ρ Δ →
-    ⟦ Γ | ρ ⋅ t ⟧p = (ρ >> vpar) ⋅ ⟦ Δ | t ⟧p.
+    ⟦ Γ | ρ ⋅ t ⟧p = (pren ρ) ⋅ ⟦ Δ | t ⟧p.
 Proof.
   intros Γ Δ ρ t hρ hcρ.
   induction t in Γ, Δ, ρ, hρ, hcρ |- *.
-  all: try solve [ asimpl ; cbn ; eauto ].
+  (* all: try solve [ asimpl ; cbn ; eauto ]. *)
   - cbn - [mode_inb].
     destruct (nth_error Δ n) eqn:e.
     + eapply hρ in e as e'. rewrite e'.
       destruct_if e1.
-      * unfold vreg, vpar. ssimpl. (* Why would this hold? *) admit.
-      * unfold vreg, vpar. ssimpl. (* Why would this hold? *) admit.
+      * unfold vreg, pren. ssimpl. f_equal.
+        replace (n * 2) with (2 * n) by lia.
+        rewrite PeanoNat.Nat.div2_succ_double.
+        rewrite PeanoNat.Nat.odd_succ.
+        rewrite PeanoNat.Nat.even_mul. cbn. lia.
+      * unfold pren, vpar. ssimpl. f_equal.
+        replace (n * 2) with (2 * n) by lia.
+        rewrite PeanoNat.Nat.div2_double.
+        rewrite PeanoNat.Nat.odd_mul. cbn. lia.
     + eapply hcρ in e as e'. rewrite e'. reflexivity.
 Abort.
 
