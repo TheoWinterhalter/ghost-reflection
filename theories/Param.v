@@ -168,7 +168,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else plam cProp ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
   ⟦ Γ | app u v ⟧p :=
     if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pε) ⟦ Γ | v ⟧p
-    else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧v) ⟦ Γ | v ⟧p
+    else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pv) ⟦ Γ | v ⟧p
     else capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧p
   ;
   ⟦ Γ | Erased A ⟧p :=
@@ -589,7 +589,18 @@ Proof.
       all: reflexivity.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: reflexivity.
-  - admit.
+  - cbn - [mode_inb] in *.
+    erewrite scoping_md. 2: eassumption.
+    destruct_ifs. all: mode_eqs.
+    all: try solve [ typeclasses eauto 50 with cc_scope ].
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      reflexivity.
+    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
+      reflexivity.
   - admit.
   - admit.
   - admit.
