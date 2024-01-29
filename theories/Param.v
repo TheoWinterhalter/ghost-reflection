@@ -460,6 +460,7 @@ Hint Resolve erase_scoping_strong_eq : cc_scope.
 Hint Resolve revive_scoping : cc_scope.
 Hint Resolve cscoping_ren : cc_scope.
 Hint Resolve crscoping_S : cc_scope.
+Hint Resolve crscoping_plus : cc_scope.
 
 Lemma pPi_scoping :
   ∀ Γ mx A B C,
@@ -618,13 +619,19 @@ Proof.
     destruct m. 1: contradiction.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
-      (* Why is it left? *)
+      all: repeat try eapply crscoping_shift.
+      all: eauto with cc_scope.
+      (* This was originally here, where is it from? *)
       admit.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
+      all: repeat try eapply crscoping_shift.
+      all: eauto with cc_scope.
       admit.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: try reflexivity.
+      all: repeat try eapply crscoping_shift.
+      all: eauto with cc_scope.
       admit.
   - cbn - [mode_inb] in *.
     destruct_ifs. all: mode_eqs. all: try discriminate.

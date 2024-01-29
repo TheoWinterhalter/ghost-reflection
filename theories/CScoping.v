@@ -19,7 +19,7 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       nth_error Γ x = Some (Some m) →
       ccscoping Γ (cvar x) m
 
-| scpoe_sort :
+| cscope_sort :
     ∀ m i,
       ccscoping Γ (cSort m i) cType
 
@@ -102,25 +102,25 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ t cProp →
       ccscoping Γ (sq_elim e P t) cProp
 
-| scope_teq :
+| cscope_teq :
     ∀ A u v,
       ccscoping Γ A cType →
       ccscoping Γ u cType →
       ccscoping Γ v cType →
       ccscoping Γ (teq A u v) cType
 
-| scope_trefl :
+| cscope_trefl :
     ∀ A u,
       ccscoping Γ A cType →
       ccscoping Γ u cType →
       ccscoping Γ (trefl A u) cType
 
-| scope_tJ :
-    ∀ e P t,
+| cscope_tJ :
+    ∀ e P t m,
       ccscoping Γ e cType →
       ccscoping Γ P cType →
-      ccscoping Γ t cType →
-      ccscoping Γ (tJ e P t) cType
+      ccscoping Γ t m →
+      ccscoping Γ (tJ e P t) m
 .
 
 Notation ccxscoping Γ := (ccscoping (csc Γ)).

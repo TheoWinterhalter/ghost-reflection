@@ -36,6 +36,15 @@ Proof.
   cbn. assumption.
 Qed.
 
+Lemma crscoping_plus :
+  ∀ Δ Γ n,
+    Γ = skipn n Δ →
+    crscoping Δ (plus n) Γ.
+Proof.
+  intros Δ Γ n ->. intros x mx e.
+  rewrite nth_error_skipn. assumption.
+Qed.
+
 Lemma crscoping_shift :
   ∀ Γ Δ ρ mx,
     crscoping Γ ρ Δ →
