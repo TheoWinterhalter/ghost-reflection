@@ -669,3 +669,19 @@ Proof.
       * unfold vreg, vpar. ssimpl. (* Why would this hold? *) admit.
     + eapply hcρ in e as e'. rewrite e'. reflexivity.
 Abort.
+
+(** Parametricity preserves typing **)
+
+Definition ptype Γ t A :=
+  if relm (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧ε
+  else if isGhost (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧v
+  else ⟦ sc Γ | A ⟧p.
+
+Theorem param_typing :
+  ∀ Γ t A,
+    Γ ⊢ t : A →
+    ⟦ Γ ⟧v ⊢ᶜ ⟦ sc Γ | t ⟧p : ptype Γ t A.
+Proof.
+  intros Γ t A h.
+  induction h.
+Abort.

@@ -392,8 +392,6 @@ Proof.
     cbn. f_equal. apply erase_rev_subst.
 Qed.
 
-(** Revival ignores casts **)
-
 (** Revival preserves conversion **)
 
 Lemma revive_conv :
