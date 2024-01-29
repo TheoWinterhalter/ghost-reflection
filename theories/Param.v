@@ -637,3 +637,35 @@ Proof.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       reflexivity.
 Qed.
+
+(** Parametricity commutes with renaming **)
+
+(* TODO
+
+  Would it be better to put all variables in vpar position? Even Prop ones?
+  Let's figure out the renaming before we do so.
+  I guess we probably should though.
+  But wait, it might have to do stuff on the other variables any way right?
+  I'm confused.
+
+  Maybe I need to perform division or something in the new renaming?
+
+*)
+
+Lemma param_ren :
+  ∀ Γ Δ ρ t,
+    rscoping Γ ρ Δ →
+    rscoping_comp Γ ρ Δ →
+    ⟦ Γ | ρ ⋅ t ⟧p = (ρ >> vpar) ⋅ ⟦ Δ | t ⟧p.
+Proof.
+  intros Γ Δ ρ t hρ hcρ.
+  induction t in Γ, Δ, ρ, hρ, hcρ |- *.
+  all: try solve [ asimpl ; cbn ; eauto ].
+  - cbn - [mode_inb].
+    destruct (nth_error Δ n) eqn:e.
+    + eapply hρ in e as e'. rewrite e'.
+      destruct_if e1.
+      * unfold vreg, vpar. ssimpl. (* Why would this hold? *) admit.
+      * unfold vreg, vpar. ssimpl. (* Why would this hold? *) admit.
+    + eapply hcρ in e as e'. rewrite e'. reflexivity.
+Abort.
