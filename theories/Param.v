@@ -880,6 +880,52 @@ Proof.
     + f_equal. unfold close. ssimpl.
       eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
       ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+  - admit.
+  - admit.
+  - cbn - [mode_inb].
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. 1: reflexivity.
+    cbn. erewrite IHt3. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite ?erase_ren, ?revive_ren. 2,3: eassumption.
+    rewrite !pren_rpm_lift. reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_ren. 2,3: eassumption.
+    destruct_ifs. 1: reflexivity.
+    cbn. erewrite IHt2. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite ?erase_ren, ?revive_ren. 2,3: eassumption.
+    rewrite !pren_rpm_lift. reflexivity.
+  - cbn - [mode_inb].
+    erewrite ?erase_ren, ?revive_ren. 2-7: eassumption.
+    rewrite ?pren_epm_lift. reflexivity.
+  - cbn - [mode_inb].
+    erewrite ?erase_ren, ?revive_ren. 2-5: eassumption.
+    rewrite ?pren_epm_lift. reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_ren. 2,3: eassumption.
+    erewrite ?erase_ren, ?revive_ren. 2-11: eassumption.
+    destruct (md _ _).
+    + eauto.
+    + unfold pcastTG. cbn.
+      admit.
+    + admit.
+    + admit.
+  - cbn - [mode_inb]. reflexivity.
+  - cbn - [mode_inb]. destruct_ifs. all: mode_eqs.
+    + cbn. f_equal. all: eauto.
+    + cbn. f_equal. 1: f_equal. all: eauto.
+      erewrite erase_ren. 2,3: eassumption.
+      rewrite pren_epm_lift. reflexivity.
+    + cbn. f_equal. 1: f_equal. all: eauto.
+      erewrite erase_ren. 2,3: eassumption.
+      rewrite pren_epm_lift. reflexivity.
 Abort.
 
 (** Parametricity preserves typing **)
