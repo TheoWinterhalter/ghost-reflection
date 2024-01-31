@@ -803,6 +803,83 @@ Proof.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ ssimpl. reflexivity. }
+      f_equal.
+      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ ssimpl. reflexivity. }
+      f_equal.
+      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ ssimpl. reflexivity. }
+      ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. reflexivity. }
+      1:{ ssimpl. reflexivity. }
+      ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. reflexivity. }
+      1:{ ssimpl. reflexivity. }
+      ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. reflexivity.
+    + f_equal. unfold close. ssimpl.
+      eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
 Abort.
 
 (** Parametricity preserves typing **)
