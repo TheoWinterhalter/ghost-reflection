@@ -638,22 +638,90 @@ Proof.
       reflexivity.
 Qed.
 
-(** Parametricity commutes with renaming **)
+(** Parametricity commutes with renaming
 
-(* TODO
+  For this we define pren ρ which is basically the following function:
+  pren ρ (2 * n) = 2 * (ρ n)
+  pren ρ (2 * n + 1) = 2 * (ρ n) + 1
 
-  Would it be better to put all variables in vpar position? Even Prop ones?
-  Let's figure out the renaming before we do so.
-  I guess we probably should though.
-  But wait, it might have to do stuff on the other variables any way right?
-  I'm confused.
-
-  Maybe I need to perform division or something in the new renaming?
-
-*)
+**)
 
 Definition pren (ρ : nat → nat) :=
   λ n, PeanoNat.Nat.b2n (Nat.odd n) + 2 * ρ (Nat.div2 n).
+
+Lemma pren_even :
+  ∀ ρ n,
+    pren ρ (n * 2) = (ρ n) * 2.
+Proof.
+  intros ρ n.
+  unfold pren.
+  replace (n * 2) with (2 * n) by lia.
+  rewrite PeanoNat.Nat.div2_double.
+  rewrite PeanoNat.Nat.odd_mul. cbn. lia.
+Qed.
+
+Lemma pren_odd :
+  ∀ ρ n,
+    pren ρ (S (n * 2)) = S ((ρ n) * 2).
+Proof.
+  intros ρ n.
+  unfold pren.
+  replace (n * 2) with (2 * n) by lia.
+  rewrite PeanoNat.Nat.div2_succ_double.
+  rewrite PeanoNat.Nat.odd_succ.
+  rewrite PeanoNat.Nat.even_mul. cbn. lia.
+Qed.
+
+Lemma div2_SS :
+  ∀ n, Nat.div2 (S (S n)) = S (Nat.div2 n).
+Proof.
+  intro n.
+  destruct (PeanoNat.Nat.Even_Odd_dec n) as [h | h].
+  - rewrite <- PeanoNat.Nat.Odd_div2.
+    2:{ apply PeanoNat.Nat.Odd_succ. assumption. }
+    rewrite <- PeanoNat.Nat.Even_div2. 2: assumption.
+    reflexivity.
+  - rewrite <- PeanoNat.Nat.Even_div2.
+    2:{ apply PeanoNat.Nat.Even_succ. assumption. }
+    rewrite <- PeanoNat.Nat.Odd_div2. 2: assumption.
+    reflexivity.
+Qed.
+
+Lemma pren_SS :
+  ∀ ρ n, pren ρ (S (S n)) = pren (S >> ρ) n.
+Proof.
+  intros ρ n.
+  unfold pren.
+  rewrite PeanoNat.Nat.odd_succ.
+  rewrite PeanoNat.Nat.even_succ.
+  rewrite div2_SS. reflexivity.
+Qed.
+
+Transparent epm_lift rpm_lift.
+
+Lemma pren_epm_lift :
+  ∀ ρ t,
+    pren ρ ⋅ epm_lift t = epm_lift (ρ ⋅ t).
+Proof.
+  intros ρ t.
+  unfold epm_lift. ssimpl.
+  eapply extRen_cterm. intro x.
+  unfold vreg, pren. ssimpl.
+  replace (x * 2) with (2 * x) by lia.
+  rewrite PeanoNat.Nat.div2_succ_double.
+  rewrite PeanoNat.Nat.odd_succ.
+  rewrite PeanoNat.Nat.even_mul. cbn. lia.
+Qed.
+
+Lemma pren_rpm_lift :
+  ∀ ρ t,
+    pren ρ ⋅ rpm_lift t = rpm_lift (ρ ⋅ t).
+Proof.
+  intros ρ t.
+  apply pren_epm_lift.
+Qed.
+
+Opaque epm_lift rpm_lift.
 
 Lemma param_ren :
   ∀ Γ Δ ρ t,
@@ -684,25 +752,59 @@ Proof.
     erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. eassumption. }
-    Transparent epm_lift rpm_lift.
-    unfold epm_lift, rpm_lift.
     erewrite ?erase_ren, ?revive_ren.
     2-5: eauto using rscoping_upren, rscoping_comp_upren.
+    rewrite ?pren_epm_lift, ?pren_rpm_lift.
     destruct m, m0. all: cbn in *. (* all: try reflexivity. *)
     + f_equal. all: f_equal.
-      2:{
-        ssimpl. eapply extRen_cterm. intro x.
-        unfold vreg, pren. ssimpl.
-        replace (x * 2) with (2 * x) by lia.
-        rewrite PeanoNat.Nat.div2_succ_double.
-        rewrite PeanoNat.Nat.odd_succ.
-        rewrite PeanoNat.Nat.even_mul. cbn. lia.
-        (* Take out as a lemma, maybe a commutation with epm_lift and rpm_lift
-          would work as well.
-          That way I wouldn't have to make them transparent again.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl.
+        (* Unclear pren_SS helps us in any way
+          Maybe some pren (0 .: ρ >> S) law instead?
         *)
+        admit.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl.
+        (* Same thing... *)
+        admit.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
       }
-      all: f_equal. all: f_equal.
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl.
+        (* Same thing... *)
+        admit.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ ssimpl. reflexivity. }
+      f_equal.
+      ssimpl. eapply ext_cterm. intros []. all: cbn. 1: reflexivity.
+      ssimpl. (* This suggests pren_SS was not the right way to go *)
+      admit.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. admit.
 Abort.
 
 (** Parametricity preserves typing **)
