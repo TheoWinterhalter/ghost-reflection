@@ -697,6 +697,13 @@ Proof.
   rewrite div2_SS. reflexivity.
 Qed.
 
+Lemma pren_comp_S :
+  ∀ ρ n, pren (ρ >> S) n = S (S (pren ρ n)).
+Proof.
+  intros ρ n.
+  unfold pren. ssimpl. lia.
+Qed.
+
 Transparent epm_lift rpm_lift.
 
 Lemma pren_epm_lift :
@@ -762,20 +769,14 @@ Proof.
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. rewrite pren_SS. ssimpl.
-        (* Unclear pren_SS helps us in any way
-          Maybe some pren (0 .: ρ >> S) law instead?
-        *)
-        admit.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{ rewrite pren_epm_lift. cbn. reflexivity. }
       1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. rewrite pren_SS. ssimpl.
-        (* Same thing... *)
-        admit.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{
         rewrite pren_epm_lift. cbn. f_equal.
@@ -785,9 +786,7 @@ Proof.
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. rewrite pren_SS. ssimpl.
-        (* Same thing... *)
-        admit.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{
         rewrite pren_epm_lift. cbn. f_equal.
@@ -795,16 +794,15 @@ Proof.
       }
       1:{ ssimpl. reflexivity. }
       f_equal.
-      ssimpl. eapply ext_cterm. intros []. all: cbn. 1: reflexivity.
-      ssimpl. (* This suggests pren_SS was not the right way to go *)
-      admit.
+      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{ rewrite pren_epm_lift. cbn. reflexivity. }
       1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. admit.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
 Abort.
 
 (** Parametricity preserves typing **)
