@@ -1518,28 +1518,9 @@ Proof.
     erewrite <- !psubst_epm_lift. 2,3: eapply erase_scoping_strong.
     destruct md eqn:e.
     + reflexivity.
-    + unfold pcastTG. cbn. f_equal. all: f_equal. all: f_equal.
-      2:{ ssimpl. reflexivity. }
-      3:{ ssimpl. reflexivity. }
-      all: f_equal.
-      2:{ ssimpl. reflexivity. }
-      all: f_equal.
-      1:{ ssimpl. reflexivity. }
-      1:{ ssimpl. reflexivity. }
-      1:{ ssimpl. reflexivity. }
-      3:{ ssimpl. reflexivity. }
-      all: f_equal.
-      3:{ ssimpl. reflexivity. }
-      3:{ ssimpl. reflexivity. }
-      all: f_equal.
-      1:{ ssimpl. reflexivity. }
-      1:{ ssimpl. reflexivity. }
-      all: f_equal.
-      1:{ ssimpl. reflexivity. }
-      2:{ ssimpl. reflexivity. }
-      f_equal. f_equal. ssimpl. reflexivity.
-    + admit.
-    + admit.
+    + unfold pcastTG. cbn. ssimpl. reflexivity.
+    + unfold pcastTG. cbn. ssimpl. reflexivity.
+    + unfold pcastP. cbn. ssimpl. reflexivity.
   - cbn. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
@@ -1552,7 +1533,7 @@ Proof.
     + cbn. f_equal. f_equal.
       rewrite psubst_epm_lift. 2: eauto with cc_scope.
       reflexivity.
-Abort.
+Qed.
 
 (** Parametricity preserves typing **)
 
