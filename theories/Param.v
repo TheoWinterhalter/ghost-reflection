@@ -738,7 +738,6 @@ Lemma param_ren :
 Proof.
   intros Γ Δ ρ t hρ hcρ.
   induction t in Γ, Δ, ρ, hρ, hcρ |- *.
-  (* all: try solve [ asimpl ; cbn ; eauto ]. *)
   - cbn - [mode_inb].
     destruct (nth_error Δ n) eqn:e.
     + eapply hρ in e as e'. rewrite e'.
@@ -1028,6 +1027,98 @@ Proof.
       erewrite erase_ren. 2,3: eassumption.
       rewrite pren_epm_lift. reflexivity.
 Qed.
+
+(** Parametricity commutes with substitution
+
+  As for revival we need to craft a new substitution that gets the scopes as
+  input in order to determine the mode of the various variables.
+
+**)
+
+Definition psubst Δ Γ σ n :=
+  let p := Nat.div2 n in
+  match nth_error Δ p with
+  | Some m =>
+    if relm m then (
+      if Nat.odd n then ⟦ Γ | σ p ⟧pε
+      else ⟦ Γ | σ p ⟧p
+    )
+    else if isGhost m then (
+      if Nat.odd n then ⟦ Γ | σ p ⟧pv
+      else ⟦ Γ | σ p ⟧p
+    )
+    else (
+      if Nat.odd n then ⟦ Γ | σ p ⟧p
+      else cDummy
+    )
+  | None => cDummy
+  end.
+
+Lemma div2_vreg :
+  ∀ n, Nat.div2 (vreg n) = n.
+Proof.
+  intros n.
+  unfold vreg. replace (n * 2) with (2 * n) by lia.
+  apply PeanoNat.Nat.div2_succ_double.
+Qed.
+
+Lemma div2_vpar :
+  ∀ n, Nat.div2 (vpar n) = n.
+Proof.
+  intros n.
+  unfold vpar. replace (n * 2) with (2 * n) by lia.
+  apply PeanoNat.Nat.div2_double.
+Qed.
+
+Lemma odd_vreg :
+  ∀ n, Nat.odd (vreg n) = true.
+Proof.
+  intros n.
+  unfold vreg. replace (n * 2) with (2 * n) by lia.
+  rewrite PeanoNat.Nat.odd_succ.
+  rewrite PeanoNat.Nat.even_mul. reflexivity.
+Qed.
+
+Lemma odd_vpar :
+  ∀ n, Nat.odd (vpar n) = false.
+Proof.
+  intros n.
+  unfold vpar. replace (n * 2) with (2 * n) by lia.
+  rewrite PeanoNat.Nat.odd_mul. reflexivity.
+Qed.
+
+Lemma param_subst :
+  ∀ Γ Δ σ t,
+    (* sscoping Γ σ Δ → *)
+    sscoping_comp Γ σ Δ →
+    ⟦ Γ | t <[ σ ] ⟧p = ⟦ Δ | t ⟧p <[ psubst Δ Γ σ ].
+Proof.
+  intros Γ Δ σ t (* hσ *) hcσ.
+  induction t in Γ, Δ, σ, (* hσ, *) hcσ |- *.
+  - cbn. destruct (nth_error Δ n) eqn:e.
+    + destruct_if e1.
+      * mode_eqs. cbn. unfold psubst. rewrite div2_vreg.
+        rewrite e. cbn. rewrite odd_vreg. reflexivity.
+      * cbn. unfold psubst. rewrite div2_vpar. rewrite e.
+        rewrite odd_vpar.
+        destruct_ifs. all: try reflexivity.
+        destruct m. all: discriminate.
+    + eapply hcσ in e as e'. destruct e' as [k [e1 e2]].
+      rewrite e1. cbn. rewrite e2. reflexivity.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Abort.
 
 (** Parametricity preserves typing **)
 
