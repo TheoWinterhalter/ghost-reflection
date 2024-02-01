@@ -880,7 +880,23 @@ Proof.
     + f_equal. unfold close. ssimpl.
       eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
       ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
-  - admit.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3.
+    2:{ eapply rscoping_upren. eassumption. }
+    2:{ eapply rscoping_comp_upren. eassumption. }
+    unfold plam.
+    erewrite erase_ren. 2,3: eassumption.
+    destruct_ifs. all: mode_eqs.
+    + cbn. unfold close. ssimpl. f_equal.
+      eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + cbn. rewrite pren_epm_lift. ssimpl. f_equal. f_equal.
+      eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. reflexivity.
+    + cbn. rewrite pren_epm_lift. ssimpl. f_equal. f_equal.
+      eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. reflexivity.
   - admit.
   - cbn - [mode_inb].
     erewrite md_ren. 2,3: eassumption.
