@@ -53,9 +53,10 @@ Qed.
 
 Ltac mode_eqs :=
   repeat lazymatch goal with
-  | e : isKind ?m = true |- _ => eapply isKind_eq in e ; subst m
-  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; subst m
-  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; subst m
+  | e : isKind ?m = true |- _ => eapply isKind_eq in e ; try subst m
+  | e : isType ?m = true |- _ => eapply isType_eq in e ; try subst m
+  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; try subst m
+  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; try subst m
   end.
 
 Definition mode_inb := inb mode_eqb.
