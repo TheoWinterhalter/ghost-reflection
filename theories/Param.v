@@ -1505,7 +1505,41 @@ Proof.
     erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
     erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
     reflexivity.
-  - admit.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3. 2,3: eassumption.
+    erewrite IHt4. 2,3: eassumption.
+    erewrite IHt5. 2,3: eassumption.
+    erewrite IHt6. 2,3: eassumption.
+    erewrite !erase_subst. 2-5: eassumption.
+    erewrite !revive_subst. 2-7: eassumption.
+    erewrite <- !psubst_rpm_lift. 2-4: eapply revive_scoping_strong.
+    erewrite <- !psubst_epm_lift. 2,3: eapply erase_scoping_strong.
+    destruct md eqn:e.
+    + reflexivity.
+    + unfold pcastTG. cbn. f_equal. all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      1:{ ssimpl. reflexivity. }
+      1:{ ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      3:{ ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      1:{ ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      2:{ ssimpl. reflexivity. }
+      f_equal. f_equal. ssimpl. reflexivity.
+    + admit.
+    + admit.
   - cbn. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
