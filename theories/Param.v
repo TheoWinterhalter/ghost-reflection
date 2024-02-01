@@ -1087,6 +1087,29 @@ Proof.
   rewrite PeanoNat.Nat.odd_mul. reflexivity.
 Qed.
 
+Transparent epm_lift rpm_lift.
+
+Lemma psubst_rpm_lift :
+  ∀ Γ Δ σ t,
+    sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ →
+    (rpm_lift t) <[ psubst Δ Γ σ ] = rpm_lift (t <[ rev_subst Δ Γ σ ]).
+Proof.
+  intros Γ Δ σ t hσ hcσ.
+  unfold rpm_lift. ssimpl.
+  eapply ext_cterm. intros x.
+  ssimpl. unfold psubst. rewrite div2_vreg.
+  unfold rev_subst. unfold ghv.
+  destruct (nth_error Δ x) eqn:e.
+  - rewrite odd_vreg. destruct_ifs. all: mode_eqs. all: try discriminate.
+    all: try reflexivity.
+    admit.
+  - eapply hcσ in e. destruct e as [k [e1 e2]].
+    rewrite e1. cbn. unfold relv. rewrite e2. reflexivity.
+Abort.
+
+Opaque epm_lift rpm_lift.
+
 Lemma param_subst :
   ∀ Γ Δ σ t,
     sscoping Γ σ Δ →
@@ -1123,7 +1146,7 @@ Proof.
     erewrite IHt3. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
     destruct_ifs. 1: reflexivity.
-    cbn.
+    cbn. f_equal. f_equal.
     (* Need similar rpm_lift vs rev_subst commutation *)
     admit.
   - cbn - [mode_inb].
