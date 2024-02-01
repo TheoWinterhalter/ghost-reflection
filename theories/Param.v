@@ -1170,34 +1170,40 @@ Proof.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt3. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    destruct_ifs. 1: reflexivity.
-    cbn. f_equal. f_equal.
-    (* Need similar rpm_lift vs rev_subst commutation *)
-    admit.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
+    destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    destruct_ifs. 1: reflexivity.
-    cbn. admit.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
+    destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite !revive_subst. 2-5: eassumption.
     erewrite !erase_subst. 2,3: eassumption.
-    admit.
+    erewrite <- !psubst_rpm_lift. 2,3: eapply revive_scoping_strong.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    reflexivity.
   - cbn - [mode_inb].
     erewrite erase_subst. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    admit.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    reflexivity.
   - admit.
   - cbn. reflexivity.
   - cbn.
-    erewrite erase_subst. 2,3: eassumption.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
+    erewrite erase_subst. 2,3: eassumption.
     destruct_ifs. all: try reflexivity.
-    + admit.
-    + admit.
+    + cbn. f_equal. f_equal.
+      rewrite psubst_epm_lift. 2: eauto with cc_scope.
+      reflexivity.
+    + cbn. f_equal. f_equal.
+      rewrite psubst_epm_lift. 2: eauto with cc_scope.
+      reflexivity.
 Abort.
 
 (** Parametricity preserves typing **)
