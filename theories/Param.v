@@ -914,9 +914,87 @@ Proof.
     destruct (md _ _).
     + eauto.
     + unfold pcastTG. cbn.
-      admit.
-    + admit.
-    + admit.
+      erewrite IHt1. 2,3: eassumption.
+      erewrite IHt3. 2,3: eassumption.
+      erewrite IHt4. 2,3: eassumption.
+      erewrite IHt5. 2,3: eassumption.
+      erewrite IHt6. 2,3: eassumption.
+      rewrite ?pren_epm_lift, ?pren_rpm_lift.
+      f_equal. all: f_equal. all: f_equal.
+      2:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      3:{ ssimpl. reflexivity. }
+      3:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      2:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. f_equal.
+      ssimpl. reflexivity.
+    + unfold pcastTG. cbn.
+      erewrite IHt1. 2,3: eassumption.
+      erewrite IHt3. 2,3: eassumption.
+      erewrite IHt4. 2,3: eassumption.
+      erewrite IHt5. 2,3: eassumption.
+      erewrite IHt6. 2,3: eassumption.
+      rewrite ?pren_epm_lift, ?pren_rpm_lift.
+      f_equal. all: f_equal. all: f_equal.
+      2:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      3:{ ssimpl. reflexivity. }
+      3:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      2:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. f_equal.
+      ssimpl. reflexivity.
+    + unfold pcastP. cbn.
+      erewrite IHt1. 2,3: eassumption.
+      erewrite IHt3. 2,3: eassumption.
+      erewrite IHt4. 2,3: eassumption.
+      erewrite IHt5. 2,3: eassumption.
+      erewrite IHt6. 2,3: eassumption.
+      rewrite ?pren_epm_lift, ?pren_rpm_lift.
+      f_equal. all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      3:{ ssimpl. reflexivity. }
+      all: f_equal.
+      3:{ ssimpl. reflexivity. }
+      3:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      all: f_equal.
+      1:{ ssimpl. reflexivity. }
+      f_equal.
+      ssimpl. reflexivity.
   - cbn - [mode_inb]. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: mode_eqs.
     + cbn. f_equal. all: eauto.
