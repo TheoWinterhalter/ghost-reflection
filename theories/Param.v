@@ -1524,6 +1524,21 @@ Qed.
 
 (** Parametricity preserves conversion **)
 
+Lemma vreg_vpar_dec :
+  ∀ n, { n = vpar (Nat.div2 n) } + { n = vreg (Nat.div2 n) }.
+Proof.
+  intros n.
+  destruct (PeanoNat.Nat.Even_Odd_dec n).
+  - left. unfold vpar.
+    etransitivity.
+    + apply PeanoNat.Nat.Even_double. assumption.
+    + unfold Nat.double. lia.
+  - right. unfold vreg.
+    etransitivity.
+    + apply PeanoNat.Nat.Odd_double. assumption.
+    + unfold Nat.double. lia.
+Qed.
+
 Lemma param_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
@@ -1542,15 +1557,75 @@ Proof.
       erewrite param_subst.
       2:{ eapply sscoping_one. eassumption. }
       2: eapply sscoping_comp_one.
-      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-      (* rewrite psubst_SS. *)
+      ssimpl. eapply ext_cterm_scoped.
+      1:{ eapply param_scoping. eassumption. }
+      intros [| []] hx. all: cbn. 1,2: reflexivity.
+      unfold inscope in hx. cbn in hx.
       unfold psubst. rewrite div2_SS. cbn - [mode_inb].
-      (* Clearly wrong, try scoped *)
-      admit.
+      destruct (vreg_vpar_dec n) as [en | en].
+      * rewrite en in hx. rewrite nth_error_param_vpar in hx.
+        destruct nth_error as [mx|] eqn:e1. 2: discriminate.
+        cbn in hx.
+        rewrite PeanoNat.Nat.odd_succ.
+        rewrite PeanoNat.Nat.even_succ.
+        destruct PeanoNat.Nat.odd eqn:eodd.
+        1:{ rewrite en in eodd. rewrite odd_vpar in eodd. discriminate. }
+        destruct (isProp mx) eqn:e2. 1: discriminate.
+        destruct (isKind mx) eqn:e3. all: mode_eqs.
+        -- cbn. f_equal. assumption.
+        -- destruct mx. all: try discriminate.
+          ++ cbn. f_equal. assumption.
+          ++ cbn. f_equal. assumption.
+      * set (p := Nat.div2 n) in *.
+        rewrite en in hx. rewrite nth_error_param_vreg in hx.
+        destruct nth_error as [mx|] eqn:e1. 2: discriminate.
+        cbn in hx.
+        rewrite PeanoNat.Nat.odd_succ.
+        rewrite PeanoNat.Nat.even_succ.
+        destruct PeanoNat.Nat.odd eqn:eodd.
+        2:{ rewrite en in eodd. rewrite odd_vreg in eodd. discriminate. }
+        destruct (isProp mx) eqn:e2.
+        -- mode_eqs. cbn. f_equal. assumption.
+        -- unfold relv, ghv. rewrite e1.
+          destruct_ifs.
+          ++ rewrite en. reflexivity.
+          ++ rewrite en. reflexivity.
+          ++ destruct mx. all: discriminate.
     + destruct (isType mx) eqn:e2. 2:{ destruct mx. all: discriminate. }
-      mode_eqs. admit.
-    + admit.
-    + admit.
+      mode_eqs.
+      eapply cconv_trans.
+      1:{ constructor. 2: apply cconv_refl. constructor. }
+      cbn.
+      eapply cconv_trans. 1: constructor.
+      ssimpl. apply ccmeta_refl.
+      erewrite param_subst.
+      2:{ eapply sscoping_one. eassumption. }
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1:{ eapply param_scoping. eassumption. }
+      (* Basically same as above, is there a nice lemma to state? *)
+      admit.
+    + eapply cconv_trans.
+      1:{ constructor. 2: apply cconv_refl. constructor. }
+      cbn.
+      eapply cconv_trans. 1: constructor.
+      ssimpl. apply ccmeta_refl.
+      erewrite param_subst.
+      2:{ eapply sscoping_one. eassumption. }
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1:{ eapply param_scoping. eassumption. }
+      (* Basically same as above, is there a nice lemma to state? *)
+      admit.
+    + eapply cconv_trans. 1: constructor.
+      unfold close. ssimpl. apply ccmeta_refl.
+      erewrite param_subst.
+      2:{ eapply sscoping_one. eassumption. }
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm_scoped.
+      1:{ eapply param_scoping. eassumption. }
+      (* Basically same as above, is there a nice lemma to state? *)
+      admit.
     + destruct mx. all: discriminate.
 Abort.
 
