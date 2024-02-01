@@ -710,6 +710,18 @@ Proof.
   unfold pren. ssimpl. lia.
 Qed.
 
+Lemma pren_id :
+  ∀ n, pren id n = n.
+Proof.
+  intros n.
+  unfold pren.
+  rewrite PeanoNat.Nat.div2_div.
+  symmetry. etransitivity. 1: eapply PeanoNat.Nat.div_mod_eq with (y := 2).
+  rewrite <- PeanoNat.Nat.bit0_mod.
+  rewrite PeanoNat.Nat.bit0_odd.
+  unfold id. unfold Datatypes.id. lia.
+Qed.
+
 Transparent epm_lift rpm_lift.
 
 Lemma pren_epm_lift :
@@ -1093,6 +1105,52 @@ Proof.
   rewrite PeanoNat.Nat.odd_mul. reflexivity.
 Qed.
 
+Lemma psubst_SS :
+  ∀ m Δ Γ σ n,
+    psubst (m :: Δ) (m :: Γ) (up_term σ) (S (S n)) =
+    plus 2 ⋅ psubst Δ Γ σ n.
+Proof.
+  intros m Δ Γ σ n.
+  unfold psubst. rewrite div2_SS. cbn - [mode_inb].
+  destruct nth_error eqn:e. 2: reflexivity.
+  rewrite PeanoNat.Nat.odd_succ.
+  rewrite PeanoNat.Nat.even_succ.
+  destruct_ifs. all: mode_eqs.
+  - ssimpl. erewrite erase_ren.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    ssimpl. rewrite <- pren_epm_lift.
+    ssimpl. eapply extRen_cterm.
+    intro x. unfold shift. change (pren S) with (pren (id >> S)).
+    rewrite pren_comp_S. ssimpl. rewrite pren_id. reflexivity.
+  - ssimpl. erewrite param_ren.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    ssimpl. eapply extRen_cterm.
+    intro x. unfold shift. change (pren S) with (pren (id >> S)).
+    rewrite pren_comp_S. ssimpl. rewrite pren_id. reflexivity.
+  - ssimpl. erewrite revive_ren.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    ssimpl. rewrite <- pren_rpm_lift.
+    eapply extRen_cterm.
+    intro x. unfold shift. change (pren S) with (pren (id >> S)).
+    rewrite pren_comp_S. ssimpl. rewrite pren_id. reflexivity.
+  - ssimpl. erewrite param_ren.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    ssimpl. eapply extRen_cterm.
+    intro x. unfold shift. change (pren S) with (pren (id >> S)).
+    rewrite pren_comp_S. ssimpl. rewrite pren_id. reflexivity.
+  - ssimpl. erewrite param_ren.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    ssimpl. eapply extRen_cterm.
+    intro x. unfold shift. change (pren S) with (pren (id >> S)).
+    rewrite pren_comp_S. ssimpl. rewrite pren_id. reflexivity.
+  - reflexivity.
+Qed.
+
 Transparent epm_lift rpm_lift.
 
 Lemma psubst_epm_lift :
@@ -1155,8 +1213,41 @@ Proof.
       rewrite e1. cbn. rewrite e2. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
   - admit.
-  - admit.
-  - admit.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ eapply sscoping_comp_shift. assumption. }
+    erewrite erase_subst. 2,3: eassumption.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    destruct_ifs. all: mode_eqs.
+    + cbn. f_equal. unfold close. ssimpl.
+      eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite psubst_SS. ssimpl.
+      erewrite rinstInst'_cterm. reflexivity.
+    + cbn. f_equal. unfold plam. f_equal. f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        rewrite psubst_SS. ssimpl. reflexivity.
+    + cbn. unfold plam. f_equal. f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply ext_cterm. intros [| []]. all: cbn - [mode_inb].
+        --- destruct_ifs. all: mode_eqs. all: try discriminate.
+          all: try reflexivity.
+          destruct m. all: discriminate.
+        --- destruct_ifs. all: mode_eqs. all: try discriminate.
+          all: try reflexivity.
+          destruct m. all: discriminate.
+        --- rewrite psubst_SS. ssimpl. reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite erase_subst. 2,3: eassumption.
+    erewrite revive_subst. 2,3: eassumption.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
     erewrite IHt. 2,3: eassumption.
