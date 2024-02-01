@@ -221,6 +221,41 @@ Proof.
     reflexivity.
 Qed.
 
+Lemma revive_scoping_strong :
+  ∀ Γ t,
+    ccscoping (revive_sc Γ) ⟦ Γ | t ⟧v cType.
+Proof.
+  intros Γ t.
+  induction t in Γ |- *.
+  all: try solve [ cbn ; eauto with cc_scope ].
+  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
+  - cbn. destruct_if e. 2: constructor.
+    constructor. eapply revive_sc_var.
+    unfold ghv in e. destruct nth_error eqn:e1. 2: discriminate.
+    mode_eqs. reflexivity.
+  - cbn - [mode_inb].
+    destruct_ifs.
+    + mode_eqs. eapply cscope_close.
+      change (None :: revive_sc Γ) with (revive_sc (mProp :: Γ)).
+      eauto.
+    + constructor.
+      * eapply scoping_to_rev. constructor. eapply erase_scoping_strong.
+      * specialize IHt3 with (Γ := m :: Γ). cbn in IHt3.
+        rewrite e0 in IHt3. eauto.
+    + constructor.
+  - cbn - [mode_inb].
+    destruct_ifs. 4: eauto with cc_scope.
+    + econstructor. 1: eauto.
+      eapply scoping_to_rev. eapply erase_scoping_strong.
+    + econstructor. all: eauto.
+    + eauto.
+  - cbn - [mode_inb].
+    eapply scoping_to_rev. eapply erase_scoping_strong.
+  - cbn - [mode_inb].
+    destruct_if e. 2: constructor.
+    constructor. eapply scoping_to_rev. eapply erase_scoping_strong.
+Qed.
+
 (** Revival commutes with renaming **)
 
 Lemma revive_ren :

@@ -456,7 +456,17 @@ Proof.
   eapply erase_scoping_strong.
 Qed.
 
+Lemma revive_scoping_strong_eq :
+  ∀ Γ Γ' t,
+    Γ' = revive_sc Γ →
+    ccscoping Γ' ⟦ Γ | t ⟧v cType.
+Proof.
+  intros Γ ? t ->.
+  eapply revive_scoping_strong.
+Qed.
+
 Hint Resolve erase_scoping_strong_eq : cc_scope.
+Hint Resolve revive_scoping_strong_eq : cc_scope.
 Hint Resolve revive_scoping : cc_scope.
 Hint Resolve cscoping_ren : cc_scope.
 Hint Resolve crscoping_S : cc_scope.
