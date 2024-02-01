@@ -387,7 +387,7 @@ Lemma pscoping_erase_term :
 Proof.
   intros Γ Γ' t ->.
   eapply scoping_epm_lift.
-  - eapply erase_scoping_strong.
+  - eapply erase_scoping.
   - reflexivity.
 Qed.
 
@@ -400,7 +400,7 @@ Lemma pscoping_erase_type :
 Proof.
   intros Γ Γ' t ->.
   eapply scoping_epm_lift.
-  - constructor. eapply erase_scoping_strong.
+  - constructor. eapply erase_scoping.
   - reflexivity.
 Qed.
 
@@ -413,7 +413,7 @@ Lemma pscoping_erase_err :
 Proof.
   intros Γ Γ' t ->.
   eapply scoping_epm_lift.
-  - constructor. eapply erase_scoping_strong.
+  - constructor. eapply erase_scoping.
   - reflexivity.
 Qed.
 
@@ -435,38 +435,37 @@ Qed.
 
 Lemma pscoping_revive :
   ∀ Γ Γ' t,
-    scoping Γ t mGhost →
     Γ' = param_sc Γ →
     ccscoping Γ' ⟦ Γ | t ⟧pv cType.
 Proof.
-  intros Γ Γ' t h ->.
+  intros Γ Γ' t ->.
   eapply scoping_rpm_lift.
-  - eapply revive_scoping. 2: eassumption. reflexivity.
+  - eapply revive_scoping.
   - reflexivity.
 Qed.
 
 Hint Resolve pscoping_revive : cc_scope.
 
-Lemma erase_scoping_strong_eq :
+Lemma erase_scoping_eq :
   ∀ Γ Γ' t,
     Γ' = erase_sc Γ →
     ccscoping Γ' ⟦ Γ | t ⟧ε cType.
 Proof.
   intros Γ ? t ->.
-  eapply erase_scoping_strong.
+  eapply erase_scoping.
 Qed.
 
-Lemma revive_scoping_strong_eq :
+Lemma revive_scoping_eq :
   ∀ Γ Γ' t,
     Γ' = revive_sc Γ →
     ccscoping Γ' ⟦ Γ | t ⟧v cType.
 Proof.
   intros Γ ? t ->.
-  eapply revive_scoping_strong.
+  eapply revive_scoping.
 Qed.
 
-Hint Resolve erase_scoping_strong_eq : cc_scope.
-Hint Resolve revive_scoping_strong_eq : cc_scope.
+Hint Resolve erase_scoping_eq : cc_scope.
+Hint Resolve revive_scoping_eq : cc_scope.
 Hint Resolve revive_scoping : cc_scope.
 Hint Resolve cscoping_ren : cc_scope.
 Hint Resolve crscoping_S : cc_scope.
@@ -596,18 +595,6 @@ Proof.
       all: reflexivity.
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
       all: reflexivity.
-  - cbn - [mode_inb] in *.
-    erewrite scoping_md. 2: eassumption.
-    destruct_ifs. all: mode_eqs.
-    all: try solve [ typeclasses eauto 50 with cc_scope ].
-    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-      reflexivity.
-    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-      reflexivity.
-    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-      reflexivity.
-    + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
-      reflexivity.
   - cbn - [mode_inb] in *.
     erewrite scoping_md. 2: eassumption.
     cbn. assumption.
@@ -1220,7 +1207,7 @@ Proof.
     2:{ eapply sscoping_comp_shift. assumption. }
     erewrite !erase_subst.
     2-5: eauto using sscoping_shift, sscoping_comp_shift with cc_scope.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
     destruct m, m0. all: cbn in *.
     + f_equal. all: f_equal.
       2:{ ssimpl. reflexivity. }
@@ -1442,7 +1429,7 @@ Proof.
     2:{ eapply sscoping_shift. eassumption. }
     2:{ eapply sscoping_comp_shift. assumption. }
     erewrite erase_subst. 2,3: eassumption.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
     destruct_ifs. all: mode_eqs.
     + cbn. f_equal. unfold close. ssimpl.
       eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
@@ -1468,8 +1455,8 @@ Proof.
     erewrite IHt2. 2,3: eassumption.
     erewrite erase_subst. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
     destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
@@ -1484,26 +1471,26 @@ Proof.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt3. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping.
     destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping.
     destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite !revive_subst. 2-5: eassumption.
     erewrite !erase_subst. 2,3: eassumption.
-    erewrite <- !psubst_rpm_lift. 2,3: eapply revive_scoping_strong.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    erewrite <- !psubst_rpm_lift. 2,3: eapply revive_scoping.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
     reflexivity.
   - cbn - [mode_inb].
     erewrite erase_subst. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
-    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping_strong.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    erewrite <- psubst_rpm_lift. 2: eapply revive_scoping.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
     reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
@@ -1514,8 +1501,8 @@ Proof.
     erewrite IHt6. 2,3: eassumption.
     erewrite !erase_subst. 2-5: eassumption.
     erewrite !revive_subst. 2-7: eassumption.
-    erewrite <- !psubst_rpm_lift. 2-4: eapply revive_scoping_strong.
-    erewrite <- !psubst_epm_lift. 2,3: eapply erase_scoping_strong.
+    erewrite <- !psubst_rpm_lift. 2-4: eapply revive_scoping.
+    erewrite <- !psubst_epm_lift. 2,3: eapply erase_scoping.
     destruct md eqn:e.
     + reflexivity.
     + unfold pcastTG. cbn. ssimpl. reflexivity.

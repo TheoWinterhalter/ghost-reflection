@@ -218,43 +218,6 @@ Qed.
 (** Erasure preserves scoping **)
 
 Lemma erase_scoping :
-  ∀ Γ t m,
-    relm m = true →
-    scoping Γ t m →
-    ccscoping (erase_sc Γ) ⟦ Γ | t ⟧ε cType.
-Proof.
-  intros Γ t m hrm h.
-  induction h in hrm |- *.
-  all: try solve [ cbn ; eauto with cc_scope ].
-  all: try solve [ cbn ; destruct_ifs ; eauto with cc_scope ].
-  - cbn. destruct_if e. 2: constructor.
-    constructor. eapply erase_sc_var. all: eassumption.
-  - cbn - [mode_inb].
-    cbn - [mode_inb] in IHh2. fold (erase_sc Γ) in IHh2.
-    destruct_ifs.
-    all: try solve [ eauto with cc_scope cc_type ].
-    + destruct (relm mx) eqn:e'. 2: discriminate.
-      auto with cc_scope.
-    + destruct m. all: try discriminate.
-      destruct mx. all: try discriminate.
-      cbn in *.
-      unshelve auto with cc_scope shelvedb. 2: eauto.
-      ssimpl. eapply cscope_ignore. eauto.
-    + destruct (relm mx) eqn:e'. 1: discriminate.
-      auto with cc_scope.
-  - cbn - [mode_inb].
-    erewrite scoping_md. 2: eassumption.
-    rewrite hrm. cbn - [mode_inb] in IHh3.
-    destruct_if e. all: eauto with cc_scope.
-  - cbn - [mode_inb].
-    erewrite scoping_md. 2: eassumption.
-    rewrite hrm.
-    destruct_if e. 2: eauto with cc_scope.
-    erewrite scoping_md in e. 2: eassumption.
-    eauto with cc_scope.
-Qed.
-
-Lemma erase_scoping_strong :
   ∀ Γ t,
     ccscoping (erase_sc Γ) ⟦ Γ | t ⟧ε cType.
 Proof.
@@ -485,8 +448,7 @@ Proof.
       erewrite erase_subst.
       2: eapply sscoping_one. 2: eassumption.
       2: eapply sscoping_comp_one.
-      ssimpl. eapply ext_cterm_scoped.
-      1: eapply erase_scoping. 2: eassumption. 1: assumption.
+      ssimpl. eapply ext_cterm_scoped. 1: eapply erase_scoping.
       intros [| x] ex.
       * cbn. reflexivity.
       * cbn. unfold relv. unfold inscope in ex.
@@ -500,8 +462,7 @@ Proof.
       erewrite erase_subst.
       2: eapply sscoping_one. 2: eassumption.
       2: eapply sscoping_comp_one.
-      ssimpl. eapply ext_cterm_scoped.
-      1: eapply erase_scoping. 2: eassumption. 1: assumption.
+      ssimpl. eapply ext_cterm_scoped. 1: eapply erase_scoping.
       intros [| x] ex.
       * unfold inscope in ex. cbn - [mode_inb] in ex.
         rewrite e0 in ex. discriminate.
@@ -840,8 +801,7 @@ Proof.
         2: eapply sscoping_one. 2: eassumption.
         2: eapply sscoping_comp_one.
         ssimpl.
-        eapply ext_cterm_scoped.
-        1: eapply erase_scoping. 2: eassumption. 1: reflexivity.
+        eapply ext_cterm_scoped. 1: eapply erase_scoping.
         intros [| x] ex.
         -- cbn. reflexivity.
         -- cbn. unfold relv. unfold inscope in ex.
@@ -859,7 +819,7 @@ Proof.
       2: eapply sscoping_one. 2: eassumption.
       2: eapply sscoping_comp_one.
       erewrite ext_cterm_scoped with (θ := ctt..).
-      2: eapply erase_scoping. 3: eassumption. 2: reflexivity.
+      2: eapply erase_scoping.
       2:{
         intros [| x] ex.
         - unfold inscope in ex. cbn - [mode_inb] in ex.
