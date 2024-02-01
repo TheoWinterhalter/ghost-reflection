@@ -1535,6 +1535,38 @@ Proof.
       reflexivity.
 Qed.
 
+(** Parametricity preserves conversion **)
+
+Lemma param_conv :
+  ∀ Γ u v,
+    Γ ⊢ u ≡ v →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | u ⟧p ≡ ⟦ sc Γ | v ⟧p.
+Proof.
+  intros Γ u v h.
+  induction h.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    destruct_ifs. all: mode_eqs. all: try discriminate.
+    + eapply cconv_trans.
+      1:{ constructor. 2: apply cconv_refl. constructor. }
+      cbn.
+      eapply cconv_trans. 1: constructor.
+      ssimpl. apply ccmeta_refl.
+      erewrite param_subst.
+      2:{ eapply sscoping_one. eassumption. }
+      2: eapply sscoping_comp_one.
+      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      (* rewrite psubst_SS. *)
+      unfold psubst. rewrite div2_SS. cbn - [mode_inb].
+      (* Clearly wrong, try scoped *)
+      admit.
+    + destruct (isType mx) eqn:e2. 2:{ destruct mx. all: discriminate. }
+      mode_eqs. admit.
+    + admit.
+    + admit.
+    + destruct mx. all: discriminate.
+Abort.
+
 (** Parametricity preserves typing **)
 
 Definition ptype Γ t A :=
