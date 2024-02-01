@@ -1091,21 +1091,25 @@ Transparent epm_lift rpm_lift.
 
 Lemma psubst_rpm_lift :
   ∀ Γ Δ σ t,
-    sscoping Γ σ Δ →
-    sscoping_comp Γ σ Δ →
+    (* sscoping Γ σ Δ →
+    sscoping_comp Γ σ Δ → *)
     (rpm_lift t) <[ psubst Δ Γ σ ] = rpm_lift (t <[ rev_subst Δ Γ σ ]).
 Proof.
-  intros Γ Δ σ t hσ hcσ.
+  intros Γ Δ σ t (* hσ hcσ *).
   unfold rpm_lift. ssimpl.
-  eapply ext_cterm. intros x.
+  eapply ext_cterm_scoped with (Γ := revive_sc Δ) (m := cType).
+  1: admit.
+  intros x hx.
   ssimpl. unfold psubst. rewrite div2_vreg.
   unfold rev_subst. unfold ghv.
-  destruct (nth_error Δ x) eqn:e.
-  - rewrite odd_vreg. destruct_ifs. all: mode_eqs. all: try discriminate.
-    all: try reflexivity.
-    admit.
-  - eapply hcσ in e. destruct e as [k [e1 e2]].
-    rewrite e1. cbn. unfold relv. rewrite e2. reflexivity.
+  unfold inscope in hx. unfold revive_sc in hx.
+  rewrite nth_error_map in hx.
+  destruct (nth_error Δ x) eqn:e. 2: discriminate.
+  cbn in hx. destruct (isProp m) eqn:e1. 1: discriminate.
+  rewrite odd_vreg.
+  destruct_ifs. all: mode_eqs. all: try discriminate.
+  all: try reflexivity.
+  destruct m. all: discriminate.
 Abort.
 
 Opaque epm_lift rpm_lift.
