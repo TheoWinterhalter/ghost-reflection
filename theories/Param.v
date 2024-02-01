@@ -1089,12 +1089,12 @@ Qed.
 
 Lemma param_subst :
   ∀ Γ Δ σ t,
-    (* sscoping Γ σ Δ → *)
+    sscoping Γ σ Δ →
     sscoping_comp Γ σ Δ →
     ⟦ Γ | t <[ σ ] ⟧p = ⟦ Δ | t ⟧p <[ psubst Δ Γ σ ].
 Proof.
-  intros Γ Δ σ t (* hσ *) hcσ.
-  induction t in Γ, Δ, σ, (* hσ, *) hcσ |- *.
+  intros Γ Δ σ t hσ hcσ.
+  induction t in Γ, Δ, σ, hσ, hcσ |- *.
   - cbn. destruct (nth_error Δ n) eqn:e.
     + destruct_if e1.
       * mode_eqs. cbn. unfold psubst. rewrite div2_vreg.
@@ -1105,19 +1105,51 @@ Proof.
         destruct m. all: discriminate.
     + eapply hcσ in e as e'. destruct e' as [k [e1 e2]].
       rewrite e1. cbn. rewrite e2. reflexivity.
+  - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
   - admit.
   - admit.
   - admit.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt. 2,3: eassumption.
+    destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt. 2,3: eassumption.
+    destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt3. 2,3: eassumption.
+    erewrite revive_subst. 2,3: eassumption.
+    destruct_ifs. 1: reflexivity.
+    cbn.
+    (* Need similar rpm_lift vs rev_subst commutation *)
+    admit.
+  - cbn - [mode_inb].
+    erewrite md_subst. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite revive_subst. 2,3: eassumption.
+    destruct_ifs. 1: reflexivity.
+    cbn. admit.
+  - cbn - [mode_inb].
+    erewrite !revive_subst. 2-5: eassumption.
+    erewrite !erase_subst. 2,3: eassumption.
+    admit.
+  - cbn - [mode_inb].
+    erewrite erase_subst. 2,3: eassumption.
+    erewrite revive_subst. 2,3: eassumption.
+    admit.
   - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - cbn. reflexivity.
+  - cbn.
+    erewrite erase_subst. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    destruct_ifs. all: try reflexivity.
+    + admit.
+    + admit.
 Abort.
 
 (** Parametricity preserves typing **)
