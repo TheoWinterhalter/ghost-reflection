@@ -897,7 +897,14 @@ Proof.
     + cbn. rewrite pren_epm_lift. ssimpl. f_equal. f_equal.
       eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
       ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. reflexivity.
-  - admit.
+  - cbn - [mode_inb].
+    erewrite md_ren. 2,3: eassumption.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite erase_ren. 2,3: eassumption.
+    erewrite revive_ren. 2,3: eassumption.
+    rewrite <- pren_epm_lift. rewrite <- pren_rpm_lift.
+    destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite md_ren. 2,3: eassumption.
     destruct_ifs. all: eauto.
@@ -1020,7 +1027,7 @@ Proof.
     + cbn. f_equal. 1: f_equal. all: eauto.
       erewrite erase_ren. 2,3: eassumption.
       rewrite pren_epm_lift. reflexivity.
-Abort.
+Qed.
 
 (** Parametricity preserves typing **)
 
