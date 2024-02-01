@@ -179,8 +179,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     if relm (md Γ p) then cDummy
     else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p ;
   ⟦ Γ | revealP t p ⟧p :=
-    if isKind (md Γ p) then cDummy
-    else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p ;
+    if isKind (md Γ p) then capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p
+    else cDummy ;
   ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv ⟦ Γ | v ⟧pv) ;
   ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv) ;
   ⟦ Γ | ghcast A u v e P t ⟧p :=
@@ -924,7 +924,7 @@ Proof.
     rewrite !pren_rpm_lift. reflexivity.
   - cbn - [mode_inb].
     erewrite md_ren. 2,3: eassumption.
-    destruct_ifs. 1: reflexivity.
+    destruct_ifs. 2: reflexivity.
     cbn. erewrite IHt2. 2,3: eassumption.
     erewrite IHt1. 2,3: eassumption.
     erewrite ?erase_ren, ?revive_ren. 2,3: eassumption.
@@ -1742,7 +1742,13 @@ Proof.
     erewrite scoping_md. 2: eassumption.
     erewrite scoping_md. 2: eassumption.
     cbn.
-    (* I guess I made a mistake, this shouldn't be dummy! *)
+    (* In the end, this still doesn't work.
+      Two options:
+      - Give up on this conversion rule and have it only as a logical
+        equivalence, which it basically is already.
+      - Change the parametricity translation of revealP so that it prepends
+        ⊤ ⇒.
+    *)
     admit.
 Abort.
 
