@@ -1726,6 +1726,24 @@ Proof.
           ++ rewrite en. reflexivity.
           ++ destruct mx. all: discriminate.
     + destruct mx. all: discriminate.
+  - cbn - [mode_inb].
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
+    destruct_if e.
+    1:{
+      destruct H2 as [emp | [ emp | ]]. 3: contradiction.
+      all: subst. all: discriminate.
+    }
+    cbn. apply cconv_refl.
+  - cbn - [mode_inb].
+    erewrite md_ren.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md. 2: eassumption.
+    cbn.
+    (* I guess I made a mistake, this shouldn't be dummy! *)
+    admit.
 Abort.
 
 (** Parametricity preserves typing **)
