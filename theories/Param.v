@@ -1212,7 +1212,230 @@ Proof.
     + eapply hcσ in e as e'. destruct e' as [k [e1 e2]].
       rewrite e1. cbn. rewrite e2. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
-  - admit.
+  - cbn - [mode_inb].
+    unfold pPi.
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2.
+    2:{ eapply sscoping_shift. eassumption. }
+    2:{ eapply sscoping_comp_shift. assumption. }
+    erewrite !erase_subst.
+    2-5: eauto using sscoping_shift, sscoping_comp_shift with cc_scope.
+    erewrite <- psubst_epm_lift. 2: eapply erase_scoping_strong.
+    destruct m, m0. all: cbn in *.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: cbn. all: f_equal.
+      3:{ ssimpl. reflexivity. }
+      3:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      all: f_equal. all: f_equal.
+      all: eapply ext_cterm. all: ssimpl. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: cbn. all: f_equal.
+      3:{ ssimpl. reflexivity. }
+      3:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      all: f_equal. all: f_equal.
+      all: eapply ext_cterm. all: ssimpl. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: cbn. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      unfold cty_lift. f_equal. all: f_equal.
+      all: unfold close. all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+      all: ssimpl. all: reflexivity.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal.
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl.
+        rewrite rinstInst'_cterm. reflexivity.
+      }
+      cbn. unfold cty_lift. f_equal. all: f_equal.
+      all: unfold close. all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+      all: ssimpl. all: reflexivity.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      cbn. f_equal. all: f_equal. all: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      cbn. f_equal. all: f_equal. all: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      cbn. unfold cty_lift. f_equal. all: f_equal. all: unfold close.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+      all: ssimpl. all: reflexivity.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal.
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl.
+        erewrite rinstInst'_cterm. reflexivity.
+      }
+      cbn. unfold cty_lift. f_equal. all: f_equal. all: unfold close.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+      all: ssimpl. all: reflexivity.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      cbn. f_equal. all: f_equal. all: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      cbn. f_equal. all: f_equal. all: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+      }
+      cbn. f_equal. all: f_equal. all: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+      all: ssimpl.
+      * rewrite rinstInst'_cterm. reflexivity.
+      * rewrite rinstInst'_cterm. reflexivity.
+    + f_equal. all: f_equal.
+      2:{ ssimpl. reflexivity. }
+      1: rewrite psubst_epm_lift.
+      2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
+      all: f_equal.
+      2:{
+        ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl.
+        erewrite rinstInst'_cterm. reflexivity.
+      }
+      cbn. unfold cty_lift. f_equal. all: f_equal. all: unfold close.
+      all: ssimpl.
+      all: eapply ext_cterm. all: intros [].
+      all: cbn. 1,3: reflexivity.
+      all: ssimpl.
+      all: erewrite erase_ren ; eauto using rscoping_S, rscoping_comp_S.
+      all: ssimpl. all: reflexivity.
+    + f_equal. all: f_equal. 1: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+    + f_equal. all: f_equal. 1: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+    + f_equal. all: f_equal. 1: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
+    + f_equal. unfold close.
+      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite psubst_SS. ssimpl.
+      rewrite rinstInst'_cterm. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt3.
