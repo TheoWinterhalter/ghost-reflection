@@ -504,10 +504,6 @@ Proof.
     + constructor. rewrite nth_error_param_vpar. rewrite H.
       cbn. rewrite e. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
-    (* For debug *)
-    (* remember m as m' eqn:em. remember mx as mx' eqn:emx.
-    destruct m', mx'. all: cbn in *. *)
-    (* End debug *)
     destruct m, mx. all: cbn in *.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
@@ -1099,16 +1095,31 @@ Qed.
 
 Transparent epm_lift rpm_lift.
 
+Lemma psubst_epm_lift :
+  ∀ Γ Δ σ t,
+    ccscoping (erase_sc Δ) t cType →
+    (epm_lift t) <[ psubst Δ Γ σ ] = epm_lift (t <[ σ >> erase_term Γ ]).
+Proof.
+  intros Γ Δ σ t ht.
+  unfold epm_lift. ssimpl.
+  eapply ext_cterm_scoped. 1: eassumption.
+  intros x hx.
+  ssimpl. unfold psubst. rewrite div2_vreg.
+  unfold inscope in hx. unfold erase_sc in hx.
+  rewrite nth_error_map in hx.
+  destruct (nth_error Δ x) eqn:e. 2: discriminate.
+  cbn - [mode_inb] in hx. destruct (relm m) eqn:e1. 2: discriminate.
+  rewrite odd_vreg. reflexivity.
+Qed.
+
 Lemma psubst_rpm_lift :
   ∀ Γ Δ σ t,
-    (* sscoping Γ σ Δ →
-    sscoping_comp Γ σ Δ → *)
+    ccscoping (revive_sc Δ) t cType →
     (rpm_lift t) <[ psubst Δ Γ σ ] = rpm_lift (t <[ rev_subst Δ Γ σ ]).
 Proof.
-  intros Γ Δ σ t (* hσ hcσ *).
+  intros Γ Δ σ t ht.
   unfold rpm_lift. ssimpl.
-  eapply ext_cterm_scoped with (Γ := revive_sc Δ) (m := cType).
-  1: admit.
+  eapply ext_cterm_scoped. 1: eassumption.
   intros x hx.
   ssimpl. unfold psubst. rewrite div2_vreg.
   unfold rev_subst. unfold ghv.
@@ -1120,7 +1131,7 @@ Proof.
   destruct_ifs. all: mode_eqs. all: try discriminate.
   all: try reflexivity.
   destruct m. all: discriminate.
-Abort.
+Qed.
 
 Opaque epm_lift rpm_lift.
 
