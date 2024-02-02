@@ -131,7 +131,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let Ae := ⟦ Γ | A ⟧pτ in
     let Ap := ⟦ Γ | A ⟧p in
     let Bp := ⟦ mx :: Γ | B ⟧p in
-    let k := umax m i j in
+    let k := umax mx m i j in
     match m with
     | mKind =>
       clam cType (capp (pKind k) Te) (
@@ -1886,10 +1886,7 @@ Proof.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
       * cbn. ueq_subst. econv.
-        (* TODO umax should take both universes *)
-        admit.
       * cbn. ueq_subst. econv.
-        admit.
       * cbn. apply crtyping_shift. apply crtyping_S.
       * eapply cstyping_one_none.
     + econv. all: try reflexivity.
@@ -1916,9 +1913,7 @@ Proof.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
       * cbn. ueq_subst. econv.
-        admit.
       * cbn. ueq_subst. econv.
-        admit.
       * apply crtyping_shift. apply crtyping_S.
       * apply cstyping_one_none.
     + econv. all: try reflexivity.
@@ -1946,9 +1941,7 @@ Proof.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
       * cbn. ueq_subst. econv.
-        admit.
       * cbn. ueq_subst. econv.
-        admit.
       * apply crtyping_shift. apply crtyping_S.
       * apply cstyping_one_none.
     + econv. all: try reflexivity.

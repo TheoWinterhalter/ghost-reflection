@@ -658,7 +658,9 @@ Proof.
         -- eapply erase_typing_El. 2: eassumption.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
-      * unfold umax. rewrite e0. apply cconv_sym. constructor.
+      * unfold umax. rewrite e0.
+        destruct_if e1. 1:{ mode_eqs. discriminate. }
+        apply cconv_sym. constructor.
       * repeat econstructor.
     + destruct m. all: try discriminate.
     + destruct m. all: try discriminate.
@@ -695,15 +697,14 @@ Proof.
       * eauto with cc_scope cc_type.
     + destruct (relm mx) eqn:e'. 1: discriminate.
       econstructor.
-      * eapply ctype_ty_lift with (j := max i j).
+      * eapply ctype_ty_lift with (j := umax mx m i j).
         -- econstructor.
           ++ eapply ctype_close. eapply IHh2.
             erewrite scoping_md. 2: eassumption. reflexivity.
           ++ cbn. constructor.
           ++ eauto with cc_type.
-        -- lia.
-      * unfold umax. rewrite e1.
-        apply cconv_sym. constructor.
+        -- unfold umax. rewrite e1. destruct_ifs. all: lia.
+      * apply cconv_sym. constructor.
       * eauto with cc_scope cc_type.
   - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2, IHh3.
     repeat (erewrite scoping_md ; [| eassumption]).
