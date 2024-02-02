@@ -70,6 +70,10 @@ Notation "A ⇒[ i | j / mx | m ] B" :=
 
 Notation top := (bot ⇒[ 0 | 0 / mProp | mProp ] bot).
 
+(*** Equality of universe levels **)
+Definition ueq (m : mode) (i j : level) :=
+  m = mProp ∨ i = j.
+
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
 
@@ -109,17 +113,12 @@ Inductive conversion (Γ : context) : term → term → Prop :=
     ∀ i j,
       Γ ⊢ Sort mProp i ≡ Sort mProp j
 
-(** We use something non-standard here:
-  Since the levels are stuck in the syntax, we allow them to be modulo
-  conversion somehow by referring to conversion of universes.
-  This lets us account for our impredicativity rule above.
-**)
 | cong_Pi :
     ∀ i i' j j' m mx A A' B B',
       Γ ⊢ A ≡ A' →
       Γ ,, (mx, A) ⊢ B ≡ B' →
-      Γ ⊢ Sort mx i ≡ Sort mx i' →
-      Γ ,, (mx, A) ⊢ Sort m j ≡ Sort m j' →
+      ueq mx i i' →
+      ueq m j j' →
       Γ ⊢ Pi i j m mx A B ≡ Pi i' j' m mx A' B'
 
 | cong_lam :

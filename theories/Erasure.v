@@ -494,7 +494,7 @@ Proof.
     cbn. constructor.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
-    cbn - [mode_inb] in IHh2, IHh4.
+    cbn - [mode_inb] in IHh2.
     destruct_ifs.
     + destruct (relm mx) eqn:e1. 2: discriminate.
       constructor. all: constructor. all: constructor. all: eauto.
