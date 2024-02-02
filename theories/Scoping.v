@@ -60,11 +60,11 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ p m →
       scoping Γ (reveal t P p) m
 
-| scope_revealP :
+| scope_Reveal :
     ∀ t p,
       scoping Γ t mGhost →
       scoping Γ p mKind →
-      scoping Γ (revealP t p) mKind
+      scoping Γ (Reveal t p) mKind
 
 | scope_gheq :
     ∀ A u v,

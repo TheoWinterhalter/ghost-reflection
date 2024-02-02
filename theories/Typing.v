@@ -147,11 +147,11 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       In mp [ mProp ; mGhost ] →
       Γ ⊢ reveal (hide t) P p ≡ app p t
 
-| revealP_hide :
+| Reveal_hide :
     ∀ t p,
       cscoping Γ p mKind →
       cscoping Γ t mType →
-      Γ ⊢ revealP (hide t) p ≡ top ⇒[ 0 | 0 / mProp | mProp ] app p t
+      Γ ⊢ Reveal (hide t) p ≡ top ⇒[ 0 | 0 / mProp | mProp ] app p t
 
 (** Congruence rules **)
 
@@ -198,11 +198,11 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ p ≡ p' →
       Γ ⊢ reveal t P p ≡ reveal t' P' p'
 
-| cong_revealP :
+| cong_Reveal :
     ∀ t t' p p',
       Γ ⊢ t ≡ t' →
       Γ ⊢ p ≡ p' →
-      Γ ⊢ revealP t p ≡ revealP t' p'
+      Γ ⊢ Reveal t p ≡ Reveal t' p'
 
 | cong_gheq :
     ∀ A A' u u' v v',
@@ -331,13 +331,13 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ A : Sort mType i →
       Γ ⊢ reveal t P p : app P t
 
-| type_revealP :
+| type_Reveal :
     ∀ i A t p,
       cscoping Γ t mGhost →
       cscoping Γ p mKind →
       Γ ⊢ t : Erased A →
       Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
-      Γ ⊢ revealP t p : Sort mProp 0
+      Γ ⊢ Reveal t p : Sort mProp 0
 
 | type_gheq :
     ∀ i A u v,

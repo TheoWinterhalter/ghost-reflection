@@ -110,7 +110,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
       else ⟦ Γ | u ⟧ε
     else cDummy ;
   ⟦ Γ | Erased A ⟧ε := ⟦ Γ | A ⟧ε ;
-  ⟦ Γ | revealP t p ⟧ε := ctt ;
+  ⟦ Γ | Reveal t p ⟧ε := ctt ;
   ⟦ Γ | gheq A u v ⟧ε := ctt ;
   ⟦ Γ | ghcast A u v e P t ⟧ε := ⟦ Γ | t ⟧ε ;
   ⟦ Γ | bot ⟧ε := ctt ;

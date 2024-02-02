@@ -178,7 +178,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | reveal t P p ⟧p :=
     if relm (md Γ p) then cDummy
     else capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p ;
-  ⟦ Γ | revealP t p ⟧p :=
+  ⟦ Γ | Reveal t p ⟧p :=
     if isKind (md Γ p) then capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p
     else cDummy ;
   ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv ⟦ Γ | v ⟧pv) ;
@@ -1866,9 +1866,9 @@ Proof.
       Two options:
       - Give up on this conversion rule and have it only as a logical
         equivalence, which it basically is already.
-        In that case we see revealP as a type constructor and maybe we call it
+        In that case we see Reveal as a type constructor and maybe we call it
         Reveal.
-      - Change the parametricity translation of revealP so that it prepends
+      - Change the parametricity translation of Reveal so that it prepends
         ⊤ ⇒.
     *)
     admit.

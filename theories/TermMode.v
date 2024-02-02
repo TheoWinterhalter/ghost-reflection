@@ -30,7 +30,7 @@ Section Mode.
       | mGhost => mGhost
       | _ => mProp
       end
-    | revealP t p => mKind
+    | Reveal t p => mKind
     | gheq A u v => mKind
     | ghrefl A u => mProp
     | ghcast A u v e P t => md Γ t

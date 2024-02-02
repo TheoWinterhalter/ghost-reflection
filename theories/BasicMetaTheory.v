@@ -260,9 +260,9 @@ Proof.
   intuition eauto.
 Qed.
 
-Lemma scope_revealP_inv :
+Lemma scope_Reveal_inv :
   ∀ Γ t p m,
-    scoping Γ (revealP t p) m →
+    scoping Γ (Reveal t p) m →
     scoping Γ t mGhost ∧
     scoping Γ p mKind ∧
     m = mKind.
@@ -392,7 +392,7 @@ Proof.
       constructor. all: auto.
       constructor. assumption.
   - split.
-    + intro hu. apply scope_revealP_inv in hu. intuition subst.
+    + intro hu. apply scope_Reveal_inv in hu. intuition subst.
       econstructor.
       * apply scope_top.
       * eapply scoping_ren. 2: econstructor ; eauto.
@@ -434,7 +434,7 @@ Proof.
     constructor. all: firstorder.
   - clear h1 h2. revert t t' p p' IHh1 IHh2. wlog_iff.
     intros t t' p p' iht ihp h.
-    apply scope_revealP_inv in h. intuition subst.
+    apply scope_Reveal_inv in h. intuition subst.
     constructor. all: firstorder.
   - clear h1 h2 h3. revert A A' u u' v v' IHh1 IHh2 IHh3. wlog_iff.
     intros A A' u u' v v' ihA ihu ihv h.
@@ -1094,9 +1094,9 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
-Lemma type_revealP_inv :
+Lemma type_Reveal_inv :
   ∀ Γ t p C,
-    Γ ⊢ revealP t p : C →
+    Γ ⊢ Reveal t p : C →
     ∃ i A,
       cscoping Γ t mGhost ∧
       cscoping Γ p mKind ∧
@@ -1215,7 +1215,7 @@ Ltac ttinv h h' :=
     | Erased _ => eapply type_erased_inv in h as h'
     | hide _ => eapply type_hide_inv in h as h'
     | reveal _ _ _ => eapply type_reveal_inv in h as h'
-    | revealP _ _ => eapply type_revealP_inv in h as h'
+    | Reveal _ _ => eapply type_Reveal_inv in h as h'
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
     | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
     | ghcast _ _ _ => eapply type_ghcast_inv in h as h'

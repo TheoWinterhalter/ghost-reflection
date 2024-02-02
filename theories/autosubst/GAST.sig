@@ -15,7 +15,7 @@ app : term -> term -> term
 Erased : term -> term
 hide : term -> term
 reveal : term -> term -> term -> term
-revealP : term -> term -> term
+Reveal : term -> term -> term
 
 gheq : term -> term -> term -> term
 ghrefl : term -> term -> term

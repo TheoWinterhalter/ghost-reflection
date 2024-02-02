@@ -14,7 +14,7 @@ Inductive term : Type :=
   | Erased : term -> term
   | hide : term -> term
   | reveal : term -> term -> term -> term
-  | revealP : term -> term -> term
+  | Reveal : term -> term -> term
   | gheq : term -> term -> term -> term
   | ghrefl : term -> term -> term
   | ghcast : term -> term -> term -> term -> term -> term -> term
@@ -86,11 +86,11 @@ exact (eq_trans
          (ap (fun x => reveal t0 t1 x) H2)).
 Qed.
 
-Lemma congr_revealP {s0 : term} {s1 : term} {t0 : term} {t1 : term}
-  (H0 : s0 = t0) (H1 : s1 = t1) : revealP s0 s1 = revealP t0 t1.
+Lemma congr_Reveal {s0 : term} {s1 : term} {t0 : term} {t1 : term}
+  (H0 : s0 = t0) (H1 : s1 = t1) : Reveal s0 s1 = Reveal t0 t1.
 Proof.
-exact (eq_trans (eq_trans eq_refl (ap (fun x => revealP x s1) H0))
-         (ap (fun x => revealP t0 x) H1)).
+exact (eq_trans (eq_trans eq_refl (ap (fun x => Reveal x s1) H0))
+         (ap (fun x => Reveal t0 x) H1)).
 Qed.
 
 Lemma congr_gheq {s0 : term} {s1 : term} {s2 : term} {t0 : term} {t1 : term}
@@ -165,7 +165,7 @@ Fixpoint ren_term (xi_term : nat -> nat) (s : term) {struct s} : term :=
   | reveal s0 s1 s2 =>
       reveal (ren_term xi_term s0) (ren_term xi_term s1)
         (ren_term xi_term s2)
-  | revealP s0 s1 => revealP (ren_term xi_term s0) (ren_term xi_term s1)
+  | Reveal s0 s1 => Reveal (ren_term xi_term s0) (ren_term xi_term s1)
   | gheq s0 s1 s2 =>
       gheq (ren_term xi_term s0) (ren_term xi_term s1) (ren_term xi_term s2)
   | ghrefl s0 s1 => ghrefl (ren_term xi_term s0) (ren_term xi_term s1)
@@ -183,7 +183,7 @@ Proof.
 exact (scons (var var_zero) (funcomp (ren_term shift) sigma)).
 Defined.
 
-Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} : 
+Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} :
 term :=
   match s with
   | var s0 => sigma_term s0
@@ -201,8 +201,8 @@ term :=
   | reveal s0 s1 s2 =>
       reveal (subst_term sigma_term s0) (subst_term sigma_term s1)
         (subst_term sigma_term s2)
-  | revealP s0 s1 =>
-      revealP (subst_term sigma_term s0) (subst_term sigma_term s1)
+  | Reveal s0 s1 =>
+      Reveal (subst_term sigma_term s0) (subst_term sigma_term s1)
   | gheq s0 s1 s2 =>
       gheq (subst_term sigma_term s0) (subst_term sigma_term s1)
         (subst_term sigma_term s2)
@@ -250,8 +250,8 @@ subst_term sigma_term s = s :=
       congr_reveal (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
         (idSubst_term sigma_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP (idSubst_term sigma_term Eq_term s0)
+  | Reveal s0 s1 =>
+      congr_Reveal (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
   | gheq s0 s1 s2 =>
       congr_gheq (idSubst_term sigma_term Eq_term s0)
@@ -309,8 +309,8 @@ ren_term xi_term s = ren_term zeta_term s :=
       congr_reveal (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
         (extRen_term xi_term zeta_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP (extRen_term xi_term zeta_term Eq_term s0)
+  | Reveal s0 s1 =>
+      congr_Reveal (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
   | gheq s0 s1 s2 =>
       congr_gheq (extRen_term xi_term zeta_term Eq_term s0)
@@ -369,8 +369,8 @@ subst_term sigma_term s = subst_term tau_term s :=
       congr_reveal (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
         (ext_term sigma_term tau_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP (ext_term sigma_term tau_term Eq_term s0)
+  | Reveal s0 s1 =>
+      congr_Reveal (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
   | gheq s0 s1 s2 =>
       congr_gheq (ext_term sigma_term tau_term Eq_term s0)
@@ -434,8 +434,8 @@ Fixpoint compRenRen_term (xi_term : nat -> nat) (zeta_term : nat -> nat)
       congr_reveal (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
+  | Reveal s0 s1 =>
+      congr_Reveal (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
   | gheq s0 s1 s2 =>
       congr_gheq (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
@@ -504,8 +504,8 @@ subst_term tau_term (ren_term xi_term s) = subst_term theta_term s :=
       congr_reveal (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP
+  | Reveal s0 s1 =>
+      congr_Reveal
         (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
   | gheq s0 s1 s2 =>
@@ -589,8 +589,8 @@ ren_term zeta_term (subst_term sigma_term s) = subst_term theta_term s :=
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP
+  | Reveal s0 s1 =>
+      congr_Reveal
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
   | gheq s0 s1 s2 =>
@@ -679,8 +679,8 @@ subst_term tau_term (subst_term sigma_term s) = subst_term theta_term s :=
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP
+  | Reveal s0 s1 =>
+      congr_Reveal
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
   | gheq s0 s1 s2 =>
@@ -811,8 +811,8 @@ Fixpoint rinst_inst_term (xi_term : nat -> nat) (sigma_term : nat -> term)
       congr_reveal (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
         (rinst_inst_term xi_term sigma_term Eq_term s2)
-  | revealP s0 s1 =>
-      congr_revealP (rinst_inst_term xi_term sigma_term Eq_term s0)
+  | Reveal s0 s1 =>
+      congr_Reveal (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
   | gheq s0 s1 s2 =>
       congr_gheq (rinst_inst_term xi_term sigma_term Eq_term s0)
@@ -975,7 +975,7 @@ Tactic Notation "auto_unfold" "in" "*" := repeat
                                            unfold VarInstance_term, Var, ids,
                                             Ren_term, Ren1, ren1,
                                             Up_term_term, Up_term, up_term,
-                                            Subst_term, Subst1, subst1 
+                                            Subst_term, Subst1, subst1
                                             in *.
 
 Ltac asimpl' := repeat (first
@@ -1050,7 +1050,7 @@ Fixpoint allfv_term (p_term : nat -> Prop) (s : term) {struct s} : Prop :=
   | reveal s0 s1 s2 =>
       and (allfv_term p_term s0)
         (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
-  | revealP s0 s1 =>
+  | Reveal s0 s1 =>
       and (allfv_term p_term s0) (and (allfv_term p_term s1) True)
   | gheq s0 s1 s2 =>
       and (allfv_term p_term s0)
@@ -1110,7 +1110,7 @@ Fixpoint allfvTriv_term (p_term : nat -> Prop) (H_term : forall x, p_term x)
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1)
            (conj (allfvTriv_term p_term H_term s2) I))
-  | revealP s0 s1 =>
+  | Reveal s0 s1 =>
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1) I)
   | gheq s0 s1 s2 =>
@@ -1284,7 +1284,7 @@ allfv_term p_term s -> allfv_term q_term s :=
                                     end
                      end
                  end) I))
-  | revealP s0 s1 =>
+  | Reveal s0 s1 =>
       fun HP =>
       conj
         (allfvImpl_term p_term q_term H_term s0
@@ -1584,7 +1584,7 @@ allfv_term (funcomp p_term xi_term) s :=
                                    end
                      end
                  end) I))
-  | revealP s0 s1 =>
+  | Reveal s0 s1 =>
       fun H =>
       conj
         (allfvRenL_term p_term xi_term s0 match H with
@@ -1880,7 +1880,7 @@ allfv_term p_term (ren_term xi_term s) :=
                                    end
                      end
                  end) I))
-  | revealP s0 s1 =>
+  | Reveal s0 s1 =>
       fun H =>
       conj
         (allfvRenR_term p_term xi_term s0 match H with
