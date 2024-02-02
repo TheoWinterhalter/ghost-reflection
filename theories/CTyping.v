@@ -293,7 +293,13 @@ Inductive cwf : ccontext → Prop :=
       whenSome (λ '(m, A), isType Γ A m) d →
       cwf (d :: Γ).
 
+Create HintDb cc_conv discriminated.
 Create HintDb cc_type discriminated.
+
+Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
+  cconv_J_refl ccong_Prop ccong_Pi ccong_clam ccong_app ccong_bot_elim
+  ccong_tyval ccong_El ccong_Err ccong_squash ccong_teq ccong_trefl ccong_tJ
+: cc_conv.
 
 Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty ctype_tyval
