@@ -1869,6 +1869,95 @@ Proof.
       * cbn. eapply crtyping_shift_eq.
         -- apply crtyping_shift. apply crtyping_S.
         -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S, cstyping_one_none.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S, cstyping_one_none.
+      * cbn. ueq_subst. econv.
+        (* TODO umax should take both universes *)
+        admit.
+      * cbn. ueq_subst. econv.
+        admit.
+      * cbn. apply crtyping_shift. apply crtyping_S.
+      * eapply cstyping_one_none.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S, cstyping_one_none.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S, cstyping_one_none.
+      * cbn. ueq_subst. econv.
+        admit.
+      * cbn. ueq_subst. econv.
+        admit.
+      * apply crtyping_shift. apply crtyping_S.
+      * apply cstyping_one_none.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S, cstyping_one_none.
+      * cbn. ueq_subst. econv.
+      * cbn. ueq_subst. econv.
+      * eapply cstyping_nones.
+      * cbn. eapply crtyping_shift_eq.
+        -- apply crtyping_shift. apply crtyping_S.
+        -- cbn. f_equal. ssimpl. reflexivity.
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S, cstyping_one_none.
+      * cbn. ueq_subst. econv.
+        admit.
+      * cbn. ueq_subst. econv.
+        admit.
+      * apply crtyping_shift. apply crtyping_S.
+      * apply cstyping_one_none.
+    + econv. all: try reflexivity.
+      eauto using crtyping_S.
+    + econv. all: try reflexivity.
+      eauto using crtyping_S.
+    + econv. all: try reflexivity.
+      eauto using crtyping_S.
+    + econv. apply cstyping_one_none.
 Abort.
 
 (** Parametricity preserves typing **)
