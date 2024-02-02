@@ -128,3 +128,6 @@ Notation ccxscoping Γ := (ccscoping (csc Γ)).
 Create HintDb cc_scope discriminated.
 
 Hint Constructors ccscoping : cc_scope.
+
+Ltac escope :=
+  unshelve typeclasses eauto with cc_scope shelvedb ; shelve_unifiable.

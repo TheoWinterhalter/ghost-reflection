@@ -1539,6 +1539,95 @@ Proof.
     + unfold Nat.double. lia.
 Qed.
 
+Lemma ccong_pPi :
+  ∀ Γ mx A B C A' B' C',
+    Γ ⊢ᶜ A ≡ A' →
+    Γ ⊢ᶜ B ≡ B' →
+    Some (mx, capp (S ⋅ B) (cvar 0)) :: Some (cType, A) :: Γ ⊢ᶜ C ≡ C' →
+    Γ ⊢ᶜ pPi mx A B C ≡ pPi mx A' B' C'.
+Proof.
+  intros Γ mx A B C A' B' C' hA hB hC.
+  unfold pPi.
+  econv.
+  eapply cconv_ren. 2: eassumption.
+  apply crtyping_S.
+Qed.
+
+Hint Resolve ccong_pPi : cc_conv.
+
+Lemma ccong_plam :
+  ∀ Γ mp A B t A' B' t',
+    Γ ⊢ᶜ A ≡ A' →
+    Γ ⊢ᶜ B ≡ B' →
+    Some (mp, capp (S ⋅ B) (cvar 0)) :: Some (cType, A) :: Γ ⊢ᶜ t ≡ t' →
+    Γ ⊢ᶜ plam mp A B t ≡ plam mp A' B' t'.
+Proof.
+  intros Γ mp A B t A' B' t' hA hB ht.
+  econv.
+  eapply cconv_ren. 2: eassumption.
+  apply crtyping_S.
+Qed.
+
+Hint Resolve ccong_plam : cc_conv.
+
+Transparent epm_lift rpm_lift.
+
+Lemma ccong_epm_lift :
+  ∀ Γ Γ' t t',
+    ⟦ Γ ⟧ε ⊢ᶜ t ≡ t' →
+    Γ' = ⟦ Γ ⟧p →
+    Γ' ⊢ᶜ epm_lift t ≡ epm_lift t'.
+Proof.
+  intros Γ Γ' t t' ht ->.
+  unfold epm_lift. eapply cconv_ren.
+  - apply typing_er_sub_param.
+  - assumption.
+Qed.
+
+Lemma ccong_rpm_lift :
+  ∀ Γ Γ' t t',
+    ⟦ Γ ⟧v ⊢ᶜ t ≡ t' →
+    Γ' = ⟦ Γ ⟧p →
+    Γ' ⊢ᶜ rpm_lift t ≡ rpm_lift t'.
+Proof.
+  intros Γ Γ' t t' ht ->.
+  unfold rpm_lift. eapply cconv_ren.
+  - apply typing_rev_sub_param.
+  - assumption.
+Qed.
+
+Hint Resolve ccong_epm_lift ccong_rpm_lift : cc_conv.
+
+Opaque epm_lift rpm_lift.
+
+Hint Resolve cconv_ren cconv_subst : cc_conv.
+
+Lemma erase_conv_eq :
+  ∀ Γ Γ' Γ'' u v,
+    Γ ⊢ u ≡ v →
+    Γ' = ⟦ Γ ⟧ε →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | u ⟧ε ≡ ⟦ Γ'' | v ⟧ε.
+Proof.
+  intros Γ Γ' Γ'' u v h -> ->.
+  apply erase_conv. assumption.
+Qed.
+
+Hint Resolve erase_conv_eq : cc_conv.
+
+Lemma revive_conv_eq :
+  ∀ Γ Γ' Γ'' u v,
+    Γ ⊢ u ≡ v →
+    Γ' = ⟦ Γ ⟧v →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | u ⟧v ≡ ⟦ Γ'' | v ⟧v.
+Proof.
+  intros Γ Γ' Γ'' u v h -> ->.
+  apply revive_conv. assumption.
+Qed.
+
+Hint Resolve revive_conv_eq : cc_conv.
+
 Lemma param_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
@@ -1546,6 +1635,7 @@ Lemma param_conv :
 Proof.
   intros Γ u v h.
   induction h.
+  (* all: try solve [ cbn ; destruct_ifs ; eauto with cc_conv ]. *)
   - cbn - [mode_inb].
     erewrite scoping_md. 2: eassumption.
     destruct_ifs. all: mode_eqs. all: try discriminate.
@@ -1755,7 +1845,12 @@ Proof.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     destruct m, mx. all: simpl.
-    (* Now I really want to have a conversion tactic I guess. *)
+    + econv. all: try reflexivity.
+      all: eauto using crtyping_S.
+      (* TODO Problems:
+        - for cty I have different universes and that's not great
+        - I have some wrong equalities to prove how come.
+      *)
 Abort.
 
 (** Parametricity preserves typing **)
