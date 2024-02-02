@@ -1596,6 +1596,8 @@ Proof.
   - assumption.
 Qed.
 
+(* Need to have them opaque so that they can't be confused. *)
+Hint Opaque epm_lift rpm_lift : cc_scope cc_conv cc_type.
 Hint Resolve ccong_epm_lift ccong_rpm_lift : cc_conv.
 
 Opaque epm_lift rpm_lift.
@@ -1847,9 +1849,12 @@ Proof.
     destruct m, mx. all: simpl.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      (* TODO Problems:
-        - for cty I have different universes and that's not great
-        - I have some wrong equalities to prove how come.
+      (* TODO Problem:
+        for cty I have different universes and that's not great
+        It might be better to give up on those weird sort conversions and
+        instead give up on uniqueness of type. We could then revert some changes
+        made to the syntax. This means that we may have to give up on getting
+        rid of redundant annotations which is not great though.
       *)
 Abort.
 
