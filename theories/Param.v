@@ -1645,6 +1645,19 @@ Proof.
   apply crtyping_shift. assumption.
 Qed.
 
+Lemma csc_param_ctx :
+  ∀ Γ,
+    csc ⟦ Γ ⟧p = param_sc (sc Γ).
+Proof.
+  intros Γ.
+  induction Γ as [| [m A] Γ ih].
+  - cbn. reflexivity.
+  - cbn - [mode_inb]. destruct_ifs. all: cbn.
+    + f_equal. f_equal. apply ih.
+    + f_equal. f_equal. apply ih.
+    + f_equal. f_equal. apply ih.
+Qed.
+
 Lemma param_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
@@ -1951,6 +1964,39 @@ Proof.
     + econv. all: try reflexivity.
       eauto using crtyping_S.
     + econv. apply cstyping_one_none.
+  - cbn - [mode_inb] in *. destruct_ifs.
+    + econv. apply cstyping_one_none.
+    + econv. all: try reflexivity.
+      apply crtyping_S.
+    + econv. all: try reflexivity.
+      apply crtyping_S.
+  - cbn - [mode_inb].
+    eapply conv_md in h2 as e2. rewrite <- e2.
+    destruct_ifs.
+    + econv. all: reflexivity.
+    + econv. all: reflexivity.
+    + econv.
+  - cbn - [mode_inb].
+    eapply conv_md in h as e. rewrite <- e.
+    destruct_ifs. all: econv.
+  - cbn - [mode_inb].
+    eapply conv_md in h as e. rewrite <- e.
+    destruct_ifs. all: econv.
+  - cbn - [mode_inb].
+    eapply conv_md in h3 as e3. rewrite <- e3.
+    destruct_ifs. all: econv. all: reflexivity.
+  - cbn - [mode_inb].
+    eapply conv_md in h2 as e2. rewrite <- e2.
+    destruct_ifs. all: econv. all: reflexivity.
+  - cbn - [mode_inb].
+    econv. all: reflexivity.
+  - cbn - [mode_inb].
+    destruct_ifs. all: econv. all: reflexivity.
+  - econv.
+  - apply cconv_sym. assumption.
+  - eapply cconv_trans. all: eauto.
+  - eapply param_scoping in H, H0. cbn in *.
+    apply cconv_irr. all: rewrite csc_param_ctx. all: assumption.
 Abort.
 
 (** Parametricity preserves typing **)
