@@ -128,7 +128,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else pType i ;
   ⟦ Γ | Pi i j m mx A B ⟧p :=
     let Te := ⟦ Γ | Pi i j m mx A B ⟧pε in
-    let Ae := ⟦ Γ | A ⟧pε in
+    let Ae := ⟦ Γ | A ⟧pτ in
     let Ap := ⟦ Γ | A ⟧p in
     let Bp := ⟦ mx :: Γ | B ⟧p in
     let k := umax m i j in
@@ -164,8 +164,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     end ;
   ⟦ Γ | lam mx A B t ⟧p :=
     if isProp mx then clam cProp ⟦ Γ | A ⟧p (close ⟦ mx :: Γ | t ⟧p)
-    else if isKind mx then plam cType ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
-    else plam cProp ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
+    else if isKind mx then plam cType ⟦ Γ | A ⟧pτ ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
+    else plam cProp ⟦ Γ | A ⟧pτ ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
   ⟦ Γ | app u v ⟧p :=
     if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pε) ⟦ Γ | v ⟧p
     else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pv) ⟦ Γ | v ⟧p
@@ -735,6 +735,9 @@ Qed.
 
 Opaque epm_lift rpm_lift.
 
+Ltac cEl_ren :=
+  change (cEl (?ρ ⋅ ?t)) with (ρ ⋅ (cEl t)).
+
 Lemma param_ren :
   ∀ Γ Δ ρ t,
     rscoping Γ ρ Δ →
@@ -769,14 +772,14 @@ Proof.
     destruct m, m0. all: cbn in *. (* all: try reflexivity. *)
     + f_equal. all: f_equal.
       1:{ rewrite pren_epm_lift. cbn. reflexivity. }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{ rewrite pren_epm_lift. cbn. reflexivity. }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
@@ -786,40 +789,7 @@ Proof.
         rewrite pren_epm_lift. cbn. f_equal.
         unfold close. ssimpl. reflexivity.
       }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
-      f_equal. all: f_equal.
-      * ssimpl. reflexivity.
-      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
-    + f_equal. all: f_equal.
-      1:{
-        rewrite pren_epm_lift. cbn. f_equal.
-        unfold close. ssimpl. reflexivity.
-      }
-      1:{ ssimpl. reflexivity. }
-      f_equal.
-      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
-    + f_equal. all: f_equal.
-      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
-      f_equal. all: f_equal.
-      * ssimpl. reflexivity.
-      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
-    + f_equal. all: f_equal.
-      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
-      f_equal. all: f_equal.
-      * ssimpl. reflexivity.
-      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
-    + f_equal. all: f_equal.
-      1:{
-        rewrite pren_epm_lift. cbn. f_equal.
-        unfold close. ssimpl. reflexivity.
-      }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
@@ -835,14 +805,14 @@ Proof.
       ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{ rewrite pren_epm_lift. cbn. reflexivity. }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
     + f_equal. all: f_equal.
       1:{ rewrite pren_epm_lift. cbn. reflexivity. }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
@@ -852,7 +822,40 @@ Proof.
         rewrite pren_epm_lift. cbn. f_equal.
         unfold close. ssimpl. reflexivity.
       }
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ ssimpl. reflexivity. }
+      f_equal.
+      ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+      ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{ rewrite pren_epm_lift. cbn. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      f_equal. all: f_equal.
+      * ssimpl. reflexivity.
+      * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
+        ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
+    + f_equal. all: f_equal.
+      1:{
+        rewrite pren_epm_lift. cbn. f_equal.
+        unfold close. ssimpl. reflexivity.
+      }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       f_equal. all: f_equal.
       * ssimpl. reflexivity.
       * ssimpl. eapply extRen_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
@@ -1207,7 +1210,8 @@ Proof.
     2:{ eapply sscoping_comp_shift. assumption. }
     erewrite !erase_subst.
     2-5: eauto using sscoping_shift, sscoping_comp_shift with cc_scope.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
+    change (cEl (?t <[ ?σ ])) with ((cEl t) <[ σ ]).
+    erewrite <- psubst_epm_lift. 2:{ econstructor. eapply erase_scoping. }
     destruct m, m0. all: cbn in *.
     + f_equal. all: f_equal.
       2:{ ssimpl. reflexivity. }
@@ -1429,7 +1433,8 @@ Proof.
     2:{ eapply sscoping_shift. eassumption. }
     2:{ eapply sscoping_comp_shift. assumption. }
     erewrite erase_subst. 2,3: eassumption.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
+    change (cEl (?t <[ ?σ ])) with ((cEl t) <[ σ ]).
+    erewrite <- psubst_epm_lift. 2:{ econstructor. eapply erase_scoping. }
     destruct_ifs. all: mode_eqs.
     + cbn. f_equal. unfold close. ssimpl.
       eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
@@ -1863,9 +1868,7 @@ Proof.
       * cbn. ueq_subst. econv.
       * cbn. eapply crtyping_shift_eq.
         -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal.
-          ++ ssimpl. reflexivity.
-          ++ f_equal. (* This seems wrong! *)
+        -- cbn. f_equal. ssimpl. reflexivity.
 Abort.
 
 (** Parametricity preserves typing **)
