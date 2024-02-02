@@ -66,8 +66,8 @@ Definition pKind i :=
 Definition pType i :=
   clam cType (cty i) (cEl (cvar 0) ⇒[ cType ] cSort cProp 0).
 
-Definition pProp i :=
-  clam cType (cty i) (cSort cProp 0).
+Definition pProp :=
+  clam cType (cty 0) (cSort cProp 0).
 
 (* ∀ (x : A) (x@mp : B x). C *)
 Definition pPi mp A B C :=
@@ -124,7 +124,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     end ;
   ⟦ Γ | Sort m i ⟧p :=
     if isKind m then pKind i
-    else if isProp m then pProp i
+    else if isProp m then pProp
     else pType i ;
   ⟦ Γ | Pi i j m mx A B ⟧p :=
     let Te := ⟦ Γ | Pi i j m mx A B ⟧pε in
@@ -1746,10 +1746,16 @@ Proof.
       Two options:
       - Give up on this conversion rule and have it only as a logical
         equivalence, which it basically is already.
+        In that case we see revealP as a type constructor and maybe we call it
+        Reveal.
       - Change the parametricity translation of revealP so that it prepends
         ⊤ ⇒.
     *)
     admit.
+  - cbn - [mode_inb]. apply cconv_refl.
+  - cbn - [mode_inb].
+    destruct m, mx. all: simpl.
+    (* Now I really want to have a conversion tactic I guess. *)
 Abort.
 
 (** Parametricity preserves typing **)
