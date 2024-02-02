@@ -407,8 +407,8 @@ Proof.
       * assumption.
   - revert i j. wlog_iff. intros i j hu.
     apply scope_sort_inv in hu. subst. constructor.
-  - clear h1 h2 h3 h4. revert i i' j j' A A' B B' IHh1 IHh2 IHh3 IHh4. wlog_iff.
-    intros i i' j j' A A' B B' ihA ihB ihi ihj hu.
+  - clear h1 h2. revert i i' j j' A A' B B' IHh1 IHh2 H H0. wlog_iff.
+    intros i i' j j' A A' B B' ihA ihB ei ej hu.
     apply scope_pi_inv in hu. intuition subst.
     constructor. all: firstorder.
   - clear h1 h2 h3. revert A A' B B' t t' IHh1 IHh2 IHh3. wlog_iff.
@@ -717,11 +717,8 @@ Proof.
     + eapply scoping_ren. 2: eassumption.
       eapply rtyping_scoping. assumption.
     + cbn. ssimpl. apply conv_refl.
-  - asimpl. constructor.
-    + auto.
-    + eapply IHh2. apply rtyping_shift. assumption.
-    + eapply IHh3. eassumption.
-    + eapply IHh4. apply rtyping_shift. assumption.
+  - asimpl. constructor. all: auto.
+    eapply IHh2. apply rtyping_shift. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. apply rtyping_shift. assumption.
@@ -882,11 +879,8 @@ Proof.
     + asimpl. reflexivity.
   - ssimpl. cbn. eapply conv_trans. 1: constructor. 1,2: conv_subst_finish.
     cbn. ssimpl. apply conv_refl.
-  - asimpl. constructor.
-    + auto.
-    + eapply IHh2. cbn. apply sscoping_shift. assumption.
-    + asimpl in IHh3. firstorder.
-    + asimpl in IHh4. eapply IHh4. cbn. apply sscoping_shift. eassumption.
+  - asimpl. constructor. all: auto.
+    eapply IHh2. cbn. apply sscoping_shift. assumption.
   - asimpl. constructor.
     + auto.
     + eapply IHh2. cbn. apply sscoping_shift. assumption.
@@ -1244,7 +1238,7 @@ Ltac unitac h1 h2 :=
   | idtac
   ].
 
-Lemma type_unique :
+(* Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
     Γ ⊢ t : B →
@@ -1287,7 +1281,7 @@ Proof.
     eapply IHt1 in H19. 2: eassumption.
     (* Missing injectivity of gheq too. Once again, we could add arguements *)
     admit. *)
-Abort.
+Abort. *)
 
 (** Validity (or presupposition) **)
 
