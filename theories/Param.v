@@ -1630,53 +1630,6 @@ Qed.
 
 Hint Resolve revive_conv_eq : cc_conv.
 
-Lemma ueq_eq :
-  ∀ m i j,
-    isProp m = false →
-    ueq m i j →
-    i = j.
-Proof.
-  intros m i j hm [-> | ->]. 1: discriminate.
-  reflexivity.
-Qed.
-
-Lemma ueq_Kind_eq :
-  ∀ i j,
-    ueq mKind i j →
-    i = j.
-Proof.
-  intros i j e.
-  eapply ueq_eq. 2: eassumption.
-  reflexivity.
-Qed.
-
-Lemma ueq_Type_eq :
-  ∀ i j,
-    ueq mType i j →
-    i = j.
-Proof.
-  intros i j e.
-  eapply ueq_eq. 2: eassumption.
-  reflexivity.
-Qed.
-
-Lemma ueq_Ghost_eq :
-  ∀ i j,
-    ueq mGhost i j →
-    i = j.
-Proof.
-  intros i j e.
-  eapply ueq_eq. 2: eassumption.
-  reflexivity.
-Qed.
-
-Ltac ueq_subst :=
-  repeat lazymatch goal with
-  | e : ueq mKind ?i ?j |- _ => eapply ueq_Kind_eq in e ; try subst i
-  | e : ueq mType ?i ?j |- _ => eapply ueq_Type_eq in e ; try subst i
-  | e : ueq mGhost ?i ?j |- _ => eapply ueq_Ghost_eq in e ; try subst i
-  end.
-
 Lemma crtyping_shift_eq :
   ∀ Γ Δ Ξ mx A ρ,
     crtyping Γ ρ Δ →
