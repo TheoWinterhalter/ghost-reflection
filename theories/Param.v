@@ -181,6 +181,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | Reveal t p ⟧p :=
     if isKind (md Γ p) then capp (capp ⟦ Γ | p ⟧p ⟦ Γ | t ⟧pv) ⟦ Γ | t ⟧p
     else cDummy ;
+  ⟦ Γ | toRev t p u ⟧p := ⟦ Γ | u ⟧p ;
+  ⟦ Γ | fromRev t p u ⟧p := ⟦ Γ | u ⟧p ;
   ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv ⟦ Γ | v ⟧pv) ;
   ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv) ;
   ⟦ Γ | ghcast A u v e P t ⟧p :=
@@ -932,6 +934,8 @@ Proof.
     erewrite IHt1. 2,3: eassumption.
     erewrite ?erase_ren, ?revive_ren. 2,3: eassumption.
     rewrite !pren_rpm_lift. reflexivity.
+  - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. eauto.
   - cbn - [mode_inb].
     erewrite ?erase_ren, ?revive_ren. 2-7: eassumption.
     rewrite ?pren_epm_lift. reflexivity.
@@ -1485,6 +1489,8 @@ Proof.
     erewrite revive_subst. 2,3: eassumption.
     erewrite <- psubst_rpm_lift. 2: eapply revive_scoping.
     destruct_ifs. all: reflexivity.
+  - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. eauto.
   - cbn - [mode_inb].
     erewrite !revive_subst. 2-5: eassumption.
     erewrite !erase_subst. 2,3: eassumption.
@@ -1855,23 +1861,6 @@ Proof.
       all: subst. all: discriminate.
     }
     cbn. apply cconv_refl.
-  - cbn - [mode_inb].
-    erewrite md_ren.
-    2: eapply rscoping_S.
-    2: eapply rscoping_comp_S.
-    erewrite scoping_md. 2: eassumption.
-    erewrite scoping_md. 2: eassumption.
-    cbn.
-    (* In the end, this still doesn't work.
-      Two options:
-      - Give up on this conversion rule and have it only as a logical
-        equivalence, which it basically is already.
-        In that case we see Reveal as a type constructor and maybe we call it
-        Reveal.
-      - Change the parametricity translation of Reveal so that it prepends
-        ⊤ ⇒.
-    *)
-    admit.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     destruct m, mx. all: simpl.
@@ -1997,7 +1986,7 @@ Proof.
   - eapply cconv_trans. all: eauto.
   - eapply param_scoping in H, H0. cbn in *.
     apply cconv_irr. all: rewrite csc_param_ctx. all: assumption.
-Abort.
+Qed.
 
 (** Parametricity preserves typing **)
 

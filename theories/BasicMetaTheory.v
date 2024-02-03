@@ -272,6 +272,32 @@ Proof.
   intuition eauto.
 Qed.
 
+Lemma scope_toRev_inv :
+  ∀ Γ t p u m,
+    scoping Γ (toRev t p u) m →
+    scoping Γ t mType ∧
+    scoping Γ p mKind ∧
+    scoping Γ u mProp ∧
+    m = mProp.
+Proof.
+  intros Γ t p u m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
+Lemma scope_fromRev_inv :
+  ∀ Γ t p u m,
+    scoping Γ (fromRev t p u) m →
+    scoping Γ t mType ∧
+    scoping Γ p mKind ∧
+    scoping Γ u mProp ∧
+    m = mProp.
+Proof.
+  intros Γ t p u m h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
 Lemma scope_sort_inv :
   ∀ Γ ms i m,
     scoping Γ (Sort ms i) m →
@@ -391,20 +417,6 @@ Proof.
       scoping_fun. scoping_fun.
       constructor. all: auto.
       constructor. assumption.
-  - split.
-    + intro hu. apply scope_Reveal_inv in hu. intuition subst.
-      econstructor.
-      * apply scope_top.
-      * eapply scoping_ren. 2: econstructor ; eauto.
-        apply rscoping_S.
-    + intro hu. apply scope_pi_inv in hu. destruct hu as [? [happ ->]].
-      cbn in happ. apply scope_app_inv in happ. destruct happ as [mx [hp ht]].
-      eapply scoping_ren in H0 as ht'. 2: eapply rscoping_S with (m := mProp).
-      asimpl in ht'. unfold shift in ht'.
-      scoping_fun.
-      constructor.
-      * constructor. assumption.
-      * assumption.
   - revert i j. wlog_iff. intros i j hu.
     apply scope_sort_inv in hu. subst. constructor.
   - clear h1 h2. revert i i' j j' A A' B B' IHh1 IHh2 H H0. wlog_iff.
@@ -711,12 +723,6 @@ Proof.
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try scoping_ren_finish.
     asimpl. reflexivity.
-  - asimpl. eapply conv_trans. 1: constructor.
-    + eapply scoping_ren. 2: eassumption.
-      eapply rtyping_scoping. assumption.
-    + eapply scoping_ren. 2: eassumption.
-      eapply rtyping_scoping. assumption.
-    + cbn. ssimpl. apply conv_refl.
   - asimpl. constructor. all: auto.
     eapply IHh2. apply rtyping_shift. assumption.
   - asimpl. constructor.
@@ -877,8 +883,6 @@ Proof.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
-  - ssimpl. cbn. eapply conv_trans. 1: constructor. 1,2: conv_subst_finish.
-    cbn. ssimpl. apply conv_refl.
   - asimpl. constructor. all: auto.
     eapply IHh2. cbn. apply sscoping_shift. assumption.
   - asimpl. constructor.
@@ -1111,6 +1115,44 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_toRev_inv :
+  ∀ Γ t p u C,
+    Γ ⊢ toRev t p u : C →
+    ∃ i A,
+      cscoping Γ t mType ∧
+      cscoping Γ p mKind ∧
+      cscoping Γ u mProp ∧
+      Γ ⊢ t : A ∧
+      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ u : app p t ∧
+      Γ ⊢ Reveal (hide t) p ε≡ C.
+Proof.
+  intros Γ t p u C h.
+  dependent induction h.
+  - eexists _,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_fromRev_inv :
+  ∀ Γ t p u C,
+    Γ ⊢ fromRev t p u : C →
+    ∃ i A,
+      cscoping Γ t mType ∧
+      cscoping Γ p mKind ∧
+      cscoping Γ u mProp ∧
+      Γ ⊢ t : A ∧
+      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ u : Reveal (hide t) p ∧
+      Γ ⊢ app p t ε≡ C.
+Proof.
+  intros Γ t p u C h.
+  dependent induction h.
+  - eexists _,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_. intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Lemma type_gheq_inv :
   ∀ Γ A u v C,
     Γ ⊢ gheq A u v : C →
@@ -1216,6 +1258,8 @@ Ltac ttinv h h' :=
     | hide _ => eapply type_hide_inv in h as h'
     | reveal _ _ _ => eapply type_reveal_inv in h as h'
     | Reveal _ _ => eapply type_Reveal_inv in h as h'
+    | toRev _ _ _ => eapply type_toRev_inv in h as h'
+    | fromRev _ _ _ => eapply type_fromRev_inv in h as h'
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
     | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
     | ghcast _ _ _ => eapply type_ghcast_inv in h as h'
@@ -1353,6 +1397,21 @@ Proof.
         destruct H3 as [<- | [<- |]]. 3: contradiction.
         all: reflexivity.
       Unshelve. constructor. assumption.
+  - split.
+    + cbn. econstructor. all: assumption.
+    + forward IHh2 by auto. destruct IHh2 as [hp [j hT]].
+      ttinv hT h'.
+      cbn. eexists. econstructor.
+      * constructor. assumption.
+      * assumption.
+      * econstructor. 3,4: intuition eauto. all: intuition auto.
+      * eassumption.
+  - split.
+    + cbn. econstructor. all: assumption.
+    + forward IHh2 by auto. destruct IHh2 as [hp [j hT]].
+      ttinv hT h'.
+      cbn. eexists. eapply meta_conv. 1: econstructor. 5-9: intuition eauto.
+      all: intuition eauto.
   - split.
     + cbn. econstructor. all: eauto.
       * erewrite scoping_md. 2: eassumption. assumption.

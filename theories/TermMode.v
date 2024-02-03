@@ -31,6 +31,8 @@ Section Mode.
       | _ => mProp
       end
     | Reveal t p => mKind
+    | toRev t p u => mProp
+    | fromRev t p u => mProp
     | gheq A u v => mKind
     | ghrefl A u => mProp
     | ghcast A u v e P t => md Γ t

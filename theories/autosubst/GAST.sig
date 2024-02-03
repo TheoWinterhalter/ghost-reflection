@@ -16,6 +16,8 @@ Erased : term -> term
 hide : term -> term
 reveal : term -> term -> term -> term
 Reveal : term -> term -> term
+toRev : term -> term -> term -> term
+fromRev : term -> term -> term -> term
 
 gheq : term -> term -> term -> term
 ghrefl : term -> term -> term

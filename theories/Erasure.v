@@ -487,11 +487,6 @@ Proof.
     destruct_if e.
     1:{ destruct mp. all: intuition discriminate. }
     constructor.
-  - cbn - [mode_inb].
-    erewrite !md_ren. 2-5: first [ eapply rscoping_S | eapply rscoping_comp_S ].
-    erewrite scoping_md. 2: eassumption.
-    erewrite scoping_md. 2: eassumption.
-    cbn. constructor.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2.

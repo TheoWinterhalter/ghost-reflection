@@ -15,6 +15,8 @@ Inductive term : Type :=
   | hide : term -> term
   | reveal : term -> term -> term -> term
   | Reveal : term -> term -> term
+  | toRev : term -> term -> term -> term
+  | fromRev : term -> term -> term -> term
   | gheq : term -> term -> term -> term
   | ghrefl : term -> term -> term
   | ghcast : term -> term -> term -> term -> term -> term -> term
@@ -93,6 +95,26 @@ exact (eq_trans (eq_trans eq_refl (ap (fun x => Reveal x s1) H0))
          (ap (fun x => Reveal t0 x) H1)).
 Qed.
 
+Lemma congr_toRev {s0 : term} {s1 : term} {s2 : term} {t0 : term} {t1 : term}
+  {t2 : term} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  toRev s0 s1 s2 = toRev t0 t1 t2.
+Proof.
+exact (eq_trans
+         (eq_trans (eq_trans eq_refl (ap (fun x => toRev x s1 s2) H0))
+            (ap (fun x => toRev t0 x s2) H1))
+         (ap (fun x => toRev t0 t1 x) H2)).
+Qed.
+
+Lemma congr_fromRev {s0 : term} {s1 : term} {s2 : term} {t0 : term}
+  {t1 : term} {t2 : term} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  fromRev s0 s1 s2 = fromRev t0 t1 t2.
+Proof.
+exact (eq_trans
+         (eq_trans (eq_trans eq_refl (ap (fun x => fromRev x s1 s2) H0))
+            (ap (fun x => fromRev t0 x s2) H1))
+         (ap (fun x => fromRev t0 t1 x) H2)).
+Qed.
+
 Lemma congr_gheq {s0 : term} {s1 : term} {s2 : term} {t0 : term} {t1 : term}
   {t2 : term} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
   gheq s0 s1 s2 = gheq t0 t1 t2.
@@ -166,6 +188,11 @@ Fixpoint ren_term (xi_term : nat -> nat) (s : term) {struct s} : term :=
       reveal (ren_term xi_term s0) (ren_term xi_term s1)
         (ren_term xi_term s2)
   | Reveal s0 s1 => Reveal (ren_term xi_term s0) (ren_term xi_term s1)
+  | toRev s0 s1 s2 =>
+      toRev (ren_term xi_term s0) (ren_term xi_term s1) (ren_term xi_term s2)
+  | fromRev s0 s1 s2 =>
+      fromRev (ren_term xi_term s0) (ren_term xi_term s1)
+        (ren_term xi_term s2)
   | gheq s0 s1 s2 =>
       gheq (ren_term xi_term s0) (ren_term xi_term s1) (ren_term xi_term s2)
   | ghrefl s0 s1 => ghrefl (ren_term xi_term s0) (ren_term xi_term s1)
@@ -183,7 +210,7 @@ Proof.
 exact (scons (var var_zero) (funcomp (ren_term shift) sigma)).
 Defined.
 
-Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} :
+Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} : 
 term :=
   match s with
   | var s0 => sigma_term s0
@@ -203,6 +230,12 @@ term :=
         (subst_term sigma_term s2)
   | Reveal s0 s1 =>
       Reveal (subst_term sigma_term s0) (subst_term sigma_term s1)
+  | toRev s0 s1 s2 =>
+      toRev (subst_term sigma_term s0) (subst_term sigma_term s1)
+        (subst_term sigma_term s2)
+  | fromRev s0 s1 s2 =>
+      fromRev (subst_term sigma_term s0) (subst_term sigma_term s1)
+        (subst_term sigma_term s2)
   | gheq s0 s1 s2 =>
       gheq (subst_term sigma_term s0) (subst_term sigma_term s1)
         (subst_term sigma_term s2)
@@ -253,6 +286,14 @@ subst_term sigma_term s = s :=
   | Reveal s0 s1 =>
       congr_Reveal (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev (idSubst_term sigma_term Eq_term s0)
+        (idSubst_term sigma_term Eq_term s1)
+        (idSubst_term sigma_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev (idSubst_term sigma_term Eq_term s0)
+        (idSubst_term sigma_term Eq_term s1)
+        (idSubst_term sigma_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq (idSubst_term sigma_term Eq_term s0)
         (idSubst_term sigma_term Eq_term s1)
@@ -312,6 +353,14 @@ ren_term xi_term s = ren_term zeta_term s :=
   | Reveal s0 s1 =>
       congr_Reveal (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev (extRen_term xi_term zeta_term Eq_term s0)
+        (extRen_term xi_term zeta_term Eq_term s1)
+        (extRen_term xi_term zeta_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev (extRen_term xi_term zeta_term Eq_term s0)
+        (extRen_term xi_term zeta_term Eq_term s1)
+        (extRen_term xi_term zeta_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq (extRen_term xi_term zeta_term Eq_term s0)
         (extRen_term xi_term zeta_term Eq_term s1)
@@ -372,6 +421,14 @@ subst_term sigma_term s = subst_term tau_term s :=
   | Reveal s0 s1 =>
       congr_Reveal (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev (ext_term sigma_term tau_term Eq_term s0)
+        (ext_term sigma_term tau_term Eq_term s1)
+        (ext_term sigma_term tau_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev (ext_term sigma_term tau_term Eq_term s0)
+        (ext_term sigma_term tau_term Eq_term s1)
+        (ext_term sigma_term tau_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq (ext_term sigma_term tau_term Eq_term s0)
         (ext_term sigma_term tau_term Eq_term s1)
@@ -437,6 +494,14 @@ Fixpoint compRenRen_term (xi_term : nat -> nat) (zeta_term : nat -> nat)
   | Reveal s0 s1 =>
       congr_Reveal (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq (compRenRen_term xi_term zeta_term rho_term Eq_term s0)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
@@ -505,9 +570,17 @@ subst_term tau_term (ren_term xi_term s) = subst_term theta_term s :=
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s2)
   | Reveal s0 s1 =>
-      congr_Reveal
+      congr_Reveal (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev
         (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq (compRenSubst_term xi_term tau_term theta_term Eq_term s0)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
@@ -593,6 +666,16 @@ ren_term zeta_term (subst_term sigma_term s) = subst_term theta_term s :=
       congr_Reveal
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s0)
@@ -683,6 +766,16 @@ subst_term tau_term (subst_term sigma_term s) = subst_term theta_term s :=
       congr_Reveal
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s0)
@@ -814,6 +907,14 @@ Fixpoint rinst_inst_term (xi_term : nat -> nat) (sigma_term : nat -> term)
   | Reveal s0 s1 =>
       congr_Reveal (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
+  | toRev s0 s1 s2 =>
+      congr_toRev (rinst_inst_term xi_term sigma_term Eq_term s0)
+        (rinst_inst_term xi_term sigma_term Eq_term s1)
+        (rinst_inst_term xi_term sigma_term Eq_term s2)
+  | fromRev s0 s1 s2 =>
+      congr_fromRev (rinst_inst_term xi_term sigma_term Eq_term s0)
+        (rinst_inst_term xi_term sigma_term Eq_term s1)
+        (rinst_inst_term xi_term sigma_term Eq_term s2)
   | gheq s0 s1 s2 =>
       congr_gheq (rinst_inst_term xi_term sigma_term Eq_term s0)
         (rinst_inst_term xi_term sigma_term Eq_term s1)
@@ -975,7 +1076,7 @@ Tactic Notation "auto_unfold" "in" "*" := repeat
                                            unfold VarInstance_term, Var, ids,
                                             Ren_term, Ren1, ren1,
                                             Up_term_term, Up_term, up_term,
-                                            Subst_term, Subst1, subst1
+                                            Subst_term, Subst1, subst1 
                                             in *.
 
 Ltac asimpl' := repeat (first
@@ -1052,6 +1153,12 @@ Fixpoint allfv_term (p_term : nat -> Prop) (s : term) {struct s} : Prop :=
         (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
   | Reveal s0 s1 =>
       and (allfv_term p_term s0) (and (allfv_term p_term s1) True)
+  | toRev s0 s1 s2 =>
+      and (allfv_term p_term s0)
+        (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
+  | fromRev s0 s1 s2 =>
+      and (allfv_term p_term s0)
+        (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
   | gheq s0 s1 s2 =>
       and (allfv_term p_term s0)
         (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
@@ -1113,6 +1220,14 @@ Fixpoint allfvTriv_term (p_term : nat -> Prop) (H_term : forall x, p_term x)
   | Reveal s0 s1 =>
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1) I)
+  | toRev s0 s1 s2 =>
+      conj (allfvTriv_term p_term H_term s0)
+        (conj (allfvTriv_term p_term H_term s1)
+           (conj (allfvTriv_term p_term H_term s2) I))
+  | fromRev s0 s1 s2 =>
+      conj (allfvTriv_term p_term H_term s0)
+        (conj (allfvTriv_term p_term H_term s1)
+           (conj (allfvTriv_term p_term H_term s2) I))
   | gheq s0 s1 s2 =>
       conj (allfvTriv_term p_term H_term s0)
         (conj (allfvTriv_term p_term H_term s1)
@@ -1298,6 +1413,54 @@ allfv_term p_term s -> allfv_term q_term s :=
                              | conj HP _ => HP
                              end
               end) I)
+  | toRev s0 s1 s2 =>
+      fun HP =>
+      conj
+        (allfvImpl_term p_term q_term H_term s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_term p_term q_term H_term s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_term p_term q_term H_term s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end) I))
+  | fromRev s0 s1 s2 =>
+      fun HP =>
+      conj
+        (allfvImpl_term p_term q_term H_term s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_term p_term q_term H_term s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_term p_term q_term H_term s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end) I))
   | gheq s0 s1 s2 =>
       fun HP =>
       conj
@@ -1597,6 +1760,52 @@ allfv_term (funcomp p_term xi_term) s :=
                             | conj H _ => H
                             end
               end) I)
+  | toRev s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenL_term p_term xi_term s0 match H with
+                                          | conj H _ => H
+                                          end)
+        (conj
+           (allfvRenL_term p_term xi_term s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_term p_term xi_term s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | fromRev s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenL_term p_term xi_term s0 match H with
+                                          | conj H _ => H
+                                          end)
+        (conj
+           (allfvRenL_term p_term xi_term s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_term p_term xi_term s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
   | gheq s0 s1 s2 =>
       fun H =>
       conj
@@ -1893,6 +2102,52 @@ allfv_term p_term (ren_term xi_term s) :=
                             | conj H _ => H
                             end
               end) I)
+  | toRev s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenR_term p_term xi_term s0 match H with
+                                          | conj H _ => H
+                                          end)
+        (conj
+           (allfvRenR_term p_term xi_term s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_term p_term xi_term s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | fromRev s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenR_term p_term xi_term s0 match H with
+                                          | conj H _ => H
+                                          end)
+        (conj
+           (allfvRenR_term p_term xi_term s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_term p_term xi_term s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
   | gheq s0 s1 s2 =>
       fun H =>
       conj
