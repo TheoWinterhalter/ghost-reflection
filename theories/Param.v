@@ -2106,4 +2106,27 @@ Proof.
             unfold vpar. lia.
           ++ rewrite epm_lift_eq. cbn. f_equal. unfold vpar, vreg. lia.
         -- destruct m. all: discriminate.
+  - cbn - [mode_inb]. destruct_ifs. all: mode_eqs.
+    + cbn. rewrite epm_lift_eq. cbn.
+      econstructor. 1: etype.
+      * eapply ccmeta_conv. 1: etype. all: reflexivity.
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. econv. apply ccmeta_refl. f_equal. lia.
+      * eapply ccmeta_conv. 1: etype. 2: reflexivity.
+        eapply ccmeta_conv. 1: etype. all: reflexivity.
+    + cbn. rewrite epm_lift_eq. cbn.
+      econstructor. 1: etype.
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. econv. (* ???? *) all: admit.
+      * eapply ccmeta_conv. 1: etype. 2: reflexivity.
+        eapply ccmeta_conv. 1: etype. all: reflexivity.
+    + cbn. rewrite e0. rewrite epm_lift_eq. cbn.
+      econstructor. 1: etype.
+      * eapply ccmeta_conv. 1: etype. all: reflexivity.
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. econv. apply ccmeta_refl. f_equal. unfold usup. rewrite e0.
+        (* bad *) admit.
+      * eapply ccmeta_conv. 1: etype. 3: reflexivity.
+        -- eapply ccmeta_conv. 1: etype. all: reflexivity.
+        -- unfold usup. rewrite e0. etype.
 Abort.
