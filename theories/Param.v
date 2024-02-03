@@ -1995,11 +1995,95 @@ Definition ptype Γ t A :=
   else if isGhost (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧v
   else ⟦ sc Γ | A ⟧p.
 
+Lemma param_ctx_vreg :
+  ∀ Γ x A,
+    nth_error Γ x = Some (mProp, A) →
+    nth_error ⟦ Γ ⟧p (vreg x) = Some (Some (cProp, ⟦ skipn (S x) (sc Γ) | A ⟧p)).
+Proof.
+  intros Γ x A e.
+  induction Γ as [| [my B] Γ ih ] in x, A, e |- *.
+  1: destruct x ; discriminate.
+  destruct x.
+  - cbn in e. noconf e.
+    cbn. reflexivity.
+  - cbn in e. change (vreg (S x)) with (S (S (vreg x))).
+    remember (vreg x) as p eqn:ep.
+    cbn - [mode_inb skipn].
+    destruct_ifs. all: mode_eqs. all: subst.
+    + erewrite ih. 2: eauto. reflexivity.
+    + erewrite ih. 2: eauto. reflexivity.
+    + erewrite ih. 2: eauto. reflexivity.
+Qed.
+
+Lemma param_ctx_vpar :
+  ∀ Γ x m A,
+    nth_error Γ x = Some (m, A) →
+    isProp m = false →
+    nth_error ⟦ Γ ⟧p (vpar x) =
+    Some (Some (if isKind m then cType else cProp, capp (S ⋅ ⟦ skipn (S x) (sc Γ) | A ⟧p) (cvar 0))).
+Proof.
+  intros Γ x m A e hm.
+  induction Γ as [| [my B] Γ ih ] in x, m, A, e, hm |- *.
+  1: destruct x ; discriminate.
+  destruct x.
+  - cbn in e. noconf e.
+    cbn. rewrite hm.
+    destruct_ifs. all: reflexivity.
+  - cbn in e. change (vpar (S x)) with (S (S (vpar x))).
+    remember (vpar x) as p eqn:ep.
+    cbn - [mode_inb skipn].
+    destruct_if e1. 2: destruct_if e2. all: mode_eqs. all: subst.
+    + erewrite ih. 2,3: eauto. reflexivity.
+    + erewrite ih. 2,3: eauto. reflexivity.
+    + erewrite ih. 2,3: eauto. reflexivity.
+Qed.
+
+Lemma pren_plus :
+  ∀ n m, pren (plus m) n = n + 2 * m.
+Proof.
+  intros n m.
+  unfold pren.
+  pose proof (pren_id n) as e. unfold pren in e.
+  unfold id in e. unfold Datatypes.id in e. lia.
+Qed.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
-    ⟦ Γ ⟧v ⊢ᶜ ⟦ sc Γ | t ⟧p : ptype Γ t A.
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | t ⟧p : ptype Γ t A.
 Proof.
   intros Γ t A h.
   induction h.
+  - cbn - [mode_inb].
+    unfold ptype. cbn - [mode_inb].
+    unfold relv, ghv, sc.
+    rewrite nth_error_map. rewrite H. cbn - [mode_inb].
+    erewrite nth_error_nth.
+    2:{ erewrite nth_error_map. rewrite H. reflexivity. }
+    cbn - [mode_inb].
+    destruct_if e.
+    + mode_eqs. cbn.
+      eapply ccmeta_conv.
+      * econstructor. eapply param_ctx_vreg. eassumption.
+      * erewrite param_ren.
+        2:{ intros y my ey.
+          erewrite <- nth_error_skipn with (x := S x) in ey.
+          exact ey.
+        }
+        2:{ intros y ey. rewrite <- nth_error_skipn in ey. assumption. }
+        ssimpl. eapply extRen_cterm. intro n.
+        rewrite pren_comp_S. rewrite pren_plus.
+        unfold vreg. lia.
+    + eapply ccmeta_conv.
+      * econstructor. eapply param_ctx_vpar. all: eassumption.
+      * erewrite param_ren.
+        2:{ intros y my ey.
+          erewrite <- nth_error_skipn with (x := S x) in ey.
+          exact ey.
+        }
+        2:{ intros y ey. rewrite <- nth_error_skipn in ey. assumption. }
+        destruct_ifs.
+        -- ssimpl. (* ??? *) admit.
+        -- ssimpl. admit.
+        -- destruct m. all: discriminate.
 Abort.
