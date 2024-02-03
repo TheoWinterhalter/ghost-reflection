@@ -1991,8 +1991,8 @@ Qed.
 (** Parametricity preserves typing **)
 
 Definition ptype Γ t A :=
-  if relm (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧ε
-  else if isGhost (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧v
+  if relm (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧pε
+  else if isGhost (mdc Γ t) then capp ⟦ sc Γ | A ⟧p ⟦ sc Γ | t ⟧pv
   else ⟦ sc Γ | A ⟧p.
 
 Lemma param_ctx_vreg :
@@ -2047,6 +2047,18 @@ Proof.
   unfold id in e. unfold Datatypes.id in e. lia.
 Qed.
 
+Lemma epm_lift_eq :
+  ∀ t, epm_lift t = vreg ⋅ t.
+Proof.
+  intro. reflexivity.
+Qed.
+
+Lemma rpm_lift_eq :
+  ∀ t, rpm_lift t = vreg ⋅ t.
+Proof.
+  intro. reflexivity.
+Qed.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2083,7 +2095,15 @@ Proof.
         }
         2:{ intros y ey. rewrite <- nth_error_skipn in ey. assumption. }
         destruct_ifs.
-        -- ssimpl. (* ??? *) admit.
-        -- ssimpl. admit.
+        -- ssimpl. f_equal.
+          ++ eapply extRen_cterm. intro. ssimpl.
+            rewrite pren_comp_S. rewrite pren_plus.
+            unfold vpar. lia.
+          ++ rewrite epm_lift_eq. cbn. f_equal. unfold vpar, vreg. lia.
+        -- ssimpl. f_equal.
+          ++ eapply extRen_cterm. intro. ssimpl.
+            rewrite pren_comp_S. rewrite pren_plus.
+            unfold vpar. lia.
+          ++ rewrite epm_lift_eq. cbn. f_equal. unfold vpar, vreg. lia.
         -- destruct m. all: discriminate.
 Abort.
