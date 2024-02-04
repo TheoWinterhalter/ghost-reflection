@@ -2121,11 +2121,15 @@ Proof.
       * eapply ccmeta_conv. 1: etype. 2: reflexivity.
         eapply ccmeta_conv. 1: etype. all: reflexivity.
     + cbn. rewrite e0. rewrite epm_lift_eq. cbn.
-      econstructor. 1: etype.
-      * eapply ccmeta_conv. 1: etype. all: reflexivity.
+      econstructor.
+      * unfold pType. remember (cSort cProp 0) as P eqn:eP.
+        etype.
+        -- eapply ccmeta_conv. 1: etype. all: reflexivity.
+        -- subst P. eapply ctype_cumul with (j := S i). 1: etype.
+          unfold cusup. cbn. lia.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
         cbn. econv. apply ccmeta_refl. f_equal. unfold usup. rewrite e0.
-        (* bad *) admit.
+        lia.
       * eapply ccmeta_conv. 1: etype. 3: reflexivity.
         -- eapply ccmeta_conv. 1: etype. all: reflexivity.
         -- unfold usup. rewrite e0. etype.
