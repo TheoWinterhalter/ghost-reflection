@@ -2133,4 +2133,57 @@ Proof.
       * eapply ccmeta_conv. 1: etype. 3: reflexivity.
         -- eapply ccmeta_conv. 1: etype. all: reflexivity.
         -- unfold usup. rewrite e0. etype.
+  - admit.
+  - admit.
+  - admit.
+  - unfold ptype in *. cbn - [mode_inb] in *.
+    erewrite scoping_md. 2: eassumption.
+    erewrite scoping_md in IHh. 2: eassumption.
+    cbn in *. assumption.
+  - unfold ptype in *. cbn - [mode_inb] in *.
+    erewrite !scoping_md. 2,3: eassumption.
+    erewrite scoping_md in IHh1, IHh2. 2,3: eassumption.
+    cbn in *. rewrite rpm_lift_eq. rewrite <- epm_lift_eq. assumption.
+  - unfold ptype in *. cbn - [mode_inb] in *.
+    erewrite !scoping_md. 2,3: eassumption.
+    erewrite md_ren in * |-.
+    2: eapply rscoping_S.
+    2: eapply rscoping_comp_S.
+    erewrite !scoping_md in IHh1. 2,3: eassumption.
+    erewrite !scoping_md in IHh2. 2,3: eassumption.
+    erewrite !scoping_md in IHh3. 2,3: eassumption.
+    erewrite !scoping_md in IHh4. 2: eassumption.
+    destruct m. all: try intuition discriminate.
+    + cbn in *. econstructor.
+      * {
+        etype. econstructor.
+        - etype.
+          + econstructor.
+            * etype.
+            * eapply cconv_trans. 1: constructor.
+              unfold pPi. cbn.
+              apply cconv_refl.
+            * {
+              etype.
+              - eapply ctype_conv.
+                + eapply ctyping_subst.
+                  1:{
+                    eapply cstyping_one.
+                    - escope. apply csc_param_ctx. (* TOOD Add to db? *)
+                    - (* rewrite rpm_lift_eq. *)
+                      (* Instead maybe have a lemma to type rpm_lift? *)
+                      admit.
+                  }
+                  admit.
+                + admit.
+                + admit.
+              - admit.
+              - admit.
+            }
+          + admit.
+        - admit.
+        - admit.
+      }
+      * admit.
+      * admit.
 Abort.
