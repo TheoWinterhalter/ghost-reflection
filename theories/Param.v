@@ -2117,7 +2117,7 @@ Proof.
     + cbn. rewrite epm_lift_eq. cbn.
       econstructor. 1: etype.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
-        cbn. econv. (* ???? *) all: admit.
+        cbn. econv. (* ??? *) admit.
       * eapply ccmeta_conv. 1: etype. 2: reflexivity.
         eapply ccmeta_conv. 1: etype. all: reflexivity.
     + cbn. rewrite e0. rewrite epm_lift_eq. cbn.

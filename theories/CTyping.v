@@ -145,6 +145,19 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
 
 where "Γ ⊢ᶜ u ≡ v" := (conversion Γ u v).
 
+Definition iscProp m :=
+  match m with cProp => true | cType => false end.
+
+(** Successor of a universe **)
+Definition cusup m i :=
+  if iscProp m then 0 else S i.
+
+(** Maximum of a universe **)
+Definition cumax mx m i j :=
+  if iscProp m then 0
+  else if iscProp mx then j
+  else max i j.
+
 Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 
 | ctype_var :
@@ -154,13 +167,13 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 
 | ctype_sort :
     ∀ m i,
-      Γ ⊢ᶜ cSort m i : cSort cType (S i)
+      Γ ⊢ᶜ cSort m i : cSort cType (cusup m i)
 
 | ctype_pi :
     ∀ i j m mx A B,
       Γ ⊢ᶜ A : cSort mx i →
       Some (mx, A) :: Γ ⊢ᶜ B : cSort m j →
-      Γ ⊢ᶜ cPi mx A B : cSort m (max i j)
+      Γ ⊢ᶜ cPi mx A B : cSort m (cumax mx m i j)
 
 | ctype_lam :
     ∀ mx m i j A B t,
