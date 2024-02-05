@@ -2458,9 +2458,21 @@ Proof.
       * admit.
       * admit.
     + admit.
-  - admit.
-  - admit.
-  - admit.
+  - unfold ptype in *.
+    cbn - [mode_inb] in *.
+    erewrite scoping_md. 2: eassumption.
+    cbn. change (epm_lift ctt) with ctt.
+    erewrite !scoping_md in IHh1. all: admit.
+  - unfold ptype in IHh3 |- *.
+    cbn - [mode_inb] in *.
+    erewrite !scoping_md. 2,3: eassumption. cbn.
+    erewrite !scoping_md in IHh3. 2,3: eassumption. cbn in IHh3.
+    assumption.
+  - unfold ptype in IHh3 |- *.
+    cbn - [mode_inb] in *.
+    erewrite !scoping_md. 2: eassumption. cbn.
+    erewrite !scoping_md in IHh3. 2-4: eassumption. cbn in IHh3.
+    assumption.
   - admit.
   - admit.
   - admit.
