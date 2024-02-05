@@ -2059,6 +2059,56 @@ Proof.
   intro. reflexivity.
 Qed.
 
+Hint Resolve csc_param_ctx : cc_scope.
+
+Lemma type_epm_lift :
+  ∀ Γ t A,
+    ⟦ Γ ⟧ε ⊢ᶜ t : A →
+    ⟦ Γ ⟧p ⊢ᶜ epm_lift t : epm_lift A.
+Proof.
+  intros Γ t A h.
+  rewrite epm_lift_eq. eapply ctyping_ren.
+  - eapply typing_er_sub_param.
+  - eassumption.
+Qed.
+
+(* Hint Resolve type_epm_lift : cc_type. *)
+
+Lemma type_epm_lift_eq :
+  ∀ Γ Γ' t A,
+    ⟦ Γ ⟧ε ⊢ᶜ t : A →
+    Γ' = ⟦ Γ ⟧p →
+    Γ' ⊢ᶜ epm_lift t : epm_lift A.
+Proof.
+  intros Γ Γ' t A h ->.
+  apply type_epm_lift. assumption.
+Qed.
+
+Lemma type_rpm_lift :
+  ∀ Γ t A,
+    ⟦ Γ ⟧v ⊢ᶜ t : A →
+    ⟦ Γ ⟧p ⊢ᶜ rpm_lift t : epm_lift A.
+Proof.
+  intros Γ t A h.
+  rewrite rpm_lift_eq. eapply ctyping_ren.
+  - eapply typing_rev_sub_param.
+  - eassumption.
+Qed.
+
+(* Hint Resolve type_rpm_lift : cc_type. *)
+
+Lemma type_rpm_lift_eq :
+  ∀ Γ Γ' t A,
+    ⟦ Γ ⟧v ⊢ᶜ t : A →
+    Γ' = ⟦ Γ ⟧p →
+    Γ' ⊢ᶜ rpm_lift t : epm_lift A.
+Proof.
+  intros Γ Γ' t A h ->.
+  apply type_rpm_lift. assumption.
+Qed.
+
+Hint Resolve erase_typing revive_typing : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2169,15 +2219,40 @@ Proof.
                 + eapply ctyping_subst.
                   1:{
                     eapply cstyping_one.
-                    - escope. apply csc_param_ctx. (* TOOD Add to db? *)
-                    - (* rewrite rpm_lift_eq. *)
-                      (* Instead maybe have a lemma to type rpm_lift? *)
-                      admit.
+                    - escope.
+                    - eapply type_rpm_lift. etype.
+                      erewrite scoping_md. 2: eassumption.
+                      reflexivity.
                   }
-                  admit.
-                + admit.
-                + admit.
-              - admit.
+                  eapply ctyping_ren.
+                  1: eapply crtyping_S.
+                  eapply type_epm_lift. etype.
+                  econstructor.
+                  * etype. erewrite scoping_md. 2: eassumption. reflexivity.
+                  * cbn.  constructor.
+                  * etype.
+                + change (epm_lift (cSort ?m ?i)) with (cSort m i).
+                  cbn. econv.
+                + etype.
+              - econstructor.
+                + etype. 2: reflexivity.
+                  econstructor.
+                  * eapply ctyping_subst.
+                    1:{
+                      eapply cstyping_shift.
+                      eapply cstyping_one.
+                      - escope.
+                      - eapply type_rpm_lift. etype.
+                        erewrite scoping_md. 2: eassumption. reflexivity.
+                    }
+                    eapply ctyping_ren. 1: eapply crtyping_S.
+                    eapply ctyping_ren. 1: eapply crtyping_S.
+                    etype.
+                  * cbn. eapply cconv_trans. 1: constructor.
+                    cbn. econv. ssimpl. apply cconv_refl.
+                  * etype. admit.
+                + cbn. econv.
+                + etype.
               - admit.
             }
           + admit.
