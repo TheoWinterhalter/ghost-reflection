@@ -2109,6 +2109,24 @@ Qed.
 
 Hint Resolve erase_typing revive_typing : cc_type.
 
+Lemma cstyping_shift_eq :
+  ∀ Γ Γ' Δ mx A σ,
+    cstyping Γ σ Δ →
+    Γ' = Some (mx, A <[ σ ]) :: Γ →
+    cstyping Γ' (cvar 0 .: σ >> ren1 S) (Some (mx, A) :: Δ).
+Proof.
+  intros Γ Γ' Δ mx A σ h ->.
+  apply cstyping_shift. assumption.
+Qed.
+
+Lemma pren_S :
+  ∀ n, pren S n = S (S n).
+Proof.
+  intro n.
+  change (pren S n) with (pren (id >> S) n).
+  rewrite pren_comp_S. rewrite pren_id. reflexivity.
+Qed.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2250,10 +2268,145 @@ Proof.
                     etype.
                   * cbn. eapply cconv_trans. 1: constructor.
                     cbn. econv. ssimpl. apply cconv_refl.
-                  * etype. admit.
+                  * {
+                    etype. eapply ccmeta_conv.
+                    - eapply ctyping_ren. 1: eapply crtyping_S.
+                      eapply ctyping_subst.
+                      1:{
+                        eapply cstyping_one.
+                        - escope.
+                        - eapply type_rpm_lift. etype.
+                          erewrite scoping_md. 2: eassumption.
+                          reflexivity.
+                      }
+                      eapply ctyping_ren. 1: eapply crtyping_S.
+                      eapply type_epm_lift. etype.
+                      econstructor.
+                      + etype. erewrite scoping_md. 2: eassumption.
+                        reflexivity.
+                      + cbn. constructor.
+                      + etype.
+                    - reflexivity.
+                  }
                 + cbn. econv.
                 + etype.
-              - admit.
+              - econstructor.
+                + etype.
+                  * {
+                    econstructor.
+                    - etype. 2: reflexivity.
+                      econstructor.
+                      + etype.
+                        * {
+                          econstructor.
+                          - eapply ctyping_subst.
+                            1:{
+                              eapply cstyping_shift_eq with (A := capp _ (cvar 0)).
+                              - eapply cstyping_shift.
+                                eapply cstyping_one.
+                                + escope.
+                                + eapply type_rpm_lift. etype.
+                                  erewrite scoping_md. 2: eassumption.
+                                  reflexivity.
+                              - reflexivity.
+                            }
+                            eapply ctyping_ren.
+                            1:{
+                              eapply crtyping_shift_eq
+                              with (A := capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)).
+                              - eapply crtyping_shift.
+                                eapply crtyping_S.
+                              - f_equal. f_equal. f_equal. cbn.
+                                f_equal. ssimpl. reflexivity.
+                            }
+                            erewrite param_ren.
+                            2: eapply rscoping_S.
+                            2: eapply rscoping_comp_S.
+                            eapply ctyping_ren.
+                            1:{
+                              eapply crtyping_morphism. 1,3: reflexivity.
+                              1:{
+                                instantiate (1 := S >> S).
+                                intro n. rewrite pren_S. reflexivity.
+                              }
+                              eapply crtyping_comp. all: eapply crtyping_S.
+                            }
+                            etype.
+                          - cbn. eapply cconv_trans. 1: constructor.
+                            cbn. apply cconv_refl.
+                          - etype.
+                            + eapply ccmeta_conv.
+                              * eapply ctyping_subst.
+                                1:{
+                                  eapply cstyping_one.
+                                  - eapply cscoping_subst.
+                                    + cbn. eapply csscoping_shift.
+                                      eapply csscoping_shift.
+                                      eapply csscoping_one.
+                                      escope.
+                                    + eapply cscoping_ren.
+                                      * eapply crscoping_shift.
+                                        eapply crscoping_shift.
+                                        eapply crscoping_S.
+                                      * eapply cscoping_ren. 2: escope.
+                                        eapply crscoping_morphism.
+                                        1,3: reflexivity.
+                                        1:{
+                                          instantiate (1 := S >> S).
+                                          intro n. rewrite pren_S. reflexivity.
+                                        }
+                                        eapply crscoping_comp.
+                                        all: eapply crscoping_S.
+                                  - eapply ctyping_subst.
+                                    1:{
+                                      eapply cstyping_shift_eq
+                                      with (A := capp _ (cvar 0)).
+                                      - eapply cstyping_shift.
+                                        eapply cstyping_one.
+                                        + escope.
+                                        + eapply type_rpm_lift. etype.
+                                          erewrite scoping_md. 2: eassumption.
+                                          reflexivity.
+                                      - reflexivity.
+                                    }
+                                    eapply ctyping_ren.
+                                    1:{
+                                      eapply crtyping_shift_eq
+                                      with (A := capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)).
+                                      - eapply crtyping_shift.
+                                        apply crtyping_S.
+                                      - cbn. f_equal. f_equal. f_equal.
+                                        f_equal. ssimpl. reflexivity.
+                                    }
+                                    eapply ctyping_ren.
+                                    1:{
+                                      eapply crtyping_morphism. 1,3: reflexivity.
+                                      1:{
+                                        instantiate (1 := S >> S).
+                                        intro n. rewrite pren_S. reflexivity.
+                                      }
+                                      eapply crtyping_comp.
+                                      all: eapply crtyping_S.
+                                    }
+                                    eapply type_epm_lift. etype.
+                                    erewrite scoping_md. 2: eassumption.
+                                    reflexivity.
+                                }
+                                admit.
+                              * admit.
+                            + admit.
+                            + admit.
+                        }
+                        * admit.
+                      + admit.
+                      + admit.
+                    - admit.
+                    - admit.
+                  }
+                  * admit.
+                  * admit.
+                + admit.
+                + admit.
             }
           + admit.
         - admit.
@@ -2261,4 +2414,14 @@ Proof.
       }
       * admit.
       * admit.
+    + admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
 Abort.
