@@ -2392,9 +2392,52 @@ Proof.
                                     erewrite scoping_md. 2: eassumption.
                                     reflexivity.
                                 }
-                                admit.
+                                eapply ctyping_subst.
+                                1:{
+                                  eapply cstyping_shift.
+                                  eapply cstyping_shift_eq
+                                  with (A := capp _ (cvar 0)).
+                                  - eapply cstyping_shift.
+                                    eapply cstyping_one.
+                                    + escope.
+                                    + eapply type_rpm_lift. etype.
+                                      erewrite scoping_md. 2: eassumption.
+                                      reflexivity.
+                                  - reflexivity.
+                                }
+                                eapply ctyping_ren.
+                                1:{
+                                  eapply crtyping_shift.
+                                  eapply crtyping_shift_eq
+                                  with (A := capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)).
+                                  - eapply crtyping_shift. eapply crtyping_S.
+                                  - f_equal. f_equal. f_equal.
+                                    ssimpl. reflexivity.
+                                }
+                                eapply ctyping_ren.
+                                1:{
+                                  eapply crtyping_shift.
+                                  eapply crtyping_morphism. 1,3: reflexivity.
+                                  1:{
+                                    instantiate (1 := S >> S).
+                                    intro n. rewrite pren_S. reflexivity.
+                                  }
+                                  eapply crtyping_comp.
+                                  all: eapply crtyping_S.
+                                }
+                                eapply ctyping_ren.
+                                1: eapply crtyping_S.
+                                eapply type_epm_lift. etype.
+                                econstructor.
+                                -- etype. erewrite scoping_md. 2: eassumption.
+                                  reflexivity.
+                                -- cbn. constructor.
+                                -- etype.
+                              * reflexivity.
+                            + econstructor.
+                              * etype. all: admit.
                               * admit.
-                            + admit.
+                              * admit.
                             + admit.
                         }
                         * admit.
