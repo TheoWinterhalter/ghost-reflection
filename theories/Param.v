@@ -2162,6 +2162,9 @@ Hint Extern 10 (isProp _ = _) =>
 Tactic Notation "remd" "in" hyp(h) :=
   erewrite !scoping_md in h by eassumption.
 
+Hint Extern 100 (nth_error _ _ = _) =>
+  reflexivity : cc_type.
+
 Lemma param_erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2361,7 +2364,7 @@ Proof.
             * reflexivity.
             * {
               eapply ccmeta_conv.
-              - etype. 2: reflexivity.
+              - etype.
                 econstructor.
                 + eapply ctyping_subst.
                   1:{
@@ -2388,10 +2391,10 @@ Proof.
             }
             * {
               eapply ccmeta_conv.
-              - etype. 3: reflexivity.
+              - etype.
                 + econstructor.
                   * {
-                    etype. 2: reflexivity.
+                    etype.
                     econstructor.
                     - etype.
                       + econstructor.
@@ -2508,7 +2511,7 @@ Proof.
                               etype.
                             + reflexivity.
                           - econstructor.
-                            + etype. 2: reflexivity.
+                            + etype.
                               admit.
                             + admit.
                             + admit.
@@ -2545,7 +2548,7 @@ Proof.
           + reflexivity.
           + eapply ccmeta_conv.
             * {
-              etype. 2: reflexivity. (* TODO This should be handled too *)
+              etype.
               econstructor.
               - eapply ctyping_subst.
                 1:{
@@ -2575,7 +2578,7 @@ Proof.
           + eapply ccmeta_conv.
             * {
               etype. econstructor.
-              - etype. 2: reflexivity.
+              - etype.
                 econstructor.
                 + eapply ctyping_ren. 1: eapply crtyping_S.
                   eapply ctyping_ren. 1: eapply crtyping_S.
