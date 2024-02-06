@@ -317,7 +317,8 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
 
 Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty ctype_tyval
-  ctype_tyerr ctype_El ctype_Err
+  ctype_tyerr ctype_El ctype_Err ctype_squash ctype_sq ctype_sq_elim
+  ctype_teq type_trefl ctype_tJ
 : cc_type.
 
 Ltac econv :=

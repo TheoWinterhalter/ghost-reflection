@@ -183,15 +183,15 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else cDummy ;
   ⟦ Γ | toRev t p u ⟧p := ⟦ Γ | u ⟧p ;
   ⟦ Γ | fromRev t p u ⟧p := ⟦ Γ | u ⟧p ;
-  ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv ⟦ Γ | v ⟧pv) ;
-  ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧pε ⟦ Γ | u ⟧pv) ;
+  ⟦ Γ | gheq A u v ⟧p := squash (teq ⟦ Γ | A ⟧pτ ⟦ Γ | u ⟧pv ⟦ Γ | v ⟧pv) ;
+  ⟦ Γ | ghrefl A u ⟧p := sq (trefl ⟦ Γ | A ⟧pτ ⟦ Γ | u ⟧pv) ;
   ⟦ Γ | ghcast A u v e P t ⟧p :=
     let eP := ⟦ Γ | e ⟧p in
     let PP := ⟦ Γ | P ⟧p in
     let uv := ⟦ Γ | u ⟧pv in
     let vv := ⟦ Γ | v ⟧pv in
     let vP := ⟦ Γ | v ⟧p in
-    let Ae := ⟦ Γ | A ⟧pε in
+    let Ae := ⟦ Γ | A ⟧pτ in
     let AP := ⟦ Γ | A ⟧p in
     let te := ⟦ Γ | t ⟧pε in
     let tv := ⟦ Γ | t ⟧pv in
@@ -962,13 +962,13 @@ Proof.
       all: f_equal.
       1:{ ssimpl. reflexivity. }
       1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
-      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       3:{ ssimpl. reflexivity. }
       all: f_equal.
       3:{ ssimpl. reflexivity. }
       3:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
       1:{ ssimpl. reflexivity. }
@@ -990,13 +990,13 @@ Proof.
       all: f_equal.
       1:{ ssimpl. reflexivity. }
       1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
-      1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       3:{ ssimpl. reflexivity. }
       all: f_equal.
       3:{ ssimpl. reflexivity. }
       3:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
       1:{ ssimpl. reflexivity. }
@@ -1017,13 +1017,13 @@ Proof.
       1:{ ssimpl. reflexivity. }
       1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       3:{ ssimpl. reflexivity. }
       all: f_equal.
       3:{ ssimpl. reflexivity. }
       3:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
-      1:{ rewrite <- pren_epm_lift. ssimpl. reflexivity. }
+      1:{ cEl_ren. rewrite <- pren_epm_lift. ssimpl. reflexivity. }
       1:{ rewrite <- pren_rpm_lift. ssimpl. reflexivity. }
       all: f_equal.
       1:{ ssimpl. reflexivity. }
@@ -1495,13 +1495,15 @@ Proof.
     erewrite !revive_subst. 2-5: eassumption.
     erewrite !erase_subst. 2,3: eassumption.
     erewrite <- !psubst_rpm_lift. 2,3: eapply revive_scoping.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
+    change (cEl (?t <[ ?σ ])) with ((cEl t) <[ σ ]).
+    erewrite <- psubst_epm_lift. 2:{ econstructor. eapply erase_scoping. }
     reflexivity.
   - cbn - [mode_inb].
     erewrite erase_subst. 2,3: eassumption.
     erewrite revive_subst. 2,3: eassumption.
     erewrite <- psubst_rpm_lift. 2: eapply revive_scoping.
-    erewrite <- psubst_epm_lift. 2: eapply erase_scoping.
+    change (cEl (?t <[ ?σ ])) with ((cEl t) <[ σ ]).
+    erewrite <- psubst_epm_lift. 2:{ econstructor. eapply erase_scoping. }
     reflexivity.
   - cbn - [mode_inb].
     erewrite md_subst. 2,3: eassumption.
@@ -1513,7 +1515,10 @@ Proof.
     erewrite !erase_subst. 2-5: eassumption.
     erewrite !revive_subst. 2-7: eassumption.
     erewrite <- !psubst_rpm_lift. 2-4: eapply revive_scoping.
-    erewrite <- !psubst_epm_lift. 2,3: eapply erase_scoping.
+    change (cEl (?t <[ ?σ ])) with ((cEl t) <[ σ ]).
+    erewrite <- !psubst_epm_lift.
+    2: eapply erase_scoping.
+    2:{ econstructor. eapply erase_scoping. }
     destruct md eqn:e.
     + reflexivity.
     + unfold pcastTG. cbn. ssimpl. reflexivity.
@@ -2473,7 +2478,26 @@ Proof.
     erewrite !scoping_md. 2: eassumption. cbn.
     erewrite !scoping_md in IHh3. 2-4: eassumption. cbn in IHh3.
     assumption.
-  - admit.
+  - unfold ptype. cbn.
+    change (epm_lift ctt) with ctt.
+    econstructor.
+    + etype.
+      * {
+        eapply ccmeta_conv.
+        - eapply type_epm_lift. etype.
+          econstructor.
+          + etype. erewrite scoping_md. 2: eassumption.
+            reflexivity.
+          + constructor.
+          + etype.
+        - rewrite epm_lift_eq. cbn. reflexivity.
+      }
+      * (* TODO Special lemma for that? *) admit.
+      * admit.
+    + apply cconv_sym. constructor.
+    + eapply ccmeta_conv.
+      * etype.
+      * cbn. reflexivity.
   - admit.
   - admit.
   - admit.
