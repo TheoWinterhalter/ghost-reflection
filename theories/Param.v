@@ -2546,7 +2546,7 @@ Proof.
           + eapply ccmeta_conv.
             * {
               etype. 2: reflexivity. (* TODO This should be handled too *)
-              eapply ccmeta_conv.
+              econstructor.
               - eapply ctyping_subst.
                 1:{
                   eapply cstyping_shift_eq with (A := S ⋅ ⟦ sc Γ | Erased A ⟧pτ).
@@ -2560,10 +2560,42 @@ Proof.
                 eapply ctyping_ren.
                 1: eapply crtyping_S.
                 etype.
-              - admit.
+              - cbn. unfold ptype. remd. cbn.
+                eapply cconv_trans. 1: constructor.
+                cbn. econv. rewrite param_erase_ty_tm.
+                ssimpl. rewrite rinstInst'_cterm. econv.
+              - etype. eapply ccmeta_conv.
+                + eapply ctyping_ren. 1: eapply crtyping_S.
+                  etype.
+                  * econstructor. all: eauto.
+                  * reflexivity.
+                + cbn. reflexivity.
             }
-            * admit.
-          + admit.
+            * cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              etype. econstructor.
+              - etype. 2: reflexivity.
+                econstructor.
+                + eapply ctyping_ren. 1: eapply crtyping_S.
+                  eapply ctyping_ren. 1: eapply crtyping_S.
+                  etype.
+                + cbn. change (epm_lift (cEl ?A)) with (vreg ⋅ (cEl A)).
+                  cbn. eapply cconv_trans. 1: constructor.
+                  econv. ssimpl. econv.
+                + etype. eapply ccmeta_conv.
+                  * eapply ctyping_ren.
+                    1:{
+                      change (crtyping ?G ?s ?D) with (crtyping G (S >> S) D).
+                      eapply crtyping_comp.
+                      all: eapply crtyping_S.
+                    }
+                    etype. 1: econstructor. all: eauto.
+                  * cbn. reflexivity.
+              - cbn. constructor.
+              - etype.
+            }
+            * cbn. reflexivity.
       }
       * cbn. f_equal. ssimpl. reflexivity.
     + cbn. eapply cconv_trans. 1: constructor.
