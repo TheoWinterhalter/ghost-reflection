@@ -2522,9 +2522,49 @@ Proof.
     + eapply ccmeta_conv.
       * etype.
       * cbn. reflexivity.
-  - admit.
-  - admit.
-  - admit.
-  - admit.
+  - unfold ptype. cbn.
+    etype.
+  - unfold ptype. cbn - [mode_inb].
+    remd. cbn.
+    unfold ptype in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh3. remd in IHh3. cbn in IHh3.
+    unfold ptype in IHh4. remd in IHh4. cbn in IHh4.
+    unfold ptype in IHh5. remd in IHh5. cbn in IHh5.
+    unfold ptype in IHh6. remd in IHh6.
+    destruct m. 1: contradiction.
+    + cbn. (* A rule to factorise things? *)
+      admit.
+    + admit.
+    + admit.
+  - unfold ptype. cbn.
+    change (epm_lift ctt) with ctt.
+    econstructor.
+    + etype.
+    + apply cconv_sym. constructor.
+    + eapply ccmeta_conv.
+      * etype.
+      * cbn. reflexivity.
+  - unfold ptype. cbn - [mode_inb].
+    unfold ptype in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
+    destruct m. all: cbn in *.
+    + etype. eapply ccmeta_conv.
+      * {
+        etype.
+        - econstructor.
+          + etype.
+          + eapply cconv_trans. 1: constructor.
+            cbn. apply cconv_refl.
+          + etype. econstructor.
+            * etype.
+            * cbn. rewrite epm_lift_eq. cbn. constructor.
+            * etype.
+        - (* There should be a rule for this *)
+          admit.
+      }
+      * cbn. reflexivity.
+    + admit.
+    + admit.
+    + admit.
   - admit.
 Abort.
