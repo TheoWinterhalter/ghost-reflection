@@ -2541,7 +2541,7 @@ Proof.
         - eapply cconv_trans. 1: constructor.
           cbn. econv. ssimpl. econv.
         - etype.
-          + econstructor. all: eauto. admit.
+          + econstructor. all: eauto.
           + reflexivity.
           + eapply ccmeta_conv.
             * {
@@ -2559,7 +2559,7 @@ Proof.
                 1: eapply crtyping_S.
                 eapply ctyping_ren.
                 1: eapply crtyping_S.
-                etype. admit.
+                etype.
               - admit.
             }
             * admit.

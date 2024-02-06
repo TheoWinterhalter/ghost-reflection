@@ -1106,6 +1106,7 @@ Lemma type_Reveal_inv :
       cscoping Γ p mKind ∧
       Γ ⊢ t : Erased A ∧
       Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ A : Sort mType i ∧
       cscoping Γ A mKind ∧
       Γ ⊢ Sort mProp 0 ε≡ C.
 Proof.
@@ -1407,6 +1408,7 @@ Proof.
       * assumption.
       * econstructor. 3,4: intuition eauto. all: intuition auto.
       * eassumption.
+      * intuition eauto.
       * intuition eauto.
   - split.
     + cbn. econstructor. all: assumption.
