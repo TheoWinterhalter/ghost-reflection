@@ -2224,6 +2224,36 @@ Hint Extern 15 =>
   | reflexivity
   ] : cc_type.
 
+Lemma param_erase_err :
+  ∀ Γ Γ' Γ'' A m i,
+    Γ ⊢ A : Sort m i →
+    isProp m = false →
+    relm (mdc Γ A) = true →
+    Γ' = sc Γ →
+    Γ'' = ⟦ Γ ⟧p →
+    Γ'' ⊢ᶜ ⟦ Γ' | A ⟧p∅ : ⟦ Γ' | A ⟧pτ.
+Proof.
+  intros Γ Γ' Γ'' A m i h hpm hrm -> ->.
+  eapply ccmeta_conv.
+  - eapply type_epm_lift. etype.
+    econstructor.
+    + etype.
+    + cbn. rewrite hpm. constructor.
+    + etype.
+  - reflexivity.
+Qed.
+
+(* Hint Resolve param_erase_ty : cc_type. *)
+
+Hint Extern 15 =>
+  eapply param_erase_err ; [
+    idtac
+  | idtac
+  | idtac
+  | reflexivity
+  | reflexivity
+  ] : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2551,20 +2581,41 @@ Proof.
     + etype. eapply ccmeta_conv.
       * {
         etype.
-        - econstructor.
+        econstructor.
+        - etype.
+        - eapply cconv_trans. 1: constructor.
+          cbn. apply cconv_refl.
+        - etype.
+      }
+      * cbn. reflexivity.
+    + etype. eapply ccmeta_conv.
+      * {
+        etype. econstructor.
+        - etype.
+        - eapply cconv_trans. 1: constructor.
+          cbn. apply cconv_refl.
+        - etype.
+      }
+      * reflexivity.
+    + eapply ccmeta_conv.
+      * {
+        etype. eapply ccmeta_conv.
+        - etype. econstructor.
           + etype.
           + eapply cconv_trans. 1: constructor.
             cbn. apply cconv_refl.
-          + etype. econstructor.
-            * etype.
-            * cbn. rewrite epm_lift_eq. cbn. constructor.
-            * etype.
-        - (* There should be a rule for this *)
-          admit.
+          + etype.
+        - reflexivity.
       }
-      * cbn. reflexivity.
-    + admit.
-    + admit.
-    + admit.
+      * reflexivity.
+    + eapply ccmeta_conv.
+      * {
+        etype. econstructor.
+        - etype.
+        - eapply cconv_trans. 1: constructor.
+          cbn. apply cconv_refl.
+        - etype.
+      }
+      * reflexivity.
   - admit.
 Abort.
