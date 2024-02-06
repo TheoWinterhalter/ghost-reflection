@@ -2138,6 +2138,12 @@ Ltac remd :=
 Hint Extern 10 (relm _ = _) =>
   remd ; reflexivity : cc_type.
 
+Hint Extern 10 (md _ _ = _) =>
+  remd ; reflexivity : cc_type.
+
+Tactic Notation "remd" "in" hyp(h) :=
+  erewrite !scoping_md in h by eassumption.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2216,22 +2222,20 @@ Proof.
   - admit.
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
-    erewrite scoping_md. 2: eassumption.
-    erewrite scoping_md in IHh. 2: eassumption.
+    remd. remd in IHh.
     cbn in *. assumption.
   - unfold ptype in *. cbn - [mode_inb] in *.
-    erewrite !scoping_md. 2,3: eassumption.
-    erewrite scoping_md in IHh1, IHh2. 2,3: eassumption.
+    remd. remd in IHh1. remd in IHh2.
     cbn in *. rewrite rpm_lift_eq. rewrite <- epm_lift_eq. assumption.
   - unfold ptype in *. cbn - [mode_inb] in *.
-    erewrite !scoping_md. 2,3: eassumption.
+    remd.
     erewrite md_ren in * |-.
     2: eapply rscoping_S.
     2: eapply rscoping_comp_S.
-    erewrite !scoping_md in IHh1. 2,3: eassumption.
-    erewrite !scoping_md in IHh2. 2,3: eassumption.
-    erewrite !scoping_md in IHh3. 2,3: eassumption.
-    erewrite !scoping_md in IHh4. 2: eassumption.
+    remd in IHh1.
+    remd in IHh2.
+    remd in IHh3.
+    remd in IHh4.
     destruct m. all: try intuition discriminate.
     + cbn in *. econstructor.
       * {
@@ -2250,8 +2254,6 @@ Proof.
                     eapply cstyping_one.
                     - escope.
                     - eapply type_rpm_lift. etype.
-                      erewrite scoping_md. 2: eassumption.
-                      reflexivity.
                   }
                   eapply ctyping_ren.
                   1: eapply crtyping_S.
@@ -2272,7 +2274,6 @@ Proof.
                       eapply cstyping_one.
                       - escope.
                       - eapply type_rpm_lift. etype.
-                        erewrite scoping_md. 2: eassumption. reflexivity.
                     }
                     eapply ctyping_ren. 1: eapply crtyping_S.
                     eapply ctyping_ren. 1: eapply crtyping_S.
@@ -2287,8 +2288,6 @@ Proof.
                         eapply cstyping_one.
                         - escope.
                         - eapply type_rpm_lift. etype.
-                          erewrite scoping_md. 2: eassumption.
-                          reflexivity.
                       }
                       eapply ctyping_ren. 1: eapply crtyping_S.
                       eapply type_epm_lift. etype.
@@ -2316,8 +2315,6 @@ Proof.
                                 eapply cstyping_one.
                                 + escope.
                                 + eapply type_rpm_lift. etype.
-                                  erewrite scoping_md. 2: eassumption.
-                                  reflexivity.
                               - reflexivity.
                             }
                             eapply ctyping_ren.
@@ -2375,8 +2372,6 @@ Proof.
                                         eapply cstyping_one.
                                         + escope.
                                         + eapply type_rpm_lift. etype.
-                                          erewrite scoping_md. 2: eassumption.
-                                          reflexivity.
                                       - reflexivity.
                                     }
                                     eapply ctyping_ren.
@@ -2409,8 +2404,6 @@ Proof.
                                     eapply cstyping_one.
                                     + escope.
                                     + eapply type_rpm_lift. etype.
-                                      erewrite scoping_md. 2: eassumption.
-                                      reflexivity.
                                   - reflexivity.
                                 }
                                 eapply ctyping_ren.
@@ -2467,18 +2460,18 @@ Proof.
     + admit.
   - unfold ptype in *.
     cbn - [mode_inb] in *.
-    erewrite scoping_md. 2: eassumption.
-    cbn. change (epm_lift ctt) with ctt.
-    erewrite !scoping_md in IHh1. all: admit.
+    remd. cbn. change (epm_lift ctt) with ctt.
+    remd in IHh1.
+    admit.
   - unfold ptype in IHh3 |- *.
     cbn - [mode_inb] in *.
-    erewrite !scoping_md. 2,3: eassumption. cbn.
-    erewrite !scoping_md in IHh3. 2,3: eassumption. cbn in IHh3.
+    remd. cbn.
+    remd in IHh3. cbn in IHh3.
     assumption.
   - unfold ptype in IHh3 |- *.
     cbn - [mode_inb] in *.
-    erewrite !scoping_md. 2: eassumption. cbn.
-    erewrite !scoping_md in IHh3. 2-4: eassumption. cbn in IHh3.
+    remd. cbn.
+    remd in IHh3. cbn in IHh3.
     assumption.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
