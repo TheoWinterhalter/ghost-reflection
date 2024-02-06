@@ -2680,11 +2680,112 @@ Proof.
                                 - cbn. reflexivity.
                               }
                             + reflexivity.
-                          - admit.
+                          - eapply ccmeta_conv.
+                            + etype.
+                              * {
+                                eapply ccmeta_conv.
+                                - etype.
+                                - reflexivity.
+                              }
+                              * {
+                                econstructor.
+                                - eapply ctyping_ren. 1: apply crtyping_S.
+                                  eapply ctyping_ren. 1: apply crtyping_S.
+                                  eapply ctyping_subst.
+                                  1:{
+                                    eapply cstyping_shift_eq
+                                    with (A := capp _ (cvar 0)).
+                                    - eapply cstyping_shift
+                                      with (A := S ⋅ ⟦ sc Γ | A ⟧pτ).
+                                      apply cstyping_one.
+                                      + escope.
+                                      + etype.
+                                    - cbn. f_equal. f_equal. f_equal.
+                                      f_equal. ssimpl. reflexivity.
+                                  }
+                                  eapply ctyping_ren.
+                                  1:{
+                                    eapply crtyping_shift_eq
+                                    with (A := capp (S ⋅ ⟦ sc Γ | A ⟧p) (cvar 0)).
+                                    - eapply crtyping_shift.
+                                      apply crtyping_S.
+                                    - cbn. f_equal. f_equal. f_equal. f_equal.
+                                      ssimpl. reflexivity.
+                                  }
+                                  eapply ctyping_ren.
+                                  1:{
+                                    rewrite pren_S_pw.
+                                    eapply crtyping_comp.
+                                    all: apply crtyping_S.
+                                  }
+                                  etype.
+                                - cbn.
+                                  change (epm_lift (cEl ?A)) with (vreg ⋅ (cEl A)).
+                                  cbn. eapply cconv_trans. 1: constructor.
+                                  constructor.
+                                - etype.
+                              }
+                            + cbn. reflexivity.
                         }
-                      + admit.
-                    - admit.
-                    - admit.
+                      + eapply ccmeta_conv.
+                        * eapply ctyping_ren. 1: apply crtyping_S.
+                          cbn. etype.
+                        * cbn. ssimpl. rewrite rinstInst'_cterm.
+                          eapply ext_cterm. intros [| []]. 1,2: reflexivity.
+                          ssimpl. rewrite pren_SS. rewrite pren_comp_S.
+                          rewrite pren_S. reflexivity.
+                    - cbn. econv. all: apply ccmeta_refl.
+                      + rewrite rpm_lift_eq. ssimpl.
+                        eapply ext_cterm. intros [| []]. 1,2: reflexivity.
+                        ssimpl. rewrite pren_SS. rewrite pren_comp_S.
+                        rewrite pren_S. reflexivity.
+                      + change (rpm_lift ?t) with (vreg ⋅ t). ssimpl.
+                        unfold vreg. cbn. reflexivity.
+                    - etype.
+                      + cbn. eapply ccmeta_conv.
+                        * {
+                          etype.
+                          econstructor.
+                          - eapply ctyping_ren. 1: apply crtyping_S.
+                            eapply ctyping_subst.
+                            1:{
+                              eapply cstyping_shift_eq
+                              with (A := S ⋅ ⟦ sc Γ | A ⟧pτ).
+                              - eapply cstyping_one.
+                                + escope.
+                                + etype.
+                              - f_equal. f_equal. f_equal. ssimpl. reflexivity.
+                            }
+                            eapply ctyping_ren. 1: apply crtyping_S.
+                            eapply ctyping_ren. 1: apply crtyping_S.
+                            etype.
+                          - cbn. eapply cconv_trans. 1: constructor.
+                            cbn. econv. rewrite param_erase_ty_tm. cbn.
+                            econv. apply ccmeta_refl. ssimpl.
+                            rewrite rinstInst'_cterm. reflexivity.
+                          - etype. eapply ccmeta_conv.
+                            + eapply ctyping_ren.
+                              1:{
+                                change (crtyping ?G ?s ?D) with (crtyping G (S >> S) D).
+                                eapply crtyping_comp.
+                                all: apply crtyping_S.
+                              }
+                              etype.
+                            + reflexivity.
+                        }
+                        * reflexivity.
+                      + econstructor.
+                        * {
+                          etype.
+                          - eapply ccmeta_conv. 1: etype.
+                            reflexivity.
+                          - econstructor.
+                            + admit.
+                            + admit.
+                            + admit.
+                        }
+                        * admit.
+                        * admit.
                   }
                   * admit.
                   * admit.
