@@ -2529,11 +2529,49 @@ Proof.
       * admit.
       * admit.
     + admit.
-  - unfold ptype in *.
-    cbn - [mode_inb] in *.
+  - unfold ptype. cbn.
     remd. cbn. change (epm_lift ctt) with ctt.
-    remd in IHh1.
-    admit.
+    unfold ptype in IHh1. remd in IHh1. cbn in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
+    econstructor.
+    + etype. eapply ccmeta_conv.
+      * {
+        etype. econstructor.
+        - etype.
+        - eapply cconv_trans. 1: constructor.
+          cbn. econv. ssimpl. econv.
+        - etype.
+          + econstructor. all: eauto. admit.
+          + reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              etype. 2: reflexivity. (* TODO This should be handled too *)
+              eapply ccmeta_conv.
+              - eapply ctyping_subst.
+                1:{
+                  eapply cstyping_shift_eq with (A := S ⋅ ⟦ sc Γ | Erased A ⟧pτ).
+                  - eapply cstyping_one.
+                    + escope.
+                    + etype.
+                  - f_equal. f_equal. f_equal. ssimpl. reflexivity.
+                }
+                eapply ctyping_ren.
+                1: eapply crtyping_S.
+                eapply ctyping_ren.
+                1: eapply crtyping_S.
+                etype. admit.
+              - admit.
+            }
+            * admit.
+          + admit.
+      }
+      * cbn. f_equal. ssimpl. reflexivity.
+    + cbn. eapply cconv_trans. 1: constructor.
+      cbn. apply cconv_sym. eapply cconv_trans. 1: constructor.
+      cbn. econv.
+    + eapply ccmeta_conv.
+      * etype.
+      * cbn. reflexivity.
   - unfold ptype in IHh3 |- *.
     cbn - [mode_inb] in *.
     remd. cbn.

@@ -331,6 +331,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ p mKind →
       Γ ⊢ t : Erased A →
       Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      cscoping Γ A mKind →
       Γ ⊢ Reveal t p : Sort mProp 0
 
 | type_toRev :
