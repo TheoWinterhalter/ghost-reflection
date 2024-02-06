@@ -2132,6 +2132,12 @@ Proof.
   rewrite pren_comp_S. rewrite pren_id. reflexivity.
 Qed.
 
+Ltac remd :=
+  erewrite !scoping_md by eassumption.
+
+Hint Extern 10 (relm _ = _) =>
+  remd ; reflexivity : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2251,8 +2257,8 @@ Proof.
                   1: eapply crtyping_S.
                   eapply type_epm_lift. etype.
                   econstructor.
-                  * etype. erewrite scoping_md. 2: eassumption. reflexivity.
-                  * cbn.  constructor.
+                  * etype.
+                  * cbn. constructor.
                   * etype.
                 + change (epm_lift (cSort ?m ?i)) with (cSort m i).
                   cbn. econv.
@@ -2287,8 +2293,7 @@ Proof.
                       eapply ctyping_ren. 1: eapply crtyping_S.
                       eapply type_epm_lift. etype.
                       econstructor.
-                      + etype. erewrite scoping_md. 2: eassumption.
-                        reflexivity.
+                      + etype.
                       + cbn. constructor.
                       + etype.
                     - reflexivity.
@@ -2394,8 +2399,6 @@ Proof.
                                       all: eapply crtyping_S.
                                     }
                                     eapply type_epm_lift. etype.
-                                    erewrite scoping_md. 2: eassumption.
-                                    reflexivity.
                                 }
                                 eapply ctyping_subst.
                                 1:{
@@ -2434,8 +2437,7 @@ Proof.
                                 1: eapply crtyping_S.
                                 eapply type_epm_lift. etype.
                                 econstructor.
-                                -- etype. erewrite scoping_md. 2: eassumption.
-                                  reflexivity.
+                                -- etype.
                                 -- cbn. constructor.
                                 -- etype.
                               * reflexivity.
@@ -2486,8 +2488,7 @@ Proof.
         eapply ccmeta_conv.
         - eapply type_epm_lift. etype.
           econstructor.
-          + etype. erewrite scoping_md. 2: eassumption.
-            reflexivity.
+          + etype.
           + constructor.
           + etype.
         - rewrite epm_lift_eq. cbn. reflexivity.
