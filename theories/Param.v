@@ -2314,6 +2314,122 @@ Ltac tm_ssimpl :=
 
 Hint Resolve crtyping_comp crtyping_S : cc_type.
 
+Lemma type_pcastTG :
+  ∀ Γ i Ae AP uv uP vv vP eP Pe PP te tP,
+    Γ ⊢ᶜ Ae : cSort cType i →
+    Γ ⊢ᶜ AP : cPi cType Ae (cSort cProp 0) →
+    Γ ⊢ᶜ uv : Ae →
+    Γ ⊢ᶜ uP : capp AP uv →
+    Γ ⊢ᶜ vv : Ae →
+    Γ ⊢ᶜ vP : capp AP vv →
+    Γ ⊢ᶜ eP : squash (teq Ae uv vv) →
+    Γ ⊢ᶜ PP :
+      cPi cType Ae
+        (cPi cProp (capp (S ⋅ AP) (cvar 0))
+          (cPi cType (cEl ((S >> S) ⋅ Pe))
+            (cSort cProp 0))) →
+    Γ ⊢ᶜ tP : capp (capp (capp PP uv) uP) te →
+    Γ ⊢ᶜ pcastTG Ae AP uv vv vP eP PP te tP : capp (capp (capp PP vv) vP) te.
+Proof.
+  intros Γ i Ae AP uv uP vv vP eP Pe PP te tP. intros.
+  unfold pcastTG. cbn. ssimpl.
+  eapply ccmeta_conv.
+  - etype.
+    + eapply ccmeta_conv.
+      * {
+        etype.
+        - eapply ccmeta_conv.
+          + etype.
+            * {
+              eapply ccmeta_conv.
+              - etype.
+                + eapply ccmeta_conv.
+                  * eapply ctyping_ren. all: etype.
+                  * cbn. lhs_ssimpl. reflexivity.
+                + eapply ctyping_ren. all: etype.
+              - cbn. lhs_ssimpl.
+                rewrite <- !funcomp_assoc.
+                rewrite <- !rinstInst'_cterm.
+                reflexivity.
+            }
+            * {
+              eapply ccmeta_conv.
+              - eapply ctyping_ren. all: etype.
+              - cbn. reflexivity.
+            }
+          + cbn. lhs_ssimpl. reflexivity.
+        - eapply ccmeta_conv.
+          + eapply ctyping_ren. all: etype. admit.
+          + admit.
+      }
+      * cbn. reflexivity.
+    + eapply ccmeta_conv.
+      * {
+        etype.
+        - eapply ccmeta_conv.
+          + etype.
+            * {
+              eapply ccmeta_conv.
+              - etype.
+              - cbn. lhs_ssimpl. reflexivity.
+            }
+            * {
+              eapply ccmeta_conv.
+              - eapply ctyping_ren. all: etype.
+              - cbn. reflexivity.
+            }
+            * {
+              eapply ccmeta_conv.
+              - etype.
+                + eapply ccmeta_conv.
+                  * eapply ctyping_ren. all: etype.
+                  * cbn. reflexivity.
+                + eapply ctyping_ren. all: etype.
+                + eapply ccmeta_conv.
+                  * etype.
+                  * cbn. ssimpl. reflexivity.
+                + eapply ccmeta_conv.
+                  * {
+                    etype. eapply ccmeta_conv.
+                    - eapply ctyping_ren. all: etype.
+                    - cbn. change (λ n, S (S n)) with (S >> S). lhs_ssimpl.
+                      rewrite renRen_cterm. reflexivity.
+                  }
+                  * cbn. reflexivity.
+                + change (λ n, S (S (S n))) with (S >> S >> S).
+                  tm_ssimpl.
+                  eapply ccmeta_conv.
+                  * {
+                    etype.
+                    - eapply ccmeta_conv.
+                      + etype. eapply ccmeta_conv.
+                        * {
+                          etype. eapply ccmeta_conv.
+                          - eapply ctyping_ren. all: etype.
+                          - cbn. lhs_ssimpl.
+                            change (λ n, S (S (S n))) with (S >> S >> S).
+                            rewrite renRen_cterm. reflexivity.
+                        }
+                        * cbn. lhs_ssimpl. rewrite renRen_cterm.
+                          rewrite <- !funcomp_assoc.
+                          rewrite <- !rinstInst'_cterm.
+                          reflexivity.
+                      + cbn. lhs_ssimpl. reflexivity.
+                    - eapply ccmeta_conv.
+                      + eapply ctyping_ren. all: etype. admit.
+                      + admit.
+                  }
+                  * cbn. reflexivity.
+              - cbn. f_equal. ssimpl. reflexivity.
+            }
+            * admit.
+          + admit.
+        - admit.
+      }
+      * admit.
+  - admit.
+Abort.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
