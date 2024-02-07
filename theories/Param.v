@@ -2280,6 +2280,19 @@ Ltac hide_rhs rhs :=
   | |- _ ⊢ᶜ _ ≡ ?t => set (rhs := t)
   end.
 
+Ltac lhs_ssimpl :=
+  let rhs := fresh "rhs" in
+  hide_rhs rhs ; ssimpl ; subst rhs.
+
+Ltac hide_ty na :=
+  lazymatch goal with
+  | |- _ ⊢ᶜ _ : ?t => set (na := t)
+  end.
+
+Ltac tm_ssimpl :=
+  let na := fresh "na" in
+  hide_ty na ; ssimpl ; subst na.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2382,8 +2395,8 @@ Proof.
       2:{
         eapply cconv_trans. 1: constructor.
         cbn. econstructor.
-        - hide_rhs rhs. ssimpl. subst rhs. econv.
-        - hide_rhs rhs. ssimpl. subst rhs. econstructor.
+        - lhs_ssimpl. econv.
+        - lhs_ssimpl. econstructor.
           1:{ rewrite <- rinstInst'_cterm. econv. }
           eapply cconv_trans. 1: constructor.
           cbn. econstructor. 2: econv.
@@ -2416,13 +2429,12 @@ Proof.
       2:{
         eapply cconv_trans. 1: constructor.
         cbn. econstructor.
-        - hide_rhs rhs. ssimpl. subst rhs. econv.
-        (* TODO lhs_ssimpl tactic to do the following. *)
-        - hide_rhs rhs. ssimpl. subst rhs. econstructor.
+        - lhs_ssimpl. econv.
+        - lhs_ssimpl. econstructor.
           + rewrite <- rinstInst'_cterm. econv.
           + econstructor. 2: econv.
             econstructor. 2: econv.
-            econstructor. (* all: apply ccmeta_refl. *)
+            econstructor.
             * hide_rhs rhs. erewrite param_ren.
               2: apply rscoping_S.
               2: apply rscoping_comp_S.
@@ -2465,7 +2477,22 @@ Proof.
                     }
                     etype.
                   * cbn. reflexivity.
-                + (* TODO hide_type too *) admit.
+                + tm_ssimpl.
+                  erewrite erase_ren.
+                  2: apply rscoping_S. 2: apply rscoping_comp_S.
+                  tm_ssimpl.
+                  econstructor.
+                  * eapply ctyping_ren.
+                    1:{
+                      eapply crtyping_comp. 1: eapply crtyping_comp.
+                      1: eapply crtyping_comp.
+                      1-3: apply crtyping_S.
+                      apply typing_er_sub_param.
+                    }
+                    etype.
+                  * cbn. eapply cconv_trans. 1: constructor.
+                    constructor.
+                  * etype.
             }
             {
               eapply ccmeta_conv.
