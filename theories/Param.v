@@ -2412,6 +2412,83 @@ Proof.
             * etype.
           + reflexivity.
       }
+      eapply ctype_conv in IHh3.
+      2:{
+        eapply cconv_trans. 1: constructor.
+        cbn. econstructor.
+        - hide_rhs rhs. ssimpl. subst rhs. econv.
+        (* TODO lhs_ssimpl tactic to do the following. *)
+        - hide_rhs rhs. ssimpl. subst rhs. econstructor.
+          + rewrite <- rinstInst'_cterm. econv.
+          + econstructor. 2: econv.
+            econstructor. 2: econv.
+            econstructor. (* all: apply ccmeta_refl. *)
+            * hide_rhs rhs. erewrite param_ren.
+              2: apply rscoping_S.
+              2: apply rscoping_comp_S.
+              ssimpl. rewrite pren_S_pw. ssimpl.
+              apply ccmeta_refl.
+              rewrite <- funcomp_assoc.
+              rewrite <- rinstInst'_cterm.
+              unfold rhs. reflexivity.
+            * hide_rhs rhs. apply ccmeta_refl.
+              rewrite rpm_lift_eq. cbn.
+              unfold rhs. reflexivity.
+      }
+      2:{
+        etype.
+        - eapply ccmeta_conv.
+          + etype. eapply ccmeta_conv.
+            * eapply ctyping_ren. 1: apply crtyping_S.
+              etype.
+            * cbn. reflexivity.
+          + cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + etype.
+            2:{
+              econstructor.
+              - eapply ctyping_ren.
+                1:{ eapply crtyping_comp. all: apply crtyping_S. }
+                etype.
+              - cbn - [mode_inb].
+                erewrite md_ren. 2: apply rscoping_S. 2: apply rscoping_comp_S.
+                remd. cbn.
+                change (epm_lift (cEl ?t)) with (vreg ⋅ (cEl t)). cbn.
+                eapply cconv_trans. 1: constructor.
+                econv.
+              - cbn. etype.
+                + eapply ccmeta_conv.
+                  * eapply ctyping_ren.
+                    1:{
+                      change (crtyping ?G ?s ?D) with (crtyping G (S >> S) D).
+                      eapply crtyping_comp. all: apply crtyping_S.
+                    }
+                    etype.
+                  * cbn. reflexivity.
+                + (* TODO hide_type too *) admit.
+            }
+            {
+              eapply ccmeta_conv.
+              - etype. eapply ccmeta_conv.
+                + etype. eapply ccmeta_conv.
+                  * eapply ctyping_ren.
+                    1:{
+                      eapply crtyping_comp.
+                      all: apply crtyping_S.
+                    }
+                    etype.
+                  * cbn. reflexivity.
+                + cbn. f_equal. ssimpl.
+                  rewrite <- funcomp_assoc.
+                  rewrite <- rinstInst'_cterm. reflexivity.
+              - cbn. f_equal. ssimpl.
+                rewrite param_erase_ty_tm. cbn.
+                erewrite erase_ren.
+                2: apply rscoping_S. 2: apply rscoping_comp_S.
+                ssimpl. rewrite epm_lift_eq. ssimpl. reflexivity.
+            }
+          + cbn. reflexivity.
+      }
       (* End *)
       (* All of this below is based on a false premise.
         As expected this was the wrong approach, too brute-forcey.
