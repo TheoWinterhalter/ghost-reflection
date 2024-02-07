@@ -2748,14 +2748,55 @@ Proof.
                       + cbn. reflexivity.
                     - eapply ctyping_ren. 1: etype.
                       etype.
-                    - admit.
-                    - admit.
-                    - admit.
+                    - eapply ccmeta_conv.
+                      + etype.
+                      + cbn. ssimpl. reflexivity.
+                    - eapply ccmeta_conv.
+                      + etype. eapply ccmeta_conv.
+                        * eapply ctyping_ren. 1: etype.
+                          etype.
+                        * cbn. f_equal. ssimpl. reflexivity.
+                      + cbn. reflexivity.
+                    - eapply ccmeta_conv.
+                      + etype. eapply ccmeta_conv.
+                        * {
+                          etype. eapply ccmeta_conv.
+                          - eapply ctyping_ren. 1: etype.
+                            etype.
+                          - cbn. f_equal. ssimpl. reflexivity.
+                        }
+                        * cbn. f_equal. ssimpl.
+                          rewrite <- !funcomp_assoc.
+                          rewrite <- rinstInst'_cterm. reflexivity.
+                      + cbn. reflexivity.
+                  }
+                  * cbn. f_equal. ssimpl. reflexivity.
+                + eapply ccmeta_conv.
+                  * tm_ssimpl. eapply ctyping_ren. 1: etype.
+                    etype.
+                  * cbn. reflexivity.
+                + ssimpl. eapply ctyping_ren. 1: etype.
+                  etype.
+                + eapply ccmeta_conv.
+                  * {
+                    etype.
+                    - eapply ccmeta_conv.
+                      + etype.
+                        * {
+                          eapply ccmeta_conv.
+                          - eapply ctyping_ren. 1: etype.
+                            etype.
+                          - cbn. reflexivity.
+                        }
+                        * eapply ctyping_ren. 1: etype.
+                          etype.
+                      + cbn. reflexivity.
+                    - eapply ccmeta_conv.
+                      + eapply ctyping_ren. 1: etype.
+                        etype.
+                      + cbn. (* BAD *) give_up.
                   }
                   * admit.
-                + admit.
-                + admit.
-                + admit.
               - admit.
             }
             * admit.
