@@ -2676,11 +2676,72 @@ Proof.
       rewrite <- param_erase_ty_tm. econv.
     }
     2: etype.
-    (* ENS *)
+    (* END *)
     destruct m. 1: contradiction.
-    + cbn. (* A rule to factorise things? *)
+    + (* Preprocessing *)
+      cbn in IHh5.
+      eapply ctype_conv in IHh5.
+      2:{
+        eapply cconv_trans. 1: constructor.
+        cbn. lhs_ssimpl. rewrite <- rinstInst'_cterm.
+        econstructor. 1: econv.
+        econstructor. 1: econv.
+        eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      }
+      2:{
+        etype.
+        - eapply ccmeta_conv.
+          + etype. eapply ccmeta_conv.
+            * eapply ctyping_ren. all: etype.
+            * cbn. lhs_ssimpl. reflexivity.
+          + cbn. reflexivity.
+        - econstructor.
+          + eapply ctyping_ren. all: etype.
+          + cbn. change (epm_lift (cEl ?t)) with (vreg ⋅ (cEl t)).
+            cbn. eapply cconv_trans. 1: constructor.
+            constructor.
+          + etype.
+      }
+      cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
+      (* End *)
+      cbn.
+      (* A rule to factorise things? *)
       admit.
-    + admit.
+    + (* Preprocessing *)
+      cbn in IHh5.
+      eapply ctype_conv in IHh5.
+      2:{
+        eapply cconv_trans. 1: constructor.
+        cbn. lhs_ssimpl. rewrite <- rinstInst'_cterm.
+        econstructor. 1: econv.
+        econstructor. 1: econv.
+        eapply cconv_trans. 1: constructor.
+        cbn. econstructor. 2: econv.
+        apply ccmeta_refl.
+        (* match goal with
+        | |- ?l = ?r => change ((S >> S) ⋅ ⟦ sc Γ | P ⟧pτ = r)
+        end. *)
+        reflexivity.
+      }
+      2:{
+        etype.
+        - eapply ccmeta_conv.
+          + etype. eapply ccmeta_conv.
+            * eapply ctyping_ren. all: etype.
+            * cbn. lhs_ssimpl. reflexivity.
+          + cbn. reflexivity.
+        - econstructor.
+          + eapply ctyping_ren. all: etype.
+          + cbn. change (epm_lift (cEl ?t)) with (vreg ⋅ (cEl t)).
+            cbn. eapply cconv_trans. 1: constructor.
+            constructor.
+          + etype.
+      }
+      cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
+      (* End *)
+      cbn.
+      admit.
     + (* Preprocessing *)
       cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
       cbn in IHh5.
