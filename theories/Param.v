@@ -2115,7 +2115,19 @@ Proof.
   apply type_rpm_lift. assumption.
 Qed.
 
-Hint Resolve erase_typing revive_typing : cc_type.
+(* Hint Resolve erase_typing revive_typing : cc_type. *)
+
+Hint Extern 5 =>
+  eapply erase_typing ; [
+    eassumption
+  | idtac
+  ] : cc_type.
+
+Hint Extern 5 =>
+  eapply revive_typing ; [
+    eassumption
+  | idtac
+  ] : cc_type.
 
 Lemma cstyping_shift_eq :
   ∀ Γ Γ' Δ mx A σ,
@@ -2190,7 +2202,13 @@ Proof.
   eapply type_rpm_lift. etype.
 Qed.
 
-Hint Resolve param_revive_typing : cc_type.
+(* Hint Resolve param_revive_typing : cc_type. *)
+
+Hint Extern 6 =>
+  eapply param_revive_typing ; [
+    eassumption
+  | idtac
+  ] : cc_type.
 
 Lemma param_erase_ty_tm :
   ∀ Γ A,
@@ -2521,7 +2539,9 @@ Proof.
       econstructor.
       * {
         etype. econstructor.
-        - etype. (* Bad also *) give_up.
+        - etype. eapply ccmeta_conv.
+          + etype.
+          + reflexivity.
         - admit.
         - admit.
       }
