@@ -2794,10 +2794,19 @@ Proof.
                       constructor.
                     }
                     cbn. eapply cconv_trans. 1: constructor.
-                    cbn. apply ccmeta_refl.
-                    ssimpl. rewrite !rinstInst'_cterm. f_equal. f_equal.
-                    (* BAD No meta_refl, here we must use irrelevance *)
-                    give_up.
+                    cbn. ssimpl.
+                    rewrite !rinstInst'_cterm.
+                    econv.
+                    apply cconv_irr.
+                    -- escope. reflexivity.
+                    --
+                      rewrite <- !rinstInst'_cterm. cbn.
+                      eapply cscoping_ren.
+                      1:{
+                        eapply crscoping_comp. all: apply crscoping_S.
+                      }
+                      eapply param_scoping in H1. cbn in H1.
+                      rewrite csc_param_ctx. assumption.
                   * admit.
               - admit.
             }
