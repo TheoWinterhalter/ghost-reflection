@@ -2681,16 +2681,113 @@ Proof.
     etype.
   - unfold ptype. cbn - [mode_inb].
     remd. cbn.
+    (* Hyp preprocessing *)
     unfold ptype in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
     unfold ptype in IHh3. remd in IHh3. cbn in IHh3.
     unfold ptype in IHh4. remd in IHh4. cbn in IHh4.
     unfold ptype in IHh5. remd in IHh5. cbn in IHh5.
     unfold ptype in IHh6. remd in IHh6.
+    eapply ctype_conv in IHh1.
+    2:{
+      unfold pType. eapply cconv_trans. 1: constructor.
+      cbn. econstructor. 2: econv.
+      rewrite <- param_erase_ty_tm. econv.
+    }
+    2: etype.
+    (* ENS *)
     destruct m. 1: contradiction.
     + cbn. (* A rule to factorise things? *)
       admit.
     + admit.
-    + admit.
+    + (* Preprocessing *)
+      cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
+      cbn in IHh5.
+      eapply ctype_conv in IHh5.
+      2:{
+        eapply cconv_trans. 1: constructor.
+        cbn. lhs_ssimpl. rewrite <- rinstInst'_cterm.
+        econstructor. 1: econv.
+        econstructor. 1: econv.
+        eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      }
+      2:{
+        etype. eapply ccmeta_conv.
+        - etype. eapply ccmeta_conv.
+          + eapply ctyping_ren. 1: apply crtyping_S.
+            etype.
+          + cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+      (* End *)
+      cbn. unfold pcastP. cbn. ssimpl.
+      change (λ m, S (S (S m))) with (S >> S >> S). ssimpl.
+      econstructor.
+      * {
+        etype.
+        - cbn. eapply ccmeta_conv.
+          + etype.
+            * {
+              eapply ccmeta_conv.
+              - etype.
+                + eapply ccmeta_conv.
+                  * eapply ctyping_ren. 1: apply crtyping_S.
+                    etype.
+                  * cbn. lhs_ssimpl. reflexivity.
+                + eapply ctyping_ren. 1: apply crtyping_S.
+                  etype.
+              - cbn. lhs_ssimpl. reflexivity.
+            }
+            * {
+              eapply ccmeta_conv.
+              - eapply ctyping_ren. 1: apply crtyping_S.
+                etype.
+              - cbn. ssimpl. rewrite <- rinstInst'_cterm. reflexivity.
+            }
+          + cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + etype.
+            * {
+              eapply ccmeta_conv.
+              - etype.
+                + eapply ccmeta_conv.
+                  * etype.
+                  * cbn. lhs_ssimpl. reflexivity.
+                + eapply ccmeta_conv.
+                  * eapply ctyping_ren. 1: apply crtyping_S.
+                    etype.
+                  * cbn. reflexivity.
+                + eapply ccmeta_conv.
+                  * {
+                    etype.
+                    - eapply ccmeta_conv.
+                      + eapply ctyping_ren.
+                        1:{
+                          (* TODO I do it too often to not automate *)
+                          eapply crtyping_comp.
+                          all: apply crtyping_S.
+                        }
+                        etype.
+                      + cbn. reflexivity.
+                    - eapply ctyping_ren. 1: admit. (* TODO Above *)
+                      admit.
+                    - admit.
+                    - admit.
+                    - admit.
+                  }
+                  * admit.
+                + admit.
+                + admit.
+                + admit.
+              - admit.
+            }
+            * admit.
+          + admit.
+        - admit.
+      }
+      * admit.
+      * admit.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.
