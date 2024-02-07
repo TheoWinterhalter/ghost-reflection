@@ -2278,6 +2278,7 @@ Qed.
 Ltac hide_rhs rhs :=
   lazymatch goal with
   | |- _ ⊢ᶜ _ ≡ ?t => set (rhs := t)
+  | |- _ = ?t => set (rhs := t)
   end.
 
 Ltac lhs_ssimpl :=
@@ -2434,16 +2435,15 @@ Proof.
           + rewrite <- rinstInst'_cterm. econv.
           + econstructor. 2: econv.
             econstructor. 2: econv.
-            econstructor.
+            econstructor. all: apply ccmeta_refl.
             * hide_rhs rhs. erewrite param_ren.
               2: apply rscoping_S.
               2: apply rscoping_comp_S.
               ssimpl. rewrite pren_S_pw. ssimpl.
-              apply ccmeta_refl.
               rewrite <- funcomp_assoc.
               rewrite <- rinstInst'_cterm.
               unfold rhs. reflexivity.
-            * hide_rhs rhs. apply ccmeta_refl.
+            * hide_rhs rhs.
               rewrite rpm_lift_eq. cbn.
               unfold rhs. reflexivity.
       }
