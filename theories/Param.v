@@ -2364,7 +2364,7 @@ Proof.
     remd. remd in IHh1. remd in IHh2.
     cbn in *. rewrite rpm_lift_eq. rewrite <- epm_lift_eq. assumption.
   - (* TODO preprocessing can happen here already, hyp by hyp *)
-    (* unfold ptype in IHh2. remd in IHh2. cbn in IHh2. *)
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
     unfold ptype in *. cbn - [mode_inb] in *.
     remd.
     erewrite md_ren in * |-.
@@ -2403,9 +2403,16 @@ Proof.
             1:{
               eapply crtyping_comp. all: apply crtyping_S.
             }
-            etype.
-            (* TODO The type is wrong, is translation of Pi the problem? *)
-            all: give_up.
+            (* TODO etype has a bad rule, namely param_erase_ty
+              Either we remove it, or force it to solve one of its subgoals.
+            *)
+            rewrite param_erase_ty_tm. econstructor.
+            econstructor.
+            * etype.
+            * cbn. rewrite epm_lift_eq. cbn.
+              eapply cconv_trans. 1: constructor.
+              constructor.
+            * etype.
           + reflexivity.
       }
       (* End *)
