@@ -2727,10 +2727,10 @@ Proof.
               - cbn. ssimpl. rewrite <- rinstInst'_cterm. reflexivity.
             }
           + cbn. reflexivity.
-        - eapply ccmeta_conv.
+        - econstructor.
           + etype.
             * {
-              eapply ccmeta_conv.
+              econstructor.
               - etype.
                 + eapply ccmeta_conv.
                   * etype.
@@ -2807,14 +2807,130 @@ Proof.
                       }
                       eapply param_scoping in H1. cbn in H1.
                       rewrite csc_param_ctx. assumption.
-                  * admit.
-              - admit.
+                  * {
+                    eapply ccmeta_conv.
+                    - etype.
+                      + eapply ccmeta_conv.
+                        * {
+                          etype.
+                          - eapply ccmeta_conv.
+                            + eapply ctyping_ren. all: etype.
+                            + cbn. reflexivity.
+                          - eapply ccmeta_conv.
+                            + eapply ctyping_ren. all: etype.
+                            + cbn. reflexivity.
+                          - eapply ctyping_ren. all: etype.
+                          - eapply ccmeta_conv.
+                            + etype.
+                            + cbn. ssimpl. reflexivity.
+                          - eapply ccmeta_conv.
+                            + etype.
+                              eapply ccmeta_conv.
+                              * eapply ctyping_ren. all: etype.
+                              * cbn. f_equal. ssimpl. reflexivity.
+                            + cbn. reflexivity.
+                          - eapply ccmeta_conv.
+                            + etype.
+                              eapply ccmeta_conv.
+                              * etype.
+                                eapply ccmeta_conv.
+                                -- eapply ctyping_ren. all: etype.
+                                -- cbn. f_equal. ssimpl. reflexivity.
+                              * cbn. f_equal. ssimpl.
+                                rewrite rinstInst'_cterm. ssimpl. reflexivity.
+                            + cbn. reflexivity.
+                          - eapply ctyping_ren. all: etype.
+                        }
+                        * cbn. f_equal. ssimpl. rewrite <- !rinstInst'_cterm.
+                          reflexivity.
+                      + eapply ccmeta_conv.
+                        * eapply ctyping_ren. all: etype.
+                        * cbn. reflexivity.
+                      + eapply ctyping_ren. all: etype.
+                    - cbn. reflexivity.
+                  }
+              - eapply cconv_trans.
+                1:{
+                  constructor. 2: econv.
+                  constructor.
+                }
+                cbn. eapply cconv_trans. 1: constructor.
+                lhs_ssimpl. rewrite <- !funcomp_assoc.
+                rewrite <- !rinstInst'_cterm.
+                econv.
+              - etype.
+                + eapply ccmeta_conv.
+                  * {
+                    etype.
+                    - eapply ccmeta_conv.
+                      + eapply ctyping_ren. all: etype.
+                      + cbn. reflexivity.
+                    - eapply ctyping_ren. all: etype.
+                  }
+                  * cbn. reflexivity.
+                + eapply ccmeta_conv.
+                  * {
+                    etype. eapply ccmeta_conv.
+                    - etype.
+                      + eapply ccmeta_conv.
+                        * eapply ctyping_ren. all: etype.
+                        * cbn. lhs_ssimpl. reflexivity.
+                      + eapply ctyping_ren. all: etype.
+                    - cbn. f_equal. ssimpl. rewrite !rinstInst'_cterm.
+                      reflexivity.
+                  }
+                  * cbn. reflexivity.
             }
-            * admit.
-          + admit.
+            * {
+              eapply ccmeta_conv.
+              - eapply ctyping_ren. all: etype.
+              - cbn. reflexivity.
+            }
+          + cbn. ssimpl. apply cconv_sym. eapply cconv_trans. 1: constructor.
+            cbn. ssimpl. rewrite <- !rinstInst'_cterm. econv.
+          + tm_ssimpl. eapply ccmeta_conv.
+            * {
+              etype.
+              - eapply ccmeta_conv.
+                + eapply ctyping_ren. all: etype.
+                + cbn. reflexivity.
+              - eapply ctyping_ren. all: etype.
+              - eapply ctyping_ren. all: etype.
+              - eapply ccmeta_conv.
+                + etype.
+                  * {
+                    eapply ccmeta_conv.
+                    - eapply ctyping_ren. all: etype.
+                    - cbn. lhs_ssimpl. reflexivity.
+                  }
+                  * eapply ctyping_ren. all: etype.
+                + cbn. lhs_ssimpl. rewrite <- !funcomp_assoc.
+                  rewrite <- !rinstInst'_cterm.
+                  reflexivity.
+              - eapply ccmeta_conv.
+                + eapply ctyping_ren. all: etype.
+                + cbn. reflexivity.
+              - eapply ccmeta_conv.
+                + etype.
+                + cbn. reflexivity.
+              - eapply ccmeta_conv.
+                + eapply ctyping_ren. all: etype.
+                + cbn. reflexivity.
+              - eapply ctyping_ren. all: etype.
+              - eapply ctyping_ren. all: etype.
+            }
+            * cbn. reflexivity.
       }
-      * admit.
-      * admit.
+      * eapply cconv_trans. 1: constructor.
+        cbn. ssimpl. econv.
+      * {
+        eapply ccmeta_conv.
+        - etype.
+          eapply ccmeta_conv.
+          + etype.
+          + cbn. lhs_ssimpl. reflexivity.
+        - cbn. reflexivity.
+      }
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.
