@@ -2323,16 +2323,20 @@ Lemma type_pcastTG :
     Γ ⊢ᶜ vv : Ae →
     Γ ⊢ᶜ vP : capp AP vv →
     Γ ⊢ᶜ eP : squash (teq Ae uv vv) →
+    Γ ⊢ᶜ Pe : cty i →
     Γ ⊢ᶜ PP :
       cPi cType Ae
         (cPi cProp (capp (S ⋅ AP) (cvar 0))
           (cPi cType (cEl ((S >> S) ⋅ Pe))
             (cSort cProp 0))) →
+    Γ ⊢ᶜ te : cEl Pe →
     Γ ⊢ᶜ tP : capp (capp (capp PP uv) uP) te →
+    ccxscoping Γ uP cProp →
     Γ ⊢ᶜ pcastTG Ae AP uv vv vP eP PP te tP : capp (capp (capp PP vv) vP) te.
 Proof.
   intros Γ i Ae AP uv uP vv vP eP Pe PP te tP. intros.
   unfold pcastTG. cbn. ssimpl.
+  change (λ n, S (S (S n))) with (S >> S >> S). ssimpl.
   eapply ccmeta_conv.
   - etype.
     + eapply ccmeta_conv.
@@ -2359,8 +2363,8 @@ Proof.
             }
           + cbn. lhs_ssimpl. reflexivity.
         - eapply ccmeta_conv.
-          + eapply ctyping_ren. all: etype. admit.
-          + admit.
+          + eapply ctyping_ren. all: etype.
+          + rewrite rinstInst'_cterm. reflexivity.
       }
       * cbn. reflexivity.
     + eapply ccmeta_conv.
@@ -2396,9 +2400,7 @@ Proof.
                       rewrite renRen_cterm. reflexivity.
                   }
                   * cbn. reflexivity.
-                + change (λ n, S (S (S n))) with (S >> S >> S).
-                  tm_ssimpl.
-                  eapply ccmeta_conv.
+                + eapply ccmeta_conv.
                   * {
                     etype.
                     - eapply ccmeta_conv.
@@ -2416,13 +2418,54 @@ Proof.
                           reflexivity.
                       + cbn. lhs_ssimpl. reflexivity.
                     - eapply ccmeta_conv.
-                      + eapply ctyping_ren. all: etype. admit.
-                      + admit.
+                      + eapply ctyping_ren. all: etype.
+                      + cbn. ssimpl. rewrite rinstInst'_cterm.
+                        ssimpl. reflexivity.
                   }
                   * cbn. reflexivity.
               - cbn. f_equal. ssimpl. reflexivity.
             }
-            * admit.
+            * {
+              econstructor.
+              - etype.
+                + eapply ccmeta_conv.
+                  * {
+                    etype.
+                    - eapply ccmeta_conv.
+                      + eapply ctyping_ren. all: etype.
+                      + cbn. reflexivity.
+                    - eapply ctyping_ren. all: etype.
+                  }
+                  * cbn. reflexivity.
+                + eapply ctyping_ren. all: etype.
+              - cbn. eapply cconv_sym. eapply cconv_trans.
+                1:{
+                  econstructor. 2: econv.
+                  constructor.
+                }
+                cbn. ssimpl. eapply cconv_trans. 1: constructor.
+                cbn. ssimpl. rewrite !rinstInst'_cterm. ssimpl. econv.
+                apply cconv_irr.
+                + escope. reflexivity.
+                + rewrite <- funcomp_assoc. rewrite <- !rinstInst'_cterm. cbn.
+                  eapply cscoping_ren.
+                  1:{ eapply crscoping_comp. all: apply crscoping_S. }
+                  assumption.
+              - eapply ccmeta_conv.
+                + etype.
+                  * {
+                    eapply ccmeta_conv.
+                    - etype. all: admit.
+                    - cbn. admit.
+                  }
+                  * {
+                    eapply ccmeta_conv.
+                    - eapply ctyping_ren. all: etype.
+                    - cbn. reflexivity.
+                  }
+                  * eapply ctyping_ren. all: etype.
+                + admit.
+            }
           + admit.
         - admit.
       }
@@ -2822,6 +2865,10 @@ Proof.
       cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
       (* End *)
       cbn.
+      (* eapply param_erase_typing in h6. 2: etype.
+      cbn - [mode_inb] in h6. remd in h6. cbn in h6.
+      eapply param_erase_typing in h5. 2: etype.
+      cbn in h5. *)
       (* A rule to factorise things? *)
       admit.
     + (* Preprocessing *)
