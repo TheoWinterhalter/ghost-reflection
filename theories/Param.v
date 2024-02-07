@@ -2257,6 +2257,26 @@ Hint Extern 15 =>
   | reflexivity
   ] : cc_type.
 
+Lemma param_pType :
+  ∀ Γ A i,
+    cscoping Γ A mKind →
+    Γ ⊢ A : Sort mType i →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : capp (pType i) ⟦ sc Γ | A ⟧pε →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : ⟦ sc Γ | A ⟧pτ ⇒[ cType ] cSort cProp 0.
+Proof.
+  intros Γ A i hmA hA h.
+  econstructor.
+  - eassumption.
+  - unfold pType. eapply cconv_trans. 1: constructor.
+    cbn. econv. rewrite param_erase_ty_tm. econv.
+  - etype.
+Qed.
+
+Ltac hide_rhs rhs :=
+  lazymatch goal with
+  | |- _ ⊢ᶜ _ ≡ ?t => set (rhs := t)
+  end.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2340,7 +2360,9 @@ Proof.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh1. remd in IHh2.
     cbn in *. rewrite rpm_lift_eq. rewrite <- epm_lift_eq. assumption.
-  - unfold ptype in *. cbn - [mode_inb] in *.
+  - (* TODO preprocessing can happen here already, hyp by hyp *)
+    (* unfold ptype in IHh2. remd in IHh2. cbn in IHh2. *)
+    unfold ptype in *. cbn - [mode_inb] in *.
     remd.
     erewrite md_ren in * |-.
     2: eapply rscoping_S.
@@ -2350,7 +2372,45 @@ Proof.
     remd in IHh3.
     remd in IHh4.
     destruct m. all: try intuition discriminate.
-    + cbn in *. econstructor.
+    + cbn in *.
+      (* Preprocessing hypotheses *)
+      eapply param_pType in IHh4. 2,3: eauto.
+      eapply ctype_conv in IHh2.
+      2:{
+        eapply cconv_trans. 1: constructor.
+        cbn. econstructor.
+        - hide_rhs rhs. ssimpl. subst rhs. econv.
+        - hide_rhs rhs. ssimpl. subst rhs. econstructor.
+          1:{ rewrite <- rinstInst'_cterm. econv. }
+          eapply cconv_trans. 1: constructor.
+          cbn. econstructor. 2: econv.
+          instantiate (1 := (S >> S) ⋅ ⟦ sc Γ | P ⟧pτ).
+          apply ccmeta_refl. reflexivity.
+      }
+      2:{
+        etype.
+        - eapply ccmeta_conv.
+          + etype. eapply ccmeta_conv.
+            * eapply ctyping_ren. 1: apply crtyping_S.
+              etype.
+            * cbn. reflexivity.
+          + cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + eapply ctyping_ren.
+            1:{
+              eapply crtyping_comp. all: apply crtyping_S.
+            }
+            etype.
+            (* TODO The type is wrong, is translation of Pi the problem? *)
+            all: give_up.
+          + reflexivity.
+      }
+      (* End *)
+      (* All of this below is based on a false premise.
+        As expected this was the wrong approach, too brute-forcey.
+        Performing the computations in the goal sounds much better.
+      *)
+      (* econstructor.
       * {
         etype. econstructor.
         - etype.
@@ -2796,7 +2856,8 @@ Proof.
         - admit.
       }
       * admit.
-      * admit.
+      * admit. *)
+      admit.
     + admit.
   - unfold ptype. cbn.
     remd. cbn. change (epm_lift ctt) with ctt.
