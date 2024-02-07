@@ -2312,6 +2312,8 @@ Ltac tm_ssimpl :=
   let na := fresh "na" in
   hide_ty na ; ssimpl ; subst na.
 
+Hint Resolve crtyping_comp crtyping_S : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2432,10 +2434,7 @@ Proof.
             * cbn. reflexivity.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
-          + eapply ctyping_ren.
-            1:{
-              eapply crtyping_comp. all: apply crtyping_S.
-            }
+          + eapply ctyping_ren. 1: etype.
             rewrite param_erase_ty_tm. etype.
             econstructor.
             * etype.
@@ -2478,8 +2477,7 @@ Proof.
           + etype.
             2:{
               econstructor.
-              - eapply ctyping_ren.
-                1:{ eapply crtyping_comp. all: apply crtyping_S. }
+              - eapply ctyping_ren. 1: etype.
                 etype.
               - cbn - [mode_inb].
                 erewrite md_ren. 2: apply rscoping_S. 2: apply rscoping_comp_S.
@@ -2489,11 +2487,7 @@ Proof.
                 econv.
               - cbn. etype.
                 + eapply ccmeta_conv.
-                  * eapply ctyping_ren.
-                    1:{
-                      change (crtyping ?G ?s ?D) with (crtyping G (S >> S) D).
-                      eapply crtyping_comp. all: apply crtyping_S.
-                    }
+                  * eapply ctyping_ren. 1: etype.
                     etype.
                   * cbn. reflexivity.
                 + tm_ssimpl.
@@ -2503,9 +2497,7 @@ Proof.
                   econstructor.
                   * eapply ctyping_ren.
                     1:{
-                      eapply crtyping_comp. 1: eapply crtyping_comp.
-                      1: eapply crtyping_comp.
-                      1-3: apply crtyping_S.
+                      eapply crtyping_comp. 1: etype.
                       apply typing_er_sub_param.
                     }
                     etype.
@@ -2517,11 +2509,7 @@ Proof.
               eapply ccmeta_conv.
               - etype. eapply ccmeta_conv.
                 + etype. eapply ccmeta_conv.
-                  * eapply ctyping_ren.
-                    1:{
-                      eapply crtyping_comp.
-                      all: apply crtyping_S.
-                    }
+                  * eapply ctyping_ren. 1: etype.
                     etype.
                   * cbn. reflexivity.
                 + cbn. f_equal. ssimpl.
@@ -2612,10 +2600,8 @@ Proof.
                     + etype.
                   - f_equal. f_equal. f_equal. ssimpl. reflexivity.
                 }
-                eapply ctyping_ren.
-                1: eapply crtyping_S.
-                eapply ctyping_ren.
-                1: eapply crtyping_S.
+                eapply ctyping_ren. 1: eapply crtyping_S.
+                eapply ctyping_ren. 1: eapply crtyping_S.
                 etype.
               - cbn. unfold ptype. remd. cbn.
                 eapply cconv_trans. 1: constructor.
@@ -2639,12 +2625,7 @@ Proof.
                   cbn. eapply cconv_trans. 1: constructor.
                   econv. ssimpl. econv.
                 + etype. eapply ccmeta_conv.
-                  * eapply ctyping_ren.
-                    1:{
-                      change (crtyping ?G ?s ?D) with (crtyping G (S >> S) D).
-                      eapply crtyping_comp.
-                      all: eapply crtyping_S.
-                    }
+                  * eapply ctyping_ren. 1: etype.
                     cbn. etype.
                   * cbn. reflexivity.
               - cbn. constructor.
@@ -2762,16 +2743,11 @@ Proof.
                   * {
                     etype.
                     - eapply ccmeta_conv.
-                      + eapply ctyping_ren.
-                        1:{
-                          (* TODO I do it too often to not automate *)
-                          eapply crtyping_comp.
-                          all: apply crtyping_S.
-                        }
+                      + eapply ctyping_ren. 1: etype.
                         etype.
                       + cbn. reflexivity.
-                    - eapply ctyping_ren. 1: admit. (* TODO Above *)
-                      admit.
+                    - eapply ctyping_ren. 1: etype.
+                      etype.
                     - admit.
                     - admit.
                     - admit.
