@@ -2223,7 +2223,7 @@ Qed.
 
 Hint Extern 15 =>
   eapply param_erase_ty ; [
-    idtac
+    eassumption (* To avoid using the lemma when not applicable *)
   | idtac
   | idtac
   | reflexivity
@@ -2253,7 +2253,7 @@ Qed.
 
 Hint Extern 15 =>
   eapply param_erase_err ; [
-    idtac
+    eassumption
   | idtac
   | idtac
   | reflexivity
@@ -2403,10 +2403,7 @@ Proof.
             1:{
               eapply crtyping_comp. all: apply crtyping_S.
             }
-            (* TODO etype has a bad rule, namely param_erase_ty
-              Either we remove it, or force it to solve one of its subgoals.
-            *)
-            rewrite param_erase_ty_tm. econstructor.
+            rewrite param_erase_ty_tm. etype.
             econstructor.
             * etype.
             * cbn. rewrite epm_lift_eq. cbn.
@@ -2881,8 +2878,7 @@ Proof.
         - eapply cconv_trans. 1: constructor.
           cbn. econv. ssimpl. econv.
         - etype.
-          + econstructor. all: eauto.
-          + reflexivity.
+          + cbn. etype.
           + eapply ccmeta_conv.
             * {
               etype.
@@ -2906,9 +2902,7 @@ Proof.
                 ssimpl. rewrite rinstInst'_cterm. econv.
               - etype. eapply ccmeta_conv.
                 + eapply ctyping_ren. 1: eapply crtyping_S.
-                  etype.
-                  * econstructor. all: eauto.
-                  * reflexivity.
+                  cbn. etype.
                 + cbn. reflexivity.
             }
             * cbn. reflexivity.
@@ -2930,7 +2924,7 @@ Proof.
                       eapply crtyping_comp.
                       all: eapply crtyping_S.
                     }
-                    etype. 1: econstructor. all: eauto.
+                    cbn. etype.
                   * cbn. reflexivity.
               - cbn. constructor.
               - etype.
