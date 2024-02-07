@@ -2377,21 +2377,22 @@ Proof.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh1. remd in IHh2.
     cbn in *. rewrite rpm_lift_eq. rewrite <- epm_lift_eq. assumption.
-  - (* TODO preprocessing can happen here already, hyp by hyp *)
-    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
-    unfold ptype in *. cbn - [mode_inb] in *.
-    remd.
-    erewrite md_ren in * |-.
+  - (* Preprocessing hypotheses *)
+    unfold ptype in IHh4. remd in IHh4. cbn in IHh4.
+    eapply param_pType in IHh4. 2,3: eauto.
+    unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2. cbn in IHh2.
+    unfold ptype in IHh1. cbn - [mode_inb] in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh3. cbn - [mode_inb] in IHh3.
+    erewrite md_ren in IHh3.
     2: eapply rscoping_S.
     2: eapply rscoping_comp_S.
-    remd in IHh1.
-    remd in IHh2.
     remd in IHh3.
-    remd in IHh4.
+    (* End *)
+    unfold ptype. cbn - [mode_inb]. remd.
+    cbn in H3.
     destruct m. all: try intuition discriminate.
     + cbn in *.
       (* Preprocessing hypotheses *)
-      eapply param_pType in IHh4. 2,3: eauto.
       eapply ctype_conv in IHh2.
       2:{
         eapply cconv_trans. 1: constructor.
@@ -2517,10 +2518,16 @@ Proof.
           + cbn. reflexivity.
       }
       (* End *)
-      (* All of this below is based on a false premise.
-        As expected this was the wrong approach, too brute-forcey.
-        Performing the computations in the goal sounds much better.
-      *)
+      econstructor.
+      * {
+        etype. econstructor.
+        - etype. (* Bad also *) give_up.
+        - admit.
+        - admit.
+      }
+      * admit.
+      * admit.
+      (* OLD BELOW *)
       (* econstructor.
       * {
         etype. econstructor.
@@ -2968,7 +2975,6 @@ Proof.
       }
       * admit.
       * admit. *)
-      admit.
     + admit.
   - unfold ptype. cbn.
     remd. cbn. change (epm_lift ctt) with ctt.
