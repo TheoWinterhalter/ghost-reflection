@@ -616,13 +616,6 @@ Proof.
             cbn in h1. rewrite e in h1. eassumption.
           ++ constructor.
           ++ eauto with cc_type.
-        -- econstructor.
-          ++ eapply erase_typing in h2.
-            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
-            eapply type_to_rev in h2.
-            cbn in h2. rewrite e in h2. eassumption.
-          ++ constructor.
-          ++ eauto with cc_type.
       * apply cconv_sym.
         eapply cconv_trans. 1: constructor.
         apply cconv_refl.
@@ -648,13 +641,6 @@ Proof.
               2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
               eapply type_to_rev in h1.
               cbn in h1. rewrite e in h1. eassumption.
-            ** constructor.
-            ** eauto with cc_type.
-          ++ econstructor. econstructor.
-            ** eapply erase_typing in h2.
-              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
-              eapply type_to_rev in h2.
-              cbn in h2. rewrite e in h2. eassumption.
             ** constructor.
             ** eauto with cc_type.
           ++ econstructor. econstructor.
@@ -691,13 +677,6 @@ Proof.
           ++ constructor.
           ++ eauto with cc_type.
         -- eauto.
-        -- constructor. econstructor.
-          ++ eapply erase_typing in h2.
-            2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
-            eapply type_to_rev in h2.
-            cbn in h2. eassumption.
-          ++ constructor.
-          ++ eauto with cc_type.
       * apply cconv_sym.
         eapply cconv_trans. 1: constructor. apply cconv_refl.
       * econstructor. econstructor.
@@ -725,13 +704,6 @@ Proof.
             ** constructor.
             ** eauto with cc_type.
           ++ econstructor. econstructor.
-            ** eapply erase_typing in h2.
-              2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
-              eapply type_to_rev in h2.
-              cbn in h2. eassumption.
-            ** constructor.
-            ** eauto with cc_type.
-          ++ constructor. econstructor.
             ** eapply erase_typing in h2.
               2:{ erewrite scoping_md. 2: eassumption. reflexivity. }
               eapply type_to_rev in h2.

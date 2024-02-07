@@ -650,9 +650,6 @@ Proof.
         -- eapply erase_typing_Err. 2: eassumption.
           cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
           reflexivity.
-        -- eapply erase_typing_El. 2: eassumption.
-          cbn. rewrite e0. eapply IHh2. erewrite scoping_md. 2: eauto.
-          reflexivity.
       * unfold umax. rewrite e0.
         destruct_if e1. 1:{ mode_eqs. discriminate. }
         apply cconv_sym. constructor.
@@ -676,12 +673,6 @@ Proof.
         -- econstructor. econstructor.
           ++ eapply ctype_ignore.
             eapply IHh2. erewrite scoping_md. 2: eassumption. reflexivity.
-          ++ cbn. constructor.
-          ++ eauto with cc_scope cc_type.
-        -- unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
-          econstructor.
-          ++ eapply ctype_ignore. eapply IHh2.
-            erewrite scoping_md. 2: eassumption. reflexivity.
           ++ cbn. constructor.
           ++ eauto with cc_scope cc_type.
       * eapply cconv_sym. constructor.
@@ -727,12 +718,6 @@ Proof.
             ** apply cconv_sym. constructor.
             ** eauto with cc_type.
         -- eauto.
-        -- eapply erase_typing_El.
-          ++ econstructor.
-            ** eauto.
-            ** cbn. rewrite ex. apply cconv_refl.
-            ** cbn. rewrite ex. eauto with cc_type.
-          ++ assumption.
       * apply cconv_sym. constructor.
       * unshelve eauto with cc_scope cc_type shelvedb ; shelve_unifiable.
         -- econstructor.
@@ -747,9 +732,6 @@ Proof.
             ** cbn. rewrite ex. eauto.
             ** assumption.
           ++ eapply erase_typing_Err.
-            ** cbn. rewrite ex. eauto.
-            ** assumption.
-          ++ eapply erase_typing_El.
             ** cbn. rewrite ex. eauto.
             ** assumption.
     + destruct m. all: discriminate.

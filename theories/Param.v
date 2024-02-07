@@ -2771,13 +2771,7 @@ Proof.
                       + cbn. reflexivity.
                   }
                   * cbn. f_equal. ssimpl. reflexivity.
-                + eapply ccmeta_conv.
-                  * tm_ssimpl. eapply ctyping_ren. 1: etype.
-                    etype.
-                  * cbn. reflexivity.
-                + ssimpl. eapply ctyping_ren. 1: etype.
-                  etype.
-                + eapply ccmeta_conv.
+                + econstructor.
                   * {
                     etype.
                     - eapply ccmeta_conv.
@@ -2791,17 +2785,24 @@ Proof.
                         * eapply ctyping_ren. 1: etype.
                           etype.
                       + cbn. reflexivity.
-                    - eapply ccmeta_conv.
-                      + eapply ctyping_ren. 1: etype.
-                        etype.
-                      + cbn. (* BAD *) give_up.
+                    - eapply ctyping_ren. 1: etype.
+                      etype.
                   }
+                  * cbn. apply cconv_sym. eapply cconv_trans.
+                    1:{
+                      econstructor. 2: econv.
+                      constructor.
+                    }
+                    cbn. eapply cconv_trans. 1: constructor.
+                    cbn. apply ccmeta_refl.
+                    ssimpl. rewrite !rinstInst'_cterm. f_equal. f_equal.
+                    (* BAD No meta_refl, here we must use irrelevance *)
+                    give_up.
                   * admit.
               - admit.
             }
             * admit.
           + admit.
-        - admit.
       }
       * admit.
       * admit.

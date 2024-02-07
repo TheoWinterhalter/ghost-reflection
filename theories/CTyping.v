@@ -176,10 +176,9 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ cPi mx A B : cSort m (cumax mx m i j)
 
 | ctype_lam :
-    ∀ mx m i j A B t,
+    ∀ mx i A B t,
       Γ ⊢ᶜ A : cSort mx i →
       Some (mx, A) :: Γ ⊢ᶜ t : B →
-      Some (mx, A) :: Γ ⊢ᶜ B : cSort m j →
       Γ ⊢ᶜ clam mx A t : cPi mx A B
 
 | ctype_app :

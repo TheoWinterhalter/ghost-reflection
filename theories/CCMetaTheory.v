@@ -337,8 +337,7 @@ Proof.
   - asimpl. econstructor. 1: eauto.
     eapply IHht2. eapply crtyping_shift. assumption.
   - asimpl. econstructor. 1: eauto.
-    + eapply IHht2. eapply crtyping_shift. assumption.
-    + eapply IHht3. eapply crtyping_shift. assumption.
+    eapply IHht2. eapply crtyping_shift. assumption.
   - asimpl. asimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     asimpl. reflexivity.
@@ -539,8 +538,7 @@ Proof.
   - asimpl. econstructor. 1: eauto.
     eapply IHht2. eapply cstyping_shift. assumption.
   - asimpl. econstructor. 1: eauto.
-    + eapply IHht2. eapply cstyping_shift. assumption.
-    + eapply IHht3. eapply cstyping_shift. assumption.
+    eapply IHht2. eapply cstyping_shift. assumption.
   - asimpl. asimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     asimpl. apply ext_cterm. intros [].
