@@ -2658,169 +2658,64 @@ Proof.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
       cbn in IHh2.
       (* End *)
-      (* eapply ccmeta_conv.
+      eapply ccmeta_conv.
       * {
         ertype.
         - eapply ccmeta_conv.
-          + ertype.
-            * eapply ccmeta_conv. 1: ertype.
-              cbn. reflexivity.
+          + eapply type_epm_lift. ertype.
             * {
-              eapply ccmeta_conv.
-              - eapply type_epm_lift. ertype.
-                + econstructor.
-                  * ertype.
-                  * cbn. constructor.
-                  * etype.
-                + econstructor.
-                  * ertype.
-                  * cbn. constructor.
-                  * ertype.
-                + econstructor.
-                  * ertype.
-                  * cbn. constructor.
-                  * etype.
-                + econstructor.
-                  * ertype.
-                  * cbn. constructor.
-                  * etype.
-              - cbn. reflexivity.
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
             }
-          + cbn. reflexivity.
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+          + rewrite epm_lift_eq. cbn. reflexivity.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. lhs_ssimpl. f_equal. ssimpl. reflexivity.
+            cbn. reflexivity.
           + cbn. reflexivity.
-        -
-
-
-          eapply ccmeta_conv.
-          + econstructor.
-            * {
-              eapply ccmeta_conv.
-              - ertype. eapply crtyping_shift_eq.
-                + eapply crtyping_shift. apply crtyping_S.
-                + cbn. f_equal. ssimpl. reflexivity.
-              - cbn. reflexivity.
-            }
-            * {
-              eapply ccmeta_conv.
-              - econstructor.
-                + econstructor.
-                  * ertype.
-                  * cbn. eapply cconv_trans. 1: constructor.
-                    cbn.
-                    change (epm_lift (ctyval ?A ?B)) with (ctyval (epm_lift A) (epm_lift B)).
-                    change (λ n, S (S (S n))) with (S >> S >> S). cbn.
-                    econstructor. 2: econv.
-                    constructor.
-                  * {
-                    ertype. eapply ccmeta_conv.
-                    - ertype. eapply type_epm_lift. ertype.
-                      + econstructor.
-                        * ertype.
-                        * cbn. constructor.
-                        * etype.
-                      + econstructor.
-                        * ertype.
-                        * cbn. constructor.
-                        * etype.
-                    - rewrite epm_lift_eq. cbn. reflexivity.
-                  }
-                + eapply ccmeta_conv. 1: ertype.
-                  cbn.
-                (* Whichever way I take it I end up with the same issue *)
-
-              (* ertype. econstructor.
-                + ertype.
-                + cbn. eapply cconv_trans. 1: constructor.
-                  cbn.
-                  change (epm_lift (ctyval ?A ?B)) with (ctyval (epm_lift A) (epm_lift B)).
-                  change (λ n, S (S (S n))) with (S >> S >> S). cbn.
-                  econstructor. 2: econv.
-                  eapply cconv_trans. 1: constructor.
-                  (* STILL BAD *)
-                  admit.
-                + admit.
-              - admit. *)
-              admit.
-            }
-
-
-
-
-
-           (*  2:{
-              econstructor.
-              - econstructor.
-                + ertype.
-                + cbn. change (λ n, S (S (S n))) with (S >> S >> S). lhs_ssimpl.
-                  change (epm_lift ?t) with (vreg ⋅ t). cbn.
-                  change (vreg ⋅ ?t) with (epm_lift t).
-                  lhs_ssimpl.
-                  eapply cconv_trans. 1: constructor.
-                  cbn. econstructor. 2: econv.
-                  constructor.
-                + ertype.
-                  * {
-                    econstructor.
-                    - ertype.
-                    - cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
-                      constructor.
-                    - etype.
-                  }
-                  * {
-                    econstructor.
-                    - ertype. cbn. admit.
-                    - cbn. constructor.
-                    - etype.
-                  }
-              - (* Also wrong! *)
-                give_up.
-            }
-            admit. *)
-          + admit.
-
-
-        (* tm_ssimpl. *)
-        (*   eapply ccmeta_conv.
+        - eapply ccmeta_conv.
           + ertype.
-            1:{
-              eapply ccmeta_conv.
-              - ertype. eapply crtyping_shift_eq.
-                + eapply crtyping_shift. apply crtyping_S.
-                + cbn. f_equal. ssimpl. reflexivity.
-              -
-            }
-
-
             2:{
               econstructor.
               - ertype.
-              - cbn. eapply cconv_trans. 1: constructor.
-                cbn. econv. ssimpl.
-                rewrite param_erase_ty_tm. cbn.
-                change (λ n, S (S (S n))) with (S >> S >> S). ssimpl.
-                change (epm_lift ?t) with (vreg ⋅ t). cbn. ssimpl.
+              - cbn. change (λ n, S (S (S n))) with (S >> S >> S). lhs_ssimpl.
+                change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                change (vreg ⋅ ?t) with (epm_lift t).
                 eapply cconv_trans. 1: constructor.
-                (* WRONG *)
-                give_up.
-              - admit.
+                lhs_ssimpl. apply ccmeta_refl. f_equal. ssimpl. reflexivity.
+              - ertype.
+                + eapply ccmeta_conv. 1: ertype.
+                  cbn. reflexivity.
+                + econstructor.
+                  * ertype. (* It would be good to avoid this. *) admit.
+                  * cbn. constructor.
+                  * etype.
             }
-            {
-              (* eapply ccmeta_conv.
-              - ertype. eapply crtyping_shift_eq.
-                + eapply crtyping_shift. apply crtyping_S.
-                + cbn. f_equal. ssimpl. reflexivity.
-              - cbn. *)
-              admit.
-            }
-          + admit. *)
+            admit.
+          + admit.
       }
-      * admit. *)
-      admit.
+      * admit.
     + admit.
     + admit.
     + admit.
