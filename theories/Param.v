@@ -2730,8 +2730,34 @@ Proof.
               - cbn. reflexivity.
             }
             * {
-              eapply ccmeta_conv.
-              - ertype. econstructor.
+              (* eapply ccmeta_conv.
+              - econstructor.
+                + econstructor.
+                  * ertype.
+                  * cbn. eapply cconv_trans. 1: constructor.
+                    cbn.
+                    change (epm_lift (ctyval ?A ?B)) with (ctyval (epm_lift A) (epm_lift B)).
+                    change (λ n, S (S (S n))) with (S >> S >> S). cbn.
+                    econstructor. 2: econv.
+                    constructor.
+                  * {
+                    ertype. eapply ccmeta_conv.
+                    - ertype. eapply type_epm_lift. ertype.
+                      + econstructor.
+                        * ertype.
+                        * cbn. constructor.
+                        * etype.
+                      + econstructor.
+                        * ertype.
+                        * cbn. constructor.
+                        * etype.
+                    - rewrite epm_lift_eq. cbn. reflexivity.
+                  }
+                + eapply ccmeta_conv. 1: ertype.
+                  cbn. *)
+                (* Whichever way I take it I end up with the same issue *)
+
+              (* ertype. econstructor.
                 + ertype.
                 + cbn. eapply cconv_trans. 1: constructor.
                   cbn.
@@ -2742,7 +2768,8 @@ Proof.
                   (* STILL BAD *)
                   admit.
                 + admit.
-              - admit.
+              - admit. *)
+              admit.
             }
 
 
