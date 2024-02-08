@@ -2291,6 +2291,19 @@ Hint Extern 15 =>
   | reflexivity
   ] : cc_type.
 
+Lemma param_pProp :
+  ∀ Γ A,
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : capp pProp ⟦ sc Γ | A ⟧pε →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : cSort cProp 0.
+Proof.
+  intros Γ A h.
+  econstructor.
+  - eassumption.
+  - unfold pProp. eapply cconv_trans. 1: constructor.
+    cbn. econv.
+  - etype.
+Qed.
+
 Lemma param_pType :
   ∀ Γ A i,
     cscoping Γ A mKind →
@@ -2976,7 +2989,81 @@ Proof.
             * rewrite epm_lift_eq. cbn. reflexivity.
         - cbn. reflexivity.
       }
-    + admit.
+    + (* Pre *)
+      eapply param_pProp in IHh1.
+      eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        - eapply ccmeta_conv.
+          + eapply type_epm_lift. ertype.
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+          + rewrite epm_lift_eq. cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype.
+            cbn.
+            econstructor.
+            * {
+              ertype. eapply crtyping_shift_eq.
+              - apply crtyping_S.
+              - reflexivity.
+            }
+            * cbn. econv.
+              change (epm_lift ?t) with (vreg ⋅ t). cbn.
+              apply cconv_sym. eapply cconv_trans. 1: constructor.
+              ssimpl. econv. apply ccmeta_refl.
+              eapply ext_cterm_scoped. 1: apply erase_scoping.
+              intros x hx. cbn - [mode_inb] in hx.
+              destruct x as [| x]. 1: discriminate.
+              cbn in hx. cbn. ssimpl. reflexivity.
+            * {
+              etype. eapply ccmeta_conv.
+              - ertype. apply type_epm_lift.
+                (* TODO Hint Opaque cty_lift *)
+                admit.
+              - admit.
+            }
+          + cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pKind.
+        eapply cconv_trans. 1: constructor.
+        cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype.
+          + eapply ccmeta_conv. 1: etype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              apply type_epm_lift. etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+            }
+            * rewrite epm_lift_eq. cbn. reflexivity.
+        - cbn. reflexivity.
+      }
     + admit.
     + admit.
     + admit.
