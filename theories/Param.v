@@ -2599,6 +2599,8 @@ Qed.
 Hint Resolve type_pPi : cc_type.
 Hint Opaque type_pPi : cc_type.
 
+Hint Opaque cty_lift : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2923,12 +2925,7 @@ Proof.
               - cbn. constructor.
               - etype.
             }
-            * {
-              econstructor.
-              - ertype.
-              - cbn. constructor.
-              - etype.
-            }
+            * reflexivity. (* Could be something else *)
           + rewrite epm_lift_eq. cbn. reflexivity.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
@@ -2960,10 +2957,7 @@ Proof.
                   * eapply ctype_close. etype.
                   * cbn. constructor.
                   * etype.
-                + econstructor.
-                  * eapply ctype_close. etype.
-                  * cbn. constructor.
-                  * etype.
+                + reflexivity. (* Could be something else *)
               - rewrite epm_lift_eq. cbn. reflexivity.
             }
           + cbn. reflexivity.
@@ -3005,12 +2999,7 @@ Proof.
               - cbn. constructor.
               - etype.
             }
-            * {
-              econstructor.
-              - ertype.
-              - cbn. constructor.
-              - etype.
-            }
+            * reflexivity. (* Could be something else *)
           + rewrite epm_lift_eq. cbn. reflexivity.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
@@ -3033,10 +3022,13 @@ Proof.
               cbn in hx. cbn. ssimpl. reflexivity.
             * {
               etype. eapply ccmeta_conv.
-              - ertype. apply type_epm_lift.
-                (* TODO Hint Opaque cty_lift *)
-                admit.
-              - admit.
+              - ertype. apply type_epm_lift. ertype.
+                + econstructor.
+                  * ertype.
+                  * cbn. constructor.
+                  * etype.
+                + reflexivity. (* Could be something else *)
+              - rewrite epm_lift_eq. cbn. reflexivity.
             }
           + cbn. reflexivity.
       }
@@ -3056,10 +3048,7 @@ Proof.
                 + etype.
                 + cbn. constructor.
                 + etype.
-              - econstructor.
-                + etype.
-                + cbn. constructor.
-                + etype.
+              - reflexivity. (* Could be something else *)
             }
             * rewrite epm_lift_eq. cbn. reflexivity.
         - cbn. reflexivity.
