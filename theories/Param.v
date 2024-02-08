@@ -143,7 +143,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         end
       )
     | mType =>
-      clam cProp Te (
+      clam cType Te (
         match mx with
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
@@ -152,7 +152,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         end
       )
     | mGhost =>
-      clam cProp Te (
+      clam cType Te (
         if isKind mx then pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         else if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
         else pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
@@ -2304,6 +2304,17 @@ Proof.
   - etype.
 Qed.
 
+Lemma param_pProp_eq :
+  ∀ Γ Γ' Γ'' A,
+    Γ' ⊢ᶜ ⟦ sc Γ | A ⟧p : capp pProp ⟦ sc Γ | A ⟧pε →
+    Γ' = ⟦ Γ ⟧p →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : cSort cProp 0.
+Proof.
+  intros Γ ?? A h -> ->.
+  apply param_pProp. assumption.
+Qed.
+
 Lemma param_pType :
   ∀ Γ A i,
     cscoping Γ A mKind →
@@ -2319,6 +2330,19 @@ Proof.
   - etype.
 Qed.
 
+Lemma param_pType_eq :
+  ∀ Γ Γ' Γ'' A i,
+    cscoping Γ A mKind →
+    Γ ⊢ A : Sort mType i →
+    Γ' = ⟦ Γ ⟧p →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : capp (pType i) ⟦ Γ'' | A ⟧pε →
+    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : ⟦ Γ'' | A ⟧pτ ⇒[ cType ] cSort cProp 0.
+Proof.
+  intros Γ ?? A i hmA hA -> -> h.
+  eapply param_pType. all: eassumption.
+Qed.
+
 Lemma param_pGhost :
   ∀ Γ A i,
     cscoping Γ A mKind →
@@ -2332,6 +2356,19 @@ Proof.
   - unfold pType. eapply cconv_trans. 1: constructor.
     cbn. econv. rewrite param_erase_ty_tm. econv.
   - etype.
+Qed.
+
+Lemma param_pGhost_eq :
+  ∀ Γ Γ' Γ'' A i,
+    cscoping Γ A mKind →
+    Γ ⊢ A : Sort mGhost i →
+    Γ' = ⟦ Γ ⟧p →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : capp (pType i) ⟦ Γ'' | A ⟧pε →
+    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : ⟦ Γ'' | A ⟧pτ ⇒[ cType ] cSort cProp 0.
+Proof.
+  intros Γ ?? A i hmA hA -> -> h.
+  eapply param_pGhost. all: eassumption.
 Qed.
 
 Lemma param_pKind :
@@ -3053,7 +3090,119 @@ Proof.
             * rewrite epm_lift_eq. cbn. reflexivity.
         - cbn. reflexivity.
       }
-    + admit.
+    + (* Pre *)
+      eapply param_pKind in IHh1. 2,3: eassumption.
+      eapply param_pType_eq in IHh2. 2-5: eauto. 2: assumption.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        - eapply ccmeta_conv.
+          + eapply type_epm_lift. ertype.
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+          + rewrite epm_lift_eq. cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype.
+            2:{
+              econstructor.
+              - ertype.
+              - cbn. change (λ n, S (S (S n))) with (S >> S >> S).
+                change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                change (vreg ⋅ ?t) with (epm_lift t).
+                eapply cconv_trans. 1: constructor.
+                apply ccmeta_refl. f_equal. ssimpl. reflexivity.
+              - ertype.
+                + eapply ccmeta_conv. 1: ertype.
+                  cbn. reflexivity.
+                + econstructor.
+                  * {
+                    ertype.
+                    - eapply crtyping_shift_eq.
+                      + etype. all: shelve.
+                      + cbn. lhs_ssimpl. reflexivity.
+                    - cbn. eapply crtyping_shift_eq.
+                      + apply typing_er_sub_param.
+                      + reflexivity.
+                  }
+                  * cbn. constructor.
+                  * etype.
+            }
+            cbn.
+            eapply ccmeta_conv.
+            * {
+              ertype. eapply crtyping_shift_eq.
+              - eapply crtyping_shift. apply crtyping_S.
+              - cbn. f_equal. ssimpl. reflexivity.
+            }
+            * cbn. f_equal. rewrite param_erase_ty_tm. cbn.
+              rewrite epm_lift_eq.
+              ssimpl. rewrite rinstInst'_cterm. ssimpl.
+              f_equal. eapply ext_cterm. intros [| []]. 1,2: reflexivity.
+              cbn. ssimpl. unfold vreg. reflexivity.
+          + cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pKind.
+        eapply cconv_trans. 1: constructor.
+        cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype.
+          + eapply ccmeta_conv. 1: etype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              apply type_epm_lift. etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+            }
+            * rewrite epm_lift_eq. cbn. reflexivity.
+        - cbn. reflexivity.
+      }
     + admit.
     + admit.
     + admit.
