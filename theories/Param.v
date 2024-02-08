@@ -2687,12 +2687,40 @@ Proof.
                   * ertype.
                   * cbn. constructor.
                   * etype.
-              - cbn. give_up. (* There must be a mistake somewhere *)
+              - cbn. reflexivity.
             }
-          + (* Same *) give_up.
-        - admit.
-        - admit.
-        - admit.
+          + cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            cbn. lhs_ssimpl. f_equal. ssimpl. reflexivity.
+          + cbn. reflexivity.
+        - (* tm_ssimpl. *)
+          eapply ccmeta_conv.
+          + ertype.
+            2:{
+              econstructor.
+              - ertype.
+              - cbn. eapply cconv_trans. 1: constructor.
+                cbn. econv. ssimpl.
+                rewrite param_erase_ty_tm. cbn.
+                change (λ n, S (S (S n))) with (S >> S >> S). ssimpl.
+                change (epm_lift ?t) with (vreg ⋅ t). cbn. ssimpl.
+                eapply cconv_trans. 1: constructor.
+                (* WRONG *)
+                give_up.
+              - admit.
+            }
+            {
+              (* eapply ccmeta_conv.
+              - ertype. eapply crtyping_shift_eq.
+                + eapply crtyping_shift. apply crtyping_S.
+                + cbn. f_equal. ssimpl. reflexivity.
+              - cbn. *)
+              admit.
+            }
+          + admit.
       }
       * admit.
     + admit.
