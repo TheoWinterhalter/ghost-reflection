@@ -3948,7 +3948,34 @@ Proof.
         - ertype. rewrite epm_lift_eq. cbn. etype.
         - cbn. reflexivity.
       }
-  - admit.
+  - (* Preprocessing *)
+    unfold ptype in IHh1. cbn - [mode_inb] in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2. cbn in IHh2.
+    unfold ptype in IHh3. cbn - [mode_inb] in IHh3. remd in IHh3.
+    (* End *)
+    unfold ptype. cbn - [mode_inb]. remd.
+    destruct m, mx. all: cbn - [pPi] in *.
+    + (* Pre *)
+      eapply param_pKind in IHh1. 2,3: eassumption.
+      eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
+      (* End *)
+      (* TODO Have a plam typing rule first! *)
+      admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh.
