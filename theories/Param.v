@@ -2129,6 +2129,46 @@ Hint Extern 5 =>
   | idtac
   ] : cc_type.
 
+Lemma erase_typing_eq :
+  ∀ Γ Γ' Γ'' t A,
+    Γ ⊢ t : A →
+    relm (mdc Γ t) = true →
+    Γ' = ⟦ Γ ⟧ε →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | t ⟧ε : ⟦ Γ'' | A ⟧τ.
+Proof.
+  intros Γ ? ? t A ? ? -> ->.
+  apply erase_typing. all: assumption.
+Qed.
+
+Lemma revive_typing_eq :
+  ∀ Γ Γ' Γ'' t A,
+    Γ ⊢ t : A →
+    mdc Γ t = mGhost →
+    Γ' = ⟦ Γ ⟧v →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | t ⟧v : ⟦ Γ'' | A ⟧τ.
+Proof.
+  intros Γ ? ? t A ? ? -> ->.
+  apply revive_typing. all: assumption.
+Qed.
+
+Hint Extern 10 =>
+  eapply erase_typing_eq ; [
+    eassumption
+  | idtac
+  | reflexivity
+  | reflexivity
+  ] : cc_type.
+
+Hint Extern 10 =>
+  eapply revive_typing_eq ; [
+    eassumption
+  | idtac
+  | reflexivity
+  | reflexivity
+  ] : cc_type.
+
 Lemma cstyping_shift_eq :
   ∀ Γ Γ' Δ mx A σ,
     cstyping Γ σ Δ →
@@ -2291,6 +2331,34 @@ Proof.
   - unfold pType. eapply cconv_trans. 1: constructor.
     cbn. econv. rewrite param_erase_ty_tm. econv.
   - etype.
+Qed.
+
+Lemma param_pKind :
+  ∀ Γ A i,
+    cscoping Γ A mKind →
+    Γ ⊢ A : Sort mKind i →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : capp (pKind i) ⟦ sc Γ | A ⟧pε →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : ⟦ sc Γ | A ⟧pτ ⇒[ cType ] cSort cType i.
+Proof.
+  intros Γ A i hmA hA h.
+  econstructor.
+  - eassumption.
+  - unfold pKind. eapply cconv_trans. 1: constructor.
+    cbn. econv. rewrite param_erase_ty_tm. econv.
+  - etype.
+Qed.
+
+Lemma param_pKind_eq :
+  ∀ Γ Γ' Γ'' A i,
+    cscoping Γ A mKind →
+    Γ ⊢ A : Sort mKind i →
+    Γ' = ⟦ Γ ⟧p →
+    Γ'' = sc Γ →
+    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : capp (pKind i) ⟦ Γ'' | A ⟧pε →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : ⟦ sc Γ | A ⟧pτ ⇒[ cType ] cSort cType i.
+Proof.
+  intros Γ ? ? A i hmA hA -> -> h.
+  apply param_pKind. all: assumption.
 Qed.
 
 Ltac hide_rhs rhs :=
@@ -2583,7 +2651,68 @@ Proof.
       * eapply ccmeta_conv. 1: etype. 3: reflexivity.
         -- eapply ccmeta_conv. 1: etype. all: reflexivity.
         -- unfold usup. rewrite e0. etype.
-  - admit.
+  - (* Preprocessing *)
+    unfold ptype in IHh1. cbn - [mode_inb] in IHh1. remd in IHh1.
+    cbn in IHh1.
+    unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2.
+    cbn in IHh2.
+    (* End *)
+    unfold ptype. cbn - [mode_inb].
+    destruct m, mx. all: cbn in *.
+    + (* Pre *)
+      eapply param_pKind in IHh1. 2,3: eassumption.
+      eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
+      cbn in IHh2.
+      (* End *)
+      eapply ccmeta_conv.
+      * {
+        ertype.
+        - eapply ccmeta_conv.
+          + ertype.
+            * eapply ccmeta_conv. 1: ertype.
+              cbn. reflexivity.
+            * {
+              eapply ccmeta_conv.
+              - eapply type_epm_lift. ertype.
+                + econstructor.
+                  * ertype.
+                  * cbn. constructor.
+                  * etype.
+                + econstructor.
+                  * ertype.
+                  * cbn. constructor.
+                  * ertype.
+                + econstructor.
+                  * ertype.
+                  * cbn. constructor.
+                  * etype.
+                + econstructor.
+                  * ertype.
+                  * cbn. constructor.
+                  * etype.
+              - cbn. give_up. (* There must be a mistake somewhere *)
+            }
+          + (* Same *) give_up.
+        - admit.
+        - admit.
+        - admit.
+      }
+      * admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
+    + admit.
   - admit.
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
