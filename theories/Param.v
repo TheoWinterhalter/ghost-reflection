@@ -2717,14 +2717,39 @@ Proof.
           + ertype. eapply ccmeta_conv. 1: ertype.
             cbn. lhs_ssimpl. f_equal. ssimpl. reflexivity.
           + cbn. reflexivity.
-        - (* TODO Instead of doing all this, we should have a type_pPi
-            and make sure not to unfold it in those goals.
-          *)
+        -
 
-          (* Diagnosis suggests the proof is not at fault *)
-          (* eapply ccmeta_conv.
+
+          eapply ccmeta_conv.
           + econstructor.
-            2:{
+            * {
+              eapply ccmeta_conv.
+              - ertype. eapply crtyping_shift_eq.
+                + eapply crtyping_shift. apply crtyping_S.
+                + cbn. f_equal. ssimpl. reflexivity.
+              - cbn. reflexivity.
+            }
+            * {
+              eapply ccmeta_conv.
+              - ertype. econstructor.
+                + ertype.
+                + cbn. eapply cconv_trans. 1: constructor.
+                  cbn.
+                  change (epm_lift (ctyval ?A ?B)) with (ctyval (epm_lift A) (epm_lift B)).
+                  change (λ n, S (S (S n))) with (S >> S >> S). cbn.
+                  econstructor. 2: econv.
+                  eapply cconv_trans. 1: constructor.
+                  (* STILL BAD *)
+                  admit.
+                + admit.
+              - admit.
+            }
+
+
+
+
+
+           (*  2:{
               econstructor.
               - econstructor.
                 + ertype.
@@ -2752,13 +2777,22 @@ Proof.
               - (* Also wrong! *)
                 give_up.
             }
-            admit.
-          + admit. *)
+            admit. *)
+          + admit.
 
 
         (* tm_ssimpl. *)
-          eapply ccmeta_conv.
+        (*   eapply ccmeta_conv.
           + ertype.
+            1:{
+              eapply ccmeta_conv.
+              - ertype. eapply crtyping_shift_eq.
+                + eapply crtyping_shift. apply crtyping_S.
+                + cbn. f_equal. ssimpl. reflexivity.
+              -
+            }
+
+
             2:{
               econstructor.
               - ertype.
@@ -2780,7 +2814,7 @@ Proof.
               - cbn. *)
               admit.
             }
-          + admit.
+          + admit. *)
       }
       * admit.
     + admit.
