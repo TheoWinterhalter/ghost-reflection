@@ -2574,6 +2574,27 @@ Proof.
     + cbn. reflexivity.
 Qed.
 
+Lemma type_pPi :
+  ∀ Γ i j k mm mp A B C,
+    Γ ⊢ᶜ A : cSort cType i →
+    Γ ⊢ᶜ B : A ⇒[ cType ] cSort mp j →
+    Some (mp, capp (S ⋅ B) (cvar 0)) :: Some (cType, A) :: Γ ⊢ᶜ C : cSort mm k →
+    Γ ⊢ᶜ pPi mp A B C : cSort mm (cumax cType mm i (cumax mp mm j k)).
+Proof.
+  intros Γ i j k mm mp A B C hA hB hC.
+  unfold pPi.
+  eapply ccmeta_conv.
+  - ertype.
+    eapply ccmeta_conv.
+    + ertype. eapply ccmeta_conv. 1: ertype.
+      cbn. reflexivity.
+    + cbn. reflexivity.
+  - reflexivity.
+Qed.
+
+Hint Resolve type_pPi : cc_type.
+Hint Opaque type_pPi : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2654,8 +2675,8 @@ Proof.
     unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2.
     cbn in IHh2.
     (* End *)
-    unfold ptype. cbn - [mode_inb].
-    destruct m, mx. all: cbn in *.
+    unfold ptype. cbn - [mode_inb pPi].
+    destruct m, mx. all: cbn - [pPi] in *.
     + (* Pre *)
       eapply param_pKind in IHh1. 2,3: eassumption.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
