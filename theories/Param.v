@@ -2696,7 +2696,46 @@ Proof.
           + ertype. eapply ccmeta_conv. 1: ertype.
             cbn. lhs_ssimpl. f_equal. ssimpl. reflexivity.
           + cbn. reflexivity.
-        - (* tm_ssimpl. *)
+        - (* TODO Instead of doing all this, we should have a type_pPi
+            and make sure not to unfold it in those goals.
+          *)
+
+          (* Diagnosis suggests the proof is not at fault *)
+          (* eapply ccmeta_conv.
+          + econstructor.
+            2:{
+              econstructor.
+              - econstructor.
+                + ertype.
+                + cbn. change (λ n, S (S (S n))) with (S >> S >> S). lhs_ssimpl.
+                  change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                  change (vreg ⋅ ?t) with (epm_lift t).
+                  lhs_ssimpl.
+                  eapply cconv_trans. 1: constructor.
+                  cbn. econstructor. 2: econv.
+                  constructor.
+                + ertype.
+                  * {
+                    econstructor.
+                    - ertype.
+                    - cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                      constructor.
+                    - etype.
+                  }
+                  * {
+                    econstructor.
+                    - ertype. cbn. admit.
+                    - cbn. constructor.
+                    - etype.
+                  }
+              - (* Also wrong! *)
+                give_up.
+            }
+            admit.
+          + admit. *)
+
+
+        (* tm_ssimpl. *)
           eapply ccmeta_conv.
           + ertype.
             2:{
