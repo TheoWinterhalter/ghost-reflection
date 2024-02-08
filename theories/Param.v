@@ -127,14 +127,14 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     else if isProp m then pProp
     else pType i ;
   ⟦ Γ | Pi i j m mx A B ⟧p :=
-    let Te := ⟦ Γ | Pi i j m mx A B ⟧pε in
+    let Te := ⟦ Γ | Pi i j m mx A B ⟧pτ in
     let Ae := ⟦ Γ | A ⟧pτ in
     let Ap := ⟦ Γ | A ⟧p in
     let Bp := ⟦ mx :: Γ | B ⟧p in
     let k := umax mx m i j in
     match m with
     | mKind =>
-      clam cType (capp (pKind k) Te) (
+      clam cType Te (
         match mx with
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
@@ -143,7 +143,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         end
       )
     | mType =>
-      clam cProp (capp (pKind k) Te) (
+      clam cProp Te (
         match mx with
         | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
@@ -152,7 +152,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
         end
       )
     | mGhost =>
-      clam cProp (capp (pKind k) Te) (
+      clam cProp Te (
         if isKind mx then pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
         else if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
         else pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
@@ -1222,12 +1222,12 @@ Proof.
       1: rewrite psubst_epm_lift.
       2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
       all: f_equal. all: cbn. all: f_equal.
-      3:{ ssimpl. reflexivity. }
-      3:{
+      2:{ ssimpl. reflexivity. }
+      2:{
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      all: f_equal. all: f_equal.
+      f_equal. all: f_equal. all: f_equal.
       all: eapply ext_cterm. all: ssimpl. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: ssimpl.
@@ -1237,12 +1237,12 @@ Proof.
       1: rewrite psubst_epm_lift.
       2:{ unshelve typeclasses eauto with cc_scope shelvedb. all: reflexivity. }
       all: f_equal. all: cbn. all: f_equal.
-      3:{ ssimpl. reflexivity. }
-      3:{
+      2:{ ssimpl. reflexivity. }
+      2:{
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      all: f_equal. all: f_equal.
+      f_equal. all: f_equal. all: f_equal.
       all: eapply ext_cterm. all: ssimpl. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: ssimpl.
@@ -1274,7 +1274,7 @@ Proof.
         ssimpl. rewrite psubst_SS. ssimpl.
         rewrite rinstInst'_cterm. reflexivity.
       }
-      cbn. unfold cty_lift. f_equal. all: f_equal.
+      cbn. unfold cty_lift. f_equal. f_equal. all: f_equal.
       all: unfold close. all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1291,7 +1291,7 @@ Proof.
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      cbn. f_equal. all: f_equal. all: f_equal.
+      cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1307,7 +1307,7 @@ Proof.
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      cbn. f_equal. all: f_equal. all: f_equal.
+      cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1323,7 +1323,7 @@ Proof.
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      cbn. unfold cty_lift. f_equal. all: f_equal. all: unfold close.
+      cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1340,7 +1340,7 @@ Proof.
         ssimpl. rewrite psubst_SS. ssimpl.
         erewrite rinstInst'_cterm. reflexivity.
       }
-      cbn. unfold cty_lift. f_equal. all: f_equal. all: unfold close.
+      cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1357,7 +1357,7 @@ Proof.
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      cbn. f_equal. all: f_equal. all: f_equal.
+      cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1373,7 +1373,7 @@ Proof.
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      cbn. f_equal. all: f_equal. all: f_equal.
+      cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1389,7 +1389,7 @@ Proof.
         ssimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         ssimpl. rewrite psubst_SS. ssimpl. reflexivity.
       }
-      cbn. f_equal. all: f_equal. all: f_equal.
+      cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1408,7 +1408,7 @@ Proof.
         ssimpl. rewrite psubst_SS. ssimpl.
         erewrite rinstInst'_cterm. reflexivity.
       }
-      cbn. unfold cty_lift. f_equal. all: f_equal. all: unfold close.
+      cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: ssimpl.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
@@ -1871,84 +1871,60 @@ Proof.
     destruct m, mx. all: simpl.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
       * cbn. apply crtyping_shift. apply crtyping_S.
       * eapply cstyping_one_none.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
       * apply crtyping_shift. apply crtyping_S.
       * apply cstyping_one_none.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
-      * cbn. eapply crtyping_shift_eq.
-        -- apply crtyping_shift. apply crtyping_S.
-        -- cbn. f_equal. ssimpl. reflexivity.
+      cbn. eapply crtyping_shift_eq.
+      * apply crtyping_shift. apply crtyping_S.
+      * cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
       * eapply cstyping_nones.
       * cbn. eapply crtyping_shift_eq.
         -- apply crtyping_shift. apply crtyping_S.
         -- cbn. f_equal. ssimpl. reflexivity.
     + econv. all: try reflexivity.
       all: eauto using crtyping_S, cstyping_one_none.
-      * cbn. ueq_subst. econv.
-      * cbn. ueq_subst. econv.
       * apply crtyping_shift. apply crtyping_S.
       * apply cstyping_one_none.
     + econv. all: try reflexivity.
@@ -2682,7 +2658,7 @@ Proof.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
       cbn in IHh2.
       (* End *)
-      eapply ccmeta_conv.
+      (* eapply ccmeta_conv.
       * {
         ertype.
         - eapply ccmeta_conv.
@@ -2730,7 +2706,7 @@ Proof.
               - cbn. reflexivity.
             }
             * {
-              (* eapply ccmeta_conv.
+              eapply ccmeta_conv.
               - econstructor.
                 + econstructor.
                   * ertype.
@@ -2754,7 +2730,7 @@ Proof.
                     - rewrite epm_lift_eq. cbn. reflexivity.
                   }
                 + eapply ccmeta_conv. 1: ertype.
-                  cbn. *)
+                  cbn.
                 (* Whichever way I take it I end up with the same issue *)
 
               (* ertype. econstructor.
@@ -2843,7 +2819,8 @@ Proof.
             }
           + admit. *)
       }
-      * admit.
+      * admit. *)
+      admit.
     + admit.
     + admit.
     + admit.
