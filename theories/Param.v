@@ -2350,7 +2350,7 @@ Proof.
   intros Γ i Ae AP uv uP vv vP eP Pe PP te tP. intros.
   unfold pcastTG. cbn. ssimpl.
   change (λ n, S (S (S n))) with (S >> S >> S). ssimpl.
-  eapply ccmeta_conv.
+  econstructor.
   - ertype.
     + eapply ccmeta_conv.
       * {
@@ -2363,9 +2363,9 @@ Proof.
         - cbn. lhs_ssimpl. rewrite rinstInst'_cterm. reflexivity.
       }
       * cbn. reflexivity.
-    + eapply ccmeta_conv.
+    + econstructor.
       * {
-        ertype. eapply ccmeta_conv.
+        ertype. econstructor.
         - ertype.
           + eapply ccmeta_conv. 1: ertype.
             cbn. lhs_ssimpl. reflexivity.
@@ -2451,11 +2451,63 @@ Proof.
                   cbn. reflexivity.
               - cbn. reflexivity.
             }
-        - admit.
+        - eapply cconv_trans.
+          1:{
+            constructor. 2: econv.
+            constructor.
+          }
+          cbn. lhs_ssimpl. eapply cconv_trans. 1: constructor.
+          cbn. lhs_ssimpl. rewrite <- !funcomp_assoc.
+          rewrite <- !rinstInst'_cterm. econv.
+        - ertype.
+          + eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              ertype. eapply ccmeta_conv.
+              - ertype. eapply ccmeta_conv.
+                + ertype. eapply ccmeta_conv. 1: ertype.
+                  cbn. lhs_ssimpl. reflexivity.
+                + cbn. lhs_ssimpl. f_equal. ssimpl.
+                  rewrite !rinstInst'_cterm. reflexivity.
+              - cbn. lhs_ssimpl. rewrite <- funcomp_assoc.
+                rewrite <- !rinstInst'_cterm. reflexivity.
+            }
+            * cbn. reflexivity.
       }
-      * admit.
-  - admit.
-Abort.
+      * cbn. ssimpl. apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. ssimpl. econv.
+        rewrite rinstInst'_cterm. econv.
+      * {
+        cbn. tm_ssimpl. eapply ccmeta_conv.
+        - ertype.
+          + eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              ertype. eapply ccmeta_conv.
+              - ertype. eapply ccmeta_conv. 1: ertype.
+                cbn. lhs_ssimpl. reflexivity.
+              - cbn. lhs_ssimpl. f_equal.
+                rewrite !rinstInst'_cterm. reflexivity.
+            }
+            * cbn. lhs_ssimpl. f_equal.
+              rewrite rinstInst'_cterm. reflexivity.
+          + eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+  - eapply cconv_trans. 1: constructor.
+    cbn. ssimpl. econv.
+  - eapply ccmeta_conv.
+    + ertype. eapply ccmeta_conv.
+      * ertype. eapply ccmeta_conv. 1: ertype.
+        cbn. lhs_ssimpl. reflexivity.
+      * cbn. lhs_ssimpl. reflexivity.
+    + cbn. reflexivity.
+Qed.
 
 Theorem param_typing :
   ∀ Γ t A,
