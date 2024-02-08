@@ -2658,7 +2658,7 @@ Proof.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
       cbn in IHh2.
       (* End *)
-      eapply ccmeta_conv.
+      econstructor.
       * {
         ertype.
         - eapply ccmeta_conv.
@@ -2699,23 +2699,73 @@ Proof.
             2:{
               econstructor.
               - ertype.
-              - cbn. change (λ n, S (S (S n))) with (S >> S >> S). lhs_ssimpl.
+              - cbn. change (λ n, S (S (S n))) with (S >> S >> S).
                 change (epm_lift ?t) with (vreg ⋅ t). cbn.
                 change (vreg ⋅ ?t) with (epm_lift t).
                 eapply cconv_trans. 1: constructor.
-                lhs_ssimpl. apply ccmeta_refl. f_equal. ssimpl. reflexivity.
+                apply ccmeta_refl. f_equal. ssimpl. reflexivity.
               - ertype.
                 + eapply ccmeta_conv. 1: ertype.
                   cbn. reflexivity.
                 + econstructor.
-                  * ertype. (* It would be good to avoid this. *) admit.
+                  * {
+                    ertype.
+                    - eapply crtyping_shift_eq.
+                      + etype. all: shelve.
+                      + cbn. lhs_ssimpl. reflexivity.
+                    - cbn. eapply crtyping_shift_eq.
+                      + apply typing_er_sub_param.
+                      + reflexivity.
+                  }
                   * cbn. constructor.
                   * etype.
             }
-            admit.
-          + admit.
+            cbn.
+            eapply ccmeta_conv.
+            * {
+              ertype. eapply crtyping_shift_eq.
+              - eapply crtyping_shift. apply crtyping_S.
+              - cbn. f_equal. ssimpl. reflexivity.
+            }
+            * cbn. f_equal. rewrite param_erase_ty_tm. cbn.
+              rewrite epm_lift_eq.
+              ssimpl. rewrite rinstInst'_cterm. ssimpl.
+              f_equal. eapply ext_cterm. intros [| []]. 1,2: reflexivity.
+              cbn. ssimpl. unfold vreg. reflexivity.
+          + cbn. reflexivity.
       }
-      * admit.
+      * cbn. apply cconv_sym. unfold pKind.
+        eapply cconv_trans. 1: constructor.
+        cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        econv. apply ccmeta_refl. f_equal. lia.
+      * {
+        eapply ccmeta_conv.
+        - ertype.
+          + eapply ccmeta_conv. 1: etype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              apply type_epm_lift. etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+            }
+            * rewrite epm_lift_eq. cbn. reflexivity.
+        - cbn. reflexivity.
+      }
     + admit.
     + admit.
     + admit.
