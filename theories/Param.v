@@ -2901,12 +2901,18 @@ Proof.
       cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
       (* End *)
       cbn.
-      (* eapply param_erase_typing in h6. 2: etype.
-      cbn - [mode_inb] in h6. remd in h6. cbn in h6.
-      eapply param_erase_typing in h5. 2: etype.
-      cbn in h5. *)
-      (* A rule to factorise things? *)
-      admit.
+      eapply type_pcastTG. all: eauto. all: etype.
+      * {
+        econstructor.
+        - etype.
+        - cbn. rewrite epm_lift_eq. cbn. eapply cconv_trans. 1: constructor.
+          constructor.
+        - etype.
+      }
+      * eapply ccmeta_conv. 1: etype.
+        cbn - [mode_inb]. remd. cbn. reflexivity.
+      * eapply param_scoping in H1. cbn in H1.
+        rewrite csc_param_ctx. assumption.
     + (* Preprocessing *)
       cbn in IHh5.
       eapply ctype_conv in IHh5.
@@ -2918,9 +2924,6 @@ Proof.
         eapply cconv_trans. 1: constructor.
         cbn. econstructor. 2: econv.
         apply ccmeta_refl.
-        (* match goal with
-        | |- ?l = ?r => change ((S >> S) ⋅ ⟦ sc Γ | P ⟧pτ = r)
-        end. *)
         reflexivity.
       }
       2:{
@@ -2940,7 +2943,18 @@ Proof.
       cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
       (* End *)
       cbn.
-      admit.
+      eapply type_pcastTG. all: eauto. all: etype.
+      * {
+        econstructor.
+        - etype.
+        - cbn. rewrite epm_lift_eq. cbn. eapply cconv_trans. 1: constructor.
+          constructor.
+        - etype.
+      }
+      * eapply ccmeta_conv. 1: etype.
+        cbn - [mode_inb]. remd. cbn. reflexivity.
+      * eapply param_scoping in H1. cbn in H1.
+        rewrite csc_param_ctx. assumption.
     + (* Preprocessing *)
       cbn - [mode_inb] in IHh6. remd in IHh6. cbn in IHh6.
       cbn in IHh5.
