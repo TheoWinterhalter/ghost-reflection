@@ -2304,17 +2304,6 @@ Proof.
   - etype.
 Qed.
 
-Lemma param_pProp_eq :
-  ∀ Γ Γ' Γ'' A,
-    Γ' ⊢ᶜ ⟦ sc Γ | A ⟧p : capp pProp ⟦ sc Γ | A ⟧pε →
-    Γ' = ⟦ Γ ⟧p →
-    Γ'' = sc Γ →
-    Γ' ⊢ᶜ ⟦ Γ'' | A ⟧p : cSort cProp 0.
-Proof.
-  intros Γ ?? A h -> ->.
-  apply param_pProp. assumption.
-Qed.
-
 Lemma param_pType :
   ∀ Γ A i,
     cscoping Γ A mKind →
@@ -3876,10 +3865,89 @@ Proof.
             * rewrite epm_lift_eq. cbn. reflexivity.
         - cbn. reflexivity.
       }
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+    + (* Pre *)
+      eapply param_pKind in IHh1. 2,3: eassumption.
+      eapply param_pProp with (Γ := Γ ,, (mKind, A)) in IHh2.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pProp.
+        eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. rewrite epm_lift_eq. cbn. etype.
+        - cbn. reflexivity.
+      }
+    + (* Pre *)
+      eapply param_pType in IHh1. 2,3: eassumption.
+      eapply param_pProp with (Γ := Γ ,, (mType, A)) in IHh2.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pProp.
+        eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. rewrite epm_lift_eq. cbn. etype.
+        - cbn. reflexivity.
+      }
+    + (* Pre *)
+      eapply param_pGhost in IHh1. 2,3: eassumption.
+      eapply param_pProp with (Γ := Γ ,, (mGhost, A)) in IHh2.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pProp.
+        eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. rewrite epm_lift_eq. cbn. etype.
+        - cbn. reflexivity.
+      }
+    + (* Pre *)
+      eapply param_pProp in IHh1.
+      eapply param_pProp with (Γ := Γ ,, (mProp, A)) in IHh2.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        eapply ccmeta_conv.
+        - ertype.
+        - cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pProp.
+        eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. rewrite epm_lift_eq. cbn. etype.
+        - cbn. reflexivity.
+      }
   - admit.
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
