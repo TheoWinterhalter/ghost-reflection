@@ -3704,7 +3704,7 @@ Proof.
             }
             * {
               econstructor.
-              - ertype.
+              - change (?t <[ ctt ..]) with (close t). ertype.
               - cbn. constructor.
               - etype.
             }
@@ -3715,10 +3715,13 @@ Proof.
               - etype.
             }
             * {
-              econstructor.
-              - ertype.
-              - cbn. constructor.
-              - etype.
+              eapply ccmeta_conv.
+              - ertype. change (?t <[ nones ]) with (ignore t).
+                econstructor.
+                + ertype.
+                + cbn. constructor.
+                + etype.
+              - unfold nones. ssimpl. reflexivity.
             }
           + rewrite epm_lift_eq. cbn. reflexivity.
         - eapply ccmeta_conv. 1: ertype.
