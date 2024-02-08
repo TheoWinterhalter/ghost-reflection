@@ -3686,7 +3686,124 @@ Proof.
             * rewrite epm_lift_eq. cbn. reflexivity.
         - cbn. reflexivity.
       }
-    + admit.
+    + (* Pre *)
+      eapply param_pGhost in IHh1. 2,3: eassumption.
+      eapply param_pGhost_eq in IHh2. 2-5: eauto. 2: assumption.
+      cbn in IHh2.
+      (* End *)
+      econstructor.
+      * {
+        ertype.
+        - eapply ccmeta_conv.
+          + eapply type_epm_lift. ertype.
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * {
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+          + rewrite epm_lift_eq. cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype.
+            2:{
+              econstructor.
+              - ertype.
+              - cbn. change (λ n, S (S (S n))) with (S >> S >> S).
+                change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                change (vreg ⋅ ?t) with (epm_lift t).
+                eapply cconv_trans. 1: constructor.
+                apply ccmeta_refl. f_equal. ssimpl. reflexivity.
+              - ertype.
+                + eapply ccmeta_conv. 1: ertype.
+                  cbn. reflexivity.
+                + econstructor.
+                  * {
+                    ertype.
+                    - eapply crtyping_shift_eq.
+                      + etype. all: shelve.
+                      + cbn. lhs_ssimpl. reflexivity.
+                    - cbn. eapply crtyping_shift_eq.
+                      + apply typing_er_sub_param.
+                      + reflexivity.
+                  }
+                  * cbn. constructor.
+                  * etype.
+            }
+            cbn.
+            eapply ccmeta_conv.
+            * {
+              ertype. eapply crtyping_shift_eq.
+              - eapply crtyping_shift. apply crtyping_S.
+              - cbn. f_equal. ssimpl. reflexivity.
+            }
+            * cbn. f_equal. rewrite param_erase_ty_tm. cbn.
+              rewrite epm_lift_eq.
+              ssimpl. rewrite rinstInst'_cterm. ssimpl.
+              f_equal. eapply ext_cterm_scoped. 1: apply erase_scoping.
+              intros x hx. cbn - [mode_inb] in hx.
+              destruct x as [| x]. 1: discriminate.
+              cbn in hx. cbn. ssimpl. reflexivity.
+          + cbn. reflexivity.
+      }
+      * cbn. apply cconv_sym. unfold pKind.
+        eapply cconv_trans. 1: constructor.
+        cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype.
+          + eapply ccmeta_conv. 1: etype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * {
+              apply type_epm_lift. etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + change (?t <[ ctt .. ]) with (close t). ertype.
+                + cbn. constructor.
+                + etype.
+              - econstructor.
+                + etype.
+                + cbn. constructor.
+                + etype.
+              - eapply ccmeta_conv.
+                + change (?t <[ nones ]) with (ignore t). ertype.
+                  econstructor.
+                  * ertype.
+                  * cbn. constructor.
+                  * etype.
+                + unfold ignore. ssimpl. unfold nones. ssimpl. reflexivity.
+            }
+            * rewrite epm_lift_eq. cbn. reflexivity.
+        - cbn. reflexivity.
+      }
     + admit.
     + admit.
     + admit.
