@@ -2623,7 +2623,7 @@ Proof.
 Qed.
 
 Hint Resolve type_pPi : cc_type.
-Hint Opaque type_pPi : cc_type.
+Hint Opaque pPi : cc_type.
 
 Lemma type_plam :
   ∀ Γ i j mp A B C t,
@@ -2766,8 +2766,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -2879,8 +2878,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -2975,8 +2973,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3136,8 +3133,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3249,8 +3245,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3345,8 +3340,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3506,8 +3500,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3619,8 +3612,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3735,8 +3727,7 @@ Proof.
         - eapply ccmeta_conv. 1: ertype.
           cbn. reflexivity.
         - eapply ccmeta_conv.
-          + ertype. eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+          + ertype.
           + cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
@@ -3890,13 +3881,7 @@ Proof.
       cbn in IHh2.
       (* End *)
       econstructor.
-      * {
-        ertype.
-        eapply ccmeta_conv.
-        - ertype. eapply ccmeta_conv. 1: ertype.
-          cbn. reflexivity.
-        - cbn. reflexivity.
-      }
+      * ertype.
       * cbn. apply cconv_sym. unfold pProp.
         eapply cconv_trans. 1: constructor.
         cbn. econv.
@@ -3911,13 +3896,7 @@ Proof.
       cbn in IHh2.
       (* End *)
       econstructor.
-      * {
-        ertype.
-        eapply ccmeta_conv.
-        - ertype. eapply ccmeta_conv. 1: ertype.
-          cbn. reflexivity.
-        - cbn. reflexivity.
-      }
+      * ertype.
       * cbn. apply cconv_sym. unfold pProp.
         eapply cconv_trans. 1: constructor.
         cbn. econv.
@@ -3932,13 +3911,7 @@ Proof.
       cbn in IHh2.
       (* End *)
       econstructor.
-      * {
-        ertype.
-        eapply ccmeta_conv.
-        - ertype. eapply ccmeta_conv. 1: ertype.
-          cbn. reflexivity.
-        - cbn. reflexivity.
-      }
+      * ertype.
       * cbn. apply cconv_sym. unfold pProp.
         eapply cconv_trans. 1: constructor.
         cbn. econv.
