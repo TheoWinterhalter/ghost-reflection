@@ -2687,40 +2687,50 @@ Proof.
 Qed.
 
 Lemma type_pmPiNP :
-  ∀ Γ i j k m mx Ae Ae' Ap Be Bp Te Te',
+  ∀ Γ i j m mx A B,
     isProp m = false →
-    (isProp mx = false → Γ ⊢ᶜ Ae : cty i) →
-    let Γ'' :=
+    cscoping Γ A mKind →
+    cscoping (Γ,, (mx, A)) B mKind →
+    Γ ⊢ A : Sort mx i →
+    Γ ,, (mx, A) ⊢ B : Sort m j →
+    let Γp := ⟦ Γ ⟧p in
+    let Te := ⟦ sc Γ | Pi i j m mx A B ⟧pε in
+    let Ae := ⟦ sc Γ | A ⟧pε in
+    let Ap := ⟦ sc Γ | A ⟧p in
+    let Be := ⟦ mx :: sc Γ | B ⟧pε in
+    let Bp := ⟦ mx :: sc Γ | B ⟧p in
+    Γp ⊢ᶜ Ap : capp (if isKind mx then pKind i else if isProp mx then pProp else pType i) Ae →
+    let Γp' :=
       if isProp mx then
-        None :: Some (cProp, Ap) :: Γ
+        None :: Some (cProp, Ap) :: Γp
       else if isKind mx then
-        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γp
       else
-        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γp
     in
-    Γ'' ⊢ᶜ Be : cty i →
-    (* ccxscoping Γ'' Be cType → *)
-    Γ ⊢ᶜ Ap : capp (if isKind mx then pKind i else if isProp mx then pProp else pType i) Ae →
-    let Γ' :=
-      if isProp mx then
-        None :: Some (cProp, Ap) :: Γ
-      else if isKind mx then
-        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
-      else
-        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
-    in
-    Γ' ⊢ᶜ Bp : capp ((if isKind m then pKind else pType) j) Be →
-    Γ ⊢ᶜ Te' : cty k →
-    Ae' = cEl Ae →
-    Te = cEl Te' →
-    Γ ⊢ᶜ pmPiNP mx m Te Ae Ap Bp :
-    capp ((if isKind m then pKind else pType) (umax mx m i j)) Te'.
+    Γp' ⊢ᶜ Bp : capp ((if isKind m then pKind else pType) j) Be →
+    Γp ⊢ᶜ pmPiNP mx m (cEl Te) (cEl Ae) Ap Bp :
+    capp ((if isKind m then pKind else pType) (umax mx m i j)) Te.
 Proof.
-  intros Γ i j k m mx Ae ? Ap Be Bp ? Te hm hAe Γ'' hBe (* cBe *) hAp Γ' hBp hTe -> ->.
-  subst Γ' Γ''.
+  intros Γ i j m mx A B hm hcA hcB hA hB Γp Te Ae Ap Be Bp hAp Γ'p hBp.
+  subst Γ'p.
   unfold pmPiNP.
+  assert (hTe : Γp ⊢ᶜ Te : cty (umax mx m i j)).
+  {
+    subst Te. econstructor.
+    - ertype. constructor. all: assumption.
+    - cbn. rewrite hm. rewrite epm_lift_eq. cbn.
+      constructor.
+    - ertype.
+  }
   econstructor.
   - ertype.
+
+
+    (* TODO OLD BELOW, but maybe ok *)
+
+
+
     destruct_if e.
     + mode_eqs. cbn in hAp.
       apply param_pProp in hAp.
