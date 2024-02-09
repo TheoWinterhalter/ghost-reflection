@@ -117,24 +117,30 @@ Definition pcastP Ae AP uv vv vP eP PP tP :=
 Reserved Notation "⟦ G | u '⟧p'" (at level 9, G, u at next level).
 
 (** Translation of Pi types, to factorise a bit **)
-Definition pmPi mx m Te Ae Ap Bp :=
-  if isProp m then (
-    if isProp mx then cPi cProp Ap (close Bp)
-    else if isKind mx then pPi cType Ae Ap Bp
-    else pPi cProp Ae Ap Bp
-  )
-  else (
-    let cm := if isKind mx then cType else cProp in
-    clam cType Te (
-      if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
-      else (
-        pPi cm (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (
-          if isGhost mx && relm m then cvar 2
-          else capp (cvar 2) (cvar 1)
-        ))
-      )
+
+(* Prop case *)
+Definition pmPiP mx Ae Ap Bp :=
+  if isProp mx then cPi cProp Ap (close Bp)
+  else if isKind mx then pPi cType Ae Ap Bp
+  else pPi cProp Ae Ap Bp.
+
+(* Non-prop case *)
+Definition pmPiNP mx m Te Ae Ap Bp :=
+  let cm := if isKind mx then cType else cProp in
+  clam cType Te (
+    if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
+    else (
+      pPi cm (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (
+        if isGhost mx && relm m then cvar 2
+        else capp (cvar 2) (cvar 1)
+      ))
     )
   ).
+
+(* General case *)
+Definition pmPi mx m Te Ae Ap Bp :=
+  if isProp m then pmPiP mx Ae Ap Bp
+  else pmPiNP mx m Te Ae Ap Bp.
 
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
@@ -154,8 +160,10 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     pmPi mx m Te Ae Ap Bp ;
   ⟦ Γ | lam mx A B t ⟧p :=
     if isProp mx then clam cProp ⟦ Γ | A ⟧p (close ⟦ mx :: Γ | t ⟧p)
-    else if isKind mx then plam cType ⟦ Γ | A ⟧pτ ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
-    else plam cProp ⟦ Γ | A ⟧pτ ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p ;
+    else (
+      let cm := if isKind mx then cType else cProp in
+      plam cm ⟦ Γ | A ⟧pτ ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
+    ) ;
   ⟦ Γ | app u v ⟧p :=
     if relm (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pε) ⟦ Γ | v ⟧p
     else if isGhost (md Γ v) then capp (capp ⟦ Γ | u ⟧p ⟦ Γ | v ⟧pv) ⟦ Γ | v ⟧p
@@ -753,7 +761,7 @@ Proof.
         rewrite PeanoNat.Nat.odd_mul. cbn. lia.
     + eapply hcρ in e as e'. rewrite e'. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
-  - cbn - [mode_inb]. unfold pmPi, pPi.
+  - cbn - [mode_inb]. unfold pmPi, pmPiP, pmPiNP, pPi.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
@@ -1197,7 +1205,7 @@ Proof.
       rewrite e1. cbn. rewrite e2. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
-    unfold pmPi, pPi.
+    unfold pmPi, pmPiP, pmPiNP, pPi.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
     2:{ eapply sscoping_shift. eassumption. }
@@ -2282,11 +2290,11 @@ Hint Extern 15 =>
   ] : cc_type.
 
 Lemma param_pProp :
-  ∀ Γ A,
-    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : capp pProp ⟦ sc Γ | A ⟧pε →
-    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : cSort cProp 0.
+  ∀ Γ A Ae,
+    Γ ⊢ᶜ A : capp pProp Ae →
+    Γ ⊢ᶜ A : cSort cProp 0.
 Proof.
-  intros Γ A h.
+  intros Γ A Ae h.
   econstructor.
   - eassumption.
   - unfold pProp. eapply cconv_trans. 1: constructor.
@@ -2636,6 +2644,135 @@ Hint Opaque plam : cc_type.
 
 Hint Opaque cty_lift : cc_type.
 
+Lemma type_pmPiP :
+  ∀ Γ i mx Ae Ae' Ap Bp,
+    (isProp mx = false → Γ ⊢ᶜ Ae : cty i) →
+    Γ ⊢ᶜ Ap : capp (if isKind mx then pKind i else if isProp mx then pProp else pType i) Ae →
+    let Γ' :=
+      if isProp mx then
+        None :: Some (cProp, Ap) :: Γ
+      else if isKind mx then
+        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+      else
+        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+    in
+    Γ' ⊢ᶜ Bp : cSort cProp 0 →
+    Ae' = cEl Ae →
+    Γ ⊢ᶜ pmPiP mx Ae' Ap Bp : cSort cProp 0.
+Proof.
+  intros Γ i mx Ae Ae' Ap Bp hAe hAp Γ' hBp ->. subst Γ'.
+  unfold pmPiP. destruct_ifs. all: mode_eqs. all: cbn in *.
+  - eapply param_pProp in hAp.
+    eapply ccmeta_conv.
+    + ertype. eapply ccmeta_conv. 1: ertype.
+      cbn. reflexivity.
+    + cbn. reflexivity.
+  - eapply ctype_conv in hAp.
+    2:{
+      unfold pKind. eapply cconv_trans. 1: constructor.
+      cbn. econv.
+    }
+    2: ertype.
+    eapply ccmeta_conv.
+    + ertype.
+    + cbn. reflexivity.
+  - forward hAe by auto.
+    eapply ccmeta_conv.
+    + ertype. econstructor.
+      * ertype.
+      * unfold pType. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      * ertype.
+    + cbn. reflexivity.
+Qed.
+
+Lemma type_pmPiNP :
+  ∀ Γ i j k m mx Ae Ae' Ap Be Bp Te Te',
+    isProp m = false →
+    (isProp mx = false → Γ ⊢ᶜ Ae : cty i) →
+    let Γ'' :=
+      if isProp mx then
+        None :: Some (cProp, Ap) :: Γ
+      else if isKind mx then
+        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+      else
+        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+    in
+    Γ'' ⊢ᶜ Be : cty i →
+    (* ccxscoping Γ'' Be cType → *)
+    Γ ⊢ᶜ Ap : capp (if isKind mx then pKind i else if isProp mx then pProp else pType i) Ae →
+    let Γ' :=
+      if isProp mx then
+        None :: Some (cProp, Ap) :: Γ
+      else if isKind mx then
+        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+      else
+        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, cEl Ae) :: Γ
+    in
+    Γ' ⊢ᶜ Bp : capp ((if isKind m then pKind else pType) j) Be →
+    Γ ⊢ᶜ Te' : cty k →
+    Ae' = cEl Ae →
+    Te = cEl Te' →
+    Γ ⊢ᶜ pmPiNP mx m Te Ae Ap Bp :
+    capp ((if isKind m then pKind else pType) (umax mx m i j)) Te'.
+Proof.
+  intros Γ i j k m mx Ae ? Ap Be Bp ? Te hm hAe Γ'' hBe (* cBe *) hAp Γ' hBp hTe -> ->.
+  subst Γ' Γ''.
+  unfold pmPiNP.
+  econstructor.
+  - ertype.
+    destruct_if e.
+    + mode_eqs. cbn in hAp.
+      apply param_pProp in hAp.
+      eapply ccmeta_conv.
+      * {
+        ertype.
+        - eapply ccmeta_conv.
+          + ertype.
+          + cbn. reflexivity.
+        - eapply ccmeta_conv.
+          + ertype.
+            econstructor.
+            * ertype. apply crtyping_shift. apply crtyping_S.
+            * {
+              cbn. destruct_if e1.
+              - cbn. eapply cconv_trans. 1: constructor.
+                cbn.
+                (* lhs_ssimpl.
+                erewrite ext_cterm_scoped with (θ := ids).
+                2: eassumption.
+                2:{
+                  intros [| []] hx. 1: discriminate.
+                  - cbn in hx. unfold inscope in hx. cbn in hx.
+                    cbn. destruct Γe. 1: discriminate.
+                    destruct o. 2: discriminate.
+                  -
+                } *)
+                (* There is no way this works, I need more info about Te
+                  and Be but is there a way to do this without breaking
+                  abstraction? In the worst case, I bring everything back
+                  to translations. Like by having the lets of the param
+                  translation.
+                  I could even use ptype then.
+                *)
+                admit.
+              - admit.
+            }
+            * admit.
+          + admit.
+      }
+      * admit.
+    + admit.
+  - apply cconv_sym. destruct_if e.
+    + unfold pKind. eapply cconv_trans. 1: constructor.
+      cbn. econv.
+    + unfold pType. eapply cconv_trans. 1: constructor.
+      cbn. econv.
+Abort.
+
+(* Hint Resolve type_pmPiP : cc_type. *)
+Hint Opaque pmPiP pmPiNP pmPi : cc_type.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -2716,7 +2853,47 @@ Proof.
     unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2.
     cbn in IHh2.
     (* End *)
-    unfold ptype. cbn - [mode_inb pPi].
+    unfold ptype. cbn - [mode_inb pmPi].
+    set (rm := relm m). set (rmx := relm mx). simpl. (* subst rm rmx. *)
+    unfold pmPi. destruct (isProp m) eqn:em.
+    + subst rm. mode_eqs. simpl. simpl in IHh2.
+      rewrite andb_false_r.
+      eapply param_pProp in IHh2.
+      econstructor.
+      * eapply type_pmPiP. 2,3: eassumption. 2: reflexivity.
+        {
+          intro emx.
+          econstructor.
+          - ertype.
+          - cbn. rewrite emx. rewrite epm_lift_eq. cbn. constructor.
+          - ertype.
+        }
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      * change (epm_lift ctt) with ctt.
+        eapply ccmeta_conv. 1: ertype.
+        cbn. reflexivity.
+    +
+
+      (* eapply param_erase_typing in h2. 2: ertype.
+      cbn - [mode_inb] in h2. *)
+
+      (* eapply erase_typing in h2. 2: ertype.
+      cbn - [mode_inb] in h2. *)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    cbn - [pmPi].
     destruct m, mx. all: cbn - [pPi] in *.
     + (* Pre *)
       eapply param_pKind in IHh1. 2,3: eassumption.
@@ -3935,8 +4112,8 @@ Proof.
     unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2. cbn in IHh2.
     unfold ptype in IHh3. cbn - [mode_inb] in IHh3. remd in IHh3.
     (* End *)
-    unfold ptype. cbn - [mode_inb]. remd.
-    destruct m, mx. all: cbn - [pPi] in *.
+    unfold ptype. cbn - [mode_inb pmPi]. remd.
+    destruct m, mx. all: cbn - [pmPi] in *.
     + (* Pre *)
       eapply param_pKind in IHh1. 2,3: eassumption.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
@@ -3962,7 +4139,7 @@ Proof.
           intros [|]. 1: reflexivity.
           ssimpl. reflexivity.
       }
-      (* The big part is this, and probably we have done it already! *)
+      (* TODO Now, we should have some type_pmPi to use here instead! *)
       * {
         eapply ccmeta_conv.
         - ertype.
