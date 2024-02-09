@@ -124,15 +124,15 @@ Definition pmPi mx m Te Ae Ap Bp :=
     else pPi cProp Ae Ap Bp
   )
   else (
+    let cm := if isKind mx then cType else cProp in
     clam cType Te (
-      match mx with
-      | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-      | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-      | mGhost =>
-        if relm m then pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        else pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-      | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
-      end
+      if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
+      else (
+        pPi cm (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (
+          if isGhost mx && relm m then cvar 2
+          else capp (cvar 2) (cvar 1)
+        ))
+      )
     )
   ).
 
