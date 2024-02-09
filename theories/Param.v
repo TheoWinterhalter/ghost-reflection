@@ -116,6 +116,38 @@ Definition pcastP Ae AP uv vv vP eP PP tP :=
 
 Reserved Notation "⟦ G | u '⟧p'" (at level 9, G, u at next level).
 
+Definition pmPi mx m Te Ae Ap Bp :=
+  match m with
+  | mKind =>
+    clam cType Te (
+      match mx with
+      | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
+      | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
+      | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
+      | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
+      end
+    )
+  | mType =>
+    clam cType Te (
+      match mx with
+      | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
+      | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
+      | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
+      | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
+      end
+    )
+  | mGhost =>
+    clam cType Te (
+      if isKind mx then pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
+      else if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
+      else pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
+    )
+  | mProp =>
+    if isProp mx then cPi cProp Ap (close Bp)
+    else if isKind mx then pPi cType Ae Ap Bp
+    else pPi cProp Ae Ap Bp
+  end.
+
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
     match nth_error Γ x with
@@ -131,37 +163,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let Ae := ⟦ Γ | A ⟧pτ in
     let Ap := ⟦ Γ | A ⟧p in
     let Bp := ⟦ mx :: Γ | B ⟧p in
-    let k := umax mx m i j in
-    match m with
-    | mKind =>
-      clam cType Te (
-        match mx with
-        | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-        | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-        | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
-        end
-      )
-    | mType =>
-      clam cType Te (
-        match mx with
-        | mKind => pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-        | mType => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-        | mGhost => pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (cvar 2))
-        | mProp => cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
-        end
-      )
-    | mGhost =>
-      clam cType Te (
-        if isKind mx then pPi cType (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-        else if isProp mx then cPi cProp (S ⋅ Ap) (capp ((up_ren S) ⋅ (close Bp)) (cvar 1))
-        else pPi cProp (S ⋅ Ae) (S ⋅ Ap) (capp ((up_ren (up_ren S)) ⋅ Bp) (capp (cvar 2) (cvar 1)))
-      )
-    | mProp =>
-      if isProp mx then cPi cProp Ap (close Bp)
-      else if isKind mx then pPi cType Ae Ap Bp
-      else pPi cProp Ae Ap Bp
-    end ;
+    pmPi mx m Te Ae Ap Bp ;
   ⟦ Γ | lam mx A B t ⟧p :=
     if isProp mx then clam cProp ⟦ Γ | A ⟧p (close ⟦ mx :: Γ | t ⟧p)
     else if isKind mx then plam cType ⟦ Γ | A ⟧pτ ⟦ Γ | A ⟧p ⟦ mx :: Γ | t ⟧p
@@ -763,7 +765,7 @@ Proof.
         rewrite PeanoNat.Nat.odd_mul. cbn. lia.
     + eapply hcρ in e as e'. rewrite e'. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
-  - cbn - [mode_inb]. unfold pPi.
+  - cbn - [mode_inb]. unfold pmPi, pPi.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
@@ -1207,7 +1209,7 @@ Proof.
       rewrite e1. cbn. rewrite e2. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
-    unfold pPi.
+    unfold pmPi, pPi.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
     2:{ eapply sscoping_shift. eassumption. }
