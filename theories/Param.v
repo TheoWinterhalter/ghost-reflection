@@ -3951,13 +3951,100 @@ Proof.
       eapply param_pKind in IHh1. 2,3: eassumption.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
       (* End *)
-      (* TODO Have a plam typing rule first! *)
-      (* Then it would be good to factorise things a bit
-        one very important thing to do is to make sure that the fact that
-        products are well typed after translation is not something
-        we prove again after conversion here.
-      *)
-      admit.
+      econstructor.
+      * ertype.
+      * {
+        apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. ssimpl. rewrite <- rinstInst'_cterm. econv.
+        - apply ccmeta_refl.
+          erewrite ext_cterm_scoped with (θ := ids).
+          2:{ eapply param_scoping. eassumption. }
+          2:{
+            intros [| []] hx. 1,2: reflexivity.
+            ssimpl. reflexivity.
+          }
+          ssimpl. reflexivity.
+        - change (epm_lift ?t) with (vreg ⋅ t). cbn.
+          (* change (vreg ⋅ ?t) with (epm_lift t). *)
+          eapply cconv_trans. 1: constructor.
+          ssimpl. apply ccmeta_refl.
+          rewrite rinstInst'_cterm. eapply ext_cterm.
+          intros [|]. 1: reflexivity.
+          ssimpl. reflexivity.
+      }
+      (* The big part is this, and probably we have done it already! *)
+      * {
+        eapply ccmeta_conv.
+        - ertype.
+          + eapply ccmeta_conv.
+            * apply type_epm_lift. ertype. all: econstructor ; ertype.
+              all: cbn. all: constructor.
+            * rewrite epm_lift_eq. cbn. reflexivity.
+          + eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * ertype.
+              2:{
+                econstructor.
+                - ertype.
+                - cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                  change (vreg ⋅ ?t) with (epm_lift t).
+                  eapply cconv_trans. 1: constructor.
+                  econv.
+                  change (λ n, S (S (S n))) with (S >> S >> S).
+                  change (λ n, S (S n)) with (S >> S).
+                  ssimpl. econv.
+                - ertype.
+                  + eapply ccmeta_conv. 1: ertype.
+                    cbn. reflexivity.
+                  + change (λ n, S (S (S n))) with (S >> S >> S).
+                    econstructor.
+                    * ertype.
+                      2:{
+                        cbn. eapply crtyping_shift.
+                        apply typing_er_sub_param.
+                      }
+                      eapply crtyping_shift_eq. 1: ertype ; shelve.
+                      cbn. change (vreg ⋅ ?t) with (epm_lift t).
+                      lhs_ssimpl. reflexivity.
+                    * cbn. constructor.
+                    * etype.
+              }
+              cbn. eapply ccmeta_conv.
+              1:{
+                ertype.
+                cbn. eapply crtyping_shift_eq.
+                - apply crtyping_shift. apply crtyping_S.
+                - cbn. f_equal. ssimpl. reflexivity.
+              }
+              cbn. f_equal. ssimpl.
+              rewrite param_erase_ty_tm. cbn. f_equal.
+              change (epm_lift ?t) with (vreg ⋅ t).
+              change (λ n, S (S (S n))) with (S >> S >> S).
+              ssimpl.
+              rewrite rinstInst'_cterm. ssimpl.
+              eapply ext_cterm.
+              intros [| []]. 1,2: reflexivity.
+              ssimpl.
+              repeat change (vreg (S ?x)) with (S (S (vreg x))).
+              cbn. ssimpl. reflexivity.
+            * cbn. reflexivity.
+          + apply type_epm_lift.
+            econstructor.
+            * {
+              ertype.
+              econstructor.
+              - ertype.
+              - cbn. constructor.
+              - etype.
+            }
+            * apply cconv_sym. constructor.
+            * ertype. all: econstructor ; ertype.
+              all: cbn. all: constructor.
+        - cbn. reflexivity.
+      }
     + admit.
     + admit.
     + admit.
