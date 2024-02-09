@@ -2625,6 +2625,25 @@ Qed.
 Hint Resolve type_pPi : cc_type.
 Hint Opaque type_pPi : cc_type.
 
+Lemma type_plam :
+  ∀ Γ i j mp A B C t,
+    Γ ⊢ᶜ A : cSort cType i →
+    Γ ⊢ᶜ B : A ⇒[ cType ] cSort mp j →
+    Some (mp, capp (S ⋅ B) (cvar 0)) :: Some (cType, A) :: Γ ⊢ᶜ t : C →
+    Γ ⊢ᶜ plam mp A B t : pPi mp A B C.
+Proof.
+  intros Γ i j mp A B C t hA hB ht.
+  unfold plam, pPi.
+  ertype.
+  eapply ccmeta_conv.
+  - ertype. eapply ccmeta_conv. 1: ertype.
+    cbn. reflexivity.
+  - cbn. reflexivity.
+Qed.
+
+Hint Resolve type_plam : cc_type.
+Hint Opaque plam : cc_type.
+
 Hint Opaque cty_lift : cc_type.
 
 Theorem param_typing :
@@ -3960,6 +3979,11 @@ Proof.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
       (* End *)
       (* TODO Have a plam typing rule first! *)
+      (* Then it would be good to factorise things a bit
+        one very important thing to do is to make sure that the fact that
+        products are well typed after translation is not something
+        we prove again after conversion here.
+      *)
       admit.
     + admit.
     + admit.
