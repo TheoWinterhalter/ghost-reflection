@@ -2713,7 +2713,6 @@ Lemma type_pmPiNP :
     capp ((if isKind m then pKind else pType) (umax mx m i j)) Te.
 Proof.
   intros Γ i j m mx A B hm hcA hcB hA hB Γp Te Ae Ap Be Bp hAp Γ'p hBp.
-  subst Γ'p.
   unfold pmPiNP.
   assert (hTe : Γp ⊢ᶜ Te : cty (umax mx m i j)).
   {
@@ -2723,6 +2722,16 @@ Proof.
       constructor.
     - ertype.
   }
+  assert (hBe : Γ'p ⊢ᶜ Be : cty j).
+  {
+    subst Be. econstructor.
+    - eapply type_epm_lift_eq. 1: ertype.
+      cbn. subst Γ'p. destruct_ifs. all: reflexivity.
+    - cbn. rewrite hm. rewrite epm_lift_eq. cbn.
+      constructor.
+    - ertype.
+  }
+  subst Γ'p.
   econstructor.
   - ertype. instantiate (1 := if isProp mx then _ else _).
     destruct_if e.
@@ -2818,18 +2827,17 @@ Proof.
                 cbn. econv.
             }
             * {
-              unfold Be.
               ertype.
-              - econstructor.
+              - eapply ccmeta_conv.
                 + ertype.
+                  destruct_if emx.
                   * eapply crtyping_shift_eq with (A := capp (S ⋅ Ap) (cvar 0)).
                     1:{ eapply crtyping_shift with (A := cEl Ae). apply crtyping_S. }
-                    cbn. f_equal. f_equal. f_equal. f_equal.
-                    ssimpl. reflexivity.
-                  * eapply type_epm_lift_eq. 1: ertype.
-                    cbn. rewrite e. destruct_if ek. all: reflexivity.
-                + cbn. rewrite hm. rewrite epm_lift_eq. cbn. constructor.
-                + ertype.
+                    cbn. f_equal. ssimpl. reflexivity.
+                  * eapply crtyping_shift_eq with (A := capp (S ⋅ Ap) (cvar 0)).
+                    1:{ eapply crtyping_shift with (A := cEl Ae). apply crtyping_S. }
+                    cbn. f_equal. ssimpl. reflexivity.
+                + cbn. reflexivity.
               - instantiate (2 := if isKind m then _ else _).
                 instantiate (1 := if isKind m then _ else _).
                 destruct (isKind m). all: ertype.
@@ -2837,7 +2845,7 @@ Proof.
           + destruct (isGhost mx && relm m) eqn:ee.
             * {
               apply andb_prop in ee. destruct ee as [emx rm]. mode_eqs.
-              cbn. cbn in hBp. cbn in hAp.
+              cbn. cbn in hBp. cbn in hAp. cbn in hBe.
               apply param_pGhost in hAp. 2,3: assumption.
               econstructor.
               - ertype.
@@ -2853,15 +2861,19 @@ Proof.
                 eapply ext_cterm_scoped. 1: apply erase_scoping.
                 intros [] hx. 1: discriminate.
                 cbn. reflexivity.
-              - ertype. unfold Be. eapply ccmeta_conv. 1: ertype.
-                (* TODO Can I prove Be is well typed earlier to factorise? *)
-                all: admit.
+              - ertype. eapply ccmeta_conv. 1: ertype. 2: reflexivity.
+                eapply crtyping_shift_eq with (A := capp (S ⋅ Ap) (cvar 0)).
+                1:{ eapply crtyping_shift with (A := cEl Ae). apply crtyping_S. }
+                cbn. f_equal. ssimpl. reflexivity.
             }
             * {
               eapply ccmeta_conv.
-              - ertype. eapply ccmeta_conv. 1: ertype.
-                cbn. unfold Te, Ae. cbn - [mode_inb]. rewrite hm.
-                admit.
+              - ertype. econstructor.
+                + ertype.
+                + cbn. unfold Te, Ae. cbn - [mode_inb]. rewrite hm.
+                  change (epm_lift ?t) with (vreg ⋅ t).
+                  admit.
+                + admit.
               - admit.
             }
         - admit.
