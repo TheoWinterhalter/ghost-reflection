@@ -2872,8 +2872,49 @@ Proof.
                 + ertype.
                 + cbn. unfold Te, Ae. cbn - [mode_inb]. rewrite hm.
                   change (epm_lift ?t) with (vreg ⋅ t).
-                  admit.
-                + admit.
+                  destruct (relm mx) eqn:emx.
+                  2: destruct (isGhost m && isGhost mx) eqn:eg.
+                  * cbn. eapply cconv_trans. 1: constructor.
+                    econstructor.
+                    1:{ apply ccmeta_refl. ssimpl. reflexivity. }
+                    econv.
+                  * cbn. eapply cconv_trans. 1: constructor.
+                    econstructor.
+                    1:{ apply ccmeta_refl. ssimpl. reflexivity. }
+                    apply ccmeta_refl. ssimpl.
+                    rewrite rinstInst'_cterm. f_equal.
+                    eapply ext_cterm_scoped. 1: apply erase_scoping.
+                    intros [] hx.
+                    1:{ cbn - [mode_inb] in hx. rewrite emx in hx. discriminate. }
+                    cbn. reflexivity.
+                  * destruct mx. all: try discriminate.
+                    destruct m. all: discriminate.
+                + cbn. change (λ n, (S (S n))) with (S >> S). ertype.
+                  * {
+                    econstructor.
+                    - ertype.
+                    - cbn. rewrite epm_lift_eq. cbn. rewrite e. cbn.
+                      constructor.
+                    - ertype.
+                  }
+                  * {
+                    eapply ccmeta_conv.
+                    - ertype.
+                      + eapply crtyping_shift_eq with (A := cEl Ae).
+                        * change (λ n, S (S (S n))) with (S >> S >> S).
+                          ertype. all: shelve.
+                        * f_equal. f_equal. f_equal.
+                          change (λ n, S (S (S n))) with (S >> S >> S).
+                          ssimpl. reflexivity.
+                      + cbn - [mode_inb].
+                        destruct (relm mx) eqn:emx.
+                        * eapply crtyping_shift_eq.
+                          1: apply typing_er_sub_param.
+                          reflexivity.
+                        * (* eapply crtyping_shift_none. *)
+                          admit.
+                    - admit.
+                  }
               - admit.
             }
         - admit.
