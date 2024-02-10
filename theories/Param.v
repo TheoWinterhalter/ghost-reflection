@@ -2724,60 +2724,160 @@ Proof.
     - ertype.
   }
   econstructor.
-  - ertype.
-
-
-    (* TODO OLD BELOW, but maybe ok *)
-
-
-
+  - ertype. instantiate (1 := if isProp mx then _ else _).
     destruct_if e.
     + mode_eqs. cbn in hAp.
       apply param_pProp in hAp.
       eapply ccmeta_conv.
       * {
         ertype.
-        - eapply ccmeta_conv.
-          + ertype.
-          + cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
         - eapply ccmeta_conv.
           + ertype.
             econstructor.
             * ertype. apply crtyping_shift. apply crtyping_S.
             * {
-              cbn. destruct_if e1.
+              cbn. unfold Te. cbn.
+              rewrite andb_false_r. rewrite hm.
+              change (epm_lift ?t) with (vreg ⋅ t). cbn.
+              eapply cconv_trans.
+              2:{
+                eapply ccong_Pi. 2: econv.
+                apply cconv_sym. constructor.
+              }
+              instantiate (1 := if isKind m then _ else _).
+              destruct_if e1.
               - cbn. eapply cconv_trans. 1: constructor.
-                cbn.
-                (* lhs_ssimpl.
-                erewrite ext_cterm_scoped with (θ := ids).
-                2: eassumption.
-                2:{
-                  intros [| []] hx. 1: discriminate.
-                  - cbn in hx. unfold inscope in hx. cbn in hx.
-                    cbn. destruct Γe. 1: discriminate.
-                    destruct o. 2: discriminate.
-                  -
-                } *)
-                (* There is no way this works, I need more info about Te
-                  and Be but is there a way to do this without breaking
-                  abstraction? In the worst case, I bring everything back
-                  to translations. Like by having the lets of the param
-                  translation.
-                  I could even use ptype then.
-                *)
+                cbn. econv. apply ccmeta_refl.
+                unfold close. unfold Be.
+                change (epm_lift ?t) with (vreg ⋅ t).
+                change (λ n, S (S n)) with (S >> S). ssimpl.
+                eapply ext_cterm_scoped. 1: apply erase_scoping.
+                intros [] hx. 1: discriminate.
+                cbn. ssimpl. reflexivity.
+              - cbn. eapply cconv_trans. 1: constructor.
+                cbn. econv. apply ccmeta_refl.
+                unfold close. unfold Be.
+                change (epm_lift ?t) with (vreg ⋅ t).
+                change (λ n, S (S n)) with (S >> S). ssimpl.
+                eapply ext_cterm_scoped. 1: apply erase_scoping.
+                intros [] hx. 1: discriminate.
+                cbn. ssimpl. reflexivity.
+            }
+            * {
+              cbn. ertype.
+              - change (λ n, S (S n)) with (S >> S).
+                eapply ccmeta_conv. 1: ertype.
+                cbn. reflexivity.
+              - instantiate (1 := if isKind m then _ else _).
+                destruct_if e. all: ertype.
+            }
+          + instantiate (2 := if isKind m then _ else _).
+            instantiate (1 := if isKind m then _ else _).
+            destruct_if e. all: cbn. all: reflexivity.
+      }
+      * reflexivity.
+    + cbn - [mode_inb]. ertype.
+      * {
+        econstructor.
+        - ertype.
+        - cbn. rewrite epm_lift_eq. cbn. rewrite e. cbn. constructor.
+        - ertype.
+      }
+      * {
+        econstructor.
+        - ertype.
+        - cbn. instantiate (1 := if isKind mx then _ else _).
+          destruct_if ek.
+          + cbn. eapply cconv_trans. 1: constructor.
+            cbn. econv.
+          + cbn. eapply cconv_trans. 1: constructor.
+            cbn. econv.
+        - cbn. ertype.
+          econstructor.
+          + ertype.
+          + cbn. rewrite e. rewrite epm_lift_eq. cbn. constructor.
+          + ertype.
+      }
+      * {
+        econstructor.
+        - ertype.
+          + econstructor.
+            * ertype. destruct_if ek.
+              all: eapply crtyping_shift_eq.
+              1,3: eapply crtyping_shift ; apply crtyping_S.
+              all: cbn. all: f_equal.
+              all: ssimpl. all: reflexivity.
+            * {
+              cbn. instantiate (1 := if isKind m then _ else _).
+              destruct (isKind m) eqn:ek.
+              - cbn. eapply cconv_trans. 1: constructor.
+                cbn. econv.
+              - cbn. eapply cconv_trans. 1: constructor.
+                cbn. econv.
+            }
+            * {
+              unfold Be.
+              ertype.
+              - econstructor.
+                + ertype.
+                  * eapply crtyping_shift_eq with (A := capp (S ⋅ Ap) (cvar 0)).
+                    1:{ eapply crtyping_shift with (A := cEl Ae). apply crtyping_S. }
+                    cbn. f_equal. f_equal. f_equal. f_equal.
+                    ssimpl. reflexivity.
+                  * eapply type_epm_lift_eq. 1: ertype.
+                    cbn. rewrite e. destruct_if ek. all: reflexivity.
+                + cbn. rewrite hm. rewrite epm_lift_eq. cbn. constructor.
+                + ertype.
+              - instantiate (2 := if isKind m then _ else _).
+                instantiate (1 := if isKind m then _ else _).
+                destruct (isKind m). all: ertype.
+            }
+          + destruct (isGhost mx && relm m) eqn:ee.
+            * {
+              apply andb_prop in ee. destruct ee as [emx rm]. mode_eqs.
+              cbn. cbn in hBp. cbn in hAp.
+              apply param_pGhost in hAp. 2,3: assumption.
+              econstructor.
+              - ertype.
+              - cbn. change (λ n, S (S (S n))) with (S >> S >> S).
+                unfold Te, Be. cbn. rewrite hm.
+                destruct (isGhost m) eqn:eg.
+                1:{ mode_eqs. discriminate. }
+                cbn. rewrite epm_lift_eq. cbn.
+                eapply cconv_trans. 1: constructor.
+                apply ccmeta_refl. f_equal.
+                change (epm_lift ?t) with (vreg ⋅ t).
+                ssimpl. rewrite rinstInst'_cterm.
+                eapply ext_cterm_scoped. 1: apply erase_scoping.
+                intros [] hx. 1: discriminate.
+                cbn. reflexivity.
+              - ertype. unfold Be. eapply ccmeta_conv. 1: ertype.
+                (* TODO Can I prove Be is well typed earlier to factorise? *)
+                all: admit.
+            }
+            * {
+              eapply ccmeta_conv.
+              - ertype. eapply ccmeta_conv. 1: ertype.
+                cbn. unfold Te, Ae. cbn - [mode_inb]. rewrite hm.
                 admit.
               - admit.
             }
-            * admit.
-          + admit.
+        - admit.
+        - admit.
       }
-      * admit.
-    + admit.
-  - apply cconv_sym. destruct_if e.
-    + unfold pKind. eapply cconv_trans. 1: constructor.
-      cbn. econv.
+  - apply cconv_sym.
+    instantiate (2 := if isKind m then cType else cProp).
+    destruct_if e.
+    + mode_eqs.
+      unfold pKind. eapply cconv_trans. 1: constructor.
+      cbn. econv. destruct_if ep. 1: econv.
+      apply ccmeta_refl. f_equal. cbn.
+      destruct (isKind mx) eqn:emx. all: cbn. 1: instantiate (1 := j).
+      all: lia.
     + unfold pType. eapply cconv_trans. 1: constructor.
-      cbn. econv.
+      cbn. econv. destruct_if ep. all: econv.
 Abort.
 
 (* Hint Resolve type_pmPiP : cc_type. *)
