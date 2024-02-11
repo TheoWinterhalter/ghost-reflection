@@ -3170,7 +3170,7 @@ Proof.
           eapply ccmeta_conv.
           + ertype.
             * {
-              eapply ccmeta_conv.
+              eapply ctype_conv.
               - eapply type_pmPiNP_eq. all: try eassumption.
                 + cbn. econstructor.
                   * ertype.
@@ -3184,11 +3184,63 @@ Proof.
                   }
                 + cbn. destruct_if ek. all: eassumption.
                 + cbn. rewrite andb_false_r. rewrite ep. reflexivity.
-              - cbn. rewrite andb_false_r. rewrite ep. admit.
+              - cbn. rewrite andb_false_r. rewrite ep.
+                instantiate (1 := if isKind m then _ else _).
+                destruct_if e.
+                + unfold pKind. eapply cconv_trans. 1: constructor.
+                  cbn. econv.
+                + unfold pType. eapply cconv_trans. 1: constructor.
+                  cbn. econv.
+              - ertype.
+                + eapply ccmeta_conv.
+                  * {
+                    apply type_epm_lift. ertype.
+                    - econstructor.
+                      + ertype.
+                      + cbn. rewrite ep. cbn. constructor.
+                      + ertype.
+                    - reflexivity. (* Could be something else *)
+                  }
+                  * rewrite epm_lift_eq. cbn. reflexivity.
+                + instantiate (1 := if isKind m then _ else _).
+                  destruct_if e. all: ertype.
+            }
+            * {
+              change (cEl (epm_lift ?t)) with (epm_lift (cEl t)).
+              apply type_epm_lift.
+              econstructor.
+              - ertype. remd. assumption.
+              - cbn. apply cconv_sym. eapply cconv_trans. 1: constructor.
+                econv.
+              - ertype.
+                + econstructor.
+                  * ertype.
+                  * cbn. rewrite ep. cbn. constructor.
+                  * ertype.
+                + reflexivity. (* Could be something else *)
+            }
+          + instantiate (2 := if isKind m then _ else _).
+            instantiate (1 := if isKind m then _ else _).
+            destruct_if e. all: cbn. all: reflexivity.
+        - destruct (isKind m) eqn:ekm. 1:{ mode_eqs. discriminate. }
+          destruct_if e.
+          + mode_eqs. cbn. eapply ccmeta_conv.
+            * {
+              ertype.
+              - eapply ccmeta_conv.
+                + eapply type_pmPiNP_eq. all: try eassumption.
+                  * {
+                    cbn. econstructor.
+                    - ertype.
+                    - apply cconv_sym. unfold pProp. constructor.
+                    - admit. (* type_pProp too *)
+                  }
+                  * admit.
+                + admit.
+              - admit.
             }
             * admit.
           + admit.
-        - admit.
       }
     + econstructor.
       * {
