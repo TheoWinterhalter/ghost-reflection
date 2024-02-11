@@ -3162,7 +3162,34 @@ Proof.
           + destruct_if ep. 2:{ destruct m. all: discriminate. }
             apply cconv_refl.
       }
-      * subst rm. admit.
+      * {
+        subst rm. instantiate (1 := if relm m then _ else _).
+        destruct_if erm.
+        - destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+          rewrite andb_false_r.
+          eapply ccmeta_conv.
+          + ertype.
+            * {
+              eapply ccmeta_conv.
+              - eapply type_pmPiNP_eq. all: try eassumption.
+                + cbn. econstructor.
+                  * ertype.
+                  * apply cconv_sym. cbn. unfold pProp. constructor.
+                  * {
+                    eapply ccmeta_conv. 1: ertype. 2: reflexivity.
+                    econstructor.
+                    - ertype.
+                    - cbn. rewrite epm_lift_eq. cbn. constructor.
+                    - ertype.
+                  }
+                + cbn. destruct_if ek. all: eassumption.
+                + cbn. rewrite andb_false_r. rewrite ep. reflexivity.
+              - cbn. rewrite andb_false_r. rewrite ep. admit.
+            }
+            * admit.
+          + admit.
+        - admit.
+      }
     + econstructor.
       * {
         ertype.
