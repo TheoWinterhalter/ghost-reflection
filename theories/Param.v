@@ -3498,7 +3498,39 @@ Proof.
             destruct (isKind m). all: cbn. all: reflexivity.
         - instantiate (1 := if isGhost m then _ else _).
           destruct (isGhost m) eqn: eg.
-          + mode_eqs. cbn in IHh2. simpl. admit.
+          + mode_eqs. cbn in IHh2. simpl.
+            eapply ccmeta_conv.
+            * {
+              ertype.
+              - eapply ctype_conv.
+                + eapply type_pmPiNP_eq. all: try eassumption.
+                  * rewrite exp. assumption.
+                  * rewrite exp.
+                    eapply ccmeta_conv.
+                    -- destruct_if e. all: eassumption.
+                    -- cbn. reflexivity.
+                  * cbn - [mode_inb].
+                    change (cEl (epm_lift ?t)) with (epm_lift (cEl t)).
+                    reflexivity.
+                + cbn - [mode_inb]. rewrite exp. subst rmx.
+                  destruct (relm mx) eqn:erx. 2: destruct (isGhost mx) eqn:egx.
+                  * cbn.
+                    change (epm_lift (ctyval ?u ?v))
+                    with (ctyval (epm_lift u) (epm_lift v)).
+                    unfold pType.
+                    eapply cconv_trans. 1: constructor.
+                    cbn. econv.
+                  * cbn.
+                    change (epm_lift (ctyval ?u ?v))
+                    with (ctyval (epm_lift u) (epm_lift v)).
+                    unfold pType.
+                    eapply cconv_trans. 1: constructor.
+                    cbn. ssimpl. econv. all: admit.
+                  * admit.
+                + admit.
+              - admit.
+            }
+            * admit.
           + destruct m. all: try discriminate.
             simpl. admit.
       }
