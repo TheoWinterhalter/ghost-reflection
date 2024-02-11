@@ -3299,7 +3299,58 @@ Proof.
         - instantiate (1 := if isKind mx then _ else _).
           destruct_if e. all: ertype.
       }
-      * admit.
+      * {
+        subst rm. destruct (relm m) eqn: erm.
+        - destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+          destruct (isGhost m) eqn:eg. 1:{ mode_eqs. discriminate. }
+          simpl. unfold pmPiNP. rewrite erm. rewrite exp. apply cconv_sym.
+          eapply cconv_trans. 1: constructor.
+          unfold pPi. cbn - [mode_inb]. ssimpl.
+          rewrite <- rinstInst'_cterm. econv.
+          eapply cconv_trans.
+          2:{ destruct_if ekx. all: econv. }
+          econv.
+          + apply ccmeta_refl.
+            rewrite <- rinstId'_cterm. rewrite rinstInst'_cterm.
+            eapply ext_cterm. intros [| []]. all: reflexivity.
+          + destruct (isGhost mx) eqn:egx.
+            * mode_eqs. cbn. apply ccmeta_refl. unfold close.
+              change (epm_lift ?t) with (vreg ⋅ t).
+              ssimpl. rewrite rinstInst'_cterm.
+              eapply ext_cterm_scoped. 1: apply erase_scoping.
+              intros [] hx. 1: discriminate.
+              cbn. ssimpl. reflexivity.
+            * subst rmx. destruct (relm mx) eqn: emx.
+              2:{ destruct mx. all: discriminate. }
+              cbn. change (epm_lift ?t) with (vreg ⋅ t).
+              cbn. eapply cconv_trans. 1: constructor.
+              apply ccmeta_refl. ssimpl. rewrite rinstInst'_cterm.
+              eapply ext_cterm_scoped. 1: apply erase_scoping.
+              intros [] hx. 1: reflexivity.
+              ssimpl. reflexivity.
+        - destruct (isGhost m) eqn: eg.
+          + mode_eqs. simpl. unfold pmPiNP. rewrite exp.
+            apply cconv_sym. eapply cconv_trans. 1: constructor.
+            simpl. rewrite andb_false_r.
+            cbn. unfold pPi. ssimpl.
+            rewrite <- rinstInst'_cterm. econv.
+            eapply cconv_trans.
+            2:{ destruct_if ekx. all: econv. }
+            econv.
+            * apply ccmeta_refl.
+              rewrite <- rinstId'_cterm. rewrite rinstInst'_cterm.
+              eapply ext_cterm. intros [| []]. all: reflexivity.
+            * change (rpm_lift ?t) with (vreg ⋅ t). cbn.
+              eapply cconv_trans. 1: constructor.
+              apply ccmeta_refl. ssimpl. rewrite rinstInst'_cterm.
+              eapply ext_cterm_scoped. 1: apply revive_scoping.
+              intros [] hx. 1: reflexivity.
+              ssimpl. reflexivity.
+          + destruct m. all: try discriminate.
+            cbn. unfold pmPiP. rewrite exp.
+            destruct_if e.
+            all: econv.
+      }
       * admit.
 
 
