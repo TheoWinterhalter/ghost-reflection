@@ -2701,15 +2701,18 @@ Qed.
 Hint Opaque pKind : cc_type.
 Hint Resolve type_pKind : cc_type.
 
+(* Note, the S is not necessary, but it aligns better *)
 Lemma type_pType :
   ∀ Γ i,
-    Γ ⊢ᶜ pType i : cPi cType (cty i) (cSort cType i).
+    Γ ⊢ᶜ pType i : cPi cType (cty i) (cSort cType (S i)).
 Proof.
   intros Γ i.
   unfold pType. ertype.
   cbn. eapply ccmeta_conv.
-  - ertype. eapply ccmeta_conv. 1: ertype.
-    cbn. reflexivity.
+  - econstructor. 2: eapply ctype_cumul with (j := S i). 1,2: ertype.
+    + ertype. eapply ccmeta_conv. 1: ertype.
+      cbn. reflexivity.
+    + cbn. lia.
   - cbn. f_equal. lia.
 Qed.
 
@@ -3032,30 +3035,25 @@ Proof.
   - cbn - [mode_inb]. destruct_ifs. all: mode_eqs.
     + cbn. rewrite epm_lift_eq. cbn.
       econstructor. 1: etype.
-      * eapply ccmeta_conv. 1: etype. all: reflexivity.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
-        cbn. econv. apply ccmeta_refl. f_equal. lia.
-      * eapply ccmeta_conv. 1: etype. 2: reflexivity.
-        eapply ccmeta_conv. 1: etype. all: reflexivity.
+        cbn. econv.
+      * eapply ccmeta_conv. 1: etype.
+        reflexivity.
     + cbn. rewrite epm_lift_eq. cbn.
       econstructor. 1: etype.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
         cbn. econv.
-      * eapply ccmeta_conv. 1: etype. 2: reflexivity.
-        eapply ccmeta_conv. 1: etype. all: reflexivity.
+      * eapply ccmeta_conv. 1: etype.
+        reflexivity.
     + cbn. rewrite e0. rewrite epm_lift_eq. cbn.
       econstructor.
-      * unfold pType. remember (cSort cProp 0) as P eqn:eP.
-        etype.
-        -- eapply ccmeta_conv. 1: etype. all: reflexivity.
-        -- subst P. eapply ctype_cumul with (j := S i). 1: etype.
-          unfold cusup. cbn. lia.
+      * ertype.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
         cbn. econv. apply ccmeta_refl. f_equal. unfold usup. rewrite e0.
-        lia.
-      * eapply ccmeta_conv. 1: etype. 3: reflexivity.
-        -- eapply ccmeta_conv. 1: etype. all: reflexivity.
-        -- unfold usup. rewrite e0. etype.
+        reflexivity.
+      * eapply ccmeta_conv. 1: etype. 2: reflexivity.
+        eapply ccmeta_conv. 1: etype.
+        unfold usup. rewrite e0. reflexivity.
   - (* Preprocessing *)
     unfold ptype in IHh1. cbn - [mode_inb] in IHh1. remd in IHh1.
     cbn in IHh1.
