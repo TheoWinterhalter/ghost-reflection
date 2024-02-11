@@ -3351,111 +3351,79 @@ Proof.
             destruct_if e.
             all: econv.
       }
-      * admit.
-
-
-    (* destruct m, mx. all: cbn - [pmPi] in *.
-    + (* Pre *)
-      eapply param_pKind in IHh1. 2,3: eassumption.
-      eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
-      (* End *)
-      econstructor.
-      * ertype.
       * {
-        apply cconv_sym. eapply cconv_trans. 1: constructor.
-        cbn. ssimpl. rewrite <- rinstInst'_cterm. econv.
-        - apply ccmeta_refl.
-          erewrite ext_cterm_scoped with (θ := ids).
-          2:{ eapply param_scoping. eassumption. }
-          2:{
-            intros [| []] hx. 1,2: reflexivity.
-            ssimpl. reflexivity.
-          }
-          ssimpl. reflexivity.
-        - change (epm_lift ?t) with (vreg ⋅ t). cbn.
-          (* change (vreg ⋅ ?t) with (epm_lift t). *)
-          eapply cconv_trans. 1: constructor.
-          ssimpl. apply ccmeta_refl.
-          rewrite rinstInst'_cterm. eapply ext_cterm.
-          intros [|]. 1: reflexivity.
-          ssimpl. reflexivity.
-      }
-      (* TODO Now, we should have some type_pmPi to use here instead! *)
-      * {
-        (* We should now avoid destruct m, mx! *)
-        (* eapply ccmeta_conv.
-        - ertype.
-          + eapply ccmeta_conv.
-            * apply type_epm_lift. ertype. all: econstructor ; ertype.
-              all: cbn. all: constructor.
-            * rewrite epm_lift_eq. cbn. reflexivity.
-          + eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
-          + eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
-          + eapply ccmeta_conv.
-            * ertype.
-              2:{
-                econstructor.
-                - ertype.
-                - cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
-                  change (vreg ⋅ ?t) with (epm_lift t).
-                  eapply cconv_trans. 1: constructor.
-                  econv.
-                  change (λ n, S (S (S n))) with (S >> S >> S).
-                  change (λ n, S (S n)) with (S >> S).
-                  ssimpl. econv.
-                - ertype.
-                  + eapply ccmeta_conv. 1: ertype.
-                    cbn. reflexivity.
-                  + change (λ n, S (S (S n))) with (S >> S >> S).
-                    econstructor.
-                    * ertype.
-                      2:{
-                        cbn. eapply crtyping_shift.
-                        apply typing_er_sub_param.
-                      }
-                      eapply crtyping_shift_eq. 1: ertype ; shelve.
-                      cbn. change (vreg ⋅ ?t) with (epm_lift t).
-                      lhs_ssimpl. reflexivity.
-                    * cbn. constructor.
-                    * etype.
-              }
-              cbn. eapply ccmeta_conv.
-              1:{
-                ertype.
-                cbn. eapply crtyping_shift_eq.
-                - apply crtyping_shift. apply crtyping_S.
-                - cbn. f_equal. ssimpl. reflexivity.
-              }
-              cbn. f_equal. ssimpl.
-              rewrite param_erase_ty_tm. cbn. f_equal.
-              change (epm_lift ?t) with (vreg ⋅ t).
-              change (λ n, S (S (S n))) with (S >> S >> S).
-              ssimpl.
-              rewrite rinstInst'_cterm. ssimpl.
-              eapply ext_cterm.
-              intros [| []]. 1,2: reflexivity.
-              ssimpl.
-              repeat change (vreg (S ?x)) with (S (S (vreg x))).
-              cbn. ssimpl. reflexivity.
-            * cbn. reflexivity.
-          + apply type_epm_lift.
-            econstructor.
+        instantiate (1 := if rm then _ else _).
+        subst rm. destruct (relm m) eqn: erm.
+        - destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+          destruct (isGhost m) eqn:eg. 1:{ mode_eqs. discriminate. }
+          simpl.
+          eapply ccmeta_conv.
+          + ertype.
             * {
-              ertype.
-              econstructor.
+              eapply ctype_conv.
+              - eapply type_pmPiNP_eq. all: try eassumption.
+                + rewrite exp. assumption.
+                + rewrite exp. eapply ccmeta_conv.
+                  * destruct_if e. all: eassumption.
+                  * destruct_if e. all: reflexivity.
+                + cbn - [mode_inb]. rewrite ep. rewrite eg. cbn - [mode_inb].
+                  change (cEl (epm_lift ?t)) with (epm_lift (cEl t)).
+                  reflexivity.
+              - cbn - [mode_inb]. rewrite ep. rewrite eg. cbn - [mode_inb].
+                instantiate (1 := if isKind m then _ else _).
+                destruct_if ek.
+                + unfold pKind. eapply cconv_trans. 1: constructor.
+                  cbn - [mode_inb]. econv.
+                + unfold pType. eapply cconv_trans. 1: constructor.
+                  cbn - [mode_inb]. econv.
               - ertype.
-              - cbn. constructor.
-              - etype.
+                + eapply ccmeta_conv.
+                  * {
+                    apply type_epm_lift.
+                    instantiate (1 := if relm mx then _ else _).
+                    destruct (relm mx) eqn: erx.
+                    - cbn. ertype.
+                      + econstructor.
+                        * ertype.
+                        * cbn. rewrite exp. constructor.
+                        * ertype.
+                      + econstructor.
+                        * eapply erase_typing_eq. all: try eassumption.
+                          -- remd. reflexivity.
+                          -- cbn - [mode_inb]. rewrite erx. reflexivity.
+                          -- reflexivity.
+                        * cbn. rewrite ep. constructor.
+                        * ertype.
+                      + econstructor.
+                        * ertype.
+                        * cbn. rewrite exp. constructor.
+                        * ertype.
+                      + econstructor.
+                        * eapply erase_typing_eq. all: try eassumption.
+                          -- remd. reflexivity.
+                          -- cbn - [mode_inb]. rewrite erx. reflexivity.
+                          -- reflexivity.
+                        * cbn. rewrite ep. constructor.
+                        * ertype.
+                    - cbn. destruct mx. all: try discriminate.
+                      cbn in *.
+                      ertype.
+                      + econstructor.
+                        * ertype.
+                        * cbn. rewrite ep. cbn. constructor.
+                        * ertype.
+                      + reflexivity. (* Could be something else *)
+                  }
+                  * rewrite epm_lift_eq.
+                    instantiate (1 := if relm mx then _ else _).
+                    destruct_if e. all: cbn. all: reflexivity.
+                + instantiate (1 := if isKind m then _ else _).
+                  destruct (isKind m). all: ertype.
             }
-            * apply cconv_sym. constructor.
-            * ertype. all: econstructor ; ertype.
-              all: cbn. all: constructor.
-        - cbn. reflexivity. *)
-        admit.
-      } *)
-
+            * admit.
+          + admit.
+        - admit.
+      }
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh.
