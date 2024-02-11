@@ -3420,9 +3420,87 @@ Proof.
                 + instantiate (1 := if isKind m then _ else _).
                   destruct (isKind m). all: ertype.
             }
-            * admit.
-          + admit.
-        - admit.
+            * {
+              change (cEl (epm_lift ?t)) with (epm_lift (cEl t)).
+              apply type_epm_lift. subst rmx.
+              destruct (relm mx) eqn: erx.
+              - cbn. econstructor.
+                + ertype.
+                  * {
+                    econstructor.
+                    - ertype.
+                    - cbn. rewrite exp. constructor.
+                    - ertype.
+                  }
+                  * {
+                    eapply erase_typing_eq.
+                    - eassumption.
+                    - remd. assumption.
+                    - cbn - [mode_inb]. rewrite erx. reflexivity.
+                    - cbn. reflexivity.
+                  }
+                + apply cconv_sym. constructor.
+                + ertype.
+                  * {
+                    econstructor.
+                    - ertype.
+                    - cbn. rewrite exp. constructor.
+                    - ertype.
+                  }
+                  * {
+                    econstructor.
+                    - eapply erase_typing_eq.
+                      + eassumption.
+                      + remd. reflexivity.
+                      + cbn - [mode_inb]. rewrite erx. reflexivity.
+                      + cbn. reflexivity.
+                    - cbn. rewrite ep. constructor.
+                    - ertype.
+                  }
+                  * {
+                    econstructor.
+                    - ertype.
+                    - cbn. rewrite exp. constructor.
+                    - ertype.
+                  }
+                  * {
+                    econstructor.
+                    - eapply erase_typing_eq.
+                      + eassumption.
+                      + remd. reflexivity.
+                      + cbn - [mode_inb]. rewrite erx. reflexivity.
+                      + cbn. reflexivity.
+                    - cbn. rewrite ep. constructor.
+                    - ertype.
+                  }
+              - cbn. econstructor.
+                + ertype. eapply erase_typing_eq.
+                  * eassumption.
+                  * remd. assumption.
+                  * cbn - [mode_inb]. rewrite erx. reflexivity.
+                  * cbn. reflexivity.
+                + apply cconv_sym. constructor.
+                + ertype.
+                  * {
+                    econstructor.
+                    - ertype. eapply erase_typing_eq.
+                      + eassumption.
+                      + remd. reflexivity.
+                      + cbn - [mode_inb]. rewrite erx. reflexivity.
+                      + reflexivity.
+                    - cbn. rewrite ep. cbn. constructor.
+                    - ertype.
+                  }
+                  * reflexivity. (* Could be something else *)
+            }
+          + instantiate (2 := if isKind m then _ else _).
+            instantiate (1 := if isKind m then _ else _).
+            destruct (isKind m). all: cbn. all: reflexivity.
+        - instantiate (1 := if isGhost m then _ else _).
+          destruct (isGhost m) eqn: eg.
+          + mode_eqs. cbn in IHh2. simpl. admit.
+          + destruct m. all: try discriminate.
+            simpl. admit.
       }
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
