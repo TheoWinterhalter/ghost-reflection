@@ -230,19 +230,20 @@ Proof.
 Qed.
 
 Lemma crtyping_upren_none :
-  ∀ Γ Δ ρ,
+  ∀ Γ Δ d ρ,
     crtyping Γ ρ Δ →
-    crtyping (None :: Γ) (0 .: ρ >> S) (None :: Δ).
+    crtyping (d :: Γ) (up_ren ρ) (None :: Δ).
 Proof.
-  intros Γ Δ ρ hρ.
+  intros Γ Δ d ρ hρ.
   intros y my B hy.
   destruct y.
   - cbn in *. noconf hy.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
-    asimpl.
-    apply (f_equal (λ t, S ⋅ t)) in eC. asimpl in eC.
-    assumption.
+    apply (f_equal (λ t, S ⋅ t)) in eC.
+    revert eC. ssimpl. intro eC.
+    etransitivity. 2: eapply eC.
+    reflexivity.
 Qed.
 
 Lemma crtyping_S :

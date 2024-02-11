@@ -2686,24 +2686,6 @@ Proof.
     + cbn. reflexivity.
 Qed.
 
-(* TODO Replace other lemma with this one *)
-Lemma crtyping_upren_none :
-  ∀ Γ Δ d ρ,
-    crtyping Γ ρ Δ →
-    crtyping (d :: Γ) (up_ren ρ) (None :: Δ).
-Proof.
-  intros Γ Δ d ρ hρ.
-  intros y my B hy.
-  destruct y.
-  - cbn in *. noconf hy.
-  - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
-    eexists. split. 1: eassumption.
-    apply (f_equal (λ t, S ⋅ t)) in eC.
-    revert eC. ssimpl. intro eC.
-    etransitivity. 2: eapply eC.
-    reflexivity.
-Qed.
-
 Lemma type_pmPiNP :
   ∀ Γ i j m mx A B,
     isProp m = false →
@@ -2918,30 +2900,6 @@ Proof.
                   * {
                     eapply ccmeta_conv.
                     - ertype.
- (*                      2:{
-                        cbn - [mode_inb].
-                        instantiate (1 := if relm mx then _ else _).
-                        destruct (relm mx) eqn:emx.
-                        - eapply crtyping_shift.
-                          apply typing_er_sub_param.
-                        - eapply crtyping_upren_none.
-                          apply typing_er_sub_param.
-                      }
-                      destruct (relm mx) eqn:emx.
-                      + eapply crtyping_shift_eq with (A := cEl Ae).
-                        * change (λ n, S (S (S n))) with (S >> S >> S).
-                          ertype. all: shelve.
-                        * f_equal. f_equal. f_equal.
-                          change (λ n, S (S (S n))) with (S >> S >> S).
-                          ssimpl. reflexivity.
-                      + eapply crtyping_upren_none. with (A := cEl Ae).
-                        * change (λ n, S (S (S n))) with (S >> S >> S).
-                          ertype. all: shelve.
-                        * f_equal. f_equal. f_equal.
-                          change (λ n, S (S (S n))) with (S >> S >> S).
-                          ssimpl. reflexivity. *)
-
-
                       + eapply crtyping_shift_eq with (A := cEl Ae).
                         * change (λ n, S (S (S n))) with (S >> S >> S).
                           ertype. all: shelve.
@@ -2953,9 +2911,7 @@ Proof.
                         * eapply crtyping_shift_eq.
                           1: apply typing_er_sub_param.
                           reflexivity.
-                        * (* destruct m, mx. all: try discriminate.
-                          cbn in *. *)
-                          eapply crtyping_upren_none.
+                        * eapply crtyping_upren_none.
                           apply typing_er_sub_param.
                     - admit.
                   }
