@@ -3154,7 +3154,8 @@ Proof.
       }
       (* TODO Now, we should have some type_pmPi to use here instead! *)
       * {
-        eapply ccmeta_conv.
+        (* We should now avoid destruct m, mx! *)
+        (* eapply ccmeta_conv.
         - ertype.
           + eapply ccmeta_conv.
             * apply type_epm_lift. ertype. all: econstructor ; ertype.
@@ -3223,7 +3224,8 @@ Proof.
             * apply cconv_sym. constructor.
             * ertype. all: econstructor ; ertype.
               all: cbn. all: constructor.
-        - cbn. reflexivity.
+        - cbn. reflexivity. *)
+        admit.
       }
     + admit.
     + admit.
