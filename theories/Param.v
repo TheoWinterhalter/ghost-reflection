@@ -2686,6 +2686,36 @@ Proof.
     + cbn. reflexivity.
 Qed.
 
+Lemma type_pKind :
+  ∀ Γ i,
+    Γ ⊢ᶜ pKind i : cPi cType (cty i) (cSort cType (S i)).
+Proof.
+  intros Γ i.
+  unfold pKind. ertype.
+  cbn. eapply ccmeta_conv.
+  - ertype. eapply ccmeta_conv. 1: ertype.
+    cbn. reflexivity.
+  - cbn. f_equal. lia.
+Qed.
+
+Hint Opaque pKind : cc_type.
+Hint Resolve type_pKind : cc_type.
+
+Lemma type_pType :
+  ∀ Γ i,
+    Γ ⊢ᶜ pType i : cPi cType (cty i) (cSort cType i).
+Proof.
+  intros Γ i.
+  unfold pType. ertype.
+  cbn. eapply ccmeta_conv.
+  - ertype. eapply ccmeta_conv. 1: ertype.
+    cbn. reflexivity.
+  - cbn. f_equal. lia.
+Qed.
+
+Hint Opaque pType : cc_type.
+Hint Resolve type_pType : cc_type.
+
 Lemma type_pmPiNP :
   ∀ Γ i j m mx A B,
     isProp m = false →
@@ -2941,10 +2971,13 @@ Proof.
       cbn. econv. destruct_if ep. all: econv.
   - eapply ccmeta_conv.
     + ertype. eapply ccmeta_conv.
-      * destruct_if e. (* Missing type_pKind no? *) all: admit.
-      * admit.
-    + admit.
-Abort.
+      * instantiate (1 := if isKind m then _ else _).
+        destruct_if e. all: ertype.
+      * instantiate (1 := if isKind m then _ else _).
+        destruct_if e. all: reflexivity.
+    + instantiate (1 := if isKind m then _ else _).
+      destruct_if e. all: reflexivity.
+Qed.
 
 (* Hint Resolve type_pmPiP : cc_type. *)
 Hint Opaque pmPiP pmPiNP pmPi : cc_type.
