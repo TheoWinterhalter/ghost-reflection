@@ -2810,7 +2810,7 @@ Proof.
           + ertype.
       }
       * {
-        econstructor.
+        eapply ccmeta_conv.
         - ertype.
           + econstructor.
             * ertype. destruct_if ek.
@@ -2898,7 +2898,7 @@ Proof.
                     - ertype.
                   }
                   * {
-                    eapply ccmeta_conv.
+                    econstructor.
                     - ertype.
                       + eapply crtyping_shift_eq with (A := cEl Ae).
                         * change (λ n, S (S (S n))) with (S >> S >> S).
@@ -2913,24 +2913,37 @@ Proof.
                           reflexivity.
                         * eapply crtyping_upren_none.
                           apply typing_er_sub_param.
-                    - admit.
+                    - cbn. rewrite hm. cbn. constructor.
+                    - ertype.
                   }
-              - admit.
+              - cbn. unfold Be. change (epm_lift ?t) with (vreg ⋅ t).
+                ssimpl. f_equal. rewrite rinstInst'_cterm.
+                ssimpl. eapply ext_cterm_scoped. 1: apply erase_scoping.
+                intros [] hx. 1: reflexivity.
+                ssimpl. change (vreg (S ?x)) with (S (S (vreg x))).
+                cbn. ssimpl. reflexivity.
             }
-        - admit.
-        - admit.
+        - instantiate (2 := if isKind m then _ else _).
+          instantiate (1 := if isKind m then _ else _).
+          destruct (isKind m) eqn:ekm.
+          + cbn. reflexivity.
+          + cbn. reflexivity.
       }
   - apply cconv_sym.
-    instantiate (2 := if isKind m then cType else cProp).
     destruct_if e.
     + mode_eqs.
       unfold pKind. eapply cconv_trans. 1: constructor.
       cbn. econv. destruct_if ep. 1: econv.
-      apply ccmeta_refl. f_equal. cbn.
-      destruct (isKind mx) eqn:emx. all: cbn. 1: instantiate (1 := j).
+      apply ccmeta_refl. f_equal.
+      destruct (isKind mx) eqn:emx. all: cbn.
       all: lia.
     + unfold pType. eapply cconv_trans. 1: constructor.
       cbn. econv. destruct_if ep. all: econv.
+  - eapply ccmeta_conv.
+    + ertype. eapply ccmeta_conv.
+      * destruct_if e. (* Missing type_pKind no? *) all: admit.
+      * admit.
+    + admit.
 Abort.
 
 (* Hint Resolve type_pmPiP : cc_type. *)
