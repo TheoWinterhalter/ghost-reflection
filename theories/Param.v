@@ -3125,8 +3125,62 @@ Proof.
     unfold ptype in IHh2. cbn - [mode_inb] in IHh2. remd in IHh2. cbn in IHh2.
     unfold ptype in IHh3. cbn - [mode_inb] in IHh3. remd in IHh3.
     (* End *)
-    unfold ptype. cbn - [mode_inb pmPi]. remd.
-    destruct m, mx. all: cbn - [pmPi] in *.
+    unfold ptype. cbn - [mode_inb pmPiP pmPiNP]. remd.
+    unfold pmPi.
+    set (rm := relm m). set (rmx := relm mx).
+    destruct (isProp mx) eqn:exp.
+    + mode_eqs. subst rmx. simpl.
+      simpl in IHh1. apply param_pProp in IHh1.
+      econstructor.
+      * ertype.
+      * {
+        subst rm. apply cconv_sym.
+        destruct_if e.
+        - destruct_if emp. 1:{ mode_eqs. discriminate. }
+          rewrite andb_false_r.
+          unfold pmPiNP. cbn. eapply cconv_trans. 1: constructor.
+          cbn. ssimpl. econv.
+          + apply ccmeta_refl. eapply ext_cterm.
+            intros [| []]. all: reflexivity.
+          + apply ccmeta_refl.
+            change (epm_lift ?t) with (vreg ⋅ t). ssimpl.
+            eapply ext_cterm_scoped. 1: apply erase_scoping.
+            intros [] hx. 1: discriminate.
+            ssimpl. change (vreg (S ?x)) with (S (S (vreg x))).
+            ssimpl. reflexivity.
+        - destruct_if eg.
+          + mode_eqs. cbn. eapply cconv_trans. 1: constructor.
+            cbn. ssimpl. econv.
+            * apply ccmeta_refl. eapply ext_cterm.
+              intros [| []]. all: reflexivity.
+            * apply ccmeta_refl.
+              change (rpm_lift ?t) with (vreg ⋅ t). ssimpl.
+              eapply ext_cterm_scoped. 1: apply revive_scoping.
+              intros [] hx. 1: discriminate.
+              ssimpl. change (vreg (S ?x)) with (S (S (vreg x))).
+              ssimpl. reflexivity.
+          + destruct_if ep. 2:{ destruct m. all: discriminate. }
+            apply cconv_refl.
+      }
+      * subst rm. admit.
+    + econstructor.
+      * {
+        ertype.
+        - econstructor.
+          + ertype.
+          + cbn. instantiate (1 := if isKind mx then _ else _).
+            destruct_if e. all: unfold pKind, pType.
+            all: cbn. all: eapply cconv_trans. 1,3: constructor.
+            all: cbn. all: apply cconv_refl.
+          + cbn. ertype.
+        - instantiate (1 := if isKind mx then _ else _).
+          destruct_if e. all: ertype.
+      }
+      * admit.
+      * admit.
+
+
+    (* destruct m, mx. all: cbn - [pmPi] in *.
     + (* Pre *)
       eapply param_pKind in IHh1. 2,3: eassumption.
       eapply param_pKind_eq in IHh2. 2-5: eauto. 2: assumption.
@@ -3226,22 +3280,8 @@ Proof.
               all: cbn. all: constructor.
         - cbn. reflexivity. *)
         admit.
-      }
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
-    + admit.
+      } *)
+
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh.
