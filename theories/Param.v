@@ -2719,6 +2719,17 @@ Qed.
 Hint Opaque pType : cc_type.
 Hint Resolve type_pType : cc_type.
 
+Lemma type_pProp :
+  ∀ Γ,
+    Γ ⊢ᶜ pProp : cPi cType cunit (cSort cType 0).
+Proof.
+  intros Γ.
+  unfold pProp. ertype.
+Qed.
+
+Hint Opaque pProp : cc_type.
+Hint Resolve type_pProp : cc_type.
+
 Lemma type_pmPiNP :
   ∀ Γ i j m mx A B,
     isProp m = false →
@@ -3227,20 +3238,53 @@ Proof.
           + mode_eqs. cbn. eapply ccmeta_conv.
             * {
               ertype.
-              - eapply ccmeta_conv.
+              - eapply ctype_conv.
                 + eapply type_pmPiNP_eq. all: try eassumption.
                   * {
                     cbn. econstructor.
                     - ertype.
                     - apply cconv_sym. unfold pProp. constructor.
-                    - admit. (* type_pProp too *)
+                    - eapply ccmeta_conv.
+                      + ertype. econstructor.
+                        * ertype.
+                        * cbn. rewrite epm_lift_eq. cbn. constructor.
+                        * ertype.
+                      + cbn. reflexivity.
                   }
-                  * admit.
-                + admit.
-              - admit.
+                  * cbn. reflexivity.
+                + cbn. unfold pType. eapply cconv_trans. 1: constructor.
+                  cbn. econv.
+                + ertype. eapply ccmeta_conv.
+                  * {
+                    eapply type_epm_lift. ertype.
+                    - econstructor.
+                      + ertype.
+                      + cbn. constructor.
+                      + ertype.
+                    - reflexivity. (* Could be something else *)
+                  }
+                  * change (epm_lift ?t) with (vreg ⋅ t). cbn. reflexivity.
+              - change (cEl (epm_lift ?t)) with (epm_lift (cEl t)).
+                apply type_rpm_lift. econstructor.
+                + ertype.
+                + cbn. apply cconv_sym. constructor.
+                + apply type_to_rev.
+                  ertype.
+                  * {
+                    econstructor.
+                    - ertype.
+                    - cbn. constructor.
+                    - ertype.
+                  }
+                  * reflexivity. (* Could be something else *)
             }
-            * admit.
-          + admit.
+            * cbn. reflexivity.
+          + destruct m. all: try discriminate.
+            cbn in IHh2. apply param_pProp in IHh2.
+            cbn. eapply ccmeta_conv.
+            * ertype. eapply ccmeta_conv. 1: ertype.
+              cbn. reflexivity.
+            * cbn. reflexivity.
       }
     + econstructor.
       * {
