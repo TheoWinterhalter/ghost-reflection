@@ -3586,7 +3586,110 @@ Proof.
             * apply type_epm_lift. ertype.
             * reflexivity.
       }
-  - admit.
+  - (* Preprocessing *)
+    unfold ptype in IHh1. cbn - [mode_inb pmPi] in IHh1. remd in IHh1.
+    unfold ptype in IHh2. remd in IHh2.
+    unfold ptype in IHh3. cbn - [mode_inb] in IHh3. remd in IHh3. cbn in IHh3.
+    unfold ptype in IHh4. cbn - [mode_inb] in IHh4. remd in IHh4. cbn in IHh4.
+    unfold ptype. cbn - [mode_inb]. remd.
+    set (rm := relm m) in *.
+    assert (hAe : isProp mx = false → ⟦ Γ ⟧p ⊢ᶜ ⟦ (sc Γ) | A ⟧pε : cty i).
+    {
+      intro epx.
+      econstructor.
+      - ertype.
+      - cbn. rewrite epx. rewrite epm_lift_eq. cbn. constructor.
+      - ertype.
+    }
+    eapply ctype_conv in IHh3.
+    2:{
+      instantiate (1 :=
+        if isProp mx then _
+        else cPi _ _ (if isKind mx then _ else _)
+      ).
+      destruct (isKind mx) eqn: ekx. 2: destruct (isProp mx) eqn: epx.
+      - destruct (isProp mx) eqn: epx. 1:{ mode_eqs. discriminate. }
+        unfold pKind. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      - unfold pProp. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      - unfold pType. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+    }
+    2:{
+      instantiate (1 := if isProp mx then _ else if isKind mx then _ else _).
+      destruct (isProp mx) eqn: epx.
+      - mode_eqs. cbn. ertype.
+      - eapply ccmeta_conv.
+        + ertype. 1: reflexivity.
+          instantiate (1 := if isKind mx then _ else _).
+          destruct_if e. all: ertype.
+        + cbn. f_equal. destruct_if e.
+          * instantiate (1 := S i). lia.
+          * instantiate (1 := i). lia.
+    }
+    eapply ctype_conv in IHh4.
+    2:{
+      instantiate (1 := if isKind m then _ else _).
+      destruct (isKind m) eqn:ek.
+      - unfold pKind. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      - instantiate (1 := if isProp m then _ else _).
+        destruct (isProp m) eqn: epm.
+        + unfold pProp. eapply cconv_trans. 1: constructor.
+          cbn. econv.
+        + unfold pType. eapply cconv_trans. 1: constructor.
+          cbn. econv.
+    }
+    2:{
+      instantiate (1 := if isKind m then _ else if isProp m then _ else _).
+      destruct (isKind m) eqn:ek. 2: destruct (isProp m) eqn:ep.
+      - ertype. admit. (* Lemma *)
+      - ertype.
+      - ertype. admit. (* Same *)
+    }
+    eapply ctype_conv in IHh1.
+    2:{
+      set (rmx := relm mx) in *.
+      instantiate (1 := if rm then _ else _).
+      subst rm.
+      destruct_if er.
+      - unfold pmPi.
+        destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+        destruct (isGhost m) eqn:eg. 1:{ mode_eqs. discriminate. }
+        simpl. unfold pmPiNP. rewrite er.
+        eapply cconv_trans. 1: constructor.
+        instantiate (1 := if isProp mx then _ else _).
+        destruct_if epx.
+        + cbn. lhs_ssimpl.
+          (* erewrite ext_cterm_scoped with (θ := ids).
+          2:{ eapply param_scoping. eassumption. }
+          2:{
+            intros [] hx.
+            - ssimpl.
+            -
+          } *)
+          admit.
+        + admit.
+      - admit.
+    }
+    2: admit.
+    (* End *)
+    destruct (relm mx) eqn: erx. 2: destruct (isGhost mx) eqn: egx.
+    + destruct (isGhost mx) eqn: egx. { mode_eqs. discriminate. }
+      destruct (isProp mx) eqn: epx. { mode_eqs. discriminate. }
+      (* simpl in IHh1. rewrite andb_false_r in IHh1.
+      eapply ccmeta_conv.
+      * {
+        ertype. eapply ccmeta_conv.
+        - ertype.
+        -
+      }
+      *
+      * *)
+      admit.
+    + admit.
+    + admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh.
     cbn in *. assumption.
