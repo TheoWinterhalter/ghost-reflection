@@ -3520,19 +3520,51 @@ Proof.
                     unfold pType.
                     eapply cconv_trans. 1: constructor.
                     cbn. econv.
-                  * cbn.
+                  * {
+                    cbn.
                     change (epm_lift (ctyval ?u ?v))
                     with (ctyval (epm_lift u) (epm_lift v)).
                     unfold pType.
                     eapply cconv_trans. 1: constructor.
-                    cbn. ssimpl. econv. all: admit.
-                  * admit.
+                    cbn. ssimpl. change (epm_lift ?t) with (vreg ⋅ t).
+                    cbn. ssimpl. econv.
+                    - apply ccmeta_refl. rewrite rinstInst'_cterm.
+                      eapply ext_cterm_scoped. 1: apply erase_scoping.
+                      intros [] hx.
+                      + cbn - [mode_inb] in hx. rewrite erx in hx.
+                        discriminate.
+                      + ssimpl. reflexivity.
+                    - apply ccmeta_refl. rewrite rinstInst'_cterm.
+                      eapply ext_cterm_scoped. 1: apply erase_scoping.
+                      intros [] hx.
+                      + cbn - [mode_inb] in hx. rewrite erx in hx.
+                        discriminate.
+                      + ssimpl. reflexivity.
+                  }
+                  * destruct mx. all: discriminate.
+                + ertype.
+                  * {
+                    eapply ccmeta_conv.
+                    - apply type_epm_lift. ertype.
+                      + (* TODO Make it an assert, at the top *)
+                        admit.
+                      + (* Same *)
+                        admit.
+                    - rewrite epm_lift_eq. cbn. reflexivity.
+                  }
+                  * apply type_epm_lift. ertype. all: admit. (* Same *)
+              - eapply ccmeta_conv.
+                + apply type_rpm_lift. ertype. all: admit. (* Same-ish *)
                 + admit.
-              - admit.
             }
-            * admit.
+            * cbn. reflexivity.
           + destruct m. all: try discriminate.
-            simpl. admit.
+            simpl. eapply type_pmPiP.
+            * intro. admit. (* Same *)
+            * rewrite exp. eassumption.
+            * rewrite exp. cbn in IHh2. apply param_pProp in IHh2.
+              assumption.
+            * reflexivity.
       }
   - admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
