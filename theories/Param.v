@@ -3027,6 +3027,17 @@ Qed.
 (* Hint Resolve type_pmPiP : cc_type. *)
 Hint Opaque pmPiP pmPiNP pmPi : cc_type.
 
+Lemma type_to_rev_eq :
+  ∀ Γ Γ' Γ'' t A,
+    Γ'' ⊢ᶜ t : A →
+    Γ'' = ⟦ Γ ⟧ε →
+    Γ' = ⟦ Γ ⟧v →
+    Γ' ⊢ᶜ t : A.
+Proof.
+  intros Γ ?? u v h -> ->.
+  apply type_to_rev. assumption.
+Qed.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -3511,17 +3522,56 @@ Proof.
                 + ertype.
                   * {
                     eapply ccmeta_conv.
-                    - apply type_epm_lift. ertype.
-                      (* Need meta_ctx_conv + type_to_rev *)
-                      admit.
+                    - apply type_rpm_lift. ertype.
+                      + apply type_to_rev. ertype.
+                      + eapply type_to_rev_eq.
+                        * ertype.
+                        * instantiate (1 := Γ ,, (mx, A)).
+                          cbn - [mode_inb]. reflexivity.
+                        * cbn. rewrite exp. reflexivity.
                     - rewrite epm_lift_eq. cbn. reflexivity.
                   }
-                  * apply type_epm_lift. ertype. admit. (* Same *)
-              - eapply ccmeta_conv.
+                  * {
+                    apply type_rpm_lift. ertype.
+                    - apply type_to_rev. ertype.
+                    - eapply type_to_rev_eq.
+                      + ertype.
+                      + instantiate (1 := Γ ,, (mx, A)).
+                        cbn - [mode_inb]. reflexivity.
+                      + cbn. rewrite exp. reflexivity.
+                  }
+              - econstructor.
                 + apply type_rpm_lift. ertype.
                   * apply type_to_rev. ertype.
-                  * admit.
-                + admit.
+                  * {
+                    eapply revive_typing_eq.
+                    - eassumption.
+                    - remd. reflexivity.
+                    - cbn. rewrite exp. reflexivity.
+                    - cbn. reflexivity.
+                  }
+                + apply cconv_sym. constructor.
+                + ertype.
+                  * {
+                    eapply ccmeta_conv.
+                    - apply type_rpm_lift. ertype.
+                      + apply type_to_rev. ertype.
+                      + eapply type_to_rev_eq.
+                        * ertype.
+                        * instantiate (1 := Γ ,, (mx, A)).
+                          cbn - [mode_inb]. reflexivity.
+                        * cbn. rewrite exp. reflexivity.
+                    - cbn. rewrite epm_lift_eq. cbn. reflexivity.
+                  }
+                  * {
+                    apply type_rpm_lift. ertype.
+                    - apply type_to_rev. ertype.
+                    - eapply type_to_rev_eq.
+                      + ertype.
+                      + instantiate (1 := Γ ,, (mx, A)).
+                        cbn - [mode_inb]. reflexivity.
+                      + cbn. rewrite exp. reflexivity.
+                  }
             }
             * cbn. reflexivity.
           + destruct m. all: try discriminate.
