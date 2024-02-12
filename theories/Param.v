@@ -3648,7 +3648,7 @@ Proof.
       - cbn. rewrite ep. change (epm_lift ?t) with (vreg ⋅ t). cbn. constructor.
       - ertype.
     }
-    eapply ctype_conv in IHh3.
+    eapply ctype_conv in IHh3 as hAp.
     2:{
       instantiate (1 :=
         if isProp mx then _
@@ -4054,7 +4054,7 @@ Proof.
         + destruct m. all: try discriminate.
           cbn. eapply type_pmPiP.
           * eapply hAe.
-          * admit. (* This information was lost when optimising, such a pain *)
+          * eassumption.
           * eapply IHh4.
           * reflexivity.
     }
