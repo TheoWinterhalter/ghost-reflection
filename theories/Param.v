@@ -3708,19 +3708,21 @@ Proof.
         eapply cconv_trans. 1: constructor.
         instantiate (1 := if isProp mx then _ else _).
         destruct_if epx.
-        + cbn. lhs_ssimpl.
-          (* erewrite ext_cterm_scoped with (θ := ids).
-          2:{ eapply param_scoping. eassumption. }
-          2:{
-            intros [] hx.
-            - ssimpl.
-            -
-          } *)
-          admit.
-        + admit.
-      - admit.
+        + cbn. lhs_ssimpl. econv.
+        + cbn. lhs_ssimpl. econv.
+      - instantiate (1 := if isGhost m then _ else _).
+        destruct (isGhost m) eqn:eg.
+        + mode_eqs. unfold pmPi. simpl. unfold pmPiNP.
+          eapply cconv_trans. 1: constructor.
+          simpl.
+          instantiate (1 := if isProp mx then _ else _).
+          destruct (isProp mx) eqn:epx.
+          * mode_eqs. cbn. lhs_ssimpl. econv.
+          * unfold pPi. cbn. lhs_ssimpl. econv.
+        + destruct m. all: try discriminate.
+          unfold pmPi. cbn. econv.
     }
-    2: admit.
+    2: admit. (* TODO First, improve the output *)
     (* End *)
     destruct (relm mx) eqn: erx. 2: destruct (isGhost mx) eqn: egx.
     + destruct (isGhost mx) eqn: egx. { mode_eqs. discriminate. }
