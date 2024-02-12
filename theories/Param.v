@@ -3675,7 +3675,7 @@ Proof.
           * instantiate (1 := S i). lia.
           * instantiate (1 := i). lia.
     }
-    eapply ctype_conv in IHh4.
+    eapply ctype_conv in IHh4 as hBp.
     2:{
       instantiate (1 := if isKind m then _ else _).
       destruct (isKind m) eqn:ek.
@@ -3695,7 +3695,7 @@ Proof.
       - ertype.
       - ertype. reflexivity.
     }
-    eapply ctype_conv in IHh1.
+    eapply ctype_conv in IHh1 as htp.
     2:{
       set (rmx := relm mx) in *.
       instantiate (1 := if rm then _ else _).
@@ -4055,25 +4055,42 @@ Proof.
           cbn. eapply type_pmPiP.
           * eapply hAe.
           * eassumption.
-          * eapply IHh4.
+          * eapply hBp.
           * reflexivity.
     }
     (* End *)
     destruct (relm mx) eqn: erx. 2: destruct (isGhost mx) eqn: egx.
     + destruct (isGhost mx) eqn: egx. { mode_eqs. discriminate. }
       destruct (isProp mx) eqn: epx. { mode_eqs. discriminate. }
-      (* simpl in IHh1. rewrite andb_false_r in IHh1.
+      eapply ccmeta_conv.
+      * {
+        ertype. eapply ccmeta_conv.
+        - ertype. 2:{ remd. assumption. }
+          admit. (* Maybe I can optimise htp even further to avoid
+            yet another type to prove? Or I manage to get away with ccmeta_conv
+            that would be ideal.
+          *)
+        - admit.
+      }
+      * admit.
+    + mode_eqs.
+      eapply ccmeta_conv.
+      * {
+        ertype. eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv.
+          + ertype.
+          + simpl. admit.
+        - admit.
+      }
+      * admit.
+    + destruct mx. all: try discriminate.
       eapply ccmeta_conv.
       * {
         ertype. eapply ccmeta_conv.
         - ertype.
-        -
+        - simpl. admit.
       }
-      *
-      * *)
-      admit.
-    + admit.
-    + admit.
+      * admit.
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh.
     cbn in *. assumption.
