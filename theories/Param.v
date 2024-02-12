@@ -3286,7 +3286,51 @@ Proof.
               cbn. reflexivity.
             * cbn. reflexivity.
       }
-    + econstructor.
+    + assert (hAe : ⟦ Γ ⟧ε ⊢ᶜ ⟦ (sc Γ) | A ⟧ε : cty i).
+      {
+        econstructor.
+        - ertype.
+        - cbn. rewrite exp. constructor.
+        - ertype.
+      }
+      assert (hBe :
+        isProp m = false →
+        let Γ' :=
+          if relm mx then Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+          else None :: ⟦ Γ ⟧ε
+        in
+        Γ' ⊢ᶜ ⟦ mx :: sc Γ | B ⟧ε : cty j
+      ).
+      {
+        intro ep.
+        econstructor.
+        - eapply erase_typing_eq.
+          + eassumption.
+          + remd. reflexivity.
+          + cbn - [mode_inb]. reflexivity.
+          + reflexivity.
+        - cbn - [mode_inb]. rewrite ep. constructor.
+        - ertype.
+      }
+      cbn zeta in hBe.
+      assert (hte :
+        relm m = true →
+        let Γ' :=
+          if relm mx then Some (cType, ⟦ sc Γ | A ⟧τ) :: ⟦ Γ ⟧ε
+          else None :: ⟦ Γ ⟧ε
+        in
+        Γ' ⊢ᶜ ⟦ mx :: sc Γ | t ⟧ε : ⟦ mx :: sc Γ | B ⟧τ
+      ).
+      {
+        intro er.
+        eapply erase_typing_eq.
+        - eassumption.
+        - remd. assumption.
+        - cbn - [mode_inb]. reflexivity.
+        - reflexivity.
+      }
+      cbn zeta in hte.
+      econstructor.
       * {
         ertype.
         - econstructor.
@@ -3382,36 +3426,12 @@ Proof.
                     apply type_epm_lift.
                     instantiate (1 := if relm mx then _ else _).
                     destruct (relm mx) eqn: erx.
-                    - cbn. ertype.
-                      + econstructor.
-                        * ertype.
-                        * cbn. rewrite exp. constructor.
-                        * ertype.
-                      + econstructor.
-                        * eapply erase_typing_eq. all: try eassumption.
-                          -- remd. reflexivity.
-                          -- cbn - [mode_inb]. rewrite erx. reflexivity.
-                          -- reflexivity.
-                        * cbn. rewrite ep. constructor.
-                        * ertype.
-                      + econstructor.
-                        * ertype.
-                        * cbn. rewrite exp. constructor.
-                        * ertype.
-                      + econstructor.
-                        * eapply erase_typing_eq. all: try eassumption.
-                          -- remd. reflexivity.
-                          -- cbn - [mode_inb]. rewrite erx. reflexivity.
-                          -- reflexivity.
-                        * cbn. rewrite ep. constructor.
-                        * ertype.
+                    - cbn. ertype. all: reflexivity.
                     - cbn. destruct mx. all: try discriminate.
                       cbn in *.
                       ertype.
-                      + econstructor.
-                        * ertype.
-                        * cbn. rewrite ep. cbn. constructor.
-                        * ertype.
+                      + eapply ccmeta_conv. 1: ertype.
+                        cbn. reflexivity.
                       + reflexivity. (* Could be something else *)
                   }
                   * rewrite epm_lift_eq.
@@ -3425,71 +3445,17 @@ Proof.
               apply type_epm_lift. subst rmx.
               destruct (relm mx) eqn: erx.
               - cbn. econstructor.
-                + ertype.
-                  * {
-                    econstructor.
-                    - ertype.
-                    - cbn. rewrite exp. constructor.
-                    - ertype.
-                  }
-                  * {
-                    eapply erase_typing_eq.
-                    - eassumption.
-                    - remd. assumption.
-                    - cbn - [mode_inb]. rewrite erx. reflexivity.
-                    - cbn. reflexivity.
-                  }
+                + ertype. reflexivity.
                 + apply cconv_sym. constructor.
-                + ertype.
-                  * {
-                    econstructor.
-                    - ertype.
-                    - cbn. rewrite exp. constructor.
-                    - ertype.
-                  }
-                  * {
-                    econstructor.
-                    - eapply erase_typing_eq.
-                      + eassumption.
-                      + remd. reflexivity.
-                      + cbn - [mode_inb]. rewrite erx. reflexivity.
-                      + cbn. reflexivity.
-                    - cbn. rewrite ep. constructor.
-                    - ertype.
-                  }
-                  * {
-                    econstructor.
-                    - ertype.
-                    - cbn. rewrite exp. constructor.
-                    - ertype.
-                  }
-                  * {
-                    econstructor.
-                    - eapply erase_typing_eq.
-                      + eassumption.
-                      + remd. reflexivity.
-                      + cbn - [mode_inb]. rewrite erx. reflexivity.
-                      + cbn. reflexivity.
-                    - cbn. rewrite ep. constructor.
-                    - ertype.
-                  }
+                + ertype. all: reflexivity.
               - cbn. econstructor.
-                + ertype. eapply erase_typing_eq.
-                  * eassumption.
-                  * remd. assumption.
-                  * cbn - [mode_inb]. rewrite erx. reflexivity.
-                  * cbn. reflexivity.
+                + ertype. reflexivity.
                 + apply cconv_sym. constructor.
                 + ertype.
                   * {
-                    econstructor.
-                    - ertype. eapply erase_typing_eq.
-                      + eassumption.
-                      + remd. reflexivity.
-                      + cbn - [mode_inb]. rewrite erx. reflexivity.
-                      + reflexivity.
-                    - cbn. rewrite ep. cbn. constructor.
-                    - ertype.
+                    eapply ccmeta_conv.
+                    - ertype. reflexivity.
+                    - cbn. reflexivity.
                   }
                   * reflexivity. (* Could be something else *)
             }
@@ -3546,24 +3512,28 @@ Proof.
                   * {
                     eapply ccmeta_conv.
                     - apply type_epm_lift. ertype.
-                      + (* TODO Make it an assert, at the top *)
-                        admit.
-                      + (* Same *)
-                        admit.
+                      (* Need meta_ctx_conv + type_to_rev *)
+                      admit.
                     - rewrite epm_lift_eq. cbn. reflexivity.
                   }
-                  * apply type_epm_lift. ertype. all: admit. (* Same *)
+                  * apply type_epm_lift. ertype. admit. (* Same *)
               - eapply ccmeta_conv.
-                + apply type_rpm_lift. ertype. all: admit. (* Same-ish *)
+                + apply type_rpm_lift. ertype.
+                  * apply type_to_rev. ertype.
+                  * admit.
                 + admit.
             }
             * cbn. reflexivity.
           + destruct m. all: try discriminate.
             simpl. eapply type_pmPiP.
-            * intro. admit. (* Same *)
-            * rewrite exp. eassumption.
-            * rewrite exp. cbn in IHh2. apply param_pProp in IHh2.
+            2:{ rewrite exp. eassumption. }
+            2:{
+              rewrite exp. cbn in IHh2. apply param_pProp in IHh2.
               assumption.
+            }
+            2: reflexivity.
+            intro. eapply ccmeta_conv.
+            * apply type_epm_lift. ertype.
             * reflexivity.
       }
   - admit.
