@@ -3852,10 +3852,211 @@ Proof.
                 }
                 * instantiate (1 := if isKind m then _ else _).
                   destruct (isKind m) eqn:ek. all: cbn. all: reflexivity.
-              + admit.
-            - admit.
+              + destruct (isGhost mx) eqn:egx.
+                * {
+                  mode_eqs. cbn.
+                  econstructor.
+                  - ertype. remd. assumption.
+                  - cbn. rewrite eg. cbn. rewrite ep.
+                    change (epm_lift ?t) with (vreg ⋅ t).
+                    cbn. eapply cconv_trans. 1: constructor.
+                    econv. apply ccmeta_refl.
+                    ssimpl. eapply ext_cterm_scoped. 1: apply erase_scoping.
+                    intros [| []] hx. 1: discriminate. all: reflexivity.
+                  - ertype. eapply ccmeta_conv.
+                    + eapply ctyping_subst. 2: ertype.
+                      cbn. constructor. 1: ssimpl. 1: constructor. 1: ssimpl.
+                      * rewrite <- !funcomp_assoc.
+                        apply crtyping_typing. ertype.
+                      * {
+                        cbn. split.
+                        - ertype.
+                        - eapply ccmeta_conv. 1: ertype.
+                          cbn. change (λ n, S (S n)) with (S >> S).
+                          ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                      }
+                      * {
+                        cbn. split.
+                        - ertype.
+                        - eapply ccmeta_conv. 1: ertype.
+                          cbn. ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                      }
+                    + cbn. reflexivity.
+                }
+                * {
+                  destruct (relm mx) eqn:erx.
+                  2:{ destruct mx. all: discriminate. }
+                  eapply ccmeta_conv.
+                  - ertype. econstructor.
+                    + ertype. remd. assumption.
+                    + cbn - [mode_inb]. rewrite ep. rewrite erx.
+                      cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                      eapply cconv_trans. 1: constructor.
+                      econv.
+                    + ertype.
+                      * eapply ccmeta_conv. 1: ertype.
+                        cbn. reflexivity.
+                      * {
+                        econstructor.
+                        - ertype.
+                          + eapply crtyping_shift.
+                            cbn. change (λ n, S (S n)) with (S >> S).
+                            ertype.
+                          + cbn - [mode_inb]. rewrite erx.
+                            eapply crtyping_shift_eq.
+                            * apply typing_er_sub_param.
+                            * cbn. reflexivity.
+                        - cbn. rewrite ep. cbn. constructor.
+                        - ertype.
+                      }
+                  - cbn. f_equal. change (epm_lift ?t) with (vreg ⋅ t).
+                    ssimpl. eapply ext_cterm_scoped. 1: apply erase_scoping.
+                    intros [| []] hx. all: reflexivity.
+                }
+            - destruct (isKind m) eqn:ek. all: cbn. all: reflexivity.
           }
-      - admit.
+      - destruct (isKind m) eqn:ek. 1:{ mode_eqs. discriminate. }
+        destruct (isGhost m) eqn:eg.
+        + mode_eqs. destruct (isProp mx) eqn:epx.
+          * {
+            mode_eqs. ertype. eapply ccmeta_conv.
+            - ertype. econstructor.
+              + eapply ctyping_subst. 2: ertype.
+                constructor. 1: ssimpl. 1: constructor.
+                * ssimpl. apply crtyping_typing. ertype.
+                * cbn. split. 1: ertype.
+                  eapply ccmeta_conv. 1: ertype.
+                  cbn. ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                * cbn. constructor.
+              + cbn. apply cconv_sym. change (epm_lift ?t) with (vreg ⋅ t).
+                cbn. econstructor. 2: econv.
+                eapply cconv_trans. 1: constructor.
+                econv. apply ccmeta_refl. ssimpl.
+                eapply ext_cterm_scoped. 1: apply erase_scoping.
+                intros [| []] hx. 1: discriminate. all: reflexivity.
+              + ertype. eapply ccmeta_conv.
+                * {
+                  ertype. eapply type_epm_lift.
+                  eapply erase_typing_El.
+                  - eapply erase_typing.
+                    + econstructor. all: eassumption.
+                    + reflexivity.
+                  - reflexivity.
+                }
+                * change (epm_lift ?t) with (vreg ⋅ t). cbn. reflexivity.
+            - cbn. reflexivity.
+          }
+          * {
+            cbn. eapply ccmeta_conv.
+            - ertype.
+              + eapply ccmeta_conv.
+                * ertype. eapply ccmeta_conv. 1: ertype.
+                  cbn. reflexivity.
+                * instantiate (1 := if isKind mx then _ else _).
+                  destruct (isKind mx). all: cbn. all: reflexivity.
+              + eapply ccmeta_conv.
+                * {
+                  ertype.
+                  2:{
+                    econstructor.
+                    - ertype.
+                    - cbn - [mode_inb].
+                      instantiate (1 := if relm mx then _ else _).
+                      destruct (relm mx) eqn:erx.
+                      + cbn. change (epm_lift ?t) with (vreg ⋅ t).
+                        cbn. eapply cconv_trans. 1: constructor.
+                        econv.
+                      + destruct mx. all: try discriminate.
+                        cbn. change (epm_lift ?t) with (vreg ⋅ t).
+                        cbn. eapply cconv_trans. 1: constructor.
+                        econv.
+                    - ertype.
+                      + eapply ccmeta_conv.
+                        * ertype.
+                        * cbn. reflexivity.
+                      + destruct (relm mx) eqn:erx.
+                        * {
+                          ertype. econstructor.
+                          - ertype.
+                            + eapply crtyping_shift. ertype.
+                            + cbn - [mode_inb]. rewrite erx.
+                              eapply crtyping_shift_eq.
+                              * apply typing_er_sub_param.
+                              * reflexivity.
+                          - cbn. constructor.
+                          - ertype.
+                        }
+                        * {
+                          ertype. econstructor.
+                          - ertype.
+                            + eapply crtyping_shift. ertype.
+                            + eapply crtyping_shift_eq.
+                              * apply typing_er_sub_param.
+                              * reflexivity.
+                            + eapply erase_typing_eq.
+                              * eassumption.
+                              * remd. reflexivity.
+                              * cbn - [mode_inb]. rewrite erx. reflexivity.
+                              * reflexivity.
+                          - cbn. constructor.
+                          - ertype.
+                        }
+                  }
+                  eapply ccmeta_conv.
+                  - eapply ctyping_subst. 2: ertype.
+                    destruct (isKind mx) eqn:ekx.
+                    + constructor. 1: ssimpl. 1: constructor. 1: ssimpl.
+                      * rewrite <- !funcomp_assoc.
+                        apply crtyping_typing. ertype.
+                      * {
+                        cbn. split.
+                        - ertype.
+                        - eapply ccmeta_conv. 1: ertype.
+                          cbn. change (λ n, S (S n)) with (S >> S).
+                          ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                      }
+                      * {
+                        cbn. split.
+                        - ertype.
+                        - eapply ccmeta_conv. 1: ertype.
+                          cbn. ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                      }
+                    + constructor. 1: ssimpl. 1: constructor. 1: ssimpl.
+                      * rewrite <- !funcomp_assoc.
+                        apply crtyping_typing. ertype.
+                      * {
+                        cbn. split.
+                        - ertype.
+                        - eapply ccmeta_conv. 1: ertype.
+                          cbn. change (λ n, S (S n)) with (S >> S).
+                          ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                      }
+                      * {
+                        cbn. split.
+                        - ertype.
+                        - eapply ccmeta_conv. 1: ertype.
+                          cbn. ssimpl. rewrite rinstInst'_cterm. reflexivity.
+                      }
+                  - cbn - [mode_inb]. f_equal.
+                    change (epm_lift ?t) with (vreg ⋅ t).
+                    destruct (relm mx) eqn:erx.
+                    + ssimpl. f_equal.
+                      eapply ext_cterm_scoped. 1: apply erase_scoping.
+                      intros [| []] hx. all: reflexivity.
+                    + ssimpl. f_equal.
+                      eapply ext_cterm_scoped. 1: apply erase_scoping.
+                      intros [| []] hx. 2,3: reflexivity.
+                      cbn - [mode_inb] in hx. rewrite erx in hx. discriminate.
+                }
+                * cbn. reflexivity.
+            - cbn. reflexivity.
+          }
+        + destruct m. all: try discriminate.
+          cbn. eapply type_pmPiP.
+          * eapply hAe.
+          * admit. (* This information was lost when optimising, such a pain *)
+          * eapply IHh4.
+          * reflexivity.
     }
     (* End *)
     destruct (relm mx) eqn: erx. 2: destruct (isGhost mx) eqn: egx.
