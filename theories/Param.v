@@ -3038,6 +3038,28 @@ Proof.
   apply type_to_rev. assumption.
 Qed.
 
+Lemma cmeta_ctx_conv :
+  ∀ Γ Δ t A,
+    Γ ⊢ᶜ t : A →
+    Γ = Δ →
+    Δ ⊢ᶜ t : A.
+Proof.
+  intros Γ ? t A h ->.
+  assumption.
+Qed.
+
+Lemma param_erase_typing_eq :
+  ∀ Γ sΓ Γp t A,
+    Γ ⊢ t : A →
+    relm (mdc Γ t) = true →
+    Γp = ⟦ Γ ⟧p →
+    sΓ = sc Γ →
+    Γp ⊢ᶜ ⟦ sΓ | t ⟧pε : ⟦ sΓ | A ⟧pτ.
+Proof.
+  intros Γ ? ? t A h e -> ->.
+  apply param_erase_typing. all: assumption.
+Qed.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -3593,12 +3615,37 @@ Proof.
     unfold ptype in IHh4. cbn - [mode_inb] in IHh4. remd in IHh4. cbn in IHh4.
     unfold ptype. cbn - [mode_inb]. remd.
     set (rm := relm m) in *.
-    assert (hAe : isProp mx = false → ⟦ Γ ⟧p ⊢ᶜ ⟦ (sc Γ) | A ⟧pε : cty i).
+    assert (hAe : isProp mx = false → ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧pε : cty i).
     {
       intro epx.
       econstructor.
       - ertype.
       - cbn. rewrite epx. rewrite epm_lift_eq. cbn. constructor.
+      - ertype.
+    }
+    assert (hBe :
+      isProp m = false →
+      let Γ' :=
+        if isProp mx then None :: Some (cProp, ⟦ sc Γ | A ⟧p) :: ⟦ Γ ⟧p
+        else if isKind mx then
+          Some (cType, capp (S ⋅ ⟦ (sc Γ) | A ⟧p) (cvar 0)) ::
+          Some (cType, ⟦ (sc Γ) | A ⟧pτ) :: ⟦ Γ ⟧p
+        else
+          Some (cProp, capp (S ⋅ ⟦ (sc Γ) | A ⟧p) (cvar 0)) ::
+          Some (cType, ⟦ (sc Γ) | A ⟧pτ) :: ⟦ Γ ⟧p
+      in
+      Γ' ⊢ᶜ ⟦ mx :: sc Γ | B ⟧pε : cty j
+    ).
+    {
+      intro ep.
+      cbn zeta.
+      econstructor.
+      - eapply param_erase_typing_eq.
+        + eassumption.
+        + remd. reflexivity.
+        + cbn. reflexivity.
+        + cbn. reflexivity.
+      - cbn. rewrite ep. change (epm_lift ?t) with (vreg ⋅ t). cbn. constructor.
       - ertype.
     }
     eapply ctype_conv in IHh3.
@@ -3644,9 +3691,9 @@ Proof.
     2:{
       instantiate (1 := if isKind m then _ else if isProp m then _ else _).
       destruct (isKind m) eqn:ek. 2: destruct (isProp m) eqn:ep.
-      - ertype. admit. (* Lemma *)
+      - mode_eqs. ertype.
       - ertype.
-      - ertype. admit. (* Same *)
+      - ertype. reflexivity.
     }
     eapply ctype_conv in IHh1.
     2:{
