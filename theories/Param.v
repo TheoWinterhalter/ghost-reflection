@@ -5112,14 +5112,36 @@ Proof.
       * {
         destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
         eapply ccmeta_conv.
-        - ertype. 2:{ remd. assumption. }
-          eapply ccmeta_conv. 1: ertype.
+        - econstructor.
+          + eapply ccmeta_conv. 1: ertype.
+            instantiate (1 := if isKind m then _ else _).
+            destruct (isKind m) eqn:ek. all: reflexivity.
+          + econstructor.
+            * ertype. remd. assumption.
+            * rewrite param_erase_ty_tm. econstructor.
+              eapply ccong_epm_lift. 2: reflexivity.
+              apply erase_castrm_conv. assumption.
+            * ertype. reflexivity.
+        - instantiate (2 := if isKind m then _ else _).
           instantiate (1 := if isKind m then _ else _).
-          destruct (isKind m) eqn:ek.
-          + give_up.
-          + give_up.
-        - admit.
+          destruct (isKind m) eqn:ek. all: cbn. all: reflexivity.
       }
-      * admit.
-      * admit.
-Abort.
+      * {
+        mode_eqs. cbn. cbn in IHh2.
+        eapply ccmeta_conv.
+        - econstructor.
+          + eapply ccmeta_conv. 1: ertype.
+            reflexivity.
+          + econstructor.
+            * ertype.
+            * rewrite param_erase_ty_tm. econstructor.
+              eapply ccong_epm_lift. 2: reflexivity.
+              apply erase_castrm_conv. assumption.
+            * ertype.
+        - cbn. reflexivity.
+      }
+      * {
+        destruct m. all: try discriminate.
+        cbn. cbn in IHh2. eassumption.
+      }
+Qed.
