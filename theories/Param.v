@@ -4066,13 +4066,77 @@ Proof.
       * {
         ertype. eapply ccmeta_conv.
         - ertype. 2:{ remd. assumption. }
-          admit. (* Maybe I can optimise htp even further to avoid
-            yet another type to prove? Or I manage to get away with ccmeta_conv
-            that would be ideal.
-          *)
-        - admit.
+          eapply ccmeta_conv. 1: ertype.
+          instantiate (1 := if rm then _ else _).
+          destruct rm eqn:er.
+          + reflexivity.
+          + instantiate (1 := if isGhost m then _ else _).
+            destruct (isGhost m) eqn:eg.
+            * reflexivity.
+            * unfold pmPiP. rewrite epx.
+              instantiate (1 := if isKind mx then _ else _).
+              destruct (isKind mx) eqn:ekx. all: reflexivity.
+        - instantiate (2 := if isKind mx then _ else _).
+          instantiate (1 := if rm then _ else _).
+          destruct rm eqn:er.
+          + cbn. lhs_ssimpl. reflexivity.
+          + instantiate (1 := if isGhost m then _ else _).
+            destruct (isGhost m) eqn:eg.
+            * cbn. lhs_ssimpl. reflexivity.
+            * {
+              destruct (isKind mx) eqn:ekx.
+              - cbn. lhs_ssimpl. reflexivity.
+              - cbn. ssimpl. reflexivity.
+            }
       }
-      * admit.
+      * {
+        destruct rm eqn:erm.
+        - ssimpl. f_equal.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. ssimpl. reflexivity.
+          + cbn in hx. rewrite epx in hx.
+            assert (hx' :
+              inscope (Some (if isKind mx then cType else cProp) :: Some cType :: param_sc (sc Γ)) (S (S n)) = true
+            ).
+            { destruct_if e. all: assumption. }
+            unfold inscope in hx'. cbn in hx'.
+            unfold psubst. rewrite div2_SS. cbn - [mode_inb].
+            destruct (vreg_vpar_dec n) as [e | e].
+            * {
+              set (p := Nat.div2 n) in *.
+              rewrite e in hx'. rewrite nth_error_param_vpar in hx'.
+              destruct (nth_error _ p) as [mp|] eqn:ep. 2: discriminate.
+              cbn in hx'.
+              destruct (isProp mp) eqn:epp. 1: discriminate.
+              rewrite PeanoNat.Nat.odd_succ. rewrite PeanoNat.Nat.even_succ.
+              rewrite e. rewrite odd_vpar.
+              destruct (relm mp) eqn:erp.
+              - reflexivity.
+              - destruct mp. all: try discriminate.
+                cbn. reflexivity.
+            }
+            * {
+              set (p := Nat.div2 n) in *.
+              rewrite e in hx'. rewrite nth_error_param_vreg in hx'.
+              destruct (nth_error _ p) as [mp|] eqn:ep. 2: discriminate.
+              cbn in hx'.
+              rewrite PeanoNat.Nat.odd_succ. rewrite PeanoNat.Nat.even_succ.
+              rewrite e. rewrite odd_vreg.
+              destruct (relm mp) eqn:erp. 2: destruct (isGhost mp) eqn:egp.
+              - unfold relv. rewrite ep. rewrite erp. reflexivity.
+              - unfold ghv. rewrite ep. rewrite egp. reflexivity.
+              - destruct mp. all: try discriminate.
+                cbn. reflexivity.
+            }
+        - destruct (isGhost m) eqn:egm.
+          + admit.
+          + admit.
+      }
     + mode_eqs.
       eapply ccmeta_conv.
       * {
