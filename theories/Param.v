@@ -3060,6 +3060,47 @@ Proof.
   apply param_erase_typing. all: assumption.
 Qed.
 
+Lemma psubst_SS_id :
+  ∀ mx Γ u n,
+    inscope (param_sc (mx :: Γ)) (S (S n)) = true →
+    cvar n = psubst (mx :: Γ) Γ (u .: var) (S (S n)).
+Proof.
+  intros mx Γ u n hx.
+  cbn in hx.
+  assert (h :
+    inscope (
+      (if isProp mx then None else Some (if isKind mx then cType else cProp)) ::
+      Some cType :: param_sc Γ
+    ) (S (S n)) = true
+  ).
+  { destruct_ifs. all: assumption. }
+  clear hx.
+  unfold inscope in h. cbn in h.
+  unfold psubst. rewrite div2_SS. cbn - [mode_inb].
+  rewrite PeanoNat.Nat.odd_succ. rewrite PeanoNat.Nat.even_succ.
+  destruct (vreg_vpar_dec n) as [e | e].
+  - set (p := Nat.div2 n) in *.
+    rewrite e in h. rewrite nth_error_param_vpar in h.
+    destruct (nth_error _ p) as [mp|] eqn:ep. 2: discriminate.
+    cbn in h.
+    destruct (isProp mp) eqn:epp. 1: discriminate.
+    rewrite e. rewrite odd_vpar.
+    destruct (relm mp) eqn:erp.
+    + reflexivity.
+    + destruct mp. all: try discriminate.
+      cbn. reflexivity.
+  - set (p := Nat.div2 n) in *.
+    rewrite e in h. rewrite nth_error_param_vreg in h.
+    destruct (nth_error _ p) as [mp|] eqn:ep. 2: discriminate.
+    cbn in h.
+    rewrite e. rewrite odd_vreg.
+    destruct (relm mp) eqn:erp. 2: destruct (isGhost mp) eqn:egp.
+    + unfold relv. rewrite ep. rewrite erp. reflexivity.
+    + unfold ghv. rewrite ep. rewrite egp. reflexivity.
+    + destruct mp. all: try discriminate.
+      cbn. reflexivity.
+Qed.
+
 Theorem param_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -4099,42 +4140,17 @@ Proof.
           intros [| []] hx. all: cbn - [mode_inb].
           + rewrite erx. reflexivity.
           + rewrite erx. ssimpl. reflexivity.
-          + cbn in hx. rewrite epx in hx.
-            assert (hx' :
-              inscope (Some (if isKind mx then cType else cProp) :: Some cType :: param_sc (sc Γ)) (S (S n)) = true
-            ).
-            { destruct_if e. all: assumption. }
-            unfold inscope in hx'. cbn in hx'.
-            unfold psubst. rewrite div2_SS. cbn - [mode_inb].
-            destruct (vreg_vpar_dec n) as [e | e].
-            * {
-              set (p := Nat.div2 n) in *.
-              rewrite e in hx'. rewrite nth_error_param_vpar in hx'.
-              destruct (nth_error _ p) as [mp|] eqn:ep. 2: discriminate.
-              cbn in hx'.
-              destruct (isProp mp) eqn:epp. 1: discriminate.
-              rewrite PeanoNat.Nat.odd_succ. rewrite PeanoNat.Nat.even_succ.
-              rewrite e. rewrite odd_vpar.
-              destruct (relm mp) eqn:erp.
-              - reflexivity.
-              - destruct mp. all: try discriminate.
-                cbn. reflexivity.
-            }
-            * {
-              set (p := Nat.div2 n) in *.
-              rewrite e in hx'. rewrite nth_error_param_vreg in hx'.
-              destruct (nth_error _ p) as [mp|] eqn:ep. 2: discriminate.
-              cbn in hx'.
-              rewrite PeanoNat.Nat.odd_succ. rewrite PeanoNat.Nat.even_succ.
-              rewrite e. rewrite odd_vreg.
-              destruct (relm mp) eqn:erp. 2: destruct (isGhost mp) eqn:egp.
-              - unfold relv. rewrite ep. rewrite erp. reflexivity.
-              - unfold ghv. rewrite ep. rewrite egp. reflexivity.
-              - destruct mp. all: try discriminate.
-                cbn. reflexivity.
-            }
+          + apply psubst_SS_id. assumption.
         - destruct (isGhost m) eqn:egm.
-          + admit.
+          + mode_eqs. ssimpl. f_equal.
+            erewrite param_subst.
+            2:{ apply sscoping_one. escope. }
+            2: apply sscoping_comp_one.
+            eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+            intros [| []] hx. all: cbn - [mode_inb].
+            * rewrite erx. reflexivity.
+            * rewrite erx. ssimpl. reflexivity.
+            * apply psubst_SS_id. assumption.
           + admit.
       }
     + mode_eqs.
