@@ -4151,7 +4151,16 @@ Proof.
             * rewrite erx. reflexivity.
             * rewrite erx. ssimpl. reflexivity.
             * apply psubst_SS_id. assumption.
-          + admit.
+          + destruct m. all: try discriminate.
+            ssimpl.
+            erewrite param_subst.
+            2:{ apply sscoping_one. escope. }
+            2: apply sscoping_comp_one.
+            eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+            intros [| []] hx. all: cbn - [mode_inb].
+            * rewrite erx. reflexivity.
+            * rewrite erx. reflexivity.
+            * apply psubst_SS_id. assumption.
       }
     + mode_eqs.
       eapply ccmeta_conv.
@@ -4159,18 +4168,99 @@ Proof.
         ertype. eapply ccmeta_conv.
         - ertype. eapply ccmeta_conv.
           + ertype.
-          + simpl. admit.
-        - admit.
+          + simpl.
+            instantiate (1 := if rm then _ else _).
+            destruct rm eqn:er.
+            * reflexivity.
+            * {
+              instantiate (1 := if isGhost m then _ else _).
+              destruct (isGhost m) eqn:eg.
+              - mode_eqs. reflexivity.
+              - destruct m. all: try discriminate.
+                reflexivity.
+            }
+        - instantiate (1 := if rm then _ else if isGhost m then _ else _).
+          destruct rm eqn:er. 2: destruct (isGhost m) eqn:eg.
+          + cbn. f_equal. ssimpl. reflexivity.
+          + cbn. f_equal. ssimpl. reflexivity.
+          + destruct m. all: try discriminate.
+            cbn. f_equal. ssimpl. reflexivity.
       }
-      * admit.
+      * {
+        destruct rm eqn:er. 2: destruct (isGhost m) eqn:eg.
+        - cbn. ssimpl. f_equal.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. reflexivity.
+          + apply psubst_SS_id. assumption.
+        - mode_eqs. cbn. ssimpl. f_equal.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. reflexivity.
+          + apply psubst_SS_id. assumption.
+        - destruct m. all: try discriminate.
+          ssimpl.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. reflexivity.
+          + apply psubst_SS_id. assumption.
+      }
     + destruct mx. all: try discriminate.
       eapply ccmeta_conv.
       * {
         ertype. eapply ccmeta_conv.
         - ertype.
-        - simpl. admit.
+        - simpl.
+          instantiate (1 := if rm then _ else if isGhost m then _ else _).
+          destruct rm eqn:er. 2: destruct (isGhost m) eqn:eg.
+          + reflexivity.
+          + mode_eqs. reflexivity.
+          + destruct m. all: try discriminate.
+            reflexivity.
       }
-      * admit.
+      * {
+        destruct rm eqn:er. 2: destruct (isGhost m) eqn:eg.
+        - cbn. ssimpl. f_equal.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. reflexivity.
+          + apply psubst_SS_id. assumption.
+        - mode_eqs. cbn. ssimpl. f_equal.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. reflexivity.
+          + apply psubst_SS_id. assumption.
+        - destruct m. all: try discriminate.
+          ssimpl.
+          erewrite param_subst.
+          2:{ apply sscoping_one. escope. }
+          2: apply sscoping_comp_one.
+          eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
+          intros [| []] hx. all: cbn - [mode_inb].
+          + rewrite erx. reflexivity.
+          + rewrite erx. reflexivity.
+          + apply psubst_SS_id. assumption.
+      }
   - unfold ptype in *. cbn - [mode_inb] in *.
     remd. remd in IHh.
     cbn in *. assumption.
