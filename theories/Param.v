@@ -5145,3 +5145,42 @@ Proof.
         cbn. cbn in IHh2. eassumption.
       }
 Qed.
+
+Corollary param_context :
+  ∀ Γ,
+    wf Γ →
+    cwf ⟦ Γ ⟧p.
+Proof.
+  intros Γ h.
+  induction h.
+  - constructor.
+  - eapply erase_typing in H as he. 2: admit.
+    cbn in he.
+    eapply param_typing in H as hp. unfold ptype in hp.
+    (* The easiest is probably to also require scoping info in wf *)
+    cbn. destruct_ifs.
+    + mode_eqs. constructor. 2: constructor.
+      constructor. 1: assumption.
+      cbn. exists i.
+      admit.
+    + mode_eqs. constructor. 1: constructor. 1: assumption.
+      * cbn. exists i. admit.
+      * {
+        cbn. eexists.
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv.
+          + ertype.
+          + admit.
+        - admit.
+      }
+    + constructor. 1: constructor. 1: assumption.
+      * cbn. exists i. admit.
+      * {
+        cbn. eexists.
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv.
+          + ertype.
+          + admit.
+        - admit.
+      }
+Abort.
