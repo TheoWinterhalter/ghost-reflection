@@ -5166,9 +5166,7 @@ Proof.
   intros Γ h.
   induction h.
   - constructor.
-  - (* eapply erase_typing in H0 as he. 2: ertype.
-    cbn in he. *)
-    eapply param_typing in H0 as hp. unfold ptype in hp.
+  - eapply param_typing in H0 as hp. unfold ptype in hp.
     remd in hp. cbn in hp.
     assert (hpe : isProp m = false → ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧pτ : cSort cType i).
     { intro ep. ertype. }
