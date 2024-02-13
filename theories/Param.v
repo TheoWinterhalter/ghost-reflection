@@ -4931,5 +4931,53 @@ Proof.
         - etype.
       }
       * reflexivity.
-  - admit.
+  - assert (hBe : isProp m = false → ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | B ⟧pε : cty i).
+    { intro ep.
+      econstructor.
+      - ertype.
+      - cbn. rewrite ep. rewrite epm_lift_eq. cbn. constructor.
+      - ertype.
+    }
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
+    eapply ctype_conv in IHh2.
+    2:{
+      instantiate (1 := if isKind m then _ else if isProp m then _ else _).
+      destruct (isKind m) eqn:ek. 2: destruct (isProp m) eqn:ep.
+      - unfold pKind. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      - unfold pProp. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+      - unfold pType. eapply cconv_trans. 1: constructor.
+        cbn. econv.
+    }
+    2:{
+      instantiate (1 := if isKind m then _ else if isProp m then _ else _).
+      destruct (isKind m) eqn:ek. 2: destruct (isProp m) eqn:ep.
+      - mode_eqs. ertype.
+      - mode_eqs. ertype.
+      - ertype. reflexivity.
+    }
+    econstructor.
+    + eassumption.
+    + unfold ptype. remd.
+      destruct (relm m) eqn:er. 2: destruct (isGhost m) eqn:eg.
+      * econv. admit.
+      * econv. admit.
+      * admit.
+    + unfold ptype. remd.
+      instantiate (1 := if relm m then _ else if isGhost m then _ else _).
+      destruct (relm m) eqn:er. 2: destruct (isGhost m) eqn:eg.
+      * {
+        destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+        eapply ccmeta_conv.
+        - ertype. 2:{ remd. assumption. }
+          eapply ccmeta_conv. 1: ertype.
+          instantiate (1 := if isKind m then _ else _).
+          destruct (isKind m) eqn:ek.
+          + give_up.
+          + give_up.
+        - admit.
+      }
+      * admit.
+      * admit.
 Abort.
