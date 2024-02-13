@@ -5103,12 +5103,9 @@ Proof.
     + eassumption.
     + unfold ptype. remd.
       destruct (relm m) eqn:er. 2: destruct (isGhost m) eqn:eg.
-      * econv. eapply param_castrm_conv. all: try eassumption.
-        (* We could probably get it, but it might be easier to just assume it *)
-        admit.
-      * econv. eapply param_castrm_conv. all: try eassumption.
-        admit.
-      * eapply param_castrm_conv. all: try eassumption. admit.
+      * econv. eapply param_castrm_conv. all: eassumption.
+      * econv. eapply param_castrm_conv. all: eassumption.
+      * eapply param_castrm_conv. all: eassumption.
     + unfold ptype. remd.
       instantiate (1 := if relm m then _ else if isGhost m then _ else _).
       destruct (relm m) eqn:er. 2: destruct (isGhost m) eqn:eg.
