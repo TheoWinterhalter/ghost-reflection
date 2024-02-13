@@ -1967,6 +1967,121 @@ Proof.
     apply cconv_irr. all: rewrite csc_param_ctx. all: assumption.
 Qed.
 
+(** Parametricity ignores casts **)
+
+Lemma ccong_pmPi :
+  ∀ Γ mx m Te Ae Ap Bp Te' Ae' Ap' Bp',
+    Γ ⊢ᶜ Te ≡ Te' →
+    Γ ⊢ᶜ Ae ≡ Ae' →
+    Γ ⊢ᶜ Ap ≡ Ap' →
+    let Γ' :=
+      if isProp mx then
+        None :: Some (cProp, Ap) :: Γ
+      else if isKind mx then
+        Some (cType, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, Ae) :: Γ
+      else
+        Some (cProp, capp (S ⋅ Ap) (cvar 0)) :: Some (cType, Ae) :: Γ
+    in
+    Γ' ⊢ᶜ Bp ≡ Bp' →
+    Γ ⊢ᶜ pmPi mx m Te Ae Ap Bp ≡ pmPi mx m Te' Ae' Ap' Bp'.
+Proof.
+  cbn zeta.
+  intros Γ mx m Te Ae Ap Bp Te' Ae' Ap' Bp' hTe hAe hAp hBp.
+  unfold pmPi. destruct (isProp m) eqn:ep.
+  - unfold pmPiP. destruct_ifs. all: econv.
+    all: try apply crtyping_S.
+    apply cstyping_one_none.
+  - unfold pmPiNP. econv.
+    destruct (isProp mx) eqn:epx. all: econv.
+    all: try apply crtyping_S.
+    + eapply crtyping_shift. apply crtyping_S.
+    + eapply cstyping_one_none.
+    + destruct (isKind mx) eqn:ekx.
+      * {
+        eapply crtyping_shift_eq.
+        - eapply crtyping_shift. apply crtyping_S.
+        - f_equal. f_equal. f_equal. cbn. ssimpl. reflexivity.
+      }
+      * {
+        eapply crtyping_shift_eq.
+        - eapply crtyping_shift. apply crtyping_S.
+        - f_equal. f_equal. f_equal. cbn. ssimpl. reflexivity.
+      }
+Qed.
+
+Hint Opaque pmPi : cc_conv.
+Hint Resolve ccong_pmPi : cc_conv.
+
+Lemma meta_ctx_conv_conv :
+  ∀ Γ Δ u v,
+    Γ ⊢ᶜ u ≡ v →
+    Γ = Δ →
+    Δ ⊢ᶜ u ≡ v.
+Proof.
+  intros Γ ? u v h ->.
+  assumption.
+Qed.
+
+Lemma meta_ctx_param_conv :
+  ∀ sΓ Γp sΔ Δp u v,
+    Δp ⊢ᶜ ⟦ sΔ | u ⟧p ≡ ⟦ sΔ | v ⟧p →
+    Γp = Δp →
+    sΓ = sΔ →
+    Γp ⊢ᶜ ⟦ sΓ | u ⟧p ≡ ⟦ sΓ | v ⟧p.
+Proof.
+  intros sΓ Γp sΔ Δp u v h -> ->.
+  assumption.
+Qed.
+
+Hint Opaque plam : cc_conv.
+
+Lemma param_castrm :
+  ∀ Γ t,
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | (ε|t|) ⟧p ≡ ⟦ sc Γ | t ⟧p.
+Proof.
+  intros Γ t.
+  induction t in Γ |- *.
+  all: try solve [ econv ].
+  all: try solve [
+    cbn - [mode_inb] ; rewrite <- ?md_castrm ;
+    rewrite ?erase_castrm, ?revive_castrm ;
+    destruct_ifs ; econv
+  ].
+  - cbn - [mode_inb]. rewrite !erase_castrm. econv.
+    eapply meta_ctx_param_conv.
+    + eapply IHt2 with (Γ := Γ,, (m0, ε|t1|)).
+    + cbn. rewrite !erase_castrm. reflexivity.
+    + cbn. reflexivity.
+  - cbn - [mode_inb]. rewrite !erase_castrm.
+    destruct_ifs. all: econv.
+    + apply cstyping_one_none.
+    + eapply meta_ctx_param_conv.
+      * eapply IHt3 with (Γ := Γ ,, (m, ε|t1|)).
+      * cbn. rewrite e. reflexivity.
+      * cbn. reflexivity.
+    + eapply meta_ctx_param_conv.
+      * eapply IHt3 with (Γ := Γ ,, (m, ε|t1|)).
+      * cbn. rewrite e, e0. rewrite erase_castrm. reflexivity.
+      * cbn. reflexivity.
+    + eapply meta_ctx_param_conv.
+      * eapply IHt3 with (Γ := Γ ,, (m, ε|t1|)).
+      * cbn. rewrite e,e0. rewrite erase_castrm. reflexivity.
+      * cbn. reflexivity.
+  - cbn - [mode_inb]. destruct (mdc _ _) eqn:em. 1: eauto.
+    all: apply cconv_irr.
+    (* This is true only for well-scoped terms *)
+    (* This is a pain, but well, we have to do it. *)
+Abort.
+
+Lemma param_castrm_conv :
+  ∀ Γ u v,
+    Γ ⊢ u ε≡ v →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | u ⟧p ≡ ⟦ sc Γ | v ⟧p.
+Proof.
+  intros Γ u v h.
+  eapply param_conv in h.
+Abort.
+
 (** Parametricity preserves typing **)
 
 Definition ptype Γ t A :=
