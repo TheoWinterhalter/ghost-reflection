@@ -5146,6 +5146,18 @@ Proof.
       }
 Qed.
 
+Lemma param_pTypeGhost :
+  ∀ Γ A i,
+    cscoping Γ A mKind →
+    (Γ ⊢ A : Sort mType i ∨ Γ ⊢ A : Sort mGhost i) →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : capp (pType i) ⟦ sc Γ | A ⟧pε →
+    ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧p : ⟦ sc Γ | A ⟧pτ ⇒[ cType ] cSort cProp 0.
+Proof.
+  intros Γ A i hmA [hA | hA] h.
+  - eapply param_pType. all: eassumption.
+  - eapply param_pGhost. all: eassumption.
+Qed.
+
 Corollary param_context :
   ∀ Γ,
     wf Γ →
@@ -5154,33 +5166,38 @@ Proof.
   intros Γ h.
   induction h.
   - constructor.
-  - eapply erase_typing in H as he. 2: admit.
-    cbn in he.
-    eapply param_typing in H as hp. unfold ptype in hp.
-    (* The easiest is probably to also require scoping info in wf *)
+  - (* eapply erase_typing in H0 as he. 2: ertype.
+    cbn in he. *)
+    eapply param_typing in H0 as hp. unfold ptype in hp.
+    remd in hp. cbn in hp.
+    assert (hpe : isProp m = false → ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | A ⟧pτ : cSort cType i).
+    { intro ep. ertype. }
     cbn. destruct_ifs.
-    + mode_eqs. constructor. 2: constructor.
+    + mode_eqs. cbn in hp. apply param_pProp in hp.
+      constructor. 2: constructor.
       constructor. 1: assumption.
-      cbn. exists i.
-      admit.
-    + mode_eqs. constructor. 1: constructor. 1: assumption.
-      * cbn. exists i. admit.
+      cbn. exists 0. assumption.
+    + mode_eqs. apply param_pKind in hp. 2,3: ertype.
+      constructor. 1: constructor. 1: assumption.
+      * cbn. exists i. eauto.
       * {
         cbn. eexists.
         eapply ccmeta_conv.
         - ertype. eapply ccmeta_conv.
           + ertype.
-          + admit.
-        - admit.
+          + cbn. reflexivity.
+        - cbn. reflexivity.
       }
-    + constructor. 1: constructor. 1: assumption.
-      * cbn. exists i. admit.
+    + eapply param_pTypeGhost in hp. 2: assumption.
+      2:{ destruct m. all: try discriminate. all: intuition eauto. }
+      constructor. 1: constructor. 1: assumption.
+      * cbn. exists i. eauto.
       * {
         cbn. eexists.
         eapply ccmeta_conv.
         - ertype. eapply ccmeta_conv.
           + ertype.
-          + admit.
-        - admit.
+          + cbn. reflexivity.
+        - cbn. reflexivity.
       }
-Abort.
+Qed.

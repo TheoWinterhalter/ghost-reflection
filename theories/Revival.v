@@ -959,3 +959,23 @@ Proof.
       * constructor.
       * eauto with cc_type.
 Qed.
+
+Corollary revive_context :
+  ∀ Γ,
+    wf Γ →
+    cwf ⟦ Γ ⟧v.
+Proof.
+  intros Γ h.
+  induction h.
+  - constructor.
+  - cbn - [mode_inb]. destruct (isProp m) eqn:ep.
+    + constructor. 1: assumption.
+      constructor.
+    + constructor. 1: assumption.
+      cbn. exists i.
+      eapply erase_typing_El.
+      * apply type_to_rev. eapply erase_typing. 1: eassumption.
+        erewrite scoping_md. 2: eassumption.
+        reflexivity.
+      * assumption.
+Qed.

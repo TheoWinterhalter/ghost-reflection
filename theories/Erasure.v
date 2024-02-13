@@ -858,3 +858,22 @@ Proof.
       * erewrite scoping_md in hm. 2: eassumption.
         destruct m. all: try reflexivity. discriminate.
 Qed.
+
+Corollary erase_context :
+  ∀ Γ,
+    wf Γ →
+    cwf ⟦ Γ ⟧ε.
+Proof.
+  intros Γ h.
+  induction h.
+  - constructor.
+  - cbn - [mode_inb]. destruct (relm m) eqn:er.
+    + constructor. 1: assumption.
+      cbn. exists i. eapply erase_typing_El.
+      * eapply erase_typing. 1: eassumption.
+        erewrite scoping_md. 2: eassumption.
+        reflexivity.
+      * destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+        reflexivity.
+    + constructor. 2: constructor. assumption.
+Qed.

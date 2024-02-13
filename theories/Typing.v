@@ -420,5 +420,6 @@ Inductive wf : context → Prop :=
 | wf_cons :
     ∀ Γ m i A,
       wf Γ →
+      cscoping Γ A mKind →
       Γ ⊢ A : Sort m i →
       wf (Γ ,, (m, A)).
