@@ -2035,12 +2035,30 @@ Qed.
 
 Hint Opaque plam : cc_conv.
 
+Ltac remd :=
+  erewrite !scoping_md by eassumption.
+
+Tactic Notation "remd" "in" hyp(h) :=
+  erewrite !scoping_md in h by eassumption.
+
+Lemma meta_ccscoping_conv :
+  ∀ Γ t m m',
+    ccscoping Γ t m →
+    m = m' →
+    ccscoping Γ t m'.
+Proof.
+  intros Γ t m m' h ->.
+  assumption.
+Qed.
+
 Lemma param_castrm :
-  ∀ Γ t,
+  ∀ Γ t m,
+    cscoping Γ t m →
     ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | (ε|t|) ⟧p ≡ ⟦ sc Γ | t ⟧p.
 Proof.
-  intros Γ t.
-  induction t in Γ |- *.
+  intros Δ t m h.
+  remember (sc Δ) as Γ eqn:e in *.
+  induction h in Δ, e |- *.
   all: try solve [ econv ].
   all: try solve [
     cbn - [mode_inb] ; rewrite <- ?md_castrm ;
@@ -2048,39 +2066,54 @@ Proof.
     destruct_ifs ; econv
   ].
   - cbn - [mode_inb]. rewrite !erase_castrm. econv.
-    eapply meta_ctx_param_conv.
-    + eapply IHt2 with (Γ := Γ,, (m0, ε|t1|)).
+    subst.
+    eapply meta_ctx_conv_conv.
+    + eapply IHh2 with (Δ := Δ ,, (mx, ε|A|)).
+      reflexivity.
     + cbn. rewrite !erase_castrm. reflexivity.
-    + cbn. reflexivity.
   - cbn - [mode_inb]. rewrite !erase_castrm.
-    destruct_ifs. all: econv.
-    + apply cstyping_one_none.
-    + eapply meta_ctx_param_conv.
-      * eapply IHt3 with (Γ := Γ ,, (m, ε|t1|)).
-      * cbn. rewrite e. reflexivity.
-      * cbn. reflexivity.
-    + eapply meta_ctx_param_conv.
-      * eapply IHt3 with (Γ := Γ ,, (m, ε|t1|)).
-      * cbn. rewrite e, e0. rewrite erase_castrm. reflexivity.
-      * cbn. reflexivity.
-    + eapply meta_ctx_param_conv.
-      * eapply IHt3 with (Γ := Γ ,, (m, ε|t1|)).
-      * cbn. rewrite e,e0. rewrite erase_castrm. reflexivity.
-      * cbn. reflexivity.
-  - cbn - [mode_inb]. destruct (mdc _ _) eqn:em. 1: eauto.
-    all: apply cconv_irr.
-    (* This is true only for well-scoped terms *)
-    (* This is a pain, but well, we have to do it. *)
-Abort.
+    destruct_ifs.
+    + econstructor. 1: eauto.
+      eapply cconv_close.
+      eapply meta_ctx_conv_conv.
+      * eapply IHh3 with (Δ := Δ ,, (mx, ε|A|)).
+        subst. reflexivity.
+      * cbn. subst. rewrite !erase_castrm. rewrite e0. reflexivity.
+    + econv.
+      eapply meta_ctx_conv_conv.
+      * eapply IHh3 with (Δ := Δ ,, (mx, ε|A|)).
+        subst. reflexivity.
+      * cbn. subst. rewrite !erase_castrm. rewrite e0,e1. reflexivity.
+    + econv.
+      eapply meta_ctx_conv_conv.
+      * eapply IHh3 with (Δ := Δ ,, (mx, ε|A|)).
+        subst. reflexivity.
+      * cbn. subst. rewrite !erase_castrm. rewrite e0,e1. reflexivity.
+  - eapply cconv_trans. 1:{ eapply IHh6. eassumption. }
+    destruct (isKind m) eqn:ek. 1:{ mode_eqs. contradiction. }
+    subst.
+    apply cconv_irr.
+    + eapply param_scoping in h6. rewrite ek in h6.
+      rewrite <- csc_param_ctx in h6. assumption.
+    + rewrite csc_param_ctx. eapply meta_ccscoping_conv.
+      * eapply param_scoping. constructor. all: eassumption.
+      * rewrite ek. reflexivity.
+Qed.
 
 Lemma param_castrm_conv :
-  ∀ Γ u v,
+  ∀ Γ u v mu mv,
+    cscoping Γ u mu →
+    cscoping Γ v mv →
     Γ ⊢ u ε≡ v →
     ⟦ Γ ⟧p ⊢ᶜ ⟦ sc Γ | u ⟧p ≡ ⟦ sc Γ | v ⟧p.
 Proof.
-  intros Γ u v h.
+  intros Γ u v mu mv hu hv h.
   eapply param_conv in h.
-Abort.
+  eapply cconv_trans.
+  - apply cconv_sym. eapply param_castrm. eassumption.
+  - eapply cconv_trans. 1: eassumption.
+    eapply param_castrm. eassumption.
+Qed.
 
 (** Parametricity preserves typing **)
 
@@ -2279,9 +2312,6 @@ Proof.
   intro n. apply pren_S.
 Qed.
 
-Ltac remd :=
-  erewrite !scoping_md by eassumption.
-
 Hint Extern 11 (relm _ = _) =>
   remd ; reflexivity : cc_type.
 
@@ -2299,9 +2329,6 @@ Hint Extern 11 (isProp _ = _) =>
 
 Hint Extern 10 (isProp _ = _) =>
   reflexivity : cc_type.
-
-Tactic Notation "remd" "in" hyp(h) :=
-  erewrite !scoping_md in h by eassumption.
 
 Hint Extern 100 (nth_error _ _ = _) =>
   reflexivity : cc_type.
