@@ -77,29 +77,19 @@ Qed.
 
 **)
 
-Fixpoint urm (t : term) : term :=
-  match t with
-  | var x => var x
-  | Sort m i => Sort m 0
-  | Pi i j m mx A B => Pi 0 0 m mx (urm A) (urm B)
-  | lam mx A B t => lam mx (urm A) (urm B) (urm t)
-  | app u v => app (urm u) (urm v)
-  | Erased A => Erased (urm A)
-  | hide t => hide (urm t)
-  | reveal t P p => reveal (urm t) (urm P) (urm p)
-  | Reveal t P => Reveal (urm t) (urm P)
-  | toRev t p u => toRev (urm t) (urm p) (urm u)
-  | fromRev t p u => fromRev (urm t) (urm p) (urm u)
-  | gheq A u v => gheq (urm A) (urm u) (urm v)
-  | ghrefl A u => ghrefl (urm A) (urm u)
-  | ghcast A u v e P t => ghcast (urm A) (urm u) (urm v) (urm e) (urm P) (urm t)
-  | bot => bot
-  | bot_elim m A p => bot_elim m (urm A) (urm p)
-  end.
-
-Notation "Γ ⊢ u ≈ v" :=
-  (Γ ⊢ urm u ε≡ urm v)
+Reserved Notation "Γ ⊢ u ≈ v"
   (at level 80, u, v at next level, format "Γ  ⊢  u  ≈  v").
+
+Inductive conv_upto_univ Γ : term → term → Prop :=
+| econv_upto : ∀ u v, Γ ⊢ u ε≡ v → Γ ⊢ u ≈ v
+| cong_Sort_upto : ∀ i j m, Γ ⊢ Sort m i ≈ Sort m j
+| conv_upto_trans : ∀ u v w, Γ ⊢ u ≈ v → Γ ⊢ v ≈ w → Γ ⊢ u ≈ w
+where "Γ ⊢ u ≈ v" := (conv_upto_univ Γ u v).
+
+(* TODO: Before going on, what can I deduce from Sort m i ≈ Sort m' j?
+  I would like to still deduce m = m'. Maybe the function to neutralise sorts
+  was better after all?
+*)
 
 Ltac unitac h1 h2 :=
   let h1' := fresh h1 in
@@ -126,7 +116,7 @@ Proof.
     destruct_exists hA'.
     destruct_exists hB'.
     intuition subst.
-    eapply conv_trans. 1: eapply conv_sym.
+    (* eapply conv_trans. 1: eapply conv_sym. *)
     (* Maybe the definition of ≈ is not the best one here. *)
 
   (* - eapply meta_conv_trans_l. 2: eassumption.
