@@ -3697,15 +3697,15 @@ Proof.
                 + cbn - [mode_inb]. rewrite exp. subst rmx.
                   destruct (relm mx) eqn:erx. 2: destruct (isGhost mx) eqn:egx.
                   * cbn.
-                    change (epm_lift (ctyval ?u ?v))
-                    with (ctyval (epm_lift u) (epm_lift v)).
+                    change (epm_lift (ctyval ?mk ?u ?v))
+                    with (ctyval mk (epm_lift u) (epm_lift v)).
                     unfold pType.
                     eapply cconv_trans. 1: constructor.
                     cbn. econv.
                   * {
                     cbn.
-                    change (epm_lift (ctyval ?u ?v))
-                    with (ctyval (epm_lift u) (epm_lift v)).
+                    change (epm_lift (ctyval ?mk ?u ?v))
+                    with (ctyval mk (epm_lift u) (epm_lift v)).
                     unfold pType.
                     eapply cconv_trans. 1: constructor.
                     cbn. ssimpl. change (epm_lift ?t) with (vreg ⋅ t).

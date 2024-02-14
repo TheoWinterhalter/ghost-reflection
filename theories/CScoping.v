@@ -67,10 +67,10 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ (cty i) cType
 
 | cscope_tyval :
-    ∀ A a,
+    ∀ mk A a,
       ccscoping Γ A cType →
       ccscoping Γ a cType →
-      ccscoping Γ (ctyval A a) cType
+      ccscoping Γ (ctyval mk A a) cType
 
 | cscope_tyerr :
     ccscoping Γ ctyerr cType

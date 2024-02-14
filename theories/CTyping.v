@@ -27,12 +27,12 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ capp (clam mx A t) u ≡ t <[ u .. ]
 
 | cconv_El_val :
-    ∀ A a,
-      Γ ⊢ᶜ cEl (ctyval A a) ≡ A
+    ∀ mk A a,
+      Γ ⊢ᶜ cEl (ctyval mk A a) ≡ A
 
 | cconv_Err_val :
-    ∀ A a,
-      Γ ⊢ᶜ cErr (ctyval A a) ≡ a
+    ∀ mk A a,
+      Γ ⊢ᶜ cErr (ctyval mk A a) ≡ a
 
 | cconv_El_err :
     Γ ⊢ᶜ cEl ctyerr ≡ cunit
@@ -78,10 +78,10 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ cbot_elim m A p ≡ cbot_elim m A' p'
 
 | ccong_tyval :
-    ∀ A A' a a',
+    ∀ mk A A' a a',
       Γ ⊢ᶜ A ≡ A' →
       Γ ⊢ᶜ a ≡ a' →
-      Γ ⊢ᶜ ctyval A a ≡ ctyval A' a'
+      Γ ⊢ᶜ ctyval mk A a ≡ ctyval mk A' a'
 
 | ccong_El :
     ∀ T T',
@@ -213,10 +213,10 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ cty i : cSort cType (S i)
 
 | ctype_tyval :
-    ∀ i A a,
+    ∀ i mk A a,
       Γ ⊢ᶜ A : cSort cType i →
       Γ ⊢ᶜ a : A →
-      Γ ⊢ᶜ ctyval A a : cty i
+      Γ ⊢ᶜ ctyval mk A a : cty i
 
 | ctype_tyerr :
     ∀ i,

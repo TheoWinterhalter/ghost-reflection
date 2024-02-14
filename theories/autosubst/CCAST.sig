@@ -1,6 +1,7 @@
 -- Universe levels and qualities
 level : Type
 cmode : Type
+mark : Type
 
 -- Syntax
 
@@ -24,7 +25,7 @@ cbot_elim : cmode -> cterm -> cterm -> cterm
 -- Special inductive types
 
 cty : level -> cterm
-ctyval : cterm -> cterm -> cterm
+ctyval : mark -> cterm -> cterm -> cterm
 ctyerr : cterm
 cEl : cterm -> cterm
 cErr : cterm -> cterm

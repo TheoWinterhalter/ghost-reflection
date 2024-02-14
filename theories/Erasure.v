@@ -14,7 +14,7 @@ Set Equations Transparent.
 (** Lifting from cty i to cty j **)
 
 Definition cty_lift A :=
-  ctyval (cEl A) (cErr A).
+  ctyval Any (cEl A) (cErr A).
 
 Lemma cscope_ty_lift :
   ∀ Γ A,
@@ -75,6 +75,16 @@ Definition relv (Γ : scope) x :=
   | None => false
   end.
 
+(** Mark corresponding to a mode **)
+
+Definition mdmk (m : mode) :=
+  match m with
+  | mKind => WasKind
+  | mType => WasType
+  | mGhost => WasGhost
+  | mProp => Any
+  end.
+
 (** Erasure translation **)
 
 Reserved Notation "⟦ G | u '⟧ε'" (at level 9, G, u at next level).
@@ -85,13 +95,13 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧ε := if relv Γ x then cvar x else cDummy ;
   ⟦ Γ | Sort m i ⟧ε :=
     if isProp m
-    then ctyval cunit ctt (* In the paper, ⊤/* *)
-    else ctyval (cty i) ctyerr ;
+    then ctyval Any cunit ctt
+    else ctyval (mdmk m) (cty i) ctyerr ;
   ⟦ Γ | Pi i j m mx A B ⟧ε :=
     if relm mx && negb (isProp m)
-    then ctyval (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
+    then ctyval Any (cPi cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧τ) (clam cType ⟦ Γ | A ⟧τ ⟦ mx :: Γ | B ⟧∅)
     else if isGhost m && isGhost mx
-    then ctyval (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (ignore ⟦ mx :: Γ | B ⟧∅))
+    then ctyval Any (⟦ Γ | A ⟧τ ⇒[ cType ] (close ⟦ mx :: Γ | B ⟧τ)) (clam cType ⟦ Γ | A ⟧τ (ignore ⟦ mx :: Γ | B ⟧∅))
     else if isProp m
     then ctt
     else cty_lift (close ⟦ mx :: Γ | B ⟧ε) ;
@@ -710,7 +720,8 @@ Proof.
         -- eapply erase_typing_El. 2: eassumption.
           econstructor.
           ++ eauto.
-          ++ cbn. rewrite e'. apply cconv_refl.
+          ++ cbn. rewrite e'. eapply cconv_trans. 1: constructor.
+            apply cconv_sym. constructor.
           ++ eapply erase_typing_El with (m := mKind). 2: reflexivity.
             cbn. rewrite e'.
             econstructor.
@@ -725,14 +736,22 @@ Proof.
           ++ constructor.
           ++ eauto with cc_type.
         -- eapply erase_typing_El.
-          ++ cbn. rewrite ex. eauto.
+          ++ cbn. rewrite ex. econstructor.
+            ** eauto.
+            ** eapply cconv_trans. 1: constructor.
+              apply cconv_sym. constructor.
+            ** econstructor. econstructor. all: econstructor.
           ++ assumption.
         -- econstructor.
           ++ eapply erase_typing_El.
             ** cbn. rewrite ex. eauto.
             ** assumption.
           ++ eapply erase_typing_Err.
-            ** cbn. rewrite ex. eauto.
+            ** cbn. rewrite ex. econstructor.
+              --- eauto.
+              --- eapply cconv_trans. 1: constructor.
+                apply cconv_sym. constructor.
+              --- econstructor. econstructor. all: econstructor.
             ** assumption.
     + destruct m. all: discriminate.
     + destruct m. all: discriminate.
@@ -822,7 +841,8 @@ Proof.
   - erewrite scoping_md in IHh. 2: eassumption.
     cbn. econstructor.
     + eauto.
-    + apply cconv_sym. apply cconv_refl.
+    + apply cconv_sym. cbn. eapply cconv_trans. 1: constructor.
+      apply cconv_sym. constructor.
     + eauto with cc_type.
   - cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
     destruct m. all: discriminate.
