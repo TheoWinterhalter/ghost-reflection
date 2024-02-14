@@ -182,6 +182,30 @@ Notation "Γ ⊢ u ≈ v" :=
   (urm_ctx Γ ⊢ urm ε| u | ≡ urm ε| v |)
   (at level 80, u, v at next level, format "Γ  ⊢  u  ≈  v").
 
+Lemma urm_conv_aux :
+  ∀ Γ A A' B B',
+    Γ ⊢ A' ε≡ A →
+    Γ ⊢ B' ε≡ B →
+    Γ ⊢ A' ≈ B' →
+    Γ ⊢ A ≈ B.
+Proof.
+  intros Γ A A' B B' hA hB h.
+  eapply conv_trans.
+  - apply conv_sym. eapply conv_urm. eassumption.
+  - eapply conv_trans.
+    2:{ eapply conv_urm. eassumption. }
+    assumption.
+Qed.
+
+Lemma conv_meta_refl :
+  ∀ Γ u v,
+    u = v →
+    Γ ⊢ u ≡ v.
+Proof.
+  intros Γ u ? ->.
+  apply conv_refl.
+Qed.
+
 Ltac unitac h1 h2 :=
   let h1' := fresh h1 in
   let h2' := fresh h2 in
@@ -189,8 +213,8 @@ Ltac unitac h1 h2 :=
   destruct_exists h1' ;
   destruct_exists h2' ;
   intuition subst ;
-  eapply conv_trans ; [
-    eapply conv_sym ; eassumption
+  eapply urm_conv_aux ; [
+    eassumption ..
   | idtac
   ].
 
@@ -202,48 +226,16 @@ Lemma type_unique :
 Proof.
   intros Γ t A B hA hB.
   induction t in Γ, A, B, hA, hB |- *.
-  all: try unitac hA hB. all: try assumption.
-  - ttinv hA hA'. ttinv hB hB'.
-    destruct_exists hA'.
-    destruct_exists hB'.
-    intuition subst.
-    eapply conv_trans.
-    1:{ eapply conv_sym. eapply conv_urm. eassumption. }
-    eapply meta_conv_trans_l. 2:{ eapply conv_urm. eassumption. }
-    congruence.
-
-  (* - eapply meta_conv_trans_l. 2: eassumption.
-    f_equal. congruence.
+  all: try unitac hA hB. all: try apply conv_refl.
+  - apply conv_meta_refl. congruence.
   - repeat scoping_fun.
-    eapply IHt2 in H7. 2: eassumption.
-    eapply conv_trans. 2: eassumption.
-    cbn.
-    constructor.
-    + apply conv_refl.
-    + apply conv_refl.
-    + eapply IHt1 in H6. 2: exact H5. assumption.
-    + *) (* eapply conv_sym. assumption.
+    cbn. apply conv_refl.
   - repeat scoping_fun.
-    eapply conv_trans. 2: eassumption.
+    rewrite !castrm_subst.
+    rewrite !urm_subst.
     eapply conv_subst.
-    + apply styping_one. all: eauto.
-    + (* Without injectivity of Π I'm kinda stuck here. *)
-      (* Another solution is of course to also annotate application but come on
-        it sounds really bad and I'm not sure I can recover from this.
-      *)
-      admit.
-  - eapply conv_trans. 2: eassumption.
-    (* eapply IHt. all: auto. *)
-    (* Another problem arises here with respect to sorts! *)
-    (* I know Type_i ≡ Type_j but not Ghost_i ≡ Ghost_j *)
-    (* What would be a reasonable option? *)
-    (* Once again, it seems uniqueness may be out of reach, let's postpone *)
-    admit.
-  - eapply conv_trans. 2: eassumption.
-    constructor. eapply IHt. all: auto.
-  - eapply conv_trans. 2: eassumption.
-    constructor. 1: apply conv_refl.
-    eapply IHt1 in H19. 2: eassumption.
-    (* Missing injectivity of gheq too. Once again, we could add arguements *)
-    admit. *)
+    + admit.
+    + admit. (* Wait it seems we really need injectivity of Pi types here *)
+  - cbn. econstructor. eauto.
+  - admit.
 Abort.
