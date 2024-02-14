@@ -1270,65 +1270,6 @@ Ltac ttinv h h' :=
     end
   end.
 
-(** Uniqueness of type **)
-
-Ltac unitac h1 h2 :=
-  let h1' := fresh h1 in
-  let h2' := fresh h2 in
-  ttinv h1 h1' ; ttinv h2 h2' ;
-  destruct_exists h1' ;
-  destruct_exists h2' ;
-  intuition subst ;
-  eapply conv_trans ; [
-    eapply conv_sym ; eassumption
-  | idtac
-  ].
-
-(* Lemma type_unique :
-  ∀ Γ t A B,
-    Γ ⊢ t : A →
-    Γ ⊢ t : B →
-    Γ ⊢ A ε≡ B.
-Proof.
-  intros Γ t A B hA hB.
-  induction t in Γ, A, B, hA, hB |- *.
-  all: try unitac hA hB. all: try assumption.
-  - eapply meta_conv_trans_l. 2: eassumption.
-    f_equal. congruence.
-  - repeat scoping_fun.
-    eapply IHt2 in H7. 2: eassumption.
-    eapply conv_trans. 2: eassumption.
-    cbn.
-    constructor.
-    + apply conv_refl.
-    + apply conv_refl.
-    + eapply IHt1 in H6. 2: exact H5. assumption.
-    + (* eapply conv_sym. assumption.
-  - repeat scoping_fun.
-    eapply conv_trans. 2: eassumption.
-    eapply conv_subst.
-    + apply styping_one. all: eauto.
-    + (* Without injectivity of Π I'm kinda stuck here. *)
-      (* Another solution is of course to also annotate application but come on
-        it sounds really bad and I'm not sure I can recover from this.
-      *)
-      admit.
-  - eapply conv_trans. 2: eassumption.
-    (* eapply IHt. all: auto. *)
-    (* Another problem arises here with respect to sorts! *)
-    (* I know Type_i ≡ Type_j but not Ghost_i ≡ Ghost_j *)
-    (* What would be a reasonable option? *)
-    (* Once again, it seems uniqueness may be out of reach, let's postpone *)
-    admit.
-  - eapply conv_trans. 2: eassumption.
-    constructor. eapply IHt. all: auto.
-  - eapply conv_trans. 2: eassumption.
-    constructor. 1: apply conv_refl.
-    eapply IHt1 in H19. 2: eassumption.
-    (* Missing injectivity of gheq too. Once again, we could add arguements *)
-    admit. *)
-Abort. *)
-
 (** Validity (or presupposition) **)
 
 Lemma validity :

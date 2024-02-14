@@ -69,3 +69,98 @@ Proof.
   cbn in htp.
   eexists. eassumption.
 Qed.
+
+(** Uniqueness of typing
+
+  We show a restricted form of uniqueness ignoring universe levels.
+  This way we do not rely on the absence of cumulativity.
+
+**)
+
+Fixpoint urm (t : term) : term :=
+  match t with
+  | var x => var x
+  | Sort m i => Sort m 0
+  | Pi i j m mx A B => Pi 0 0 m mx (urm A) (urm B)
+  | lam mx A B t => lam mx (urm A) (urm B) (urm t)
+  | app u v => app (urm u) (urm v)
+  | Erased A => Erased (urm A)
+  | hide t => hide (urm t)
+  | reveal t P p => reveal (urm t) (urm P) (urm p)
+  | Reveal t P => Reveal (urm t) (urm P)
+  | toRev t p u => toRev (urm t) (urm p) (urm u)
+  | fromRev t p u => fromRev (urm t) (urm p) (urm u)
+  | gheq A u v => gheq (urm A) (urm u) (urm v)
+  | ghrefl A u => ghrefl (urm A) (urm u)
+  | ghcast A u v e P t => ghcast (urm A) (urm u) (urm v) (urm e) (urm P) (urm t)
+  | bot => bot
+  | bot_elim m A p => bot_elim m (urm A) (urm p)
+  end.
+
+Notation "Γ ⊢ u ≈ v" :=
+  (Γ ⊢ urm u ε≡ urm v)
+  (at level 80, u, v at next level, format "Γ  ⊢  u  ≈  v").
+
+Ltac unitac h1 h2 :=
+  let h1' := fresh h1 in
+  let h2' := fresh h2 in
+  ttinv h1 h1' ; ttinv h2 h2' ;
+  destruct_exists h1' ;
+  destruct_exists h2' ;
+  intuition subst ;
+  eapply conv_trans ; [
+    eapply conv_sym ; eassumption
+  | idtac
+  ].
+
+Lemma type_unique :
+  ∀ Γ t A B,
+    Γ ⊢ t : A →
+    Γ ⊢ t : B →
+    Γ ⊢ A ≈ B.
+Proof.
+  intros Γ t A B hA hB.
+  induction t in Γ, A, B, hA, hB |- *.
+  all: try unitac hA hB. all: try assumption.
+  - ttinv hA hA'. ttinv hB hB'.
+    destruct_exists hA'.
+    destruct_exists hB'.
+    intuition subst.
+    eapply conv_trans. 1: eapply conv_sym.
+    (* Maybe the definition of ≈ is not the best one here. *)
+
+  (* - eapply meta_conv_trans_l. 2: eassumption.
+    f_equal. congruence.
+  - repeat scoping_fun.
+    eapply IHt2 in H7. 2: eassumption.
+    eapply conv_trans. 2: eassumption.
+    cbn.
+    constructor.
+    + apply conv_refl.
+    + apply conv_refl.
+    + eapply IHt1 in H6. 2: exact H5. assumption.
+    + *) (* eapply conv_sym. assumption.
+  - repeat scoping_fun.
+    eapply conv_trans. 2: eassumption.
+    eapply conv_subst.
+    + apply styping_one. all: eauto.
+    + (* Without injectivity of Π I'm kinda stuck here. *)
+      (* Another solution is of course to also annotate application but come on
+        it sounds really bad and I'm not sure I can recover from this.
+      *)
+      admit.
+  - eapply conv_trans. 2: eassumption.
+    (* eapply IHt. all: auto. *)
+    (* Another problem arises here with respect to sorts! *)
+    (* I know Type_i ≡ Type_j but not Ghost_i ≡ Ghost_j *)
+    (* What would be a reasonable option? *)
+    (* Once again, it seems uniqueness may be out of reach, let's postpone *)
+    admit.
+  - eapply conv_trans. 2: eassumption.
+    constructor. eapply IHt. all: auto.
+  - eapply conv_trans. 2: eassumption.
+    constructor. 1: apply conv_refl.
+    eapply IHt1 in H19. 2: eassumption.
+    (* Missing injectivity of gheq too. Once again, we could add arguements *)
+    admit. *)
+Abort.
