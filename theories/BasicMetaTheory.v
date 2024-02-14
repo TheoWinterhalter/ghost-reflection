@@ -1264,7 +1264,7 @@ Ltac ttinv h h' :=
     | fromRev _ _ _ => eapply type_fromRev_inv in h as h'
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
     | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
-    | ghcast _ _ _ => eapply type_ghcast_inv in h as h'
+    | ghcast _ _ _ _ _ _ => eapply type_ghcast_inv in h as h'
     | bot => eapply type_bot_inv in h as h'
     | bot_elim _ _ _ => eapply type_bot_elim_inv in h as h'
     end

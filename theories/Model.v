@@ -237,5 +237,4 @@ Proof.
     + admit.
     + admit. (* Wait it seems we really need injectivity of Pi types here *)
   - cbn. econstructor. eauto.
-  - admit.
 Abort.
