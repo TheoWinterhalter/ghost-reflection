@@ -75,6 +75,8 @@ Qed.
   We show a restricted form of uniqueness ignoring universe levels.
   This way we do not rely on the absence of cumulativity.
 
+  In order to do this, we build a function which puts all universes to 0.
+
 **)
 
 Fixpoint urm (t : term) : term :=
@@ -98,8 +100,87 @@ Fixpoint urm (t : term) : term :=
   end.
 
 Notation "Γ ⊢ u ≈ v" :=
-  (Γ ⊢ urm u ε≡ urm v)
+  (Γ ⊢ ε| urm u | ≡ ε| urm v |)
   (at level 80, u, v at next level, format "Γ  ⊢  u  ≈  v").
+
+Lemma urm_ren :
+  ∀ t ρ,
+    urm (ρ ⋅ t) = ρ ⋅ (urm t).
+Proof.
+  intros t ρ.
+  induction t in ρ |- *.
+  all: solve [ cbn ; f_equal ; eauto ].
+Qed.
+
+Lemma urm_subst :
+  ∀ t σ,
+    urm (t <[ σ ]) = (urm t) <[ σ >> urm ].
+Proof.
+  intros t σ.
+  induction t in σ |- *.
+  all: try reflexivity.
+  all: try solve [ cbn ; f_equal ; eauto ].
+  - cbn. f_equal. 1: eauto.
+    rewrite IHt2. apply ext_term.
+    intros []. 1: reflexivity.
+    cbn. ssimpl. rewrite urm_ren. reflexivity.
+  - cbn. f_equal. 1:eauto.
+    + rewrite IHt2. apply ext_term.
+      intros []. 1: reflexivity.
+      cbn. ssimpl. rewrite urm_ren. reflexivity.
+    + rewrite IHt3. apply ext_term.
+      intros []. 1: reflexivity.
+      cbn. ssimpl. rewrite urm_ren. reflexivity.
+Qed.
+
+Lemma urm_scoping :
+  ∀ Γ t m,
+    scoping Γ t m →
+    scoping Γ (urm t) m.
+Proof.
+  intros Γ t m h.
+  induction h. all: solve [ econstructor ; eauto ].
+Qed.
+
+Definition urm_ctx (Γ : context) :=
+  map (λ '(m, A), (m, urm A)) Γ.
+
+Lemma sc_urm_ctx :
+  ∀ Γ,
+    sc (urm_ctx Γ) = sc Γ.
+Proof.
+  intros Γ.
+  unfold sc, urm_ctx. rewrite map_map.
+  apply map_ext. intros [m A]. reflexivity.
+Qed.
+
+Lemma urm_cscoping :
+  ∀ Γ t m,
+    cscoping Γ t m →
+    cscoping (urm_ctx Γ) (urm t) m.
+Proof.
+  intros Γ t m h. rewrite sc_urm_ctx.
+  apply urm_scoping. assumption.
+Qed.
+
+Lemma conv_urm :
+  ∀ Γ u v,
+    Γ ⊢ u ≡ v →
+    urm_ctx Γ ⊢ urm u ≡ urm v.
+Proof.
+  intros Γ u v h.
+  induction h.
+  all: try solve [ cbn ; econstructor ; eauto using urm_cscoping ].
+  - cbn. rewrite urm_subst. eapply conv_trans.
+    1:{
+      eapply conv_beta.
+      all: try eapply urm_cscoping ; eauto.
+      all: eapply urm_scoping. all: rewrite sc_urm_ctx. all: eassumption.
+    }
+    ssimpl. apply conv_refl.
+  - cbn. constructor. all: eauto.
+    all: unfold ueq. all: eauto.
+Qed.
 
 Ltac unitac h1 h2 :=
   let h1' := fresh h1 in
