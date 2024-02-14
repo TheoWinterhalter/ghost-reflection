@@ -64,6 +64,41 @@ Definition cc_tf_discr :=
     Γ ⊢ᶜ A ≡ B →
     hA = hB.
 
+(** Injectivity of sort modes **)
+
+Lemma sort_mode_inj :
+  ∀ Γ m m' i i',
+    Γ ⊢ Sort m i ≡ Sort m' i' →
+    m = m'.
+Proof.
+  intros Γ m m' i i' h.
+  eapply param_conv in h as hp.
+  cbn in hp.
+  destruct m, m'. all: try reflexivity. all: exfalso. all: cbn in hp.
+  - unfold pKind, pType in hp.
+    (* The following few lines should be a lemma *)
+    eapply ccong_app with (v := ctt) in hp. 2: apply cconv_refl.
+    eapply cconv_trans in hp. 2:{ apply cconv_sym. constructor. }
+    apply cconv_sym in hp.
+    eapply cconv_trans in hp. 2:{ apply cconv_sym. constructor. }
+    cbn in hp.
+    (* Ok, it seems I need injectivity of Pi in the end, and injectivity of
+      sorts. This changes the story for something weaker but simpler.
+      Maybe it's ok.
+    *)
+    admit.
+  - admit.
+  - unfold pKind, pProp in hp. admit.
+  - admit. (* Symmetry, would be nice to handle too *)
+  - eapply erase_conv in h as he. cbn in he.
+    (* Maybe I can actually deal with all of them this way? Assuming we add
+      a special info to ctyval.
+    *)
+    admit.
+  - unfold pType, pProp in hp.
+    eapply erase_conv in h as he. cbn in he.
+Abort.
+
 (** Relative consistency **)
 
 Definition cc_consistency :=
