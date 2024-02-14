@@ -14,9 +14,10 @@ Import CombineNotations.
 Set Default Goal Selector "!".
 Set Equations Transparent.
 
-(** Type former discrimination in the target
+(** Type former and constructor discrimination in the target
 
-  We assume that the target is able to distinguish the various type formers.
+  We assume that the target is able to distinguish the various type formers
+  as well as the constructors of inductive types.
   For instance an arrow type can't be convertible to unit.
 
 **)
@@ -25,22 +26,34 @@ Inductive ctf_head :=
 | chSort (m : cmode) (i : level)
 | chPi
 | chunit
+| chtt
 | chtop
+| chstar
 | chbot
 | chty
+| chtyval
+| chtyerr
 | chsquash
-| chteq.
+| chsq
+| chteq
+| chrefl.
 
 Definition chead (t : cterm) : option ctf_head :=
   match t with
   | cSort m i => Some (chSort m i)
   | cPi mx A B => Some chPi
   | cunit => Some chunit
+  | ctt => Some chtt
   | ctop => Some chtop
+  | cstar => Some chstar
   | cbot => Some chbot
   | cty i => Some chty
+  | ctyval _ _ => Some chtyval
+  | ctyerr => Some chtyerr
   | squash _ => Some chsquash
+  | sq _ => Some chsq
   | teq _ _ _ => Some chteq
+  | trefl _ _ => Some chrefl
   | _ => None
   end.
 
@@ -134,6 +147,9 @@ Proof.
       and maybe have a silly distincition with cgtyval or something.
       It could also be a simple bit in ctyval that's ignored for all purposes.
     *)
+    (* For the various cases, maybe we could prove a principle that allows
+      to handle symmetry?
+     *)
     admit.
   - admit.
   - admit.
