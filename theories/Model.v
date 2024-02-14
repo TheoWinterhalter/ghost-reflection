@@ -99,10 +99,6 @@ Fixpoint urm (t : term) : term :=
   | bot_elim m A p => bot_elim m (urm A) (urm p)
   end.
 
-Notation "Γ ⊢ u ≈ v" :=
-  (Γ ⊢ ε| urm u | ≡ ε| urm v |)
-  (at level 80, u, v at next level, format "Γ  ⊢  u  ≈  v").
-
 Lemma urm_ren :
   ∀ t ρ,
     urm (ρ ⋅ t) = ρ ⋅ (urm t).
@@ -182,6 +178,10 @@ Proof.
     all: unfold ueq. all: eauto.
 Qed.
 
+Notation "Γ ⊢ u ≈ v" :=
+  (urm_ctx Γ ⊢ urm ε| u | ≡ urm ε| v |)
+  (at level 80, u, v at next level, format "Γ  ⊢  u  ≈  v").
+
 Ltac unitac h1 h2 :=
   let h1' := fresh h1 in
   let h2' := fresh h2 in
@@ -207,8 +207,10 @@ Proof.
     destruct_exists hA'.
     destruct_exists hB'.
     intuition subst.
-    eapply conv_trans. 1: eapply conv_sym.
-    (* Maybe the definition of ≈ is not the best one here. *)
+    eapply conv_trans.
+    1:{ eapply conv_sym. eapply conv_urm. eassumption. }
+    eapply meta_conv_trans_l. 2:{ eapply conv_urm. eassumption. }
+    congruence.
 
   (* - eapply meta_conv_trans_l. 2: eassumption.
     f_equal. congruence.
