@@ -130,6 +130,18 @@ Definition gtt_tf_discr :=
 
 Derive NoConfusion for tf_head.
 
+Lemma cc_tf_discr_l :
+  cc_tf_discr →
+  ∀ Γ u v hu,
+    chead u = Some hu →
+    Γ ⊢ᶜ u ≡ v →
+    whenSome (λ hv, hu = hv) (chead v).
+Proof.
+  intros hdiscr Γ u v hu eu h.
+  destruct (chead v) eqn:ev. 2: constructor.
+  cbn. eapply hdiscr. all: eassumption.
+Qed.
+
 Lemma relative_tf_discr :
   cc_tf_discr →
   gtt_tf_discr.
@@ -149,11 +161,26 @@ Proof.
     *)
     (* For the various cases, maybe we could prove a principle that allows
       to handle symmetry?
+
+      Maybe we have something even smarter to do? An invariant of each type
+      former that would be preserved by parametricity maybe?
+      Unclear such a thing exists.
+      Maybe we should limit ourselves to distinguishing the sorts?
      *)
+    admit.
+  - cbn in eA. noconf eA.
+    cbn - [mode_inb] in he, hp.
+    admit.
+  - cbn in eA. noconf eA.
+    cbn in hp.
+    (* Only for scoped terms? Or do we give up on this one? *)
     admit.
   - admit.
   - admit.
-  - admit.
-  - admit.
-  - admit.
+  - cbn in eA. noconf eA.
+    cbn in hp. eapply cc_tf_discr_l in hp as e. 2: assumption. 2: reflexivity.
+    destruct B. all: noconf eB.
+    all: cbn in e. all: try discriminate.
+    + destruct (isKind m) eqn:ek.
+      * mode_eqs. cbn in e. (* This approach is flawed sadly *)
 Abort.
