@@ -218,6 +218,20 @@ Ltac unitac h1 h2 :=
   | idtac
   ].
 
+(* TODO
+
+  Several ideas to solve the issue:
+  - I could consider a rule for injectivity of Pi (say just the codomain)
+    and show it is also preserved by the translation (say erasure).
+    Could this idea generalise to showing injectivity actually?
+  - Another solution is to rely on uniqueness (modulo) in the target
+    and take A : Sort m i and A : Sort m' j to their image by erasure to
+    conclude that m = m' since that's all we need in the end.
+    This sounds the most promising and after that I could probably get rid
+    of the second annotation on λ.
+
+*)
+
 Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
