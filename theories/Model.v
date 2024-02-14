@@ -86,3 +86,58 @@ Proof.
   clear em. mode_eqs. cbn in htp.
   eexists. eassumption.
 Qed.
+
+(** Type former discrimination in the source **)
+
+Inductive tf_head :=
+| hSort (m : mode) (i : level)
+| hPi
+| hErased
+| hReveal
+| hgheq
+| hbot.
+
+Definition head (t : term) : option tf_head :=
+  match t with
+  | Sort m i => Some (hSort m i)
+  | Pi i j m mx A B => Some hPi
+  | Erased _ => Some hErased
+  | Reveal _ _ => Some hReveal
+  | gheq _ _ _ => Some hgheq
+  | bot => Some hbot
+  | _ => None
+  end.
+
+Definition gtt_tf_discr :=
+  ∀ Γ A B hA hB,
+    head A = Some hA →
+    head B = Some hB →
+    Γ ⊢ A ≡ B →
+    hA = hB.
+
+Derive NoConfusion for tf_head.
+
+Lemma relative_tf_discr :
+  cc_tf_discr →
+  gtt_tf_discr.
+Proof.
+  intros hdiscr. intros Γ A B hA hB eA eB h.
+  eapply erase_conv in h as he.
+  eapply param_conv in h as hp.
+  destruct A. all: try discriminate.
+  - cbn in eA. noconf eA.
+    cbn in he, hp.
+    (* It's not clear how to do it in a simple way (like not 36 cases)
+      but more importantly, neither erasure nor parametricity distinguish
+      Ghost and Type. Is there a way to do it nicely?
+      I could maybe assume discrimination of constructors too
+      and maybe have a silly distincition with cgtyval or something.
+      It could also be a simple bit in ctyval that's ignored for all purposes.
+    *)
+    admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+Abort.
