@@ -302,3 +302,21 @@ Proof.
     + admit. (* Wait it seems we really need injectivity of Pi types here *)
   - cbn. econstructor. eauto.
 Abort.
+
+(** Let's try the direct approach for the lemma we want **)
+
+Lemma mode_coherence :
+  ∀ Γ t A m i,
+    wf Γ →
+    Γ ⊢ A : Sort m i →
+    Γ ⊢ t : A →
+    cscoping Γ t m.
+Proof.
+  intros Γ t A m i hΓ hA h.
+  induction h in hΓ, m, i, hA |- *.
+  - constructor. unfold sc. rewrite nth_error_map.
+    rewrite H. cbn.
+    (* From hΓ we only get A : Sort m0 j and we don't have anything more
+      so we're essentially back to the general case.
+    *)
+Abort.
