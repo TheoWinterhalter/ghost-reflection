@@ -10,7 +10,7 @@ From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
-  Scoping TermMode.
+  Scoping TermMode Typing.
 From GhostTT Require Export Univ TermNotations.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
@@ -22,129 +22,6 @@ Set Equations Transparent.
 
 Reserved Notation "Γ ⊢ˣ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢ˣ  t  :  A").
-
-Reserved Notation "Γ ⊢ˣ u ≡ v"
-  (at level 80, u, v at next level, format "Γ  ⊢ˣ  u  ≡  v").
-
-Inductive conversion (Γ : context) : term → term → Type :=
-
-(** Computation rules **)
-
-| rconv_beta :
-    ∀ m mx A B t u,
-      cscoping Γ A mKind →
-      scoping (mx :: sc Γ) B mKind →
-      scoping (mx :: sc Γ) t m →
-      cscoping Γ u mx →
-      Γ ⊢ˣ app (lam mx A B t) u ≡ t <[ u .. ]
-
-| reveal_hide :
-    ∀ mp t P p,
-      cscoping Γ t mType →
-      cscoping Γ P mKind →
-      cscoping Γ p mp →
-      In mp [ mProp ; mGhost ] →
-      Γ ⊢ˣ reveal (hide t) P p ≡ app p t
-
-(** Congruence rules **)
-
-(** A rule to quotient away all levels of Prop, making it impredicative **)
-| cong_Prop :
-    ∀ i j,
-      Γ ⊢ˣ Sort mProp i ≡ Sort mProp j
-
-| cong_Pi :
-    ∀ i i' j j' m mx A A' B B',
-      Γ ⊢ˣ A ≡ A' →
-      Γ ,, (mx, A) ⊢ˣ B ≡ B' →
-      ueq mx i i' →
-      ueq m j j' →
-      Γ ⊢ˣ Pi i j m mx A B ≡ Pi i' j' m mx A' B'
-
-| cong_lam :
-    ∀ mx A A' B B' t t',
-      Γ ⊢ˣ A ≡ A' →
-      Γ ,, (mx, A) ⊢ˣ B ≡ B' →
-      Γ ,, (mx, A) ⊢ˣ t ≡ t' →
-      Γ ⊢ˣ lam mx A B t ≡ lam mx A' B' t'
-
-| cong_app :
-    ∀ u u' v v',
-      Γ ⊢ˣ u ≡ u' →
-      Γ ⊢ˣ v ≡ v' →
-      Γ ⊢ˣ app u v ≡ app u' v'
-
-| cong_Erased :
-    ∀ A A',
-      Γ ⊢ˣ A ≡ A' →
-      Γ ⊢ˣ Erased A ≡ Erased A'
-
-| cong_hide :
-    ∀ u u',
-      Γ ⊢ˣ u ≡ u' →
-      Γ ⊢ˣ hide u ≡ hide u'
-
-| cong_reveal :
-    ∀ t t' P P' p p',
-      Γ ⊢ˣ t ≡ t' →
-      Γ ⊢ˣ P ≡ P' →
-      Γ ⊢ˣ p ≡ p' →
-      Γ ⊢ˣ reveal t P p ≡ reveal t' P' p'
-
-| cong_Reveal :
-    ∀ t t' p p',
-      Γ ⊢ˣ t ≡ t' →
-      Γ ⊢ˣ p ≡ p' →
-      Γ ⊢ˣ Reveal t p ≡ Reveal t' p'
-
-| cong_gheq :
-    ∀ A A' u u' v v',
-      Γ ⊢ˣ A ≡ A' →
-      Γ ⊢ˣ u ≡ u' →
-      Γ ⊢ˣ v ≡ v' →
-      Γ ⊢ˣ gheq A u v ≡ gheq A' u' v'
-
-(* No need for it thanks to proof irrelevance *)
-(* | cong_ghrefl :
-    ∀ A A' u u',
-      Γ ⊢ˣ A ≡ A' →
-      Γ ⊢ˣ u ≡ u' →
-      Γ ⊢ˣ ghrefl A u ≡ ghrefl A' u' *)
-
-(* Maybe not needed? *)
-| cong_bot_elim :
-    ∀ m A A' p p',
-      Γ ⊢ˣ A ≡ A' →
-      (* Needed because syntactically we don't know p and p' are irrelevant *)
-      Γ ⊢ˣ p ≡ p' →
-      Γ ⊢ˣ bot_elim m A p ≡ bot_elim m A' p'
-
-(** Structural rules **)
-
-| rconv_refl :
-    ∀ u,
-      Γ ⊢ˣ u ≡ u
-
-| rconv_sym :
-    ∀ u v,
-      Γ ⊢ˣ u ≡ v →
-      Γ ⊢ˣ v ≡ u
-
-| rconv_trans :
-    ∀ u v w,
-      Γ ⊢ˣ u ≡ v →
-      Γ ⊢ˣ v ≡ w →
-      Γ ⊢ˣ u ≡ w
-
-(** Proof irrelevance **)
-
-| rconv_irr :
-    ∀ p q,
-      cscoping Γ p mProp →
-      cscoping Γ q mProp →
-      Γ ⊢ˣ p ≡ q
-
-where "Γ ⊢ˣ u ≡ v" := (conversion Γ u v).
 
 Inductive typing (Γ : context) : term → term → Type :=
 
@@ -279,7 +156,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       cscoping Γ B mKind →
       cscoping Γ t m →
       Γ ⊢ˣ t : A →
-      Γ ⊢ˣ A ≡ B →
+      Γ ⊢ A ≡ B →
       Γ ⊢ˣ B : Sort m i →
       Γ ⊢ˣ t : B
 
