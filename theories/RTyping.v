@@ -26,7 +26,7 @@ Reserved Notation "Γ ⊢ˣ t : A"
 Reserved Notation "Γ ⊢ˣ u ≡ v"
   (at level 80, u, v at next level, format "Γ  ⊢ˣ  u  ≡  v").
 
-Inductive conversion (Γ : context) : term → term → Prop :=
+Inductive conversion (Γ : context) : term → term → Type :=
 
 (** Computation rules **)
 
@@ -146,7 +146,7 @@ Inductive conversion (Γ : context) : term → term → Prop :=
 
 where "Γ ⊢ˣ u ≡ v" := (conversion Γ u v).
 
-Inductive typing (Γ : context) : term → term → Prop :=
+Inductive typing (Γ : context) : term → term → Type :=
 
 | rtype_var :
     ∀ x m A,
@@ -304,7 +304,7 @@ where "Γ ⊢ˣ t : A" := (typing Γ t A).
 
 (** Context formation **)
 
-Inductive rwf : context → Prop :=
+Inductive rwf : context → Type :=
 | rwf_nil : rwf nil
 | rwf_cons :
     ∀ Γ m i A,
