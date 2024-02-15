@@ -2,124 +2,13 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping.
+From GhostTT Require Export Univ TermNotations.
 
 Import ListNotations.
 
 Set Default Goal Selector "!".
 
 Open Scope subst_scope.
-
-Definition mode_eqb (m m' : mode) : bool :=
-  match m, m' with
-  | mProp, mProp
-  | mGhost, mGhost
-  | mType, mType
-  | mKind, mKind => true
-  | _,_ => false
-  end.
-
-Definition isProp m := mode_eqb m mProp.
-Definition isGhost m := mode_eqb m mGhost.
-Definition isType m := mode_eqb m mType.
-Definition isKind m := mode_eqb m mKind.
-
-Lemma isKind_eq :
-  ∀ m, isKind m = true → m = mKind.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Lemma isType_eq :
-  ∀ m, isType m = true → m = mType.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Lemma isGhost_eq :
-  ∀ m, isGhost m = true → m = mGhost.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Lemma isProp_eq :
-  ∀ m, isProp m = true → m = mProp.
-Proof.
-  intros [] e. all: try discriminate.
-  reflexivity.
-Qed.
-
-Ltac mode_eqs :=
-  repeat lazymatch goal with
-  | e : isKind ?m = true |- _ => eapply isKind_eq in e ; try subst m
-  | e : isType ?m = true |- _ => eapply isType_eq in e ; try subst m
-  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; try subst m
-  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; try subst m
-  end.
-
-Definition mode_inb := inb mode_eqb.
-
-Notation relm m :=
-  (mode_inb m [ mType ; mKind ]).
-
-Notation "A ⇒[ i | j / mx | m ] B" :=
-  (Pi i j m mx A (shift ⋅ B))
-  (at level 20, i, j, mx, m at next level, right associativity).
-
-Notation top := (bot ⇒[ 0 | 0 / mProp | mProp ] bot).
-
-(*** Equality of universe levels **)
-Definition ueq (m : mode) (i j : level) :=
-  m = mProp ∨ i = j.
-
-Lemma ueq_eq :
-  ∀ m i j,
-    isProp m = false →
-    ueq m i j →
-    i = j.
-Proof.
-  intros m i j hm [-> | ->]. 1: discriminate.
-  reflexivity.
-Qed.
-
-Lemma ueq_Kind_eq :
-  ∀ i j,
-    ueq mKind i j →
-    i = j.
-Proof.
-  intros i j e.
-  eapply ueq_eq. 2: eassumption.
-  reflexivity.
-Qed.
-
-Lemma ueq_Type_eq :
-  ∀ i j,
-    ueq mType i j →
-    i = j.
-Proof.
-  intros i j e.
-  eapply ueq_eq. 2: eassumption.
-  reflexivity.
-Qed.
-
-Lemma ueq_Ghost_eq :
-  ∀ i j,
-    ueq mGhost i j →
-    i = j.
-Proof.
-  intros i j e.
-  eapply ueq_eq. 2: eassumption.
-  reflexivity.
-Qed.
-
-Ltac ueq_subst :=
-  repeat lazymatch goal with
-  | e : ueq mKind ?i ?j |- _ => eapply ueq_Kind_eq in e ; try subst i
-  | e : ueq mType ?i ?j |- _ => eapply ueq_Type_eq in e ; try subst i
-  | e : ueq mGhost ?i ?j |- _ => eapply ueq_Ghost_eq in e ; try subst i
-  end.
 
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
@@ -246,16 +135,6 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ p ≡ q
 
 where "Γ ⊢ u ≡ v" := (conversion Γ u v).
-
-(** Successor of a universe **)
-Definition usup m i :=
-  if isProp m then 0 else S i.
-
-(** Maximum of a universe **)
-Definition umax mx m i j :=
-  if isProp m then 0
-  else if isProp mx then j
-  else max i j.
 
 Inductive typing (Γ : context) : term → term → Prop :=
 

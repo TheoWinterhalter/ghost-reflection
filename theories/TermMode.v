@@ -2,7 +2,9 @@ From Coq Require Import Utf8 List.
 From Equations Require Import Equations.
 
 From GhostTT.autosubst Require Import GAST.
-From GhostTT Require Import BasicAST ContextDecl Scoping.
+From GhostTT Require Import Util BasicAST ContextDecl Scoping.
+
+Import ListNotations.
 
 Set Default Goal Selector "!".
 
@@ -72,3 +74,60 @@ Proof.
   intros Γ t m m' h h'.
   eapply scoping_md in h, h'. congruence.
 Qed.
+
+(** Useful tools **)
+
+Definition mode_eqb (m m' : mode) : bool :=
+  match m, m' with
+  | mProp, mProp
+  | mGhost, mGhost
+  | mType, mType
+  | mKind, mKind => true
+  | _,_ => false
+  end.
+
+Definition isProp m := mode_eqb m mProp.
+Definition isGhost m := mode_eqb m mGhost.
+Definition isType m := mode_eqb m mType.
+Definition isKind m := mode_eqb m mKind.
+
+Lemma isKind_eq :
+  ∀ m, isKind m = true → m = mKind.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isType_eq :
+  ∀ m, isType m = true → m = mType.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isGhost_eq :
+  ∀ m, isGhost m = true → m = mGhost.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Lemma isProp_eq :
+  ∀ m, isProp m = true → m = mProp.
+Proof.
+  intros [] e. all: try discriminate.
+  reflexivity.
+Qed.
+
+Ltac mode_eqs :=
+  repeat lazymatch goal with
+  | e : isKind ?m = true |- _ => eapply isKind_eq in e ; try subst m
+  | e : isType ?m = true |- _ => eapply isType_eq in e ; try subst m
+  | e : isGhost ?m = true |- _ => eapply isGhost_eq in e ; try subst m
+  | e : isProp ?m = true |- _ => eapply isProp_eq in e ; try subst m
+  end.
+
+Definition mode_inb := inb mode_eqb.
+
+Notation relm m :=
+  (mode_inb m [ mType ; mKind ]).
