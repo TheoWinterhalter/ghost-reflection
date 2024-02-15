@@ -32,3 +32,4 @@ theories/Model.v
 theories/Admissible.v
 
 theories/RTyping.v
+theories/Potential.v
