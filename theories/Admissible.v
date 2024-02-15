@@ -241,9 +241,8 @@ Section Admissible.
       Γ ⊢ t : B.
   Proof.
     intros i j m A B t ht hc hA hB.
-    econstructor. all: eauto.
-    all: eapply mode_coherence. 9: eassumption.
-    all: eauto. all: constructor.
+    eapply type_conv. all: eauto.
+    eapply mode_coherence. 3: eassumption. all: eassumption.
   Qed.
 
 End Admissible.
