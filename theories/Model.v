@@ -232,6 +232,28 @@ Ltac unitac h1 h2 :=
 
 *)
 
+Lemma mode_coherence :
+  ∀ Γ A m m' i j,
+    Γ ⊢ A : Sort m i →
+    Γ ⊢ A : Sort m' j →
+    m = m'.
+Proof.
+  intros Γ A m m' i j h1 h2.
+  (* eapply erase_typing in h1 as h1e. *) (* Oh no! *)
+  (* eapply erase_typing in h2 as h2e. *)
+  (* I was worried erasure would anyway destroy information, but
+    if I already need to know it's relevant...
+    It could also be a conclusion of validity maybe?
+    That the type is well scoped and in mode Kind.
+  *)
+  eapply param_typing in h1 as h1p.
+  eapply param_typing in h2 as h2p.
+  unfold ptype in *.
+  set (ma := mdc Γ A) in *.
+  destruct (relm ma) eqn:er. 2: destruct (isGhost ma) eqn:eg.
+  - cbn in h1p, h2p.
+Abort.
+
 Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
