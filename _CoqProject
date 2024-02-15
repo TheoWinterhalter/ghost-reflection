@@ -33,3 +33,4 @@ theories/Admissible.v
 
 theories/RTyping.v
 theories/Potential.v
+theories/ElimReflection.v

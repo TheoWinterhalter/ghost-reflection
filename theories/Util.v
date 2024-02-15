@@ -5,6 +5,11 @@ Import ListNotations.
 
 Set Default Goal Selector "!".
 
+Notation "'∑' x .. y , p" := (sigT (λ x, .. (sigT (λ y, p%type)) ..))
+  (at level 200, x binder, right associativity,
+   format "'[' '∑'  '/  ' x  ..  y ,  '/  ' p ']'")
+  : type_scope.
+
 Ltac forall_iff_impl T :=
   lazymatch eval cbn beta in T with
   | forall x : ?A, @?T' x =>
