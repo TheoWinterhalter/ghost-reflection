@@ -26,14 +26,14 @@ Definition tr_ctx Γ Γ' :=
 Definition tr_ty t A Γ' t' A' :=
   t = ε|t'| ∧ A = ε|A'| ∧ Γ' ⊢ t' : A'.
 
-Notation "D ⊢ⁱ t : A ∈ ⟦ u | B ⟧x" :=
+Notation "D ⊢ t : A ∈ ⟦ u : B ⟧x" :=
   (tr_ty u B D t A)
   (at level 8, t, A, u, B at next level).
 
 Lemma tr_choice :
   ∀ t A Γ' t' A' A'' m i,
-    Γ' ⊢ⁱ t' : A' ∈ ⟦ t | A ⟧x →
-    Γ' ⊢ⁱ A'' : Sort m i ∈ ⟦ A | Sort m i ⟧x →
-    Γ' ⊢ⁱ t' : A'' ∈ ⟦ t | A ⟧x.
+    Γ' ⊢ t' : A' ∈ ⟦ t : A ⟧x →
+    Γ' ⊢ A'' : Sort m i ∈ ⟦ A : Sort m i ⟧x →
+    Γ' ⊢ t' : A'' ∈ ⟦ t : A ⟧x.
 Proof.
 Abort.
