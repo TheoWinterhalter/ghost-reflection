@@ -273,6 +273,11 @@ Proof.
   set (ma := mdc Γ A) in *.
   destruct (relm ma) eqn:er. 2: destruct (isGhost ma) eqn:eg.
   - cbn in h1p, h2p.
+    eapply erase_typing in h1 as h1e. 2: eassumption.
+    eapply erase_typing in h2 as h2e. 2: eassumption.
+    cbn in *.
+  admit.
+  -
 Abort.
 
 Lemma type_unique :
