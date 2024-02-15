@@ -232,6 +232,27 @@ Ltac unitac h1 h2 :=
 
 *)
 
+Lemma erase_pi_inj :
+  ∀ Γ i j m mx A B A' B',
+    Γ ⊢ Pi i j m mx A B ≡ Pi i j m mx A' B' →
+    ⟦ Γ ,, (mx, A) ⟧ε ⊢ᶜ ⟦ mx :: sc Γ | B ⟧ε ≡ ⟦ mx :: sc Γ | B' ⟧ε.
+Proof.
+  intros Γ i j m mx A B A' B' h.
+  eapply erase_conv in h.
+  cbn - [mode_inb] in h. cbn - [mode_inb].
+  destruct (relm mx && negb (isProp m)) eqn:erp.
+  2: destruct (isGhost m && isGhost mx) eqn:egg.
+  2: destruct (isProp m) eqn:ep.
+  - rewrite andb_true_iff in erp. destruct erp as [er enp].
+    rewrite er. apply ctyval_inj in h as [_ [h _]].
+    (* If I do this I do not recover ε but τ and since El is not injective
+      the information I seek is lost no?
+    *)
+  (* -
+  -
+  - *)
+Abort.
+
 Lemma mode_coherence :
   ∀ Γ A m m' i j,
     Γ ⊢ A : Sort m i →
@@ -267,6 +288,8 @@ Proof.
   - repeat scoping_fun.
     cbn. apply conv_refl.
   - repeat scoping_fun.
+    eapply IHt1 in H8. 2: exact H7.
+    cbn in H8.
     rewrite !castrm_subst.
     rewrite !urm_subst.
     eapply conv_subst.
