@@ -219,26 +219,31 @@ Section Admissible.
 
   Lemma type_conv :
     ∀ i m A B t,
+      cscoping Γ t m →
       Γ ⊢ t : A →
       Γ ⊢ A ε≡ B →
       Γ ⊢ B : Sort m i →
       Γ ⊢ t : B.
   Proof.
-    intros i m A B t ht hc hB.
+    intros i m A B t hst ht hc hB.
     eapply validity in ht as hE. 2: assumption.
     destruct hE as [_ [j hE]].
     econstructor. all: eauto.
-    - eapply mode_coherence. all: eauto. constructor.
-    - eapply mode_coherence. all: eauto. constructor.
-    - (* Unclear how we can get rid of that one constraint.
-      Why was it needed? Probably for validity.
-      We could solve it by requiring A : Sort m j but that might be worse?
-      With subject reduction and confluence we would also get it for free.
-      For the paper it's better to have the version with sorts so we get rid
-      of scoping altogether.
+    all: eapply mode_coherence. all: eauto. all: constructor.
+  Qed.
 
-      Here let's provide two versions.
-      *)
-  Abort.
+  Lemma type_conv_alt :
+    ∀ i j m A B t,
+      Γ ⊢ t : A →
+      Γ ⊢ A ε≡ B →
+      Γ ⊢ A : Sort m i →
+      Γ ⊢ B : Sort m j →
+      Γ ⊢ t : B.
+  Proof.
+    intros i j m A B t ht hc hA hB.
+    econstructor. all: eauto.
+    all: eapply mode_coherence. 9: eassumption.
+    all: eauto. all: constructor.
+  Qed.
 
 End Admissible.
