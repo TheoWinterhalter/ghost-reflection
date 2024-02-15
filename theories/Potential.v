@@ -17,14 +17,14 @@ Definition rmctx (Γ : context) :=
   map (λ '(m, A), (m, ε|A|)) Γ.
 
 Definition tr_ctx Γ Γ' :=
-  Γ = rmctx Γ' ∧ wf Γ'.
+  wf Γ' ∧ Γ = rmctx Γ'.
 
 (* Notation "D ∈ ⟦ G ⟧x" :=
   (tr_ctx G D)
   (at level 8, G at next level). *)
 
 Definition tr_ty t A Γ' t' A' :=
-  t = ε|t'| ∧ A = ε|A'| ∧ Γ' ⊢ t' : A'.
+  Γ' ⊢ t' : A' ∧ t = ε|t'| ∧ A = ε|A'|.
 
 Notation "D ⊨ t : A ∈ ⟦ u : B ⟧x" :=
   (tr_ty u B D t A)
@@ -37,8 +37,8 @@ Lemma tr_choice :
     Γ' ⊨ t' : A'' ∈ ⟦ t : A ⟧x.
 Proof.
   intros t A Γ' t' A' A'' m i ht hA.
-  destruct ht as [et [eA ht]].
-  destruct hA as [eA' [_ hA]].
+  destruct ht as [ht [et eA]].
+  destruct hA as [hA [eA' _]].
   unfold tr_ty. intuition auto.
   econstructor. all: eauto.
   4:{ rewrite <- eA. rewrite <- eA'. apply conv_refl. }
