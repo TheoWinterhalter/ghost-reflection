@@ -36,4 +36,14 @@ Lemma tr_choice :
     Γ' ⊢ A'' : Sort m i ∈ ⟦ A : Sort m i ⟧x →
     Γ' ⊢ t' : A'' ∈ ⟦ t : A ⟧x.
 Proof.
+  intros t A Γ' t' A' A'' m i ht hA.
+  destruct ht as [et [eA ht]].
+  destruct hA as [eA' [_ hA]].
+  unfold tr_ty. intuition auto.
+  econstructor. all: eauto.
+  4:{ rewrite <- eA. rewrite <- eA'. apply conv_refl. }
+  (* TODO
+    We need more assumptions. If we are willing to assume wf Γ' then we can
+    also use admissible rules.
+  *)
 Abort.
