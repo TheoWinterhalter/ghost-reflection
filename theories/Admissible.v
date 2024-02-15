@@ -119,13 +119,126 @@ Section Admissible.
     intros i A t p ht hp.
     eapply validity in ht as hE. 2: assumption.
     destruct hE as [_ [j hE]]. ttinv hE hA.
-    destruct hA as [k ?]. intuition idtac.
+    destruct hA as [k [? [? hc]]].
+    set (mt := mdc Γ t) in *. clearbody mt. apply sort_mode_inj in hc. subst.
     eapply validity in hp as hp'. 2: assumption.
     destruct hp' as [_ [l hp']].
     ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
-    cbn in hc. apply sort_mode_inj in hc.
+    set (mp := mdc Γ p) in *. clearbody mp. cbn in hc.
+    apply sort_mode_inj in hc. subst.
     adm.
-    (* WAIT! There is a mistake in the type of Erased, it should be a kind! *)
+  Qed.
+
+  Lemma type_toRev :
+    ∀ i A t p u,
+      Γ ⊢ t : A →
+      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ u : app p t →
+      Γ ⊢ toRev t p u : Reveal (hide t) p.
+  Proof.
+    intros i A t p u ht hp hu.
+    eapply validity in hp as hp'. 2: assumption.
+    destruct hp' as [_ [l hp']].
+    ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
+    set (mp := mdc Γ p) in *. clearbody mp. cbn in hc.
+    apply sort_mode_inj in hc. subst.
+    adm.
+    eapply meta_conv.
+    - eapply type_app. all: eassumption.
+    - cbn. reflexivity.
+  Qed.
+
+  Lemma type_fromRev :
+    ∀ i A t p u,
+      Γ ⊢ t : A →
+      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ u : Reveal (hide t) p →
+      Γ ⊢ fromRev t p u : app p t.
+  Proof.
+    intros i A t p u ht hp hu.
+    eapply validity in hp as hp'. 2: assumption.
+    destruct hp' as [_ [l hp']].
+    ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
+    set (mp := mdc Γ p) in *. clearbody mp. cbn in hc.
+    apply sort_mode_inj in hc. subst.
+    adm. eapply type_Reveal. 2: eassumption.
+    eapply type_hide. all: eassumption.
+  Qed.
+
+  Lemma type_gheq :
+    ∀ i A u v,
+      Γ ⊢ A : Sort mGhost i →
+      Γ ⊢ u : A →
+      Γ ⊢ v : A →
+      Γ ⊢ gheq A u v : Sort mProp 0.
+  Proof.
+    intros. adm.
+  Qed.
+
+  Lemma type_ghrefl :
+    ∀ i A u,
+      Γ ⊢ A : Sort mGhost i →
+      Γ ⊢ u : A →
+      Γ ⊢ ghrefl A u : gheq A u u.
+  Proof.
+    intros. adm.
+  Qed.
+
+  Lemma type_ghcast :
+    ∀ i m A u v e P t,
+      m ≠ mKind →
+      Γ ⊢ e : gheq A u v →
+      Γ ⊢ P : A ⇒[ i | usup m i / mGhost | mKind ] Sort m i →
+      Γ ⊢ t : app P u →
+      Γ ⊢ ghcast A u v e P t : app P v.
+  Proof.
+    intros i m A u v e P t hm he hP ht.
+    eapply validity in he as he'. 2: assumption.
+    destruct he' as [_ [l he']].
+    ttinv he' he''. destruct he'' as [? [? [? [? [? [? [? hc]]]]]]].
+    set (me := mdc Γ e) in *. clearbody me. cbn in hc.
+    apply sort_mode_inj in hc. subst.
+    eapply validity in hP as hP'. 2: assumption.
+    destruct hP' as [_ [lP hP']].
+    ttinv hP' hP''. destruct hP'' as [? [? [? [? hc]]]].
+    set (mp := mdc Γ P) in *. clearbody mp. cbn in hc.
+    apply sort_mode_inj in hc. subst.
+    adm. eapply meta_conv.
+    - eapply type_app. all: eauto.
+    - cbn. reflexivity.
+  Qed.
+
+  Lemma type_bot_elim :
+    ∀ i m A p,
+      Γ ⊢ A : Sort m i →
+      Γ ⊢ p : bot →
+      Γ ⊢ bot_elim m A p : A.
+  Proof.
+    intros. adm.
+  Qed.
+
+  Lemma type_conv :
+    ∀ i m A B t,
+      Γ ⊢ t : A →
+      Γ ⊢ A ε≡ B →
+      Γ ⊢ B : Sort m i →
+      Γ ⊢ t : B.
+  Proof.
+    intros i m A B t ht hc hB.
+    eapply validity in ht as hE. 2: assumption.
+    destruct hE as [_ [j hE]].
+    econstructor. all: eauto.
+    - eapply mode_coherence. all: eauto. constructor.
+    - eapply mode_coherence. all: eauto. constructor.
+    - (* Unclear how we can get rid of that one constraint.
+      Why was it needed? Probably for validity.
+      We could solve it by requiring A : Sort m j but that might be worse?
+      With subject reduction and confluence we would also get it for free.
+      For the paper it's better to have the version with sorts so we get rid
+      of scoping altogether.
+
+      Here let's provide two versions.
+      *)
   Abort.
 
 End Admissible.
