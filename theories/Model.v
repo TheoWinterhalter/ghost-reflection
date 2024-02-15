@@ -218,67 +218,35 @@ Ltac unitac h1 h2 :=
   | idtac
   ].
 
-(* TODO
+(** Injectivity of Π types in the source
 
-  Several ideas to solve the issue:
-  - I could consider a rule for injectivity of Pi (say just the codomain)
-    and show it is also preserved by the translation (say erasure).
-    Could this idea generalise to showing injectivity actually?
-  - Another solution is to rely on uniqueness (modulo) in the target
-    and take A : Sort m i and A : Sort m' j to their image by erasure to
-    conclude that m = m' since that's all we need in the end.
-    This sounds the most promising and after that I could probably get rid
-    of the second annotation on λ.
+  We assume injectivity in the source for ε-conversion (ε≡).
+  We argue that this should hold given it is essentially CC conversion.
+  Sadly our model doesn't allow us to obtain it for free and we would need to
+  resort to other methods to obtain it, typically the same used to get it for
+  CC (such as confluence of an underlying rewriting system).
 
-*)
+  We only state it for the codomain
 
-Lemma erase_pi_inj :
+**)
+
+Axiom pi_inj :
   ∀ Γ i j m mx A B A' B',
     Γ ⊢ Pi i j m mx A B ≡ Pi i j m mx A' B' →
-    ⟦ Γ ,, (mx, A) ⟧ε ⊢ᶜ ⟦ mx :: sc Γ | B ⟧ε ≡ ⟦ mx :: sc Γ | B' ⟧ε.
-Proof.
-  intros Γ i j m mx A B A' B' h.
-  eapply erase_conv in h.
-  cbn - [mode_inb] in h. cbn - [mode_inb].
-  destruct (relm mx && negb (isProp m)) eqn:erp.
-  2: destruct (isGhost m && isGhost mx) eqn:egg.
-  2: destruct (isProp m) eqn:ep.
-  - rewrite andb_true_iff in erp. destruct erp as [er enp].
-    rewrite er. apply ctyval_inj in h as [_ [h _]].
-    (* If I do this I do not recover ε but τ and since El is not injective
-      the information I seek is lost no?
-    *)
-  (* -
-  -
-  - *)
-Abort.
+    Γ ,, (mx, A) ⊢ B ≡ B'.
 
-Lemma mode_coherence :
-  ∀ Γ A m m' i j,
-    Γ ⊢ A : Sort m i →
-    Γ ⊢ A : Sort m' j →
-    m = m'.
+Lemma sscoping_urm :
+  ∀ Γ σ Δ,
+    sscoping Γ σ Δ →
+    sscoping Γ (σ >> urm) Δ.
 Proof.
-  intros Γ A m m' i j h1 h2.
-  (* eapply erase_typing in h1 as h1e. *) (* Oh no! *)
-  (* eapply erase_typing in h2 as h2e. *)
-  (* I was worried erasure would anyway destroy information, but
-    if I already need to know it's relevant...
-    It could also be a conclusion of validity maybe?
-    That the type is well scoped and in mode Kind.
-  *)
-  eapply param_typing in h1 as h1p.
-  eapply param_typing in h2 as h2p.
-  unfold ptype in *.
-  set (ma := mdc Γ A) in *.
-  destruct (relm ma) eqn:er. 2: destruct (isGhost ma) eqn:eg.
-  - cbn in h1p, h2p.
-    eapply erase_typing in h1 as h1e. 2: eassumption.
-    eapply erase_typing in h2 as h2e. 2: eassumption.
-    cbn in *.
-  admit.
-  -
-Abort.
+  intros Γ σ Δ h.
+  induction h.
+  - constructor.
+  - constructor.
+    + assumption.
+    + ssimpl. eapply urm_scoping. assumption.
+Qed.
 
 Lemma type_unique :
   ∀ Γ t A B,
@@ -294,16 +262,16 @@ Proof.
     cbn. apply conv_refl.
   - repeat scoping_fun.
     eapply IHt1 in H8. 2: exact H7.
-    cbn in H8.
+    cbn in H8. eapply pi_inj in H8.
     rewrite !castrm_subst.
     rewrite !urm_subst.
-    eapply conv_subst.
-    + admit.
-    + admit. (* Wait it seems we really need injectivity of Pi types here *)
+    eapply conv_subst. 2: eassumption.
+    apply sscoping_urm. apply sscoping_castrm. cbn. eapply sscoping_one.
+    rewrite sc_urm_ctx. eassumption.
   - cbn. econstructor. eauto.
-Abort.
+Qed.
 
-(** Let's try the direct approach for the lemma we want **)
+(** Modes are coherent with sorts **)
 
 Lemma mode_coherence :
   ∀ Γ t A m i,
@@ -313,10 +281,9 @@ Lemma mode_coherence :
     cscoping Γ t m.
 Proof.
   intros Γ t A m i hΓ hA h.
-  induction h in hΓ, m, i, hA |- *.
-  - constructor. unfold sc. rewrite nth_error_map.
-    rewrite H. cbn.
-    (* From hΓ we only get A : Sort m0 j and we don't have anything more
-      so we're essentially back to the general case.
-    *)
-Abort.
+  eapply validity in h. 2: assumption.
+  destruct h as [hs [j hA']].
+  eapply type_unique in hA'. 2: eapply hA.
+  cbn in hA'. eapply sort_mode_inj in hA'. subst.
+  assumption.
+Qed.
