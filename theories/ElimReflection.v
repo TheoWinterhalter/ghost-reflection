@@ -60,14 +60,56 @@ Proof.
   - intuition reflexivity.
 Qed.
 
-Lemma tr_sort_lax :
-  ∀ Γ' m i j,
-    j = usup m i →
-    Γ' ⊨ (Sort m i) : (Sort mKind j) ∈
-    ⟦ (Sort m i) : (Sort mKind j) ⟧x.
+Lemma tr_app :
+  ∀ i j m mx A B t u Γ' A' B' t' u',
+    wf Γ' →
+    Γ' ⊨ t' : (Pi i j m mx A' B') ∈ ⟦ t : (Pi i j m mx A B) ⟧x →
+    Γ' ⊨ u' : A' ∈ ⟦ u : A ⟧x →
+    Γ' ⊨ (app t' u') : (B' <[ u' .. ]) ∈ ⟦ (app t u) : (B <[ u .. ]) ⟧x.
 Proof.
-  intros Γ' m i ? ->.
-  apply tr_sort.
+  intros i j m mx A B t u Γ' A' B' t' u' hΓ ht hu.
+  destruct ht as [ht [et ePi]]. cbn in ePi. inversion ePi.
+  destruct hu. intuition subst.
+  split.
+  + eapply type_app. all: eassumption.
+  + intuition eauto. rewrite castrm_subst. ssimpl. reflexivity.
+Qed.
+
+Lemma tr_app_lax :
+  ∀ i j m mx A B t u Γ' A' B' t' u' C C',
+    wf Γ' →
+    Γ' ⊨ t' : (Pi i j m mx A' B') ∈ ⟦ t : (Pi i j m mx A B) ⟧x →
+    Γ' ⊨ u' : A' ∈ ⟦ u : A ⟧x →
+    C = B <[ u .. ] →
+    C' = B' <[ u' .. ] →
+    Γ' ⊨ (app t' u') : C' ∈ ⟦ (app t u) : C ⟧x.
+Proof.
+  intros i j m mx A B t u Γ' A' B' t' u' ? ? hΓ ht hu -> ->.
+  eapply tr_app. all: eassumption.
+Qed.
+
+Lemma tr_ren :
+  ∀ Γ Δ t A t' A' ρ,
+    rtyping Δ ρ Γ →
+    Γ ⊨ t' : A' ∈ ⟦ t : A ⟧x →
+    Δ ⊨ (ρ ⋅ t') : (ρ ⋅ A') ∈ ⟦ (ρ ⋅ t) : (ρ ⋅ A) ⟧x.
+Proof.
+  intros Γ Δ t A t' A' ρ hρ [ht [-> ->]].
+  split.
+  - eapply typing_ren. all: eassumption.
+  - rewrite !castrm_ren. intuition reflexivity.
+Qed.
+
+Lemma tr_ren_lax :
+  ∀ Γ Δ t A t' A' ρ rA rA',
+    rtyping Δ ρ Γ →
+    Γ ⊨ t' : A' ∈ ⟦ t : A ⟧x →
+    rA = ρ ⋅ A →
+    rA' = ρ ⋅ A' →
+    Δ ⊨ (ρ ⋅ t') : rA' ∈ ⟦ (ρ ⋅ t) : rA ⟧x.
+Proof.
+  intros Γ Δ t A t' A' ρ ?? hρ ht -> ->.
+  eapply tr_ren. all: eassumption.
 Qed.
 
 (* Conversion only requires the scope not the full context *)
@@ -135,11 +177,8 @@ Proof.
     eapply tr_choice in ht. 2-4: eassumption.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
     eapply tr_choice in hu. 2-4: eassumption.
-    unfold tr_ctx, tr_ty in *. intuition subst.
-    eexists (app t' u'), _. split.
-    + eapply type_app. all: eassumption.
-    + cbn. intuition eauto.
-      rewrite castrm_subst. ssimpl. reflexivity.
+    destruct hctx.
+    eexists (app t' u'), _. eapply tr_app. all: eauto.
   - specialize IHh with (1 := hctx). destruct IHh as [A' [s' hA]].
     eapply tr_sort_inv in hA. 2: apply hctx.
     destruct hctx.
@@ -164,10 +203,24 @@ Proof.
       eapply tr_pi.
       - assumption.
       - eapply tr_erased. all: eassumption.
-      - cbn. eapply tr_sort_lax.
-        (* TODO I guess it should actually be usup and not S i in the rule! *)
-        (* reflexivity. *)
-        admit.
+      - cbn. eapply tr_sort.
+    }
+    eapply tr_cons in hA as hext. 2: eassumption.
+    specialize IHh3 with (1 := hctx). destruct IHh3 as [p' [Pi' hp]].
+    eapply tr_choice in hp. 2: apply hctx. 2: eassumption.
+    2:{
+      destruct hctx, hext.
+      eapply tr_pi.
+      - assumption.
+      - eassumption.
+      - eapply tr_app_lax.
+        + eassumption.
+        + eapply tr_ren_lax. 1: eapply rtyping_S.
+          1: eassumption.
+          all: cbn. all: reflexivity.
+        + (* tr_hide *) admit.
+        + reflexivity.
+        + reflexivity.
     }
     admit.
   - admit.
