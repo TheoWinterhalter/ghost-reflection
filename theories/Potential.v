@@ -30,26 +30,6 @@ Notation "D ⊨ t : A ∈ ⟦ u : B ⟧x" :=
   (tr_ty u B D t A)
   (at level 8, t, A, u, B at next level).
 
-Lemma tr_choice :
-  ∀ t A Γ' t' A' A'' m i,
-    Γ' ⊨ t' : A' ∈ ⟦ t : A ⟧x →
-    Γ' ⊨ A'' : Sort m i ∈ ⟦ A : Sort m i ⟧x →
-    Γ' ⊨ t' : A'' ∈ ⟦ t : A ⟧x.
-Proof.
-  intros t A Γ' t' A' A'' m i ht hA.
-  destruct ht as [ht [et eA]].
-  destruct hA as [hA [eA' _]].
-  unfold tr_ty. intuition auto.
-  econstructor. all: eauto.
-  4:{ rewrite <- eA. rewrite <- eA'. apply conv_refl. }
-  (* TODO
-    We need more assumptions. If we are willing to assume wf Γ' then we can
-    also use admissible rules.
-    Maybe we could even use type_conv_alt if we have enough to go on.
-    We'll see in the course of the proof of the theorem.
-  *)
-Abort.
-
 Lemma tr_sort :
   ∀ A Γ' A' s' m i,
     wf Γ' →
@@ -90,3 +70,21 @@ Proof.
   - eapply wf_cons. all: eassumption.
   - cbn. intuition subst. reflexivity.
 Qed.
+
+Lemma tr_choice :
+  ∀ Γ t A Γ' t' A' A'' m i,
+    tr_ctx Γ Γ' →
+    cscoping Γ t m →
+    Γ' ⊨ t' : A' ∈ ⟦ t : A ⟧x →
+    Γ' ⊨ A'' : Sort m i ∈ ⟦ A : Sort m i ⟧x →
+    Γ' ⊨ t' : A'' ∈ ⟦ t : A ⟧x.
+Proof.
+  intros Γ t A Γ' t' A' A'' m i hΓ hmt ht hA.
+  destruct hΓ as [hΓ eΓ].
+  destruct ht as [ht [et eA]].
+  destruct hA as [hA [eA' _]].
+  unfold tr_ty. intuition auto.
+  eapply type_conv. all: eauto.
+  - subst. (* Is it even true? *) admit.
+  - rewrite <- eA. rewrite <- eA'. apply conv_refl.
+Abort.

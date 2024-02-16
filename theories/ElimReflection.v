@@ -41,4 +41,10 @@ Proof.
     eexists (Pi i j m mx A' B'), _. split.
     + eapply type_pi. all: eassumption.
     + cbn. intuition reflexivity.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
+    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_cons in hA as hext. 2: eassumption.
+    specialize IHh2 with (1 := hext). destruct IHh2 as [B' [s'' hB]].
+    eapply tr_sort' in hB. 2: apply hext.
+    specialize IHh3 with (1 := hext). destruct IHh3 as [t' [B'' ht]].
 Abort.
