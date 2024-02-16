@@ -124,6 +124,19 @@ Proof.
   eapply type_hide. all: eassumption.
 Qed.
 
+Lemma tr_var :
+  ∀ Γ' x m A A',
+    nth_error Γ' x = Some (m, A') →
+    A = plus (S x) ⋅ ε| A'| →
+    Γ' ⊨ (var x) : (plus (S x) ⋅ A') ∈ ⟦ (var x) : A ⟧x.
+Proof.
+  intros Γ' x m A A' hx ->.
+  split.
+  - econstructor. eassumption.
+  - intuition eauto.
+    rewrite castrm_ren. reflexivity.
+Qed.
+
 (* Conversion only requires the scope not the full context *)
 Lemma conv_upto :
   ∀ Γ Δ u v,
@@ -154,9 +167,7 @@ Proof.
     unfold rmctx in e. rewrite nth_error_map in e.
     destruct nth_error as [[m' B] |] eqn:e'. 2: discriminate.
     cbn in e. noconf e.
-    eexists (var x), _. split.
-    + econstructor. eassumption.
-    + intuition eauto. rewrite castrm_ren. reflexivity.
+    eexists (var x), _. eapply tr_var. all: eauto.
   - eexists (Sort m i), _. split.
     + constructor.
     + intuition reflexivity.
@@ -233,7 +244,8 @@ Proof.
           * eapply tr_ren_lax. 1: eapply rtyping_S.
             1: eassumption.
             all: reflexivity.
-          * (* tr_var *) admit.
+          * eapply tr_var. 1: reflexivity.
+            cbn. destruct hA. intuition subst. reflexivity.
         + reflexivity.
         + reflexivity.
     }
