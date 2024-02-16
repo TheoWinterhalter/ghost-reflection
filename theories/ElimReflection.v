@@ -147,6 +147,21 @@ Proof.
     rewrite castrm_ren. reflexivity.
 Qed.
 
+Lemma tr_Reveal :
+  ∀ i A t p Γ' A' t' p',
+    wf Γ' →
+    Γ' ⊨ A' : (Sort mType i) ∈ ⟦ A : (Sort mType i) ⟧x →
+    Γ' ⊨ t' : (Erased A') ∈ ⟦ t : (Erased A) ⟧x →
+    Γ' ⊨ p' : (Pi i 0 mKind mType A' (Sort mProp 0)) ∈
+    ⟦ p : (A ⇒[ i | 0 / mType | mKind] Sort mProp 0) ⟧x →
+    Γ' ⊨ (Reveal t' p') : (Sort mProp 0) ∈ ⟦ (Reveal t p) : (Sort mProp 0) ⟧x.
+Proof.
+  intros i A t p Γ' A' t' p' hΓ hA ht hp.
+  unfold tr_ctx, tr_ty in *. intuition subst.
+  - eapply type_Reveal. all: eassumption.
+  - cbn. intuition reflexivity.
+Qed.
+
 (* Conversion only requires the scope not the full context *)
 Lemma conv_upto :
   ∀ Γ Δ u v,
@@ -277,18 +292,19 @@ Proof.
       - eassumption.
       - cbn. eapply tr_sort.
     }
-    unfold tr_ctx, tr_ty in *. intuition subst.
-    eexists (Reveal t' p'), _. split.
-    + eapply type_Reveal. all: eassumption.
-    + cbn. intuition reflexivity.
-  - specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
+    destruct hctx.
+    eexists (Reveal t' p'), _. eapply tr_Reveal. all: eassumption.
+  - specialize IHh4 with (1 := hctx). destruct IHh4 as [A' [s' hA]].
+    eapply tr_sort_inv in hA. 2: apply hctx.
+    specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A'' ht]].
+    eapply tr_choice in ht. 2-4: eassumption.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [T' hp]].
     eapply tr_choice in hp. 2,3: eassumption.
     2:{
       destruct hctx.
       eapply tr_pi.
       - assumption.
-      - admit. (* Maybe just ask for it and be done with it. *)
+      - eassumption.
       - cbn. eapply tr_sort.
     }
     specialize IHh3 with (1 := hctx). destruct IHh3 as [u' [P' hu]].
@@ -306,22 +322,25 @@ Proof.
     eexists (toRev t' p' u'), _. split.
     + eapply type_toRev. all: eauto.
     + cbn. intuition reflexivity.
-  - specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
+  - specialize IHh4 with (1 := hctx). destruct IHh4 as [A' [s' hA]].
+    eapply tr_sort_inv in hA. 2: apply hctx.
+    specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A'' ht]].
+    eapply tr_choice in ht. 2-4: eassumption.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [T' hp]].
     eapply tr_choice in hp. 2,3: eassumption.
     2:{
       destruct hctx.
       eapply tr_pi.
       - assumption.
-      - admit. (* Maybe just ask for it and be done with it. *)
+      - eassumption.
       - cbn. eapply tr_sort.
     }
     specialize IHh3 with (1 := hctx). destruct IHh3 as [u' [P' hu]].
     eapply tr_choice in hu. 2,3: eassumption.
     2:{
       destruct hctx.
-      (* TODO tr_Reveal *)
-      admit.
+      eapply tr_Reveal. all: eauto.
+      eapply tr_hide. all: eauto.
     }
     unfold tr_ctx, tr_ty in *. intuition subst.
     eexists (fromRev t' p' u'), _. split.

@@ -109,6 +109,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       Γ ⊢ˣ t : A →
       Γ ⊢ˣ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ˣ u : app p t →
+      Γ ⊢ˣ A : Sort mType i →
       Γ ⊢ˣ toRev t p u : Reveal (hide t) p
 
 | rtype_fromRev :
@@ -119,6 +120,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       Γ ⊢ˣ t : A →
       Γ ⊢ˣ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ˣ u : Reveal (hide t) p →
+      Γ ⊢ˣ A : Sort mType i →
       Γ ⊢ˣ fromRev t p u : app p t
 
 | rtype_gheq :
