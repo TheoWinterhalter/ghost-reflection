@@ -139,8 +139,7 @@ Proof.
     unfold tr_ctx, tr_ty in *. intuition subst.
     eexists t', _. split.
     + eapply type_conv. all: eauto.
-      * (* Make a lemma for this, not doing it twice *)
-        admit.
+      * eapply tr_scoping. all: eassumption.
       * eapply conv_upto. 1: eassumption.
         apply sc_rmctx.
     + intuition reflexivity.

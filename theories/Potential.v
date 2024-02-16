@@ -79,6 +79,20 @@ Proof.
   intros [m A]. reflexivity.
 Qed.
 
+Lemma tr_scoping :
+  ∀ m Γ' t' A',
+    wf Γ' →
+    Γ' ⊢ t' : A' →
+    cscoping (rmctx Γ') ε|t'| m →
+    cscoping Γ' t' m.
+Proof.
+  intros m Γ' t' A' hΓ ht htm.
+  rewrite sc_rmctx in htm.
+  eapply validity in ht as vt. 2: assumption.
+  destruct vt as [hst _]. eapply scoping_castrm in hst as hst'.
+  scoping_fun. assumption.
+Qed.
+
 Lemma tr_choice :
   ∀ Γ t A Γ' t' A' A'' m i,
     tr_ctx Γ Γ' →
@@ -93,9 +107,6 @@ Proof.
   destruct hA as [hA [eA' _]].
   unfold tr_ty. intuition auto.
   eapply type_conv. all: eauto.
-  - subst. rewrite sc_rmctx in hmt.
-    eapply validity in ht as vt. 2: assumption.
-    destruct vt as [hst _]. eapply scoping_castrm in hst as hst'.
-    scoping_fun. assumption.
+  - subst. eapply tr_scoping. all: eauto.
   - rewrite <- eA. rewrite <- eA'. apply conv_refl.
 Qed.
