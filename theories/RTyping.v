@@ -96,7 +96,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       cscoping Γ t mGhost →
       cscoping Γ p mKind →
       Γ ⊢ˣ t : Erased A →
-      Γ ⊢ˣ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ˣ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ˣ A : Sort mType i →
       cscoping Γ A mKind →
       Γ ⊢ˣ Reveal t p : Sort mProp 0
@@ -107,7 +107,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       cscoping Γ p mKind →
       cscoping Γ u mProp →
       Γ ⊢ˣ t : A →
-      Γ ⊢ˣ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ˣ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ˣ u : app p t →
       Γ ⊢ˣ toRev t p u : Reveal (hide t) p
 
@@ -117,7 +117,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       cscoping Γ p mKind →
       cscoping Γ u mProp →
       Γ ⊢ˣ t : A →
-      Γ ⊢ˣ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ˣ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ˣ u : Reveal (hide t) p →
       Γ ⊢ˣ fromRev t p u : app p t
 

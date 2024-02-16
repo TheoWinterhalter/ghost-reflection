@@ -1105,7 +1105,7 @@ Lemma type_Reveal_inv :
       cscoping Γ t mGhost ∧
       cscoping Γ p mKind ∧
       Γ ⊢ t : Erased A ∧
-      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 ∧
       Γ ⊢ A : Sort mType i ∧
       cscoping Γ A mKind ∧
       Γ ⊢ Sort mProp 0 ε≡ C.
@@ -1125,7 +1125,7 @@ Lemma type_toRev_inv :
       cscoping Γ p mKind ∧
       cscoping Γ u mProp ∧
       Γ ⊢ t : A ∧
-      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 ∧
       Γ ⊢ u : app p t ∧
       Γ ⊢ Reveal (hide t) p ε≡ C.
 Proof.
@@ -1144,7 +1144,7 @@ Lemma type_fromRev_inv :
       cscoping Γ p mKind ∧
       cscoping Γ u mProp ∧
       Γ ⊢ t : A ∧
-      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 ∧
+      Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 ∧
       Γ ⊢ u : Reveal (hide t) p ∧
       Γ ⊢ app p t ε≡ C.
 Proof.

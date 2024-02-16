@@ -113,7 +113,7 @@ Section Admissible.
   Lemma type_Reveal :
     ∀ i A t p,
       Γ ⊢ t : Erased A →
-      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ Reveal t p : Sort mProp 0.
   Proof.
     intros i A t p ht hp.
@@ -132,7 +132,7 @@ Section Admissible.
   Lemma type_toRev :
     ∀ i A t p u,
       Γ ⊢ t : A →
-      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ u : app p t →
       Γ ⊢ toRev t p u : Reveal (hide t) p.
   Proof.
@@ -151,7 +151,7 @@ Section Admissible.
   Lemma type_fromRev :
     ∀ i A t p u,
       Γ ⊢ t : A →
-      Γ ⊢ p : A ⇒[ i | 1 / mType | mKind ] Sort mProp 0 →
+      Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ u : Reveal (hide t) p →
       Γ ⊢ fromRev t p u : app p t.
   Proof.
