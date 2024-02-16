@@ -28,22 +28,23 @@ Proof.
   - cbn. intuition reflexivity.
 Qed.
 
-Lemma tr_conv :
-  ∀ Γ u v,
-    rmctx Γ ⊢ u ≡ v →
-    Γ ⊢ u ≡ v.
+(* Conversion only requires the scope not the full context *)
+Lemma conv_upto :
+  ∀ Γ Δ u v,
+    Γ ⊢ u ≡ v →
+    sc Γ = sc Δ →
+    Δ ⊢ u ≡ v.
 Proof.
-  intros Δ u v h.
-  remember (rmctx Δ) as Γ eqn:e.
+  intros Γ Δ u v h e.
   induction h in Δ, e |- *.
   all: try solve [ econstructor ; eauto ].
-  all: try solve [ subst ; rewrite ?sc_rmctx in * ; econstructor ; eauto ].
-  - subst. econstructor. all: eauto.
-    (* Need to conclude with erasure *)
-    admit.
-  - subst. econstructor. all: eauto.
-    all: admit.
-Abort.
+  all: try solve [ rewrite ?e in * ; econstructor ; eauto ].
+  - econstructor. all: eauto.
+    eapply IHh2. cbn. f_equal. assumption.
+  - econstructor. all: eauto.
+    + eapply IHh2. cbn. f_equal. assumption.
+    + eapply IHh3. cbn. f_equal. assumption.
+Qed.
 
 Theorem elim_reflection :
   ∀ Γ t A Γ',
@@ -140,7 +141,7 @@ Proof.
     + eapply type_conv. all: eauto.
       * (* Make a lemma for this, not doing it twice *)
         admit.
-      * (* Need a lemma here actually, but should be ok *)
-        admit.
+      * eapply conv_upto. 1: eassumption.
+        apply sc_rmctx.
     + intuition reflexivity.
 Abort.
