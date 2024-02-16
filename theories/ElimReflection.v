@@ -466,4 +466,11 @@ Proof.
   }
   destruct ht as [t' [ht' e]].
   exists t'. assumption.
+Restart.
+  intros h t ht.
+  eapply relative_consistency in h. eapply h.
+  eapply elim_reflection in ht.
+  2:{ split. 1: constructor. reflexivity. }
+  destruct ht as [t' [b' ht]].
+  (* I could also use an inversion like for sorts *)
 Abort.
