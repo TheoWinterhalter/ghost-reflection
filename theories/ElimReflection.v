@@ -49,6 +49,27 @@ Proof.
   - cbn. intuition reflexivity.
 Qed.
 
+Lemma tr_sort :
+  ∀ Γ' m i,
+    Γ' ⊨ (Sort m i) : (Sort mKind (usup m i)) ∈
+    ⟦ (Sort m i) : (Sort mKind (usup m i)) ⟧x.
+Proof.
+  intros Γ' m i.
+  split.
+  - eapply type_sort.
+  - intuition reflexivity.
+Qed.
+
+Lemma tr_sort_lax :
+  ∀ Γ' m i j,
+    j = usup m i →
+    Γ' ⊨ (Sort m i) : (Sort mKind j) ∈
+    ⟦ (Sort m i) : (Sort mKind j) ⟧x.
+Proof.
+  intros Γ' m i ? ->.
+  apply tr_sort.
+Qed.
+
 (* Conversion only requires the scope not the full context *)
 Lemma conv_upto :
   ∀ Γ Δ u v,
@@ -143,7 +164,9 @@ Proof.
       eapply tr_pi.
       - assumption.
       - eapply tr_erased. all: eassumption.
-      - cbn. (* TODO It would be good to use tr_sort as a name for this *)
+      - cbn. eapply tr_sort_lax.
+        (* TODO I guess it should actually be usup and not S i in the rule! *)
+        (* reflexivity. *)
         admit.
     }
     admit.
