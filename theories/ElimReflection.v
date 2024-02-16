@@ -60,6 +60,16 @@ Proof.
   - intuition reflexivity.
 Qed.
 
+Lemma tr_sort_lax :
+  ∀ Γ' m i j,
+    j = usup m i →
+    Γ' ⊨ (Sort m i) : (Sort mKind j) ∈
+    ⟦ (Sort m i) : (Sort mKind j) ⟧x.
+Proof.
+  intros Γ' m i ? ->.
+  apply tr_sort.
+Qed.
+
 Lemma tr_app :
   ∀ i j m mx A B t u Γ' A' B' t' u',
     wf Γ' →
@@ -253,7 +263,26 @@ Proof.
     eexists (reveal t' P' p'), _. split.
     + eapply type_reveal. all: eauto.
     + cbn. intuition reflexivity.
-  - admit.
+  - specialize IHh3 with (1 := hctx). destruct IHh3 as [A' [s' hA]].
+    eapply tr_sort_inv in hA. 2: apply hctx.
+    specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [E' ht]].
+    eapply tr_choice in ht. 2,3: eassumption.
+    2:{ destruct hctx. eapply tr_erased. all: eauto. }
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [T' hp]].
+    eapply tr_choice in hp. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      eapply tr_pi.
+      - assumption.
+      - eassumption.
+      - cbn. eapply tr_sort_lax. cbn. (* reflexivity. *)
+        (* Another bug! *)
+        admit.
+    }
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (Reveal t' p'), _. split.
+    + eapply type_Reveal. all: eassumption.
+    + cbn. intuition reflexivity.
   - admit.
   - admit.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
