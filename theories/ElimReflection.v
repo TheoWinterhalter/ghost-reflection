@@ -86,18 +86,18 @@ Proof.
     + constructor.
     + intuition reflexivity.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     eapply tr_cons in hA as hext. 2: eassumption.
     specialize IHh2 with (1 := hext). destruct IHh2 as [B' [s'' hB]].
-    eapply tr_sort' in hB. 2: apply hext.
+    eapply tr_sort_inv in hB. 2: apply hext.
     destruct hctx.
     eexists (Pi i j m mx A' B'), _.
     eapply tr_pi. all: eassumption.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     eapply tr_cons in hA as hext. 2: eassumption.
     specialize IHh2 with (1 := hext). destruct IHh2 as [B' [s'' hB]].
-    eapply tr_sort' in hB. 2: apply hext.
+    eapply tr_sort_inv in hB. 2: apply hext.
     specialize IHh3 with (1 := hext). destruct IHh3 as [t' [B'' ht]].
     eapply tr_choice in ht. 2-4: eassumption.
     unfold tr_ctx, tr_ty in *. intuition subst.
@@ -105,10 +105,10 @@ Proof.
     + eapply type_lam. all: eauto.
     + cbn. intuition reflexivity.
   - specialize IHh3 with (1 := hctx). destruct IHh3 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     eapply tr_cons in hA as hext. 2: eassumption.
     specialize IHh4 with (1 := hext). destruct IHh4 as [B' [s'' hB]].
-    eapply tr_sort' in hB. 2: apply hext.
+    eapply tr_sort_inv in hB. 2: apply hext.
     eapply tr_pi in hB as hPi. 2: apply hctx. 2: eassumption.
     specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [P' ht]].
     eapply tr_choice in ht. 2-4: eassumption.
@@ -120,11 +120,11 @@ Proof.
     + cbn. intuition eauto.
       rewrite castrm_subst. ssimpl. reflexivity.
   - specialize IHh with (1 := hctx). destruct IHh as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     destruct hctx.
     eexists (Erased A'), _. eapply tr_erased. all: eassumption.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [t' [A'' ht]].
     eapply tr_choice in ht. 2-4: eassumption.
     unfold tr_ctx, tr_ty in *. intuition subst.
@@ -132,7 +132,7 @@ Proof.
     + eapply type_hide. all: eassumption.
     + cbn. intuition reflexivity.
   - specialize IHh4 with (1 := hctx). destruct IHh4 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [E' ht]].
     eapply tr_choice in ht. 2: apply hctx. 2: eassumption.
     2:{ destruct hctx. eapply tr_erased. all: eassumption. }
@@ -151,7 +151,7 @@ Proof.
   - admit.
   - admit.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
     eapply tr_choice in hu. 2-4: eassumption.
     specialize IHh3 with (1 := hctx). destruct IHh3 as [v' [A''' hv]].
@@ -161,7 +161,7 @@ Proof.
     + eapply type_gheq. all: eassumption.
     + cbn. intuition reflexivity.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
     eapply tr_choice in hu. 2-4: eassumption.
     unfold tr_ctx, tr_ty in *. intuition subst.
@@ -170,7 +170,7 @@ Proof.
     + cbn. intuition reflexivity.
   - eexists bot, _. apply tr_bot.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [b' hp]].
     eapply tr_choice in hp. 2: apply hctx. 2: eassumption. 2: apply tr_bot.
     unfold tr_ctx, tr_ty in *. intuition subst.
@@ -178,7 +178,7 @@ Proof.
     + eapply type_bot_elim. all: eauto.
     + cbn. intuition reflexivity.
   - specialize IHh2 with (1 := hctx). destruct IHh2 as [B' [s' hB]].
-    eapply tr_sort' in hB. 2: apply hctx.
+    eapply tr_sort_inv in hB. 2: apply hctx.
     specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
     unfold tr_ctx, tr_ty in *. intuition subst.
     eexists t', _. split.

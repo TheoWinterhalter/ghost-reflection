@@ -30,7 +30,7 @@ Notation "D ⊨ t : A ∈ ⟦ u : B ⟧x" :=
   (tr_ty u B D t A)
   (at level 8, t, A, u, B at next level).
 
-Lemma tr_sort :
+Lemma tr_sort_eq :
   ∀ A Γ' A' s' m i,
     wf Γ' →
     Γ' ⊨ A' : s' ∈ ⟦ A : Sort m i ⟧x →
@@ -48,14 +48,14 @@ Proof.
     remd in em. subst. contradiction.
 Qed.
 
-Lemma tr_sort' :
+Lemma tr_sort_inv :
   ∀ A Γ' A' s' m i,
     wf Γ' →
     Γ' ⊨ A' : s' ∈ ⟦ A : Sort m i ⟧x →
     Γ' ⊨ A' : Sort m i ∈ ⟦ A : Sort m i ⟧x.
 Proof.
   intros A Γ' A' s' m i hΓ hA.
-  eapply tr_sort in hA as h. 2: assumption.
+  eapply tr_sort_eq in hA as h. 2: assumption.
   subst. assumption.
 Qed.
 
