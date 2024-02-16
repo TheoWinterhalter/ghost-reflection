@@ -28,6 +28,15 @@ Proof.
   - cbn. intuition reflexivity.
 Qed.
 
+Lemma tr_bot :
+  ∀ Γ', Γ' ⊨ bot : (Sort mProp 0) ∈ ⟦ bot : (Sort mProp 0) ⟧x.
+Proof.
+  intros Γ'.
+  split.
+  - eapply type_bot.
+  - cbn. intuition reflexivity.
+Qed.
+
 (* Conversion only requires the scope not the full context *)
 Lemma conv_upto :
   ∀ Γ Δ u v,
@@ -127,12 +136,15 @@ Proof.
     + eapply type_gheq. all: eassumption.
     + cbn. intuition reflexivity.
   - admit.
-  - destruct hctx.
-    eexists bot, _. split.
-    + eapply type_bot.
+  - eexists bot, _. apply tr_bot.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
+    eapply tr_sort' in hA. 2: apply hctx.
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [b' hp]].
+    eapply tr_choice in hp. 2: apply hctx. 2: eassumption. 2: apply tr_bot.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (bot_elim m A' p'), _. split.
+    + eapply type_bot_elim. all: eauto.
     + cbn. intuition reflexivity.
-  - (* Need a tr_bot lemma, either inversion, or choice *)
-    admit.
   - specialize IHh2 with (1 := hctx). destruct IHh2 as [B' [s' hB]].
     eapply tr_sort' in hB. 2: apply hctx.
     specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
@@ -143,4 +155,5 @@ Proof.
       * eapply conv_upto. 1: eassumption.
         apply sc_rmctx.
     + intuition reflexivity.
+  - admit.
 Abort.
