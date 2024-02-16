@@ -249,7 +249,10 @@ Proof.
         + reflexivity.
         + reflexivity.
     }
-    admit.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (reveal t' P' p'), _. split.
+    + eapply type_reveal. all: eauto.
+    + cbn. intuition reflexivity.
   - admit.
   - admit.
   - admit.
