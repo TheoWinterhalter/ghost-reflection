@@ -4,7 +4,7 @@ From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
-  Scoping TermMode CastRemoval Typing RTyping.
+  Scoping TermMode CastRemoval Typing BasicMetaTheory Param RTyping Admissible.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -49,3 +49,44 @@ Proof.
     We'll see in the course of the proof of the theorem.
   *)
 Abort.
+
+Lemma tr_sort :
+  ∀ A Γ' A' s' m i,
+    wf Γ' →
+    Γ' ⊨ A' : s' ∈ ⟦ A : Sort m i ⟧x →
+    s' = Sort m i.
+Proof.
+  intros A Γ' A' s' m i hΓ [h [eA es]].
+  eapply (f_equal (λ x, mdc Γ' x)) in es as em. cbn in em.
+  rewrite <- md_castrm in em.
+  eapply validity in h as hs. 2: assumption.
+  destruct hs as [_ [j hs]].
+  destruct s'. all: try discriminate.
+  - cbn in es. congruence.
+  - cbn in em. cbn in es.
+    ttinv hs hT. destruct hT as [k [mx ?]]. intuition subst.
+    remd in em. subst. contradiction.
+Qed.
+
+Lemma tr_sort' :
+  ∀ A Γ' A' s' m i,
+    wf Γ' →
+    Γ' ⊨ A' : s' ∈ ⟦ A : Sort m i ⟧x →
+    Γ' ⊨ A' : Sort m i ∈ ⟦ A : Sort m i ⟧x.
+Proof.
+  intros A Γ' A' s' m i hΓ hA.
+  eapply tr_sort in hA as h. 2: assumption.
+  subst. assumption.
+Qed.
+
+Lemma tr_cons :
+  ∀ Γ mx A Γ' A' i,
+    tr_ctx Γ Γ' →
+    Γ' ⊨ A' : Sort mx i ∈ ⟦ A : Sort mx i ⟧x →
+    tr_ctx (Γ,, (mx, A)) ((mx, A') :: Γ').
+Proof.
+  intros Γ mx A Γ' A' i [hΓ eΓ] [hA eA].
+  split.
+  - eapply wf_cons. all: eassumption.
+  - cbn. intuition subst. reflexivity.
+Qed.

@@ -32,7 +32,9 @@ Proof.
   - eexists (Sort m i), _. split.
     + constructor.
     + intuition reflexivity.
-  - destruct hctx as [hΓ ->].
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
+    (* Need sort preservation + a lemma to get tr_ctx easily for cons *)
+    destruct hctx as [hΓ ->].
     eexists (Pi i j m mx A B), _. split.
     + eapply type_pi.
       (* This is where things begin *)
