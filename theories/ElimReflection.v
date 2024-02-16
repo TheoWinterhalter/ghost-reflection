@@ -162,6 +162,20 @@ Proof.
   - cbn. intuition reflexivity.
 Qed.
 
+Lemma tr_gheq :
+  ∀ i A u v Γ' A' u' v',
+    wf Γ' →
+    Γ' ⊨ A' : (Sort mGhost i) ∈ ⟦ A : (Sort mGhost i) ⟧x →
+    Γ' ⊨ u' : A' ∈ ⟦ u : A ⟧x →
+    Γ' ⊨ v' : A' ∈ ⟦ v : A ⟧x →
+    Γ' ⊨ (gheq A' u' v') : (Sort mProp 0) ∈ ⟦ (gheq A u v) : (Sort mProp 0) ⟧x.
+Proof.
+  intros i A u v Γ' A' u' v' hΓ hA hu hv.
+  unfold tr_ctx, tr_ty in *. intuition subst.
+  - eapply type_gheq. all: eassumption.
+  - cbn. reflexivity.
+Qed.
+
 (* Conversion only requires the scope not the full context *)
 Lemma conv_upto :
   ∀ Γ Δ u v,
@@ -352,10 +366,8 @@ Proof.
     eapply tr_choice in hu. 2-4: eassumption.
     specialize IHh3 with (1 := hctx). destruct IHh3 as [v' [A''' hv]].
     eapply tr_choice in hv. 2-4: eassumption.
-    unfold tr_ctx, tr_ty in *. intuition subst.
-    eexists (gheq A' u' v'), _. split.
-    + eapply type_gheq. all: eassumption.
-    + cbn. intuition reflexivity.
+    destruct hctx.
+    eexists (gheq A' u' v'), _. eapply tr_gheq. all: eassumption.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
     eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
@@ -383,5 +395,30 @@ Proof.
       * eapply conv_upto. 1: eassumption.
         apply sc_rmctx.
     + intuition reflexivity.
-  - admit.
-Abort.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
+    eapply tr_sort_inv in hA. 2: apply hctx.
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
+    eapply tr_choice in hu. 2-4: eassumption.
+    specialize IHh3 with (1 := hctx). destruct IHh3 as [v' [A''' hv]].
+    eapply tr_choice in hv. 2-4: eassumption.
+    specialize IHh4 with (1 := hctx). destruct IHh4 as [e' [E' he]].
+    eapply tr_choice in he. 2,3: eassumption.
+    2:{ destruct hctx. eapply tr_gheq. all: eassumption. }
+    specialize IHh5 with (1 := hctx). destruct IHh5 as [P' [T' hP]].
+    eapply tr_choice in hP. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      eapply tr_pi. all: eauto.
+      cbn. eapply tr_sort.
+    }
+    specialize IHh6 with (1 := hctx). destruct IHh6 as [t' [T'' ht]].
+    eapply tr_choice in ht. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      eapply tr_app_lax. all: eauto. all: reflexivity.
+    }
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (ghcast A' u' v' e' P' t'), _. split.
+    + eapply type_ghcast. all: eassumption.
+    + cbn. intuition reflexivity.
+Qed.
