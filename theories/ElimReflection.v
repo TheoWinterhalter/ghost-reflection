@@ -5,7 +5,7 @@ From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
   Scoping TermMode CastRemoval Typing BasicMetaTheory Admissible RTyping
-  Potential.
+  Potential Model.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -444,3 +444,26 @@ Proof.
     constructor.
   - rewrite <- eA. apply conv_refl.
 Qed.
+
+(** Consistency (relative to CC again) **)
+
+Definition grtt_consistency :=
+  ∀ t, [] ⊢ˣ t : bot → False.
+
+Theorem consistency :
+  cc_consistency →
+  grtt_consistency.
+Proof.
+  intros h t ht.
+  eapply relative_consistency in h. eapply h.
+  eapply conservativity with (A := bot) in ht.
+  2: econstructor.
+  2:{
+    (* Wait, unclear how to get this!
+      The scoping constraint is not as harmless as I suggest in the paper!
+    *)
+    admit.
+  }
+  destruct ht as [t' [ht' e]].
+  exists t'. assumption.
+Abort.
