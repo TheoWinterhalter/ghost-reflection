@@ -275,16 +275,58 @@ Proof.
       eapply tr_pi.
       - assumption.
       - eassumption.
-      - cbn. eapply tr_sort_lax. cbn. (* reflexivity. *)
-        (* Another bug! *)
-        admit.
+      - cbn. eapply tr_sort.
     }
     unfold tr_ctx, tr_ty in *. intuition subst.
     eexists (Reveal t' p'), _. split.
     + eapply type_Reveal. all: eassumption.
     + cbn. intuition reflexivity.
-  - admit.
-  - admit.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [T' hp]].
+    eapply tr_choice in hp. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      eapply tr_pi.
+      - assumption.
+      - admit. (* Maybe just ask for it and be done with it. *)
+      - cbn. eapply tr_sort.
+    }
+    specialize IHh3 with (1 := hctx). destruct IHh3 as [u' [P' hu]].
+    eapply tr_choice in hu. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      eapply tr_app_lax.
+      - assumption.
+      - eassumption.
+      - eassumption.
+      - cbn. reflexivity.
+      - reflexivity.
+    }
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (toRev t' p' u'), _. split.
+    + eapply type_toRev. all: eauto.
+    + cbn. intuition reflexivity.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [p' [T' hp]].
+    eapply tr_choice in hp. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      eapply tr_pi.
+      - assumption.
+      - admit. (* Maybe just ask for it and be done with it. *)
+      - cbn. eapply tr_sort.
+    }
+    specialize IHh3 with (1 := hctx). destruct IHh3 as [u' [P' hu]].
+    eapply tr_choice in hu. 2,3: eassumption.
+    2:{
+      destruct hctx.
+      (* TODO tr_Reveal *)
+      admit.
+    }
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (fromRev t' p' u'), _. split.
+    + eapply type_fromRev. all: eauto.
+    + cbn. intuition reflexivity.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
     eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
