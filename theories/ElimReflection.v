@@ -422,3 +422,25 @@ Proof.
     + eapply type_ghcast. all: eassumption.
     + cbn. intuition reflexivity.
 Qed.
+
+(** Conservativity **)
+
+Theorem conservativity :
+  ∀ A m i t,
+    [] ⊢ A : Sort m i →
+    [] ⊢ˣ t : ε|A| →
+    cscoping [] t m →
+    ∑ t', [] ⊢ t' : A ∧ t = ε|t'|.
+Proof.
+  intros A m i t hA ht hmt.
+  eapply elim_reflection in ht.
+  2:{ split. 1: constructor. reflexivity. }
+  destruct ht as [t' [A' [ht' [et eA]]]].
+  exists t'. intuition eauto.
+  eapply type_conv. all: eauto.
+  - constructor.
+  - subst.
+    eapply tr_scoping. all: eauto.
+    constructor.
+  - rewrite <- eA. apply conv_refl.
+Qed.
