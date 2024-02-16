@@ -47,4 +47,9 @@ Proof.
     specialize IHh2 with (1 := hext). destruct IHh2 as [B' [s'' hB]].
     eapply tr_sort' in hB. 2: apply hext.
     specialize IHh3 with (1 := hext). destruct IHh3 as [t' [B'' ht]].
+    eapply tr_choice in ht. 2-4: eassumption.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (lam mx A' B' t'), _. split.
+    + eapply type_lam. all: eauto.
+    + cbn. intuition reflexivity.
 Abort.
