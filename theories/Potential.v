@@ -71,6 +71,14 @@ Proof.
   - cbn. intuition subst. reflexivity.
 Qed.
 
+Lemma sc_rmctx :
+  ∀ Γ, sc (rmctx Γ) = sc Γ.
+Proof.
+  intros Γ.
+  unfold sc, rmctx. rewrite map_map. apply map_ext.
+  intros [m A]. reflexivity.
+Qed.
+
 Lemma tr_choice :
   ∀ Γ t A Γ' t' A' A'' m i,
     tr_ctx Γ Γ' →
@@ -85,6 +93,9 @@ Proof.
   destruct hA as [hA [eA' _]].
   unfold tr_ty. intuition auto.
   eapply type_conv. all: eauto.
-  - subst. (* Is it even true? *) admit.
+  - subst. rewrite sc_rmctx in hmt.
+    eapply validity in ht as vt. 2: assumption.
+    destruct vt as [hst _]. eapply scoping_castrm in hst as hst'.
+    scoping_fun. assumption.
   - rewrite <- eA. rewrite <- eA'. apply conv_refl.
-Abort.
+Qed.
