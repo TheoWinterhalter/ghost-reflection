@@ -192,15 +192,15 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ hide t : Erased A
 
 | type_reveal :
-    ∀ i m A t P p,
+    ∀ i j m A t P p,
       cscoping Γ p m →
       cscoping Γ t mGhost →
       cscoping Γ P mKind →
       cscoping Γ A mKind →
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
-      Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i →
-      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (hide (var 0))) →
+      Γ ⊢ P : Erased A ⇒[ i | usup m j / mGhost | mKind ] Sort m j →
+      Γ ⊢ p : Pi i j m mType A (app (S ⋅ P) (hide (var 0))) →
       Γ ⊢ A : Sort mType i →
       Γ ⊢ reveal t P p : app P t
 

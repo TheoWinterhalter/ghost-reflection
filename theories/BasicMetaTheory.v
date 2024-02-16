@@ -1080,21 +1080,21 @@ Qed.
 Lemma type_reveal_inv :
   ∀ Γ t P p C,
     Γ ⊢ reveal t P p : C →
-    ∃ i m A,
+    ∃ i j m A,
       cscoping Γ p m ∧
       cscoping Γ t mGhost ∧
       cscoping Γ P mKind ∧
       cscoping Γ A mKind ∧
       In m [ mProp ; mGhost ] ∧
       Γ ⊢ t : Erased A ∧
-      Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i ∧
-      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (hide (var 0))) ∧
+      Γ ⊢ P : Erased A ⇒[ i | usup m j / mGhost | mKind ] Sort m j ∧
+      Γ ⊢ p : Pi i j m mType A (app (S ⋅ P) (hide (var 0))) ∧
       Γ ⊢ app P t ε≡ C.
 Proof.
   intros Γ t P p C h.
   dependent induction h.
-  - eexists _,_,_. intuition eauto. apply conv_refl.
-  - destruct_exists IHh1. eexists _,_,_. intuition eauto.
+  - eexists _,_,_,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_,_. intuition eauto.
     eapply conv_trans. all: eauto.
 Qed.
 

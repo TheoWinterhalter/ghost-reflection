@@ -89,22 +89,22 @@ Section Admissible.
   Qed.
 
   Lemma type_reveal :
-    ∀ i m A t P p,
+    ∀ i j m A t P p,
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
-      Γ ⊢ P : Erased A ⇒[ i | S i / mGhost | mKind ] Sort m i →
-      Γ ⊢ p : Pi i (S i) m mType A (app (S ⋅ P) (hide (var 0))) →
+      Γ ⊢ P : Erased A ⇒[ i | usup m j / mGhost | mKind ] Sort m j →
+      Γ ⊢ p : Pi i j m mType A (app (S ⋅ P) (hide (var 0))) →
       Γ ⊢ reveal t P p : app P t.
   Proof.
-    intros i m A t P p hm ht hP hp.
+    intros i j m A t P p hm ht hP hp.
     eapply validity in ht as hE. 2: assumption.
-    destruct hE as [_ [j hE]]. ttinv hE hA.
+    destruct hE as [_ [l hE]]. ttinv hE hA.
     destruct hA as [k ?]. intuition idtac.
     eapply validity in hP as hT. 2: assumption.
     destruct hT as [_ [q hT]].
     ttinv hT hT'. intuition idtac.
     eapply validity in hp as hp'. 2: assumption.
-    destruct hp' as [_ [l hp']].
+    destruct hp' as [_ [ll hp']].
     ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
     cbn in hc. apply sort_mode_inj in hc. subst.
     adm. adm.
