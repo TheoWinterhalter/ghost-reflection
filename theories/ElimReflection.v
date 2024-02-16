@@ -33,11 +33,12 @@ Proof.
     + constructor.
     + intuition reflexivity.
   - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
-    (* Need sort preservation + a lemma to get tr_ctx easily for cons *)
-    destruct hctx as [hΓ ->].
-    eexists (Pi i j m mx A B), _. split.
-    + eapply type_pi.
-      (* This is where things begin *)
-      all: admit.
-    +
+    eapply tr_sort' in hA. 2: apply hctx.
+    eapply tr_cons in hA as hext. 2: eassumption.
+    specialize IHh2 with (1 := hext). destruct IHh2 as [B' [s'' hB]].
+    eapply tr_sort' in hB. 2: apply hext.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (Pi i j m mx A' B'), _. split.
+    + eapply type_pi. all: eassumption.
+    + cbn. intuition reflexivity.
 Abort.

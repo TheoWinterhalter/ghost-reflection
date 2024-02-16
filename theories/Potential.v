@@ -83,7 +83,7 @@ Lemma tr_cons :
   ∀ Γ mx A Γ' A' i,
     tr_ctx Γ Γ' →
     Γ' ⊨ A' : Sort mx i ∈ ⟦ A : Sort mx i ⟧x →
-    tr_ctx (Γ,, (mx, A)) ((mx, A') :: Γ').
+    tr_ctx (Γ,, (mx, A)) (Γ',, (mx, A')).
 Proof.
   intros Γ mx A Γ' A' i [hΓ eΓ] [hA eA].
   split.
