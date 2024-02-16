@@ -112,6 +112,18 @@ Proof.
   eapply tr_ren. all: eassumption.
 Qed.
 
+Lemma tr_hide :
+  ∀ i A t Γ' A' t',
+    wf Γ' →
+    Γ' ⊨ A' : (Sort mType i) ∈ ⟦ A : (Sort mType i) ⟧x →
+    Γ' ⊨ t' : A' ∈ ⟦ t : A ⟧x →
+    Γ' ⊨ (hide t') : (Erased A') ∈ ⟦ (hide t) : (Erased A) ⟧x.
+Proof.
+  intros i A t Γ' A' t' hΓ hA ht.
+  unfold tr_ctx, tr_ty in *. intuition subst. 2,3: reflexivity.
+  eapply type_hide. all: eassumption.
+Qed.
+
 (* Conversion only requires the scope not the full context *)
 Lemma conv_upto :
   ∀ Γ Δ u v,
@@ -187,10 +199,8 @@ Proof.
     eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh2 with (1 := hctx). destruct IHh2 as [t' [A'' ht]].
     eapply tr_choice in ht. 2-4: eassumption.
-    unfold tr_ctx, tr_ty in *. intuition subst.
-    eexists (hide t'), _. split.
-    + eapply type_hide. all: eassumption.
-    + cbn. intuition reflexivity.
+    destruct hctx.
+    eexists (hide t'), _. eapply tr_hide. all: eassumption.
   - specialize IHh4 with (1 := hctx). destruct IHh4 as [A' [s' hA]].
     eapply tr_sort_inv in hA. 2: apply hctx.
     specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [E' ht]].
@@ -218,7 +228,12 @@ Proof.
         + eapply tr_ren_lax. 1: eapply rtyping_S.
           1: eassumption.
           all: cbn. all: reflexivity.
-        + (* tr_hide *) admit.
+        + eapply tr_hide.
+          * assumption.
+          * eapply tr_ren_lax. 1: eapply rtyping_S.
+            1: eassumption.
+            all: reflexivity.
+          * (* tr_var *) admit.
         + reflexivity.
         + reflexivity.
     }
