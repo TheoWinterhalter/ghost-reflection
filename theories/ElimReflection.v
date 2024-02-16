@@ -28,6 +28,23 @@ Proof.
   - cbn. intuition reflexivity.
 Qed.
 
+Lemma tr_conv :
+  ∀ Γ u v,
+    rmctx Γ ⊢ u ≡ v →
+    Γ ⊢ u ≡ v.
+Proof.
+  intros Δ u v h.
+  remember (rmctx Δ) as Γ eqn:e.
+  induction h in Δ, e |- *.
+  all: try solve [ econstructor ; eauto ].
+  all: try solve [ subst ; rewrite ?sc_rmctx in * ; econstructor ; eauto ].
+  - subst. econstructor. all: eauto.
+    (* Need to conclude with erasure *)
+    admit.
+  - subst. econstructor. all: eauto.
+    all: admit.
+Abort.
+
 Theorem elim_reflection :
   ∀ Γ t A Γ',
     Γ ⊢ˣ t : A →
