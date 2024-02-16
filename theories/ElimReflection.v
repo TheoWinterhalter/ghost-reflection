@@ -80,4 +80,50 @@ Proof.
     + eapply type_app. all: eassumption.
     + cbn. intuition eauto.
       rewrite castrm_subst. ssimpl. reflexivity.
+  - specialize IHh with (1 := hctx). destruct IHh as [A' [s' hA]].
+    eapply tr_sort' in hA. 2: apply hctx.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (Erased A'), _. split.
+    + eapply type_erased. all: eassumption.
+    + cbn. intuition reflexivity.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
+    eapply tr_sort' in hA. 2: apply hctx.
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [t' [A'' ht]].
+    eapply tr_choice in ht. 2-4: eassumption.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (hide t'), _. split.
+    + eapply type_hide. all: eassumption.
+    + cbn. intuition reflexivity.
+  - admit.
+  - admit.
+  - admit.
+  - admit.
+  - specialize IHh1 with (1 := hctx). destruct IHh1 as [A' [s' hA]].
+    eapply tr_sort' in hA. 2: apply hctx.
+    specialize IHh2 with (1 := hctx). destruct IHh2 as [u' [A'' hu]].
+    eapply tr_choice in hu. 2-4: eassumption.
+    specialize IHh3 with (1 := hctx). destruct IHh3 as [v' [A''' hv]].
+    eapply tr_choice in hv. 2-4: eassumption.
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists (gheq A' u' v'), _. split.
+    + eapply type_gheq. all: eassumption.
+    + cbn. intuition reflexivity.
+  - admit.
+  - destruct hctx.
+    eexists bot, _. split.
+    + eapply type_bot.
+    + cbn. intuition reflexivity.
+  - (* Need a tr_bot lemma, either inversion, or choice *)
+    admit.
+  - specialize IHh2 with (1 := hctx). destruct IHh2 as [B' [s' hB]].
+    eapply tr_sort' in hB. 2: apply hctx.
+    specialize IHh1 with (1 := hctx). destruct IHh1 as [t' [A' ht]].
+    unfold tr_ctx, tr_ty in *. intuition subst.
+    eexists t', _. split.
+    + eapply type_conv. all: eauto.
+      * (* Make a lemma for this, not doing it twice *)
+        admit.
+      * (* Need a lemma here actually, but should be ok *)
+        admit.
+    + intuition reflexivity.
 Abort.
