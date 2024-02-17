@@ -473,4 +473,11 @@ Restart.
   2:{ split. 1: constructor. reflexivity. }
   destruct ht as [t' [b' ht]].
   (* I could also use an inversion like for sorts *)
+  (* Or I could prove validity also for GRTT (probably not) *)
+  (* One experiment to conduct again, is removal of this scoping requirement
+    in conversion, I guess validity is the one that fails?
+
+    The property we want probably is that when A : Sort m i and B : Sort m' j
+    with A ε≡ B then m = m'.
+  *)
 Abort.

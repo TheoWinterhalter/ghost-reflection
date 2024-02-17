@@ -59,6 +59,24 @@ Proof.
   subst. assumption.
 Qed.
 
+Lemma tr_bot_eq :
+  ∀ p Γ' p' B',
+    wf Γ' →
+    Γ' ⊨ p' : B' ∈ ⟦ p : bot ⟧x →
+    B' = bot.
+Proof.
+  intros p Γ' p' B' hΓ [h [ep ebot]].
+  eapply (f_equal (λ x, mdc Γ' x)) in ebot as em. cbn in em.
+  rewrite <- md_castrm in em.
+  eapply validity in h as hbot. 2: assumption.
+  destruct hbot as [_ [i hbot]].
+  destruct B'. all: try discriminate.
+  - cbn in em. cbn in ebot.
+    ttinv hbot hT. destruct hT as [k [mx ?]]. intuition subst.
+    remd in em. subst. contradiction.
+  - reflexivity.
+Qed.
+
 Lemma tr_cons :
   ∀ Γ mx A Γ' A' i,
     tr_ctx Γ Γ' →
