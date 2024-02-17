@@ -454,7 +454,7 @@ Theorem consistency :
   cc_consistency →
   grtt_consistency.
 Proof.
-  intros h t ht.
+  (* intros h t ht.
   eapply relative_consistency in h. eapply h.
   eapply conservativity with (A := bot) in ht.
   2: econstructor.
@@ -471,7 +471,7 @@ Restart.
   eapply relative_consistency in h. eapply h.
   eapply elim_reflection in ht.
   2:{ split. 1: constructor. reflexivity. }
-  destruct ht as [t' [b' ht]].
+  destruct ht as [t' [b' ht]]. *)
   (* I could also use an inversion like for sorts *)
   (* Or I could prove validity also for GRTT (probably not) *)
   (* One experiment to conduct again, is removal of this scoping requirement
@@ -480,4 +480,12 @@ Restart.
     The property we want probably is that when A : Sort m i and B : Sort m' j
     with A ε≡ B then m = m'.
   *)
-Abort.
+  intros h t ht.
+  eapply relative_consistency in h. eapply h.
+  eapply elim_reflection in ht.
+  2:{ split. 1: constructor. reflexivity. }
+  destruct ht as [t' [b' ht]].
+  eapply tr_bot_eq in ht as e. 2: constructor.
+  subst.
+  exists t'. apply ht.
+Qed.
