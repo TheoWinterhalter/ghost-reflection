@@ -38,6 +38,10 @@ Section Mode.
     | gheq A u v => mKind
     | ghrefl A u => mProp
     | ghcast A u v e P t => md Γ t
+    | tbool => mKind
+    | ttrue => mType
+    | tfalse => mType
+    | tif m b P t f => m
     | bot => mKind
     | bot_elim m A p => m
     end.

@@ -27,7 +27,12 @@ Inductive cterm : Type :=
   | sq_elim : cterm -> cterm -> cterm -> cterm
   | teq : cterm -> cterm -> cterm -> cterm
   | trefl : cterm -> cterm -> cterm
-  | tJ : cterm -> cterm -> cterm -> cterm.
+  | tJ : cterm -> cterm -> cterm -> cterm
+  | ebool : cterm
+  | etrue : cterm
+  | efalse : cterm
+  | bool_err : cterm
+  | eif : cmode -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm.
 
 Lemma congr_cSort {s0 : cmode} {s1 : level} {t0 : cmode} {t1 : level}
   (H0 : s0 = t0) (H1 : s1 = t1) : cSort s0 s1 = cSort t0 t1.
@@ -172,6 +177,46 @@ exact (eq_trans
             (ap (fun x => tJ t0 x s2) H1)) (ap (fun x => tJ t0 t1 x) H2)).
 Qed.
 
+Lemma congr_ebool : ebool = ebool.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_etrue : etrue = etrue.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_efalse : efalse = efalse.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_bool_err : bool_err = bool_err.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_eif {s0 : cmode} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {s4 : cterm} {s5 : cterm} {t0 : cmode} {t1 : cterm} {t2 : cterm}
+  {t3 : cterm} {t4 : cterm} {t5 : cterm} (H0 : s0 = t0) (H1 : s1 = t1)
+  (H2 : s2 = t2) (H3 : s3 = t3) (H4 : s4 = t4) (H5 : s5 = t5) :
+  eif s0 s1 s2 s3 s4 s5 = eif t0 t1 t2 t3 t4 t5.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans
+                  (eq_trans
+                     (eq_trans eq_refl
+                        (ap (fun x => eif x s1 s2 s3 s4 s5) H0))
+                     (ap (fun x => eif t0 x s2 s3 s4 s5) H1))
+                  (ap (fun x => eif t0 t1 x s3 s4 s5) H2))
+               (ap (fun x => eif t0 t1 t2 x s4 s5) H3))
+            (ap (fun x => eif t0 t1 t2 t3 x s5) H4))
+         (ap (fun x => eif t0 t1 t2 t3 t4 x) H5)).
+Qed.
+
 Lemma upRen_cterm_cterm (xi : nat -> nat) : nat -> nat.
 Proof.
 exact (up_ren xi).
@@ -213,6 +258,14 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   | tJ s0 s1 s2 =>
       tJ (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
         (ren_cterm xi_cterm s2)
+  | ebool => ebool
+  | etrue => etrue
+  | efalse => efalse
+  | bool_err => bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      eif s0 (ren_cterm xi_cterm s1) (ren_cterm xi_cterm s2)
+        (ren_cterm xi_cterm s3) (ren_cterm xi_cterm s4)
+        (ren_cterm xi_cterm s5)
   end.
 
 Lemma up_cterm_cterm (sigma : nat -> cterm) : nat -> cterm.
@@ -259,6 +312,14 @@ cterm :=
   | tJ s0 s1 s2 =>
       tJ (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
         (subst_cterm sigma_cterm s2)
+  | ebool => ebool
+  | etrue => etrue
+  | efalse => efalse
+  | bool_err => bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      eif s0 (subst_cterm sigma_cterm s1) (subst_cterm sigma_cterm s2)
+        (subst_cterm sigma_cterm s3) (subst_cterm sigma_cterm s4)
+        (subst_cterm sigma_cterm s5)
   end.
 
 Lemma upId_cterm_cterm (sigma : nat -> cterm)
@@ -321,6 +382,16 @@ subst_cterm sigma_cterm s = s :=
       congr_tJ (idSubst_cterm sigma_cterm Eq_cterm s0)
         (idSubst_cterm sigma_cterm Eq_cterm s1)
         (idSubst_cterm sigma_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0) (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+        (idSubst_cterm sigma_cterm Eq_cterm s4)
+        (idSubst_cterm sigma_cterm Eq_cterm s5)
   end.
 
 Lemma upExtRen_cterm_cterm (xi : nat -> nat) (zeta : nat -> nat)
@@ -386,6 +457,16 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
       congr_tJ (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0) (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s5)
   end.
 
 Lemma upExt_cterm_cterm (sigma : nat -> cterm) (tau : nat -> cterm)
@@ -449,6 +530,16 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
       congr_tJ (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0) (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s5)
   end.
 
 Lemma up_ren_ren_cterm_cterm (xi : nat -> nat) (zeta : nat -> nat)
@@ -524,6 +615,17 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
       congr_tJ (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s5)
   end.
 
 Lemma up_ren_subst_cterm_cterm (xi : nat -> nat) (tau : nat -> cterm)
@@ -609,6 +711,17 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s5)
   end.
 
 Lemma up_subst_ren_cterm_cterm (sigma : nat -> cterm)
@@ -705,6 +818,17 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s5)
   end.
 
 Lemma up_subst_subst_cterm_cterm (sigma : nat -> cterm)
@@ -803,6 +927,17 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s5)
   end.
 
 Lemma renRen_cterm (xi_cterm : nat -> nat) (zeta_cterm : nat -> nat)
@@ -943,6 +1078,17 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
       congr_tJ (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+  | ebool => congr_ebool
+  | etrue => congr_etrue
+  | efalse => congr_efalse
+  | bool_err => congr_bool_err
+  | eif s0 s1 s2 s3 s4 s5 =>
+      congr_eif (eq_refl s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s5)
   end.
 
 Lemma rinstInst'_cterm (xi_cterm : nat -> nat) (s : cterm) :
@@ -1184,6 +1330,17 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
   | tJ s0 s1 s2 =>
       and (allfv_cterm p_cterm s0)
         (and (allfv_cterm p_cterm s1) (and (allfv_cterm p_cterm s2) True))
+  | ebool => True
+  | etrue => True
+  | efalse => True
+  | bool_err => True
+  | eif s0 s1 s2 s3 s4 s5 =>
+      and True
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2)
+              (and (allfv_cterm p_cterm s3)
+                 (and (allfv_cterm p_cterm s4)
+                    (and (allfv_cterm p_cterm s5) True)))))
   end.
 
 Lemma upAllfvTriv_cterm_cterm {p : nat -> Prop} (H : forall x, p x) :
@@ -1250,6 +1407,17 @@ allfv_cterm p_cterm s :=
       conj (allfvTriv_cterm p_cterm H_cterm s0)
         (conj (allfvTriv_cterm p_cterm H_cterm s1)
            (conj (allfvTriv_cterm p_cterm H_cterm s2) I))
+  | ebool => I
+  | etrue => I
+  | efalse => I
+  | bool_err => I
+  | eif s0 s1 s2 s3 s4 s5 =>
+      conj I
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3)
+                 (conj (allfvTriv_cterm p_cterm H_cterm s4)
+                    (conj (allfvTriv_cterm p_cterm H_cterm s5) I)))))
   end.
 
 Lemma upAllfvImpl_cterm_cterm {p : nat -> Prop} {q : nat -> Prop}
@@ -1487,6 +1655,81 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
                                     end
                      end
                  end) I))
+  | ebool => fun HP => I
+  | etrue => fun HP => I
+  | efalse => fun HP => I
+  | bool_err => fun HP => I
+  | eif s0 s1 s2 s3 s4 s5 =>
+      fun HP =>
+      conj I
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvImpl_cterm p_cterm q_cterm H_cterm s4
+                       match HP with
+                       | conj _ HP =>
+                           match HP with
+                           | conj _ HP =>
+                               match HP with
+                               | conj _ HP =>
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj HP _ => HP
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvImpl_cterm p_cterm q_cterm H_cterm s5
+                          match HP with
+                          | conj _ HP =>
+                              match HP with
+                              | conj _ HP =>
+                                  match HP with
+                                  | conj _ HP =>
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj HP _ => HP
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end) I)))))
   end.
 
 Lemma upAllfvRenL_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -1719,6 +1962,80 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
                                    end
                      end
                  end) I))
+  | ebool => fun H => I
+  | etrue => fun H => I
+  | efalse => fun H => I
+  | bool_err => fun H => I
+  | eif s0 s1 s2 s3 s4 s5 =>
+      fun H =>
+      conj I
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenL_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenL_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end) I)))))
   end.
 
 Lemma upAllfvRenR_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -1951,6 +2268,80 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
                                    end
                      end
                  end) I))
+  | ebool => fun H => I
+  | etrue => fun H => I
+  | efalse => fun H => I
+  | bool_err => fun H => I
+  | eif s0 s1 s2 s3 s4 s5 =>
+      fun H =>
+      conj I
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenR_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenR_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end) I)))))
   end.
 
 End Allfv.

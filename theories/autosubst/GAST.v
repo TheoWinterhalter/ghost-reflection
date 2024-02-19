@@ -20,6 +20,10 @@ Inductive term : Type :=
   | gheq : term -> term -> term -> term
   | ghrefl : term -> term -> term
   | ghcast : term -> term -> term -> term -> term -> term -> term
+  | tbool : term
+  | ttrue : term
+  | tfalse : term
+  | tif : mode -> term -> term -> term -> term -> term
   | bot : term
   | bot_elim : mode -> term -> term -> term.
 
@@ -151,6 +155,37 @@ exact (eq_trans
          (ap (fun x => ghcast t0 t1 t2 t3 t4 x) H5)).
 Qed.
 
+Lemma congr_tbool : tbool = tbool.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_ttrue : ttrue = ttrue.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_tfalse : tfalse = tfalse.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_tif {s0 : mode} {s1 : term} {s2 : term} {s3 : term} {s4 : term}
+  {t0 : mode} {t1 : term} {t2 : term} {t3 : term} {t4 : term} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) (H4 : s4 = t4) :
+  tif s0 s1 s2 s3 s4 = tif t0 t1 t2 t3 t4.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans
+                  (eq_trans eq_refl (ap (fun x => tif x s1 s2 s3 s4) H0))
+                  (ap (fun x => tif t0 x s2 s3 s4) H1))
+               (ap (fun x => tif t0 t1 x s3 s4) H2))
+            (ap (fun x => tif t0 t1 t2 x s4) H3))
+         (ap (fun x => tif t0 t1 t2 t3 x) H4)).
+Qed.
+
 Lemma congr_bot : bot = bot.
 Proof.
 exact (eq_refl).
@@ -200,6 +235,12 @@ Fixpoint ren_term (xi_term : nat -> nat) (s : term) {struct s} : term :=
       ghcast (ren_term xi_term s0) (ren_term xi_term s1)
         (ren_term xi_term s2) (ren_term xi_term s3) (ren_term xi_term s4)
         (ren_term xi_term s5)
+  | tbool => tbool
+  | ttrue => ttrue
+  | tfalse => tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      tif s0 (ren_term xi_term s1) (ren_term xi_term s2)
+        (ren_term xi_term s3) (ren_term xi_term s4)
   | bot => bot
   | bot_elim s0 s1 s2 =>
       bot_elim s0 (ren_term xi_term s1) (ren_term xi_term s2)
@@ -245,6 +286,12 @@ term :=
       ghcast (subst_term sigma_term s0) (subst_term sigma_term s1)
         (subst_term sigma_term s2) (subst_term sigma_term s3)
         (subst_term sigma_term s4) (subst_term sigma_term s5)
+  | tbool => tbool
+  | ttrue => ttrue
+  | tfalse => tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      tif s0 (subst_term sigma_term s1) (subst_term sigma_term s2)
+        (subst_term sigma_term s3) (subst_term sigma_term s4)
   | bot => bot
   | bot_elim s0 s1 s2 =>
       bot_elim s0 (subst_term sigma_term s1) (subst_term sigma_term s2)
@@ -308,6 +355,14 @@ subst_term sigma_term s = s :=
         (idSubst_term sigma_term Eq_term s3)
         (idSubst_term sigma_term Eq_term s4)
         (idSubst_term sigma_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0) (idSubst_term sigma_term Eq_term s1)
+        (idSubst_term sigma_term Eq_term s2)
+        (idSubst_term sigma_term Eq_term s3)
+        (idSubst_term sigma_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0) (idSubst_term sigma_term Eq_term s1)
@@ -375,6 +430,14 @@ ren_term xi_term s = ren_term zeta_term s :=
         (extRen_term xi_term zeta_term Eq_term s3)
         (extRen_term xi_term zeta_term Eq_term s4)
         (extRen_term xi_term zeta_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0) (extRen_term xi_term zeta_term Eq_term s1)
+        (extRen_term xi_term zeta_term Eq_term s2)
+        (extRen_term xi_term zeta_term Eq_term s3)
+        (extRen_term xi_term zeta_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0) (extRen_term xi_term zeta_term Eq_term s1)
@@ -443,6 +506,14 @@ subst_term sigma_term s = subst_term tau_term s :=
         (ext_term sigma_term tau_term Eq_term s3)
         (ext_term sigma_term tau_term Eq_term s4)
         (ext_term sigma_term tau_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0) (ext_term sigma_term tau_term Eq_term s1)
+        (ext_term sigma_term tau_term Eq_term s2)
+        (ext_term sigma_term tau_term Eq_term s3)
+        (ext_term sigma_term tau_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0) (ext_term sigma_term tau_term Eq_term s1)
@@ -516,6 +587,15 @@ Fixpoint compRenRen_term (xi_term : nat -> nat) (zeta_term : nat -> nat)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s3)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s4)
         (compRenRen_term xi_term zeta_term rho_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s1)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s2)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s3)
+        (compRenRen_term xi_term zeta_term rho_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -595,6 +675,15 @@ subst_term tau_term (ren_term xi_term s) = subst_term theta_term s :=
         (compRenSubst_term xi_term tau_term theta_term Eq_term s3)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s4)
         (compRenSubst_term xi_term tau_term theta_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s1)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s2)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s3)
+        (compRenSubst_term xi_term tau_term theta_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -693,6 +782,15 @@ ren_term zeta_term (subst_term sigma_term s) = subst_term theta_term s :=
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s3)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s4)
         (compSubstRen_term sigma_term zeta_term theta_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s1)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s2)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s3)
+        (compSubstRen_term sigma_term zeta_term theta_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -793,6 +891,15 @@ subst_term tau_term (subst_term sigma_term s) = subst_term theta_term s :=
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s3)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s4)
         (compSubstSubst_term sigma_term tau_term theta_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s1)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s2)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s3)
+        (compSubstSubst_term sigma_term tau_term theta_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -929,6 +1036,14 @@ Fixpoint rinst_inst_term (xi_term : nat -> nat) (sigma_term : nat -> term)
         (rinst_inst_term xi_term sigma_term Eq_term s3)
         (rinst_inst_term xi_term sigma_term Eq_term s4)
         (rinst_inst_term xi_term sigma_term Eq_term s5)
+  | tbool => congr_tbool
+  | ttrue => congr_ttrue
+  | tfalse => congr_tfalse
+  | tif s0 s1 s2 s3 s4 =>
+      congr_tif (eq_refl s0) (rinst_inst_term xi_term sigma_term Eq_term s1)
+        (rinst_inst_term xi_term sigma_term Eq_term s2)
+        (rinst_inst_term xi_term sigma_term Eq_term s3)
+        (rinst_inst_term xi_term sigma_term Eq_term s4)
   | bot => congr_bot
   | bot_elim s0 s1 s2 =>
       congr_bot_elim (eq_refl s0)
@@ -1171,6 +1286,14 @@ Fixpoint allfv_term (p_term : nat -> Prop) (s : term) {struct s} : Prop :=
               (and (allfv_term p_term s3)
                  (and (allfv_term p_term s4)
                     (and (allfv_term p_term s5) True)))))
+  | tbool => True
+  | ttrue => True
+  | tfalse => True
+  | tif s0 s1 s2 s3 s4 =>
+      and True
+        (and (allfv_term p_term s1)
+           (and (allfv_term p_term s2)
+              (and (allfv_term p_term s3) (and (allfv_term p_term s4) True))))
   | bot => True
   | bot_elim s0 s1 s2 =>
       and True (and (allfv_term p_term s1) (and (allfv_term p_term s2) True))
@@ -1242,6 +1365,15 @@ Fixpoint allfvTriv_term (p_term : nat -> Prop) (H_term : forall x, p_term x)
               (conj (allfvTriv_term p_term H_term s3)
                  (conj (allfvTriv_term p_term H_term s4)
                     (conj (allfvTriv_term p_term H_term s5) I)))))
+  | tbool => I
+  | ttrue => I
+  | tfalse => I
+  | tif s0 s1 s2 s3 s4 =>
+      conj I
+        (conj (allfvTriv_term p_term H_term s1)
+           (conj (allfvTriv_term p_term H_term s2)
+              (conj (allfvTriv_term p_term H_term s3)
+                 (conj (allfvTriv_term p_term H_term s4) I))))
   | bot => I
   | bot_elim s0 s1 s2 =>
       conj I
@@ -1574,6 +1706,60 @@ allfv_term p_term s -> allfv_term q_term s :=
                                   end
                               end
                           end) I)))))
+  | tbool => fun HP => I
+  | ttrue => fun HP => I
+  | tfalse => fun HP => I
+  | tif s0 s1 s2 s3 s4 =>
+      fun HP =>
+      conj I
+        (conj
+           (allfvImpl_term p_term q_term H_term s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_term p_term q_term H_term s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_term p_term q_term H_term s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvImpl_term p_term q_term H_term s4
+                       match HP with
+                       | conj _ HP =>
+                           match HP with
+                           | conj _ HP =>
+                               match HP with
+                               | conj _ HP =>
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj HP _ => HP
+                                       end
+                                   end
+                               end
+                           end
+                       end) I))))
   | bot => fun HP => I
   | bot_elim s0 s1 s2 =>
       fun HP =>
@@ -1915,6 +2101,59 @@ allfv_term (funcomp p_term xi_term) s :=
                                   end
                               end
                           end) I)))))
+  | tbool => fun H => I
+  | ttrue => fun H => I
+  | tfalse => fun H => I
+  | tif s0 s1 s2 s3 s4 =>
+      fun H =>
+      conj I
+        (conj
+           (allfvRenL_term p_term xi_term s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_term p_term xi_term s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_term p_term xi_term s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenL_term p_term xi_term s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end) I))))
   | bot => fun H => I
   | bot_elim s0 s1 s2 =>
       fun H =>
@@ -2257,6 +2496,59 @@ allfv_term p_term (ren_term xi_term s) :=
                                   end
                               end
                           end) I)))))
+  | tbool => fun H => I
+  | ttrue => fun H => I
+  | tfalse => fun H => I
+  | tif s0 s1 s2 s3 s4 =>
+      fun H =>
+      conj I
+        (conj
+           (allfvRenR_term p_term xi_term s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_term p_term xi_term s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_term p_term xi_term s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenR_term p_term xi_term s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end) I))))
   | bot => fun H => I
   | bot_elim s0 s1 s2 =>
       fun H =>

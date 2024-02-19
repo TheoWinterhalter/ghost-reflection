@@ -23,5 +23,10 @@ gheq : term -> term -> term -> term
 ghrefl : term -> term -> term
 ghcast : term -> term -> term -> term -> term -> term -> term
 
+tbool : term
+ttrue : term
+tfalse : term
+tif : mode -> term -> term -> term -> term -> term
+
 bot : term
 bot_elim : mode -> term -> term -> term

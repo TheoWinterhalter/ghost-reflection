@@ -121,6 +121,27 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ P cType →
       ccscoping Γ t m →
       ccscoping Γ (tJ e P t) m
+
+| cscope_bool :
+    ccscoping Γ ebool cType
+
+| cscope_true :
+    ccscoping Γ etrue cType
+
+| cscope_false :
+    ccscoping Γ efalse cType
+
+| cscope_bool_err :
+    ccscoping Γ bool_err cType
+
+| cscope_if :
+    ∀ m b P t f e,
+      ccscoping Γ b cType →
+      ccscoping Γ P cType →
+      ccscoping Γ t m →
+      ccscoping Γ f m →
+      ccscoping Γ e m →
+      ccscoping Γ (eif m b P t f e) m
 .
 
 Notation ccxscoping Γ := (ccscoping (csc Γ)).

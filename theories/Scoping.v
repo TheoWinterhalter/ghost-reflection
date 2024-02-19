@@ -104,6 +104,23 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ t m →
       scoping Γ (ghcast A u v e P t) m
 
+| scope_bool :
+    scoping Γ tbool mKind
+
+| scope_true :
+    scoping Γ ttrue mType
+
+| scope_false :
+    scoping Γ tfalse mType
+
+| scope_if :
+    ∀ m b P t f,
+      scoping Γ b mType →
+      scoping Γ P mKind →
+      scoping Γ t m →
+      scoping Γ f m →
+      scoping Γ (tif m b P t f) m
+
 | scope_bot :
     scoping Γ bot mKind
 
