@@ -44,6 +44,18 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ A u P t,
       Γ ⊢ᶜ tJ (trefl A u) P t ≡ t
 
+| cconv_if_true :
+    ∀ m P t f e,
+      Γ ⊢ᶜ eif m etrue P t f e ≡ t
+
+| cconv_if_false :
+    ∀ m P t f e,
+      Γ ⊢ᶜ eif m efalse P t f e ≡ f
+
+| cconv_if_err :
+    ∀ m P t f e,
+      Γ ⊢ᶜ eif m bool_err P t f e ≡ e
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -117,6 +129,15 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ P ≡ P' →
       Γ ⊢ᶜ t ≡ t' →
       Γ ⊢ᶜ tJ e P t ≡ tJ e' P' t'
+
+| ccong_eif :
+    ∀ m b P t f e b' P' t' f' e',
+      Γ ⊢ᶜ b ≡ b' →
+      Γ ⊢ᶜ P ≡ P' →
+      Γ ⊢ᶜ t ≡ t' →
+      Γ ⊢ᶜ f ≡ f' →
+      Γ ⊢ᶜ e ≡ e' →
+      Γ ⊢ᶜ eif m b P t f e ≡ eif m b' P' t' f' e'
 
 (** Structural rules **)
 
@@ -257,7 +278,7 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ v : A →
       Γ ⊢ᶜ teq A u v : cSort cType i
 
-| type_trefl :
+| ctype_trefl :
     ∀ i A u,
       Γ ⊢ᶜ A : cSort cType i →
       Γ ⊢ᶜ u : A →
@@ -269,6 +290,27 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ P : cPi cType A (cPi cType (teq (S ⋅ A) (S ⋅ u) (cvar 0)) (cSort m i)) →
       Γ ⊢ᶜ t : capp (capp P u) (trefl A u) →
       Γ ⊢ᶜ tJ e P t : capp (capp P v) e
+
+| ctype_bool :
+    Γ ⊢ᶜ ebool : cSort cType 0
+
+| ctype_true :
+    Γ ⊢ᶜ etrue : ebool
+
+| ctype_false :
+    Γ ⊢ᶜ efalse : ebool
+
+| ctype_bool_err :
+    Γ ⊢ᶜ bool_err : ebool
+
+| ctype_if :
+    ∀ i m b P t f e,
+      Γ ⊢ᶜ b : ebool →
+      Γ ⊢ᶜ P : ebool ⇒[ cType ] cSort m i →
+      Γ ⊢ᶜ t : capp P etrue →
+      Γ ⊢ᶜ f : capp P efalse →
+      Γ ⊢ᶜ e : capp P bool_err →
+      Γ ⊢ᶜ eif m b P t f e : capp P b
 
 | ctype_conv :
     ∀ i m A B t,
@@ -311,13 +353,15 @@ Create HintDb cc_type discriminated.
 Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   cconv_J_refl ccong_Prop ccong_Pi ccong_clam ccong_app ccong_bot_elim
   ccong_tyval ccong_El ccong_Err ccong_squash ccong_teq ccong_trefl ccong_tJ
+  cconv_if_true cconv_if_false cconv_if_err ccong_eif
   cconv_refl
 : cc_conv.
 
 Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty ctype_tyval
   ctype_tyerr ctype_El ctype_Err ctype_squash ctype_sq ctype_sq_elim
-  ctype_teq type_trefl ctype_tJ
+  ctype_teq ctype_trefl ctype_tJ ctype_bool ctype_true ctype_false ctype_bool_err
+  ctype_if
 : cc_type.
 
 Ltac econv :=

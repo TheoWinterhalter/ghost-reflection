@@ -355,6 +355,20 @@ Proof.
   intuition eauto.
 Qed.
 
+Lemma scope_if_inv :
+  ∀ Γ m b P t f m',
+    scoping Γ (tif m b P t f) m' →
+    scoping Γ b mType ∧
+    scoping Γ P mKind ∧
+    scoping Γ t m ∧
+    scoping Γ f m ∧
+    m' = m.
+Proof.
+  intros Γ m b P t f m' h.
+  inversion h. subst.
+  intuition eauto.
+Qed.
+
 Lemma scope_bot_elim_inv :
   ∀ Γ m A p m',
     scoping Γ (bot_elim m A p) m' →
@@ -386,83 +400,6 @@ Proof.
 Qed.
 
 (** Conversion entails mode equality **)
-
-Lemma conv_scoping :
-  ∀ Γ u v m,
-    Γ ⊢ u ≡ v →
-    cscoping Γ u m ↔ cscoping Γ v m.
-Proof.
-  intros Γ u v m h.
-  induction h in m |- *.
-  - split.
-    + intro hu.
-      eapply scope_app_inv in hu. destruct hu as [mx' [hl hu]].
-      eapply scope_lam_inv in hl. destruct hl as [hA [hB ht]].
-      eapply scoping_subst. 2: eassumption.
-      apply sscoping_one. assumption.
-    + intro hu. econstructor.
-      * constructor. 1,2: assumption.
-        eapply scoping_subst with (Γ := sc Γ) (σ := u ..) in H1 as h.
-        2:{
-          constructor.
-          - asimpl. apply sscoping_ids.
-          - asimpl. assumption.
-         }
-         scoping_fun. assumption.
-      * eassumption.
-  - split.
-    + intro hu. apply scope_reveal_inv in hu. intuition idtac.
-      econstructor. all: eauto.
-    + intro hu. apply scope_app_inv in hu. destruct hu. intuition idtac.
-      scoping_fun. scoping_fun.
-      constructor. all: auto.
-      constructor. assumption.
-  - revert i j. wlog_iff. intros i j hu.
-    apply scope_sort_inv in hu. subst. constructor.
-  - clear h1 h2. revert i i' j j' A A' B B' IHh1 IHh2 H H0. wlog_iff.
-    intros i i' j j' A A' B B' ihA ihB ei ej hu.
-    apply scope_pi_inv in hu. intuition subst.
-    constructor. all: firstorder.
-  - clear h1 h2 h3. revert A A' B B' t t' IHh1 IHh2 IHh3. wlog_iff.
-    intros A A' B B' t t' ihA ihB iht hu.
-    apply scope_lam_inv in hu. intuition idtac.
-    constructor. all: firstorder.
-  - clear h1 h2. revert u u' v v' IHh1 IHh2. wlog_iff.
-    intros u u' v v' ihu ihv h.
-    apply scope_app_inv in h. destruct h. intuition idtac.
-    econstructor. 1: firstorder.
-    eapply ihv. eassumption.
-  - clear h. revert A A' IHh. wlog_iff.
-    intros A A' ih h.
-    apply scope_erased_inv in h. intuition subst.
-    constructor. firstorder.
-  - clear h. revert u u' IHh. wlog_iff.
-    intros u u' ih h.
-    apply scope_hide_inv in h. intuition subst.
-    constructor. firstorder.
-  - clear h1 h2 h3. revert t t' P P' p p' IHh1 IHh2 IHh3. wlog_iff.
-    intros t t' P P' p p' iht ihP ihp h.
-    apply scope_reveal_inv in h. intuition idtac.
-    constructor. all: firstorder.
-  - clear h1 h2. revert t t' p p' IHh1 IHh2. wlog_iff.
-    intros t t' p p' iht ihp h.
-    apply scope_Reveal_inv in h. intuition subst.
-    constructor. all: firstorder.
-  - clear h1 h2 h3. revert A A' u u' v v' IHh1 IHh2 IHh3. wlog_iff.
-    intros A A' u u' v v' ihA ihu ihv h.
-    apply scope_gheq_inv in h. intuition subst.
-    constructor. all: firstorder.
-  - clear h1 h2. revert A A' p p' IHh1 IHh2. wlog_iff.
-    intros A A' p p' ihA ihp h.
-    apply scope_bot_elim_inv in h. intuition subst.
-    constructor. all: firstorder.
-  - reflexivity.
-  - symmetry. auto.
-  - etransitivity. all: eauto.
-  - split. all: intro. all: scoping_fun. all: assumption.
-Qed.
-
-(** Alternate lemma but using md **)
 
 Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
   ∀ x,
@@ -594,6 +531,7 @@ Proof.
   - cbn. erewrite scoping_md. 2: eassumption.
     cbn in H2. destruct H2 as [| []]. 3: contradiction.
     all: subst. all: reflexivity.
+  - cbn.
   - cbn. rewrite IHh3. reflexivity.
   - etransitivity. all: eassumption.
   - erewrite 2!scoping_md. 2,3: eassumption.

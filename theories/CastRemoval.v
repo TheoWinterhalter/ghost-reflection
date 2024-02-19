@@ -24,6 +24,10 @@ Equations castrm : term → term := {
   ε| gheq A u v | := gheq ε|A| ε|u| ε|v| ;
   ε| ghrefl A u | := ghrefl ε|A| ε|u| ;
   ε| ghcast A u v e P t | := ε|t| ;
+  ε| tbool | := tbool ;
+  ε| ttrue | := ttrue ;
+  ε| tfalse | := tfalse ;
+  ε| tif m b P t f | := tif m ε|b| ε|P| ε|t| ε|f| ;
   ε| bot | := bot ;
   ε| bot_elim m A p | := bot_elim m ε|A| ε|p|
 }

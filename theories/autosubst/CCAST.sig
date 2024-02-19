@@ -37,3 +37,9 @@ sq_elim : cterm -> cterm -> cterm -> cterm
 teq : cterm -> cterm -> cterm -> cterm
 trefl : cterm -> cterm -> cterm
 tJ : cterm -> cterm -> cterm -> cterm
+
+ebool : cterm
+etrue : cterm
+efalse : cterm
+bool_err : cterm
+eif : cmode -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm

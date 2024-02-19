@@ -36,6 +36,14 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       In mp [ mProp ; mGhost ] →
       Γ ⊢ reveal (hide t) P p ≡ app p t
 
+| conv_if_true :
+    ∀ m P t f,
+      Γ ⊢ tif m ttrue P t f ≡ t
+
+| conv_if_false :
+    ∀ m P t f,
+      Γ ⊢ tif m tfalse P t f ≡ f
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -100,6 +108,14 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ A ≡ A' →
       Γ ⊢ u ≡ u' →
       Γ ⊢ ghrefl A u ≡ ghrefl A' u' *)
+
+| cong_if :
+    ∀ m b P t f b' P' t' f',
+      Γ ⊢ b ≡ b' →
+      Γ ⊢ P ≡ P' →
+      Γ ⊢ t ≡ t' →
+      Γ ⊢ f ≡ f' →
+      Γ ⊢ tif m b P t f ≡ tif m b' P' t' f'
 
 (* Maybe not needed? *)
 | cong_bot_elim :
@@ -268,6 +284,23 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ P : A ⇒[ i | usup m i / mGhost | mKind ] Sort m i →
       Γ ⊢ t : app P u →
       Γ ⊢ ghcast A u v e P t : app P v
+
+| type_bool :
+    Γ ⊢ tbool : Sort mType 0
+
+| type_true :
+    Γ ⊢ ttrue : tbool
+
+| type_false :
+    Γ ⊢ tfalse : tbool
+
+| type_if :
+    ∀ i m b P t f,
+      Γ ⊢ b : tbool →
+      Γ ⊢ P : tbool ⇒[ 0 | i / mType | mKind ] Sort m i →
+      Γ ⊢ t : app P ttrue →
+      Γ ⊢ f : app P tfalse →
+      Γ ⊢ tif m b P t f : app P b
 
 | type_bot :
     Γ ⊢ bot : Sort mProp 0
