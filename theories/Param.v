@@ -195,7 +195,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let tv := ⟦ Γ | t ⟧pv in
     let tP := ⟦ Γ | t ⟧p in
     match md Γ t with
-    | mKind => tP (* Not cDummy for technical reasons *)
+    | mKind => cDummy
     | mType => pcastTG Ae AP uv vv vP eP PP te tP
     | mGhost => pcastTG Ae AP uv vv vP eP PP tv tP
     | mProp => pcastP Ae AP uv vv vP eP PP tP
