@@ -399,8 +399,6 @@ Proof.
   intros Γ. constructor. all: constructor.
 Qed.
 
-(** Conversion entails mode equality **)
-
 Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
   ∀ x,
     nth_error Δ x = None →
@@ -513,29 +511,6 @@ Proof.
   destruct n.
   - cbn in e. discriminate.
   - cbn in e. cbn. eexists. intuition eauto.
-Qed.
-
-Lemma conv_md :
-  ∀ Γ u v,
-    Γ ⊢ u ≡ v →
-    mdc Γ u = mdc Γ v.
-Proof.
-  intros Γ u v h.
-  induction h.
-  all: try solve [ cbn ; reflexivity ].
-  all: try solve [ cbn ; eauto ].
-  - cbn. erewrite md_subst.
-    2: eapply sscoping_one ; eassumption.
-    2: eapply sscoping_comp_one.
-    reflexivity.
-  - cbn. erewrite scoping_md. 2: eassumption.
-    cbn in H2. destruct H2 as [| []]. 3: contradiction.
-    all: subst. all: reflexivity.
-  - cbn.
-  - cbn. rewrite IHh3. reflexivity.
-  - etransitivity. all: eassumption.
-  - erewrite 2!scoping_md. 2,3: eassumption.
-    reflexivity.
 Qed.
 
 (** Renaming preserves typing **)
@@ -694,6 +669,8 @@ Proof.
     econstructor. all: eauto. all: try scoping_ren_finish.
     eapply meta_conv. 1: apply IHht3. 1: auto.
     f_equal. f_equal. asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    econstructor. all: eauto. all: scoping_ren_finish.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_ren_finish.
     rewrite 2!castrm_ren.
@@ -872,6 +849,8 @@ Proof.
     econstructor. all: eauto. all: try scoping_subst_finish.
     eapply meta_conv. 1: apply IHht3. 1: auto.
     f_equal. f_equal. asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    econstructor. all: eauto. all: scoping_subst_finish.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_subst_finish.
     rewrite 2!castrm_subst.
@@ -1306,6 +1285,15 @@ Proof.
       * cbn - [mdc]. f_equal.
         cbn. erewrite scoping_md. 2: eassumption. reflexivity.
       Unshelve. assumption.
+  - split.
+    + cbn. econstructor. all: eauto.
+    + eexists. cbn. eapply meta_conv. 1: econstructor.
+      5: eassumption. all: try eassumption.
+      * cbn. constructor.
+      * constructor.
+      * constructor.
+      * cbn. constructor.
+      * cbn. reflexivity.
   - split.
     + cbn. constructor. all: auto.
     + eexists. cbn. eassumption.
