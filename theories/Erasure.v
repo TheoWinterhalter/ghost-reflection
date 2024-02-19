@@ -123,6 +123,15 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | Reveal t p ⟧ε := ctt ;
   ⟦ Γ | gheq A u v ⟧ε := ctt ;
   ⟦ Γ | ghcast A u v e P t ⟧ε := ⟦ Γ | t ⟧ε ;
+  ⟦ Γ | tbool ⟧ε := ctyval Any ebool bool_err ;
+  ⟦ Γ | ttrue ⟧ε := etrue ;
+  ⟦ Γ | tfalse ⟧ε := efalse ;
+  ⟦ Γ | tif m b P t f ⟧ε :=
+    if relm m then
+      eif cType ⟦ Γ | b ⟧ε
+        (clam cType ebool (cEl (capp (S ⋅ ⟦ Γ | P ⟧ε) (cvar 0))))
+        ⟦ Γ | t ⟧ε ⟦ Γ | f ⟧ε (cErr (capp ⟦ Γ | P ⟧ε ⟦ Γ | b ⟧ε))
+    else cDummy ;
   ⟦ Γ | bot ⟧ε := ctt ;
   ⟦ Γ | bot_elim m A p ⟧ε := if relm m then ⟦ Γ | A ⟧∅ else cDummy ;
   ⟦ _ | _ ⟧ε := cDummy
@@ -165,6 +174,7 @@ Proof.
   - cbn - [mode_inb] in *.
     rewrite hm. reflexivity.
   - cbn - [mode_inb] in *. eauto.
+  - cbn - [mode_inb] in *. rewrite hm. reflexivity.
   - cbn - [mode_inb] in *. rewrite hm. reflexivity.
 Qed.
 
@@ -258,6 +268,13 @@ Proof.
     specialize IHt3 with (Γ := m :: Γ). cbn - [mode_inb] in IHt3.
     fold (erase_sc Γ) in IHt3.
     destruct_ifs. all: eauto with cc_scope.
+  - cbn - [mode_inb]. destruct (relm m) eqn:er. 2: constructor.
+    econstructor. all: eauto with cc_scope.
+    constructor. 1: constructor.
+    constructor. econstructor.
+    + eapply cscoping_ren. 1: apply crscoping_S.
+      eauto.
+    + constructor. reflexivity.
 Qed.
 
 (** Erasure commutes with renaming **)
@@ -303,6 +320,13 @@ Proof.
     erewrite md_ren. 2,3: eassumption.
     erewrite md_ren. 2,3: eassumption.
     destruct_ifs. all: eauto.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite IHt3. 2,3: eassumption.
+    erewrite IHt4. 2,3: eassumption.
+    destruct_ifs. all: eauto.
+    cbn. f_equal. ssimpl. reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: eauto.
@@ -438,6 +462,13 @@ Proof.
     destruct_ifs. all: reflexivity.
   - cbn - [mode_inb].
     erewrite IHt1. 2,3: eassumption.
+    erewrite IHt2. 2,3: eassumption.
+    erewrite IHt3. 2,3: eassumption.
+    erewrite IHt4. 2,3: eassumption.
+    destruct_ifs. 2: reflexivity.
+    cbn. f_equal. ssimpl. reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: reflexivity.
 Qed.
 
@@ -497,6 +528,14 @@ Proof.
     destruct_if e.
     1:{ destruct mp. all: intuition discriminate. }
     constructor.
+  - cbn - [mode_inb]. destruct (relm m) eqn:er.
+    + constructor.
+    + (* How to get out this pickle??? *)
+
+
+
+
+
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2.

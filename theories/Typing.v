@@ -296,8 +296,12 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_if :
     ∀ i m b P t f,
+      cscoping Γ b mType →
+      cscoping Γ P mKind →
+      cscoping Γ t m →
+      cscoping Γ f m →
       Γ ⊢ b : tbool →
-      Γ ⊢ P : tbool ⇒[ 0 | i / mType | mKind ] Sort m i →
+      Γ ⊢ P : tbool ⇒[ 0 | (usup m i) / mType | mKind ] Sort m i →
       Γ ⊢ t : app P ttrue →
       Γ ⊢ f : app P tfalse →
       Γ ⊢ tif m b P t f : app P b
