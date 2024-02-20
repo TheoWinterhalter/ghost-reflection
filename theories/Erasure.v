@@ -474,12 +474,6 @@ Qed.
 
 (** Erasure preserves conversion **)
 
-Ltac remd :=
-  erewrite !scoping_md by eassumption.
-
-Tactic Notation "remd" "in" hyp(h) :=
-  erewrite !scoping_md in h by eassumption.
-
 Lemma erase_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →

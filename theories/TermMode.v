@@ -67,6 +67,12 @@ Proof.
     + rewrite <- H. reflexivity.
 Qed.
 
+Ltac remd :=
+  erewrite !scoping_md by eassumption.
+
+Tactic Notation "remd" "in" hyp(h) :=
+  erewrite !scoping_md in h by eassumption.
+
 (** Consequence: scoping is functional **)
 
 Lemma scoping_functional :
