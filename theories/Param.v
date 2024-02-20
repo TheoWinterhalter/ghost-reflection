@@ -147,7 +147,7 @@ Definition pmPi mx m Te Ae Ap Bp :=
 Definition perif Pe te fe :=
   eif cType (cvar 0)
     (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
-    te fe (cErr (capp (S ⋅ Pe) bool_err)).
+    (S ⋅ te) (S ⋅ fe) (cErr (capp (S ⋅ Pe) bool_err)).
 
 Definition pmif bP Pe PP te tP fe fP :=
   pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ (perif Pe te fe)))) tP fP.
@@ -653,6 +653,12 @@ Proof.
       all: repeat try eapply crscoping_shift.
       all: eauto with cc_scope.
   - cbn - [mode_inb] in *.
+    destruct m.
+    + contradiction.
+    + cbn in *. escope. all: reflexivity.
+    + cbn in *. escope. all: reflexivity.
+    + cbn in *. escope.
+  - cbn - [mode_inb] in *.
     destruct_ifs. all: mode_eqs. all: try discriminate.
     all: try solve [ typeclasses eauto 50 with cc_scope ].
     + unshelve typeclasses eauto 50 with cc_scope shelvedb ; shelve_unifiable.
@@ -1056,6 +1062,19 @@ Proof.
       all: f_equal.
       1:{ ssimpl. reflexivity. }
       f_equal.
+      ssimpl. reflexivity.
+  - cbn. reflexivity.
+  - cbn. reflexivity.
+  - cbn. reflexivity.
+  - cbn - [mode_inb].
+    erewrite IHt1, IHt2, IHt3, IHt4. 2-9: eassumption.
+    erewrite ?erase_ren, ?revive_ren. 2-11: eassumption.
+    rewrite <- !pren_epm_lift.
+    change (epm_lift ⟦ ?G | ?t ⟧v) with (⟦ G | t⟧pv).
+    destruct m. all: try reflexivity.
+    + cbn. unfold pmif, plam. cbn. f_equal. f_equal. f_equal.
+      ssimpl. reflexivity.
+    + cbn. unfold pmif, plam. cbn. f_equal. f_equal. f_equal.
       ssimpl. reflexivity.
   - cbn - [mode_inb]. reflexivity.
   - cbn - [mode_inb]. destruct_ifs. all: mode_eqs.
@@ -1552,6 +1571,22 @@ Proof.
     + unfold pcastTG. cbn. ssimpl. reflexivity.
     + unfold pcastTG. cbn. ssimpl. reflexivity.
     + unfold pcastP. cbn. ssimpl. reflexivity.
+  - cbn. reflexivity.
+  - cbn. reflexivity.
+  - cbn. reflexivity.
+  - cbn.
+    erewrite IHt1, IHt2, IHt3, IHt4. 2-9: eassumption.
+    erewrite !erase_subst. 2-7: eassumption.
+    erewrite !revive_subst. 2-5: eassumption.
+    erewrite <- !psubst_rpm_lift. 2-3: eapply revive_scoping.
+    erewrite <- !psubst_epm_lift. 2-4: eapply erase_scoping.
+    destruct m.
+    + reflexivity.
+    + unfold pmif, plam. cbn. f_equal. f_equal. f_equal.
+      ssimpl. reflexivity.
+    + unfold pmif, plam. cbn. f_equal. f_equal. f_equal.
+      ssimpl. reflexivity.
+    + reflexivity.
   - cbn. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
