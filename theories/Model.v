@@ -95,6 +95,10 @@ Fixpoint urm (t : term) : term :=
   | gheq A u v => gheq (urm A) (urm u) (urm v)
   | ghrefl A u => ghrefl (urm A) (urm u)
   | ghcast A u v e P t => ghcast (urm A) (urm u) (urm v) (urm e) (urm P) (urm t)
+  | tbool => tbool
+  | ttrue => ttrue
+  | tfalse => tfalse
+  | tif m b P t f => tif m (urm b) (urm P) (urm t) (urm f)
   | bot => bot
   | bot_elim m A p => bot_elim m (urm A) (urm p)
   end.

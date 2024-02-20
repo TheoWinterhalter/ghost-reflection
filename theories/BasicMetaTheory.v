@@ -1165,6 +1165,63 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_bool_inv :
+  ∀ Γ C,
+    Γ ⊢ tbool : C →
+    Γ ⊢ Sort mType 0 ε≡ C.
+Proof.
+  intros Γ C h.
+  dependent induction h.
+  - apply conv_refl.
+  - eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_true_inv :
+  ∀ Γ C,
+    Γ ⊢ ttrue : C →
+    Γ ⊢ tbool ε≡ C.
+Proof.
+  intros Γ C h.
+  dependent induction h.
+  - apply conv_refl.
+  - eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_false_inv :
+  ∀ Γ C,
+    Γ ⊢ tfalse : C →
+    Γ ⊢ tbool ε≡ C.
+Proof.
+  intros Γ C h.
+  dependent induction h.
+  - apply conv_refl.
+  - eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_if_inv :
+  ∀ Γ m b P t f C,
+    Γ ⊢ tif m b P t f : C →
+    ∃ i,
+      m ≠ mKind ∧
+      cscoping Γ b mType ∧
+      cscoping Γ P mKind ∧
+      cscoping Γ t m ∧
+      cscoping Γ f m ∧
+      Γ ⊢ b : tbool ∧
+      Γ ⊢ P : tbool ⇒[ 0 | (usup m i) / mType | mKind ] Sort m i ∧
+      Γ ⊢ t : app P ttrue ∧
+      Γ ⊢ f : app P tfalse ∧
+      Γ ⊢ app P b ε≡ C.
+Proof.
+  intros Γ m b P t f C h.
+  dependent induction h.
+  - eexists. intuition idtac. 1: eauto.
+    apply conv_refl.
+  - destruct_exists IHh1. eexists _.
+    intuition idtac. 1: eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Lemma type_bot_inv :
   ∀ Γ C,
     Γ ⊢ bot : C →
@@ -1211,6 +1268,10 @@ Ltac ttinv h h' :=
     | gheq _ _ _ => eapply type_gheq_inv in h as h'
     | ghrefl _ _ => eapply type_ghrefl_inv in h as h'
     | ghcast _ _ _ _ _ _ => eapply type_ghcast_inv in h as h'
+    | tbool => eapply type_bool_inv in h as h'
+    | ttrue => eapply type_true_inv in h as h'
+    | tfalse => eapply type_false_inv in h as h'
+    | tif _ _ _ _ _ => eapply type_if_inv in h as h'
     | bot => eapply type_bot_inv in h as h'
     | bot_elim _ _ _ => eapply type_bot_elim_inv in h as h'
     end
