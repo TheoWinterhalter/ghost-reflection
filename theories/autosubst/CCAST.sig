@@ -43,3 +43,8 @@ etrue : cterm
 efalse : cterm
 bool_err : cterm
 eif : cmode -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+
+pbool : cterm
+ptrue : cterm
+pfalse : cterm
+pif : cterm -> cterm -> cterm -> cterm -> cterm

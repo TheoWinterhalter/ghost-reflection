@@ -291,19 +291,19 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ t : capp (capp P u) (trefl A u) →
       Γ ⊢ᶜ tJ e P t : capp (capp P v) e
 
-| ctype_bool :
+| ctype_ebool :
     Γ ⊢ᶜ ebool : cSort cType 0
 
-| ctype_true :
+| ctype_etrue :
     Γ ⊢ᶜ etrue : ebool
 
-| ctype_false :
+| ctype_efalse :
     Γ ⊢ᶜ efalse : ebool
 
 | ctype_bool_err :
     Γ ⊢ᶜ bool_err : ebool
 
-| ctype_if :
+| ctype_eif :
     ∀ i m b P t f e,
       Γ ⊢ᶜ b : ebool →
       Γ ⊢ᶜ P : ebool ⇒[ cType ] cSort m i →
@@ -311,6 +311,24 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ f : capp P efalse →
       Γ ⊢ᶜ e : capp P bool_err →
       Γ ⊢ᶜ eif m b P t f e : capp P b
+
+| ctype_pbool :
+    Γ ⊢ᶜ pbool : ebool ⇒[ cType ] cSort cProp 0
+
+| ctype_ptrue :
+    Γ ⊢ᶜ ptrue : capp pbool etrue
+
+| ctype_pfalse :
+    Γ ⊢ᶜ pfalse : capp pbool efalse
+
+| ctype_pif :
+    ∀ b bP P t f,
+      Γ ⊢ᶜ b : ebool →
+      Γ ⊢ᶜ bP : capp pbool b →
+      Γ ⊢ᶜ P : cPi cType ebool (capp pbool (cvar 0) ⇒[ cProp ] cSort cProp 0) →
+      Γ ⊢ᶜ t : capp (capp P etrue) ptrue →
+      Γ ⊢ᶜ f : capp (capp P efalse) pfalse →
+      Γ ⊢ᶜ pif bP P t f : capp (capp P b) bP
 
 | ctype_conv :
     ∀ i m A B t,
@@ -360,8 +378,8 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
 Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty ctype_tyval
   ctype_tyerr ctype_El ctype_Err ctype_squash ctype_sq ctype_sq_elim
-  ctype_teq ctype_trefl ctype_tJ ctype_bool ctype_true ctype_false ctype_bool_err
-  ctype_if
+  ctype_teq ctype_trefl ctype_tJ ctype_ebool ctype_etrue ctype_efalse ctype_bool_err
+  ctype_eif
 : cc_type.
 
 Ltac econv :=
