@@ -358,6 +358,7 @@ Qed.
 Lemma scope_if_inv :
   ∀ Γ m b P t f m',
     scoping Γ (tif m b P t f) m' →
+    m ≠ mKind →
     scoping Γ b mType ∧
     scoping Γ P mKind ∧
     scoping Γ t m ∧

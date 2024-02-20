@@ -115,6 +115,7 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
 
 | scope_if :
     ∀ m b P t f,
+      m ≠ mKind →
       scoping Γ b mType →
       scoping Γ P mKind →
       scoping Γ t m →
