@@ -5405,11 +5405,68 @@ Proof.
     }
     change (epm_lift etrue) with etrue in IHh3.
     change (epm_lift efalse) with efalse in IHh4.
+    eapply param_erase_typing in h1 as hbe. 2: ertype.
+    cbn in hbe. eapply ctype_conv in hbe.
+    2:{
+      rewrite epm_lift_eq. cbn. constructor.
+    }
+    2:{ ertype. }
+    eapply param_erase_typing in h2 as hPe. 2: ertype.
+    cbn in hPe. eapply ctype_conv in hPe.
+    2:{
+      rewrite epm_lift_eq. cbn. eapply cconv_trans. 1: constructor.
+      constructor.
+      - constructor.
+      - instantiate (1 := if isProp m then _ else _).
+        destruct_if e.
+        + cbn. constructor.
+        + cbn. constructor.
+    }
+    2:{
+      ertype. instantiate (1 := if isProp m then _ else _). destruct_if e.
+      - ertype.
+      - ertype.
+    }
     subst rm. destruct m.
     + contradiction.
-    + cbn in *. admit.
-    + cbn in *. admit.
-    + cbn in *. admit.
+    + cbn in *.
+      eapply param_erase_typing in h3 as hte. 2: ertype.
+      cbn - [mode_inb] in hte. remd in hte. cbn in hte.
+      eapply ccmeta_conv in hte.
+      2:{
+        rewrite epm_lift_eq. cbn. rewrite <- epm_lift_eq. reflexivity.
+      }
+      eapply param_erase_typing in h4 as hfe. 2: ertype.
+      cbn - [mode_inb] in hfe. remd in hfe. cbn in hfe.
+      eapply ccmeta_conv in hfe.
+      2:{
+        rewrite epm_lift_eq. cbn. rewrite <- epm_lift_eq. reflexivity.
+      }
+      eapply ccmeta_conv.
+      * ertype.
+        unfold pPi. cbn. ssimpl. assumption.
+      * f_equal. unfold perif. change (epm_lift ?t) with (vreg ⋅ t).
+        cbn. f_equal. f_equal. f_equal. f_equal. ssimpl. reflexivity.
+    + cbn in *.
+      eapply param_revive_typing in h3 as hte. 2: ertype.
+      cbn - [mode_inb] in hte. remd in hte. cbn in hte.
+      eapply ccmeta_conv in hte.
+      2:{
+        rewrite epm_lift_eq. cbn. rewrite <- epm_lift_eq. reflexivity.
+      }
+      eapply param_revive_typing in h4 as hfe. 2: ertype.
+      cbn - [mode_inb] in hfe. remd in hfe. cbn in hfe.
+      eapply ccmeta_conv in hfe.
+      2:{
+        rewrite epm_lift_eq. cbn. rewrite <- epm_lift_eq. reflexivity.
+      }
+      eapply ccmeta_conv.
+      * ertype.
+        unfold pPi. cbn. ssimpl. assumption.
+      * f_equal. unfold perif. change (rpm_lift ?t) with (vreg ⋅ t).
+        change (epm_lift ?t) with (vreg ⋅ t).
+        cbn. f_equal. f_equal. f_equal. f_equal. ssimpl. reflexivity.
+    + cbn in *. ertype.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.
