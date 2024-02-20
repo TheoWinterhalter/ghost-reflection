@@ -144,13 +144,19 @@ Definition pmPi mx m Te Ae Ap Bp :=
 
 (* Parametricity for if *)
 
-Definition perif Pe te fe :=
-  eif cType (cvar 0)
-    (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
-    (S ⋅ te) (S ⋅ fe) (cErr (capp (S ⋅ Pe) bool_err)).
+Definition perif be Pe te fe :=
+  eif cType be
+    (clam cType ebool (cEl (capp (S ⋅ Pe) (cvar 0))))
+    te fe (cErr (capp Pe bool_err)).
 
 Definition pmif bP Pe PP te tP fe fP :=
-  pif bP (plam cProp ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ (perif Pe te fe)))) tP fP.
+  pif bP
+    (plam cProp ebool pbool (
+      capp
+        (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0))
+        (S ⋅ (perif (cvar 0) (S ⋅ Pe) (S ⋅ te) (S ⋅ fe)))
+    ))
+    tP fP.
 
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
@@ -1733,14 +1739,15 @@ Proof.
 Qed.
 
 Lemma ccong_perif :
-  ∀ Γ Pe Pe' te te' fe fe',
+  ∀ Γ be be' Pe Pe' te te' fe fe',
+    Γ ⊢ᶜ be ≡ be' →
     Γ ⊢ᶜ Pe ≡ Pe' →
     Γ ⊢ᶜ te ≡ te' →
     Γ ⊢ᶜ fe ≡ fe' →
-    Some (cType, ebool) :: Γ ⊢ᶜ perif Pe te fe ≡ perif Pe' te' fe'.
+    Γ ⊢ᶜ perif be Pe te fe ≡ perif be' Pe' te' fe'.
 Proof.
-  intros Γ Pe Pe' te te' fe fe' hP ht hf.
-  unfold perif. econv. all: apply crtyping_S.
+  intros Γ be be' Pe Pe' te te' fe fe' hb hP ht hf.
+  unfold perif. econv. apply crtyping_S.
 Qed.
 
 Hint Opaque perif : cc_conv.
@@ -2940,6 +2947,117 @@ Proof.
       * ertype.
     + cbn. reflexivity.
 Qed.
+
+Lemma type_perif :
+  ∀ Γ i be Pe te fe,
+    Γ ⊢ᶜ be : ebool →
+    Γ ⊢ᶜ Pe : ebool ⇒[ cType ] cty i →
+    Γ ⊢ᶜ te : cEl (capp Pe etrue) →
+    Γ ⊢ᶜ fe : cEl (capp Pe efalse) →
+    Γ ⊢ᶜ perif be Pe te fe : cEl (capp Pe be).
+Proof.
+  intros Γ i be Pe te fe hbe hPe hte hfe.
+  cbn in hPe.
+  unfold perif. econstructor.
+  - etype.
+    + eapply ccmeta_conv.
+      * ertype. eapply ccmeta_conv. 1: ertype.
+        cbn. reflexivity.
+      * cbn. reflexivity.
+    + econstructor.
+      * etype.
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. ssimpl. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+    + econstructor.
+      * etype.
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. ssimpl. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+    + econstructor.
+      * {
+        etype. eapply ccmeta_conv.
+        - ertype.
+        - cbn. reflexivity.
+      }
+      * apply cconv_sym. eapply cconv_trans. 1: constructor.
+        cbn. ssimpl. econv.
+      * {
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + cbn. reflexivity.
+        - cbn. reflexivity.
+      }
+  - eapply cconv_trans. 1: constructor.
+    cbn. ssimpl. econv.
+  - ertype. eapply ccmeta_conv.
+    + ertype.
+    + cbn. reflexivity.
+Qed.
+
+Hint Opaque perif : cc_type.
+Hint Resolve type_perif : cc_type.
+
+Lemma type_pmif :
+  ∀ Γ i be bP Pe PP te tP fe fP,
+    Γ ⊢ᶜ be : ebool →
+    Γ ⊢ᶜ bP : capp pbool be →
+    Γ ⊢ᶜ Pe : ebool ⇒[ cType ] cty i →
+    Γ ⊢ᶜ te : cEl (capp Pe etrue) →
+    Γ ⊢ᶜ fe : cEl (capp Pe efalse) →
+    Γ ⊢ᶜ pmif bP Pe PP te tP fe fP :
+    capp (capp (capp PP be) bP) (perif be Pe te fe).
+Proof.
+  intros Γ i be bP Pe PP te tP fe fP hbe hbP hPe hte hfe.
+  unfold pmif.
+  econstructor.
+  - ertype.
+    + eapply ccmeta_conv.
+      * {
+        ertype.
+        - eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv.
+            * {
+              ertype. eapply ccmeta_conv.
+              - ertype. admit.
+              - admit.
+            }
+            * admit.
+          + admit.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          cbn. reflexivity.
+      }
+      * cbn. admit.
+    + admit.
+    + admit.
+  - admit.
+  - admit.
+Abort.
+
+Hint Opaque pmif : cc_type.
+(* Hint Resolve type_pmif : cc_type. *)
 
 Lemma type_pKind :
   ∀ Γ i,
@@ -5135,6 +5253,66 @@ Proof.
           + cbn. lhs_ssimpl. reflexivity.
         - cbn. reflexivity.
       }
+  - cbn. change (epm_lift ?t) with t.
+    econstructor.
+    + ertype.
+    + cbn. apply cconv_sym. unfold pType. eapply cconv_trans. 1: constructor.
+      cbn. econv.
+    + eapply ccmeta_conv.
+      * ertype.
+      * reflexivity.
+  - cbn. change (epm_lift ?t) with t. ertype.
+  - cbn. change (epm_lift ?t) with t. ertype.
+  - unfold ptype. cbn - [mode_inb]. remd.
+    unfold ptype in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
+    unfold ptype in IHh3. remd in IHh3. cbn - [mode_inb] in IHh3.
+    unfold ptype in IHh4. remd in IHh4. cbn - [mode_inb] in IHh4.
+    set (rm := relm m) in *. simpl. simpl in IHh3. simpl in IHh4.
+    eapply ctype_conv in IHh2.
+    2:{
+      unfold pmPiNP. eapply cconv_trans. 1: constructor.
+      cbn. lhs_ssimpl. econstructor.
+      - rewrite epm_lift_eq. cbn. constructor.
+      - econstructor. 1: econv.
+        instantiate (1 := if isProp m then _ else cPi _ _ (if isKind m then _ else _)).
+        destruct (isKind m) eqn:ek. 2: destruct (isProp m) eqn:ep.
+        + mode_eqs. cbn.
+          cbn. eapply cconv_trans. 1: constructor.
+          cbn. econv.
+        + cbn. eapply cconv_trans. 1: constructor.
+          cbn. econv.
+        + cbn. eapply cconv_trans. 1: constructor.
+          cbn. econv.
+    }
+    2:{
+      ertype.
+      - eapply ccmeta_conv.
+        + ertype. eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+        + cbn. reflexivity.
+      - instantiate (2 := if isProp m then _ else _).
+        instantiate (1 := if isProp m then _ else _).
+        destruct (isProp m) eqn:ep.
+        + ertype.
+        + ertype.
+          * {
+            eapply ccmeta_conv.
+            - ertype. econstructor.
+              + ertype.
+              + cbn. change (epm_lift ?t) with (vreg ⋅ t). cbn.
+                eapply cconv_trans. 1: constructor.
+                econstructor. 1: econv.
+                rewrite ep. cbn. constructor.
+              + cbn. ertype.
+            - cbn. reflexivity.
+          }
+          * instantiate (1 := if isKind m then _ else _).
+            destruct (isKind m). all: ertype.
+    }
+    change (epm_lift etrue) with etrue in IHh3.
+    change (epm_lift efalse) with efalse in IHh4.
+    admit.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.
