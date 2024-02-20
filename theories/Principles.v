@@ -30,9 +30,12 @@ Transparent close ignore epm_lift rpm_lift.
 
 Eval lazy in  ⟦ [] | Erased tbool ⇒[ 0 | 0 / mGhost | mType ] tbool ⟧p.
 
+Definition cst_ty :=
+  Erased tbool ⇒[ 0 | 0 / mGhost | mType ] tbool.
+
 Lemma erase_bool :
   ∀ f,
-    [] ⊢ᶜ capp ⟦ [] | Erased tbool ⇒[ 0 | 0 / mGhost | mType ] tbool ⟧p f ≡
+    [] ⊢ᶜ capp ⟦ [] | cst_ty ⟧p f ≡
     cPi cType ebool (cPi cProp (capp pbool (cvar 0)) (capp pbool (S ⋅ S ⋅ f))).
 Proof.
   intros f.
@@ -53,4 +56,65 @@ Proof.
   eapply ctype_conv in hfP.
   2: eapply erase_bool.
   2:{ ertype. all: admit. }
+Abort.
+
+Definition bool_eq b b' :=
+  tif mProp b (lam mType tbool (Sort mType 0) (Sort mProp 0))
+    (* then *) (
+      tif mProp b' (lam mType tbool (Sort mType 0) (Sort mProp 0))
+        (* then *) top
+        (* else *) bot
+    )
+    (* else *) bot.
+
+Lemma constant_bool :
+  ∑ prf,
+    [] ⊢ᶜ prf : ⟦ [] |
+      Pi 0 0 mProp mType cst_ty (
+        bool_eq (app (var 0) ttrue) (app (var 0) tfalse)
+      )
+    ⟧p.
+Proof.
+  (* cbn - [cst_ty].
+  eexists. eapply ctype_conv.
+  2:{
+    apply cconv_sym. eapply ccong_pPi.
+    - cbn. eapply cconv_trans. 1: constructor.
+      constructor.
+    - apply erase_bool.
+    -
+  } *)
+  cbn.
+  eexists. eapply ctype_conv.
+  2:{
+    apply cconv_sym. eapply ccong_pPi.
+    - eapply cconv_trans. 1: constructor.
+      constructor.
+    - unfold pmPiNP. econstructor.
+      + eapply cconv_trans. 1: constructor. constructor.
+      + cbn. eapply ccong_pPi.
+        * constructor.
+        * constructor.
+        * econv.
+    - econstructor.
+      + econv.
+      + eapply ccong_plam. 1: constructor. all: econv.
+      + econstructor.
+        * econv.
+        * eapply ccong_plam. 1: constructor. all: econv.
+        * econv.
+        * econv.
+      + econv.
+  }
+  2: admit.
+  (*
+    ∀ (b : ebool) (bP : pbool b)
+  *)
+  eapply type_plam. 1,2: ertype.
+  1:{
+    eapply ccmeta_conv.
+    - ertype. eapply ccmeta_conv. 1: ertype.
+      reflexivity.
+    - cbn. reflexivity.
+  }
 Abort.
