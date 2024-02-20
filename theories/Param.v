@@ -200,6 +200,38 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     | mGhost => pcastTG Ae AP uv vv vP eP PP tv tP
     | mProp => pcastP Ae AP uv vv vP eP PP tP
     end ;
+  ⟦ Γ | tbool ⟧p := pbool ;
+  ⟦ Γ | ttrue ⟧p := ptrue ;
+  ⟦ Γ | tfalse ⟧p := pfalse ;
+  ⟦ Γ | tif m b P t f ⟧p :=
+    let be := ⟦ Γ | b ⟧pε in
+    let bP := ⟦ Γ | b ⟧p in
+    let Pe := ⟦ Γ | P ⟧pε in
+    let PP := ⟦ Γ | P ⟧p in
+    let te := ⟦ Γ | t ⟧pε in
+    let tv := ⟦ Γ | t ⟧pv in
+    let tP := ⟦ Γ | t ⟧p in
+    let fe := ⟦ Γ | f ⟧pε in
+    let fv := ⟦ Γ | f ⟧pv in
+    let fP := ⟦ Γ | f ⟧p in
+    match m with
+    | mKind => cDummy
+    | mType =>
+      let Q :=
+        eif cType (cvar 0)
+          (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
+          te fe (cErr (capp (S ⋅ Pe) bool_err))
+      in
+      pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ Q))) tP fP
+    | mGhost =>
+      let Q :=
+        eif cType (cvar 0)
+          (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
+          tv fv (cErr (capp (S ⋅ Pe) bool_err))
+      in
+      pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ Q))) tP fP
+    | mProp => pif bP PP tP fP
+    end ;
   ⟦ Γ | bot ⟧p := cbot ;
   ⟦ Γ | bot_elim m A p ⟧p :=
     if isProp m then cbot_elim cProp ⟦ Γ | A ⟧p ⟦ Γ | p ⟧p
