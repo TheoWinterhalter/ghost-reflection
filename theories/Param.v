@@ -142,6 +142,16 @@ Definition pmPi mx m Te Ae Ap Bp :=
   if isProp m then pmPiP mx Ae Ap Bp
   else pmPiNP mx m Te Ae Ap Bp.
 
+(* Parametricity for if *)
+
+Definition perif Pe te fe :=
+  eif cType (cvar 0)
+    (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
+    te fe (cErr (capp (S ⋅ Pe) bool_err)).
+
+Definition pmif bP Pe PP te tP fe fP :=
+  pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ (perif Pe te fe)))) tP fP.
+
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
     match nth_error Γ x with
@@ -216,20 +226,8 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let fP := ⟦ Γ | f ⟧p in
     match m with
     | mKind => cDummy
-    | mType =>
-      let Q :=
-        eif cType (cvar 0)
-          (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
-          te fe (cErr (capp (S ⋅ Pe) bool_err))
-      in
-      pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ Q))) tP fP
-    | mGhost =>
-      let Q :=
-        eif cType (cvar 0)
-          (clam cType ebool (cEl (capp (S ⋅ S ⋅ Pe) (cvar 0))))
-          tv fv (cErr (capp (S ⋅ Pe) bool_err))
-      in
-      pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ Q))) tP fP
+    | mType => pmif bP Pe PP te tP fe fP
+    | mGhost => pmif bP Pe PP tv tP fv fP
     | mProp => pif bP PP tP fP
     end ;
   ⟦ Γ | bot ⟧p := cbot ;
