@@ -87,34 +87,52 @@ Proof.
   cbn.
   eexists. eapply ctype_conv.
   2:{
-    apply cconv_sym. eapply ccong_pPi.
+    apply cconv_sym. unfold pPi. cbn. econstructor.
     - eapply cconv_trans. 1: constructor.
       constructor.
-    - unfold pmPiNP. econstructor.
-      + eapply cconv_trans. 1: constructor. constructor.
-      + cbn. eapply ccong_pPi.
-        * constructor.
-        * constructor.
-        * econv.
     - econstructor.
-      + econv.
-      + eapply ccong_plam. 1: constructor. all: econv.
+      + eapply cconv_trans. 1: constructor.
+        cbn. econstructor. 1: constructor.
+        econv.
       + econstructor.
         * econv.
-        * eapply ccong_plam. 1: constructor. all: econv.
+        * {
+          unfold plam. cbn. econstructor.
+          - constructor.
+          - econv.
+        }
+        * {
+          econstructor.
+          - econv.
+          - unfold plam. cbn. econstructor.
+            + constructor.
+            + econv.
+          - econv.
+          - econv.
+        }
         * econv.
-        * econv.
-      + econv.
   }
   2: admit.
   (*
-    ∀ (b : ebool) (bP : pbool b)
+    ∀ (b : ebool) (f : ∀ (b' : ebool) (bP' : pbool b'), pbool b),
+      pif (f etrue ptrue) then (
+        pif (f efalse pfalse) then True else False
+      )
+      else False
+
+    This definition of bool_eq is wrong, so it translates to the wrong thing
+    (conjunction) but it seems we already do synchronise things because f
+    always lands in pbool b, so it is determined by its value.
   *)
-  eapply type_plam. 1,2: ertype.
+  (* I'm a bit confused about the return type though. It looks as though
+    the pif returns some pProp, which is not a type. Maybe let's try to type
+    the type after all.
+  *)
+  (* eapply type_plam. 1,2: ertype.
   1:{
     eapply ccmeta_conv.
     - ertype. eapply ccmeta_conv. 1: ertype.
       reflexivity.
     - cbn. reflexivity.
-  }
+  } *)
 Abort.
