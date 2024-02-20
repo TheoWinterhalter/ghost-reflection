@@ -130,7 +130,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     if relm m then
       eif cType ⟦ Γ | b ⟧ε
         (clam cType ebool (cEl (capp (S ⋅ ⟦ Γ | P ⟧ε) (cvar 0))))
-        ⟦ Γ | t ⟧ε ⟦ Γ | f ⟧ε (cErr (capp ⟦ Γ | P ⟧ε ⟦ Γ | b ⟧ε))
+        ⟦ Γ | t ⟧ε ⟦ Γ | f ⟧ε (cErr (capp ⟦ Γ | P ⟧ε bool_err))
     else cDummy ;
   ⟦ Γ | bot ⟧ε := ctt ;
   ⟦ Γ | bot_elim m A p ⟧ε := if relm m then ⟦ Γ | A ⟧∅ else cDummy ;
@@ -474,6 +474,12 @@ Qed.
 
 (** Erasure preserves conversion **)
 
+Ltac remd :=
+  erewrite !scoping_md by eassumption.
+
+Tactic Notation "remd" "in" hyp(h) :=
+  erewrite !scoping_md in h by eassumption.
+
 Lemma erase_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
@@ -530,12 +536,12 @@ Proof.
     constructor.
   - cbn - [mode_inb]. destruct (relm m) eqn:er.
     + constructor.
-    + (* How to get out this pickle??? *)
-
-
-
-
-
+    + erewrite erase_irr. 2:{ remd. assumption. }
+      constructor.
+  - cbn - [mode_inb]. destruct (relm m) eqn:er.
+    + constructor.
+    + erewrite erase_irr. 2:{ remd. assumption. }
+      constructor.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     cbn - [mode_inb] in IHh2.
@@ -573,6 +579,13 @@ Proof.
   - cbn - [mode_inb]. constructor.
   - cbn - [mode_inb]. constructor.
   - cbn - [mode_inb]. constructor.
+  - cbn - [mode_inb]. destruct_if'. 2: constructor.
+    constructor. all: eauto.
+    all: constructor. all: constructor. 2: auto. 2: econv.
+    constructor. 2: constructor.
+    eapply cconv_ren.
+    + apply crtyping_S.
+    + auto.
   - cbn - [mode_inb]. destruct_if'.
     + constructor. eauto.
     + constructor.
@@ -598,6 +611,7 @@ Proof.
   - cbn - [mode_inb]. erewrite IHt1, IHt2. rewrite <- !md_castrm. reflexivity.
   - cbn - [mode_inb]. eauto.
   - cbn - [mode_inb]. eauto.
+  - cbn - [mode_inb]. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
   - cbn - [mode_inb]. erewrite IHt1. reflexivity.
 Qed.
 
@@ -900,6 +914,115 @@ Proof.
     repeat (erewrite scoping_md in IHh6 ; [| eassumption]).
     rewrite hm in IHh6.
     cbn in IHh6. eauto.
+  - cbn. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn. econstructor.
+    + eauto with cc_type.
+    + apply cconv_sym. constructor.
+    + eauto with cc_type.
+  - cbn - [mode_inb]. cbn - [mode_inb] in hm. rewrite hm.
+    remd. cbn.
+    remd in IHh1. forward IHh1 by reflexivity. cbn in IHh1.
+    eapply ctype_conv in IHh1.
+    2:{ constructor. }
+    2:{ eauto with cc_type. }
+    remd in IHh2. forward IHh2 by reflexivity. cbn in IHh2.
+    destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
+    eapply ctype_conv in IHh2.
+    2:{
+      eapply cconv_trans. 1: constructor.
+      econstructor. all: constructor.
+    }
+    2:{ eauto with cc_type. }
+    remd in IHh3. forward IHh3 by assumption. cbn - [mode_inb] in IHh3.
+    remd in IHh3. cbn in IHh3.
+    remd in IHh4. forward IHh4 by assumption. cbn - [mode_inb] in IHh4.
+    remd in IHh4. cbn in IHh4.
+    econstructor.
+    + econstructor.
+      * assumption.
+      * {
+        econstructor. 1: eauto with cc_type.
+        cbn. econstructor.
+        eapply ccmeta_conv.
+        - econstructor.
+          + eapply ccmeta_conv.
+            * eapply ctyping_ren. 1: apply crtyping_S.
+              eauto.
+            * cbn. reflexivity.
+          + eapply ccmeta_conv.
+            * econstructor. reflexivity.
+            * reflexivity.
+        - cbn. reflexivity.
+      }
+      * {
+        econstructor.
+        - eauto.
+        - apply cconv_sym. eapply cconv_trans. 1: constructor.
+          cbn. ssimpl. apply cconv_refl.
+        - eapply ccmeta_conv.
+          + econstructor. 2: eauto with cc_type.
+            econstructor. 1: etype.
+            constructor. eapply ccmeta_conv.
+            * {
+              etype. 2: reflexivity.
+              cbn. eapply ccmeta_conv.
+              - eapply ctyping_ren. 1: apply crtyping_S.
+                eauto.
+              - cbn. reflexivity.
+            }
+            * cbn. reflexivity.
+          + cbn. reflexivity.
+      }
+      * {
+        econstructor.
+        - eauto.
+        - apply cconv_sym. eapply cconv_trans. 1: constructor.
+          cbn. ssimpl. apply cconv_refl.
+        - eapply ccmeta_conv.
+          + econstructor. 2: eauto with cc_type.
+            econstructor. 1: etype.
+            constructor. eapply ccmeta_conv.
+            * {
+              etype. 2: reflexivity.
+              cbn. eapply ccmeta_conv.
+              - eapply ctyping_ren. 1: apply crtyping_S.
+                eauto.
+              - cbn. reflexivity.
+            }
+            * cbn. reflexivity.
+          + cbn. reflexivity.
+      }
+      * {
+        econstructor.
+        - etype. eapply ccmeta_conv.
+          + etype.
+          + cbn. reflexivity.
+        - apply cconv_sym. eapply cconv_trans. 1: constructor.
+          cbn. ssimpl. apply cconv_refl.
+        - eapply ccmeta_conv.
+          + etype. eapply ccmeta_conv.
+            * {
+              etype. 2: reflexivity.
+              cbn. eapply ccmeta_conv.
+              - eapply ctyping_ren. 1: apply crtyping_S.
+                eauto.
+              - cbn. reflexivity.
+            }
+            * cbn. reflexivity.
+          + cbn. reflexivity.
+      }
+    + eapply cconv_trans. 1: constructor.
+      cbn. ssimpl. apply cconv_refl.
+    + etype. eapply ccmeta_conv.
+      * etype.
+      * cbn. reflexivity.
   - cbn - [mode_inb]. econstructor.
     + eauto with cc_type.
     + apply cconv_sym. constructor.

@@ -2035,12 +2035,6 @@ Qed.
 
 Hint Opaque plam : cc_conv.
 
-Ltac remd :=
-  erewrite !scoping_md by eassumption.
-
-Tactic Notation "remd" "in" hyp(h) :=
-  erewrite !scoping_md in h by eassumption.
-
 Lemma meta_ccscoping_conv :
   ∀ Γ t m m',
     ccscoping Γ t m →

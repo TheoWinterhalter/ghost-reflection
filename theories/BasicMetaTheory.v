@@ -399,6 +399,8 @@ Proof.
   intros Γ. constructor. all: constructor.
 Qed.
 
+(** Conversion entails mode equality **)
+
 Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
   ∀ x,
     nth_error Δ x = None →
@@ -511,6 +513,32 @@ Proof.
   destruct n.
   - cbn in e. discriminate.
   - cbn in e. cbn. eexists. intuition eauto.
+Qed.
+
+Lemma conv_md :
+  ∀ Γ u v,
+    Γ ⊢ u ≡ v →
+    mdc Γ u = mdc Γ v.
+Proof.
+  intros Γ u v h.
+  induction h.
+  all: try solve [ cbn ; reflexivity ].
+  all: try solve [ cbn ; eauto ].
+  - cbn. erewrite md_subst.
+    2: eapply sscoping_one ; eassumption.
+    2: eapply sscoping_comp_one.
+    reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    cbn in H2. destruct H2 as [| []]. 3: contradiction.
+    all: subst. all: reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    reflexivity.
+  - cbn. rewrite IHh3. reflexivity.
+  - etransitivity. all: eassumption.
+  - erewrite 2!scoping_md. 2,3: eassumption.
+    reflexivity.
 Qed.
 
 (** Renaming preserves typing **)
