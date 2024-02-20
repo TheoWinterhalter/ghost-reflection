@@ -1732,6 +1732,39 @@ Proof.
     + f_equal. f_equal. apply ih.
 Qed.
 
+Lemma ccong_perif :
+  ∀ Γ Pe Pe' te te' fe fe',
+    Γ ⊢ᶜ Pe ≡ Pe' →
+    Γ ⊢ᶜ te ≡ te' →
+    Γ ⊢ᶜ fe ≡ fe' →
+    Some (cType, ebool) :: Γ ⊢ᶜ perif Pe te fe ≡ perif Pe' te' fe'.
+Proof.
+  intros Γ Pe Pe' te te' fe fe' hP ht hf.
+  unfold perif. econv. all: apply crtyping_S.
+Qed.
+
+Hint Opaque perif : cc_conv.
+Hint Resolve ccong_perif : cc_conv.
+
+Lemma ccong_pmif :
+  ∀ Γ bP Pe PP te tP fe fP bP' Pe' PP' te' tP' fe' fP',
+    Γ ⊢ᶜ bP ≡ bP' →
+    Γ ⊢ᶜ Pe ≡ Pe' →
+    Γ ⊢ᶜ PP ≡ PP' →
+    Γ ⊢ᶜ te ≡ te' →
+    Γ ⊢ᶜ tP ≡ tP' →
+    Γ ⊢ᶜ fe ≡ fe' →
+    Γ ⊢ᶜ fP ≡ fP' →
+    Γ ⊢ᶜ pmif bP Pe PP te tP fe fP ≡ pmif bP' Pe' PP' te' tP' fe' fP'.
+Proof.
+  intros Γ bP Pe PP te tP fe fP bP' Pe' PP' te' tP' fe' fP'.
+  intros hbP hPe hPP hte htP hfe hfP.
+  unfold pmif. econv. all: apply crtyping_S.
+Qed.
+
+Hint Opaque pmif : cc_conv.
+Hint Resolve ccong_pmif : cc_conv.
+
 Lemma param_conv :
   ∀ Γ u v,
     Γ ⊢ u ≡ v →
@@ -1929,6 +1962,16 @@ Proof.
       all: subst. all: discriminate.
     }
     cbn. apply cconv_refl.
+  - cbn - [mode_inb]. destruct m.
+    + contradiction.
+    + unfold pmif. constructor.
+    + unfold pmif. constructor.
+    + constructor.
+  - cbn - [mode_inb]. destruct m.
+    + contradiction.
+    + unfold pmif. constructor.
+    + unfold pmif. constructor.
+    + constructor.
   - cbn - [mode_inb]. apply cconv_refl.
   - cbn - [mode_inb].
     destruct m, mx. all: simpl.
