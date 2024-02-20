@@ -56,6 +56,14 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ m P t f e,
       Γ ⊢ᶜ eif m bool_err P t f e ≡ e
 
+| cconv_pif_true :
+    ∀ P t f,
+      Γ ⊢ᶜ pif ptrue P t f ≡ t
+
+| cconv_pif_false :
+    ∀ P t f,
+      Γ ⊢ᶜ pif pfalse P t f ≡ f
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -138,6 +146,14 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ f ≡ f' →
       Γ ⊢ᶜ e ≡ e' →
       Γ ⊢ᶜ eif m b P t f e ≡ eif m b' P' t' f' e'
+
+| ccong_pif :
+    ∀ bP P t f bP' P' t' f',
+      Γ ⊢ᶜ bP ≡ bP' →
+      Γ ⊢ᶜ P ≡ P' →
+      Γ ⊢ᶜ t ≡ t' →
+      Γ ⊢ᶜ f ≡ f' →
+      Γ ⊢ᶜ pif bP P t f ≡ pif bP' P' t' f'
 
 (** Structural rules **)
 
@@ -371,15 +387,16 @@ Create HintDb cc_type discriminated.
 Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   cconv_J_refl ccong_Prop ccong_Pi ccong_clam ccong_app ccong_bot_elim
   ccong_tyval ccong_El ccong_Err ccong_squash ccong_teq ccong_trefl ccong_tJ
-  cconv_if_true cconv_if_false cconv_if_err ccong_eif
+  cconv_if_true cconv_if_false cconv_if_err ccong_eif cconv_pif_true
+  cconv_pif_false ccong_pif
   cconv_refl
 : cc_conv.
 
 Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tt ctype_top ctype_star ctype_bot ctype_bot_elim ctype_ty ctype_tyval
   ctype_tyerr ctype_El ctype_Err ctype_squash ctype_sq ctype_sq_elim
-  ctype_teq ctype_trefl ctype_tJ ctype_ebool ctype_etrue ctype_efalse ctype_bool_err
-  ctype_eif
+  ctype_teq ctype_trefl ctype_tJ ctype_ebool ctype_etrue ctype_efalse
+  ctype_bool_err ctype_eif ctype_pbool ctype_ptrue ctype_pfalse ctype_pif
 : cc_type.
 
 Ltac econv :=
