@@ -150,7 +150,7 @@ Definition perif Pe te fe :=
     (S ⋅ te) (S ⋅ fe) (cErr (capp (S ⋅ Pe) bool_err)).
 
 Definition pmif bP Pe PP te tP fe fP :=
-  pif bP (plam cType ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ (perif Pe te fe)))) tP fP.
+  pif bP (plam cProp ebool pbool (capp (capp (capp (S ⋅ S ⋅ PP) (cvar 1)) (cvar 0)) (S ⋅ (perif Pe te fe)))) tP fP.
 
 Equations param_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧p :=
@@ -2066,6 +2066,11 @@ Proof.
     destruct_ifs. all: econv. all: reflexivity.
   - cbn - [mode_inb].
     econv. all: reflexivity.
+  - cbn. destruct m.
+    + econv.
+    + econv. all: reflexivity.
+    + econv. all: reflexivity.
+    + econv.
   - cbn - [mode_inb].
     destruct_ifs. all: econv. all: reflexivity.
   - econv.
@@ -2200,6 +2205,12 @@ Proof.
     + rewrite csc_param_ctx. eapply meta_ccscoping_conv.
       * eapply param_scoping. constructor. all: eassumption.
       * rewrite ek. reflexivity.
+  - cbn. rewrite !erase_castrm, !revive_castrm.
+    destruct m.
+    + econv.
+    + eapply ccong_pmif. all: eauto. all: econv.
+    + eapply ccong_pmif. all: eauto. all: econv.
+    + econv.
 Qed.
 
 Lemma param_castrm_conv :
