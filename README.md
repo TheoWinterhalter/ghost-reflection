@@ -95,6 +95,21 @@ Autosubst library and some notations.
 | `Potential`      | Notion of potential translation |
 | `ElimReflection` | Translation from GRTT to GTT    |
 
+## Assumptions
+
+You will find only two axioms in the whole development. Both are found in the
+`Model` file. The first one assumes injectivity of the `ctyval` constructor of
+CC. This is a very natural assumption to make as we know it holds for Coq.
+The second is injectivity of Π-types for GTT. Sadly, our model is insufficient
+to derive it but we conjecture it holds as it concerns a conversion that is
+very close to that of CC which enjoys the property.
+
+The only part of the development which may use those axioms is the admissible
+rules and the GRTT to GTT translation which uses those rules. We also conjecture
+it could be done without, albeit with longer proofs.
+
+The suspicious reader may use `Print Assumptions` on our main theorems to verify
+that we do not require any hidden axioms.
 
 
 
