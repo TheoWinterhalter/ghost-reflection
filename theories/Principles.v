@@ -4,8 +4,8 @@ From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
-  Scoping TermMode CastRemoval Typing BasicMetaTheory CTyping CCMetaTheory
-  Admissible Erasure Revival Param Model.
+  Scoping TermMode CastRemoval Typing BasicMetaTheory CScoping CTyping
+  CCMetaTheory Admissible Erasure Revival Param Model.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -329,9 +329,65 @@ Proof.
       PP fe (fP efalse pfalse).
 
   **)
-Admitted.
+  eapply ctype_lam. 1: ertype.
+  eapply ctype_lam.
+  1:{
+    ertype.
+    - eapply ccmeta_conv.
+      + ertype. eapply ccmeta_conv. 1: ertype.
+        reflexivity.
+      + reflexivity.
+    - eapply ccmeta_conv.
+      + ertype. eapply ccmeta_conv. 1: ertype.
+        reflexivity.
+      + reflexivity.
+  }
+  eapply ctype_lam. 1: ertype.
+  eapply ctype_lam.
+  1:{
+    ertype. eapply ccmeta_conv.
+    - ertype. eapply ccmeta_conv. 1: ertype.
+      reflexivity.
+    - reflexivity.
+  }
+  eapply ctype_lam.
+  1:{
+    eapply ccmeta_conv.
+    - ertype.
+      2:{
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv. 1: ertype.
+          cbn. lhs_ssimpl. reflexivity.
+        - cbn. reflexivity.
+      }
+      eapply ccmeta_conv.
+      + ertype. eapply ccmeta_conv. 1: ertype.
+        cbn. reflexivity.
+      + cbn. reflexivity.
+    - cbn. reflexivity.
+  }
+  instantiate (1 := cvar 0).
+  econstructor.
+  - ertype.
+  - cbn. econstructor. 1: econv.
+    eapply cconv_irr. all: escope.
+    all: reflexivity.
+  - eapply ccmeta_conv.
+    + ertype.
+      2:{
+        eapply ccmeta_conv.
+        - ertype. eapply ccmeta_conv. 1: ertype.
+          cbn. lhs_ssimpl. reflexivity.
+        - cbn. reflexivity.
+      }
+      eapply ccmeta_conv.
+      * ertype. eapply ccmeta_conv. 1: ertype.
+        cbn. reflexivity.
+      * cbn. reflexivity.
+    + reflexivity.
+Qed.
 
-(* Let's show it in Coq *)
+(* Let's show it in Coq too so it's clearer what happens. *)
 
 Inductive err_bool :=
 | err_true
