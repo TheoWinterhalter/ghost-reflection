@@ -36,6 +36,68 @@ Running `make` at the root of the project is enough to build everything.
 It should compile without warnings or errors. The `Param` module takes a while
 to build.
 
+## Browsing the files
+
+The formalisation can be found in the `theories` folder. We will now go over
+all the files it contains.
+
+### Utility
+
+General tactics, lemmas and notations are defined in `Util.v`.
+
+### Syntax
+
+We define the syntax for two languages: the Calculus of Constructions (CC)
+and our own Ghost Type Theory (GTT). `BasicAST.v` contains the notion of mode
+and of universe levels. `autosubst/CCAST.sig` and `autosubst/GAST.sig` are used
+to generate the `autosubst/CCAST.v` and `autosubst/GAST.v` files.
+`autosubst/core.v`, `autosubst/unscoped.v` and `SubstNotations.v` contain the
+Autosubst library and some notations.
+
+`ContextDecl.v` defines contexts for both theories.
+
+### Ghost Type Theory
+
+| Module            | Description                                |
+| :---------------- | :----------------------------------------- |
+| `CastRemoval`     | Operation which removes casts from a term. |
+| `Scoping`         | Definition of scoping (checks modes)       |
+| `TermMode`        | Syntactic computation of mode              |
+| `Univ`            | Utility on universes (successor, max…)     |
+| `TermNotations`   | Some shorthands for implication and so on… |
+| `Typing`          | Conversion and typing judgements           |
+| `BasicMetaTheory` | Meta-theory like substitution and validity |
+
+### Calculus of Constructions
+
+| Module         | Description               |
+| :------------- | :------------------------ |
+| `CScoping`     | Scoping                   |
+| `CTyping`      | Typing                    |
+| `CCMetaTheory` | Substitution and the like |
+
+### Model
+
+| Module        | Description                                                   |
+| :------------ | :------------------------------------------------------------ |
+| `Erasure`     | Erasure translation                                           |
+| `Revival`     | Revival translation                                           |
+| `Param`       | Parametricity translation                                     |
+| `Model`       | Consequences of the model                                     |
+| `Admissible`  | Simpler typing rules for GTT, assuming injectivity of Π-types |
+| `FreeTheorem` | Proof-of-concept free theorem for GTT                         |
+
+### GRTT (theory with reflection of equality)
+
+| Module           | Description                     |
+| :--------------- | :------------------------------ |
+| `RTyping`        | Typing for GRTT                 |
+| `Potential`      | Notion of potential translation |
+| `ElimReflection` | Translation from GRTT to GTT    |
+
+
+
+
 
 
 [Autosubst 2 OCaml]: https://github.com/uds-psl/autosubst-ocaml
