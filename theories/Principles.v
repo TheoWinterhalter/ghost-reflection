@@ -59,13 +59,47 @@ Proof.
 Abort.
 
 Definition bool_eq b b' :=
-  tif mProp b (lam mType tbool (Sort mType 0) (Sort mProp 0))
+  tif mProp b (lam mType tbool (Sort mKind 0) (Sort mProp 0))
     (* then *) (
-      tif mProp b' (lam mType tbool (Sort mType 0) (Sort mProp 0))
+      tif mProp b' (lam mType tbool (Sort mKind 0) (Sort mProp 0))
         (* then *) top
         (* else *) bot
     )
-    (* else *) bot.
+    (* else *) (
+      tif mProp b (lam mType tbool (Sort mKind 0) (Sort mProp 0))
+        (* then *) bot
+        (* else *) top
+    ).
+
+(* Sanity check *)
+Lemma type_bool_eq :
+  ∀ Γ b b',
+    wf Γ →
+    Γ ⊢ b : tbool →
+    Γ ⊢ b' : tbool →
+    Γ ⊢ bool_eq b b' : Sort mProp 0.
+Proof.
+  intros Γ b b' hΓ h h'.
+  unfold bool_eq.
+  eapply meta_conv.
+  - eapply type_if. all: eauto.
+    + discriminate.
+    + eapply meta_conv.
+      * {
+        eapply type_lam.
+        - assumption.
+        - constructor.
+        - constructor.
+        - constructor.
+      }
+      * cbn. (* This is ill typed because we disallow large elimination!
+        It should be possible to recover it for bool though.
+      *)
+        admit.
+    + admit.
+    + admit.
+  - admit.
+Abort.
 
 Lemma constant_bool :
   ∑ prf,
