@@ -1,21 +1,42 @@
-# ghost-reflection
+# Formalisation of the "Dependent Ghosts Have a Reflection For Free" paper
 
-## Building syntax
+## Building the syntax (optional)
 
-This requires installing AutoSubst 2 OCaml which can only be run with Coq 8.13.
-You can just run `make` in the `theories/autosubst` directory. It will generate
-`GAST.v` (which is also versioned because it's an annoying step).
+We build the syntax of our type theories using [Autosubst 2 OCaml].
+When we prepared this supplementary material there was no Coq 8.18 version for
+this package so we provide instead the generated file directly in this
+repository.
 
-To avoid running into errors, just checkout AutoSubst 2 Ocaml's coq8.13 branch
-and run
+**Note: The generated files include comments that are not anonymised. They are
+however unrelated to the current submission and thus do not breach anonymity.**
+
+In the event you would like to build the syntax files, you can checkout the
+`coq-8.13` branch of [Autosubst 2 OCaml] and run
 ```
 dune build
 dune install
 ```
 
-We also change slightly the imports to the file so that it works.
+Once installed, you can run `make` in the `theories/autosubst` directory. It
+will generate `GAST.v`, `CCAST.v`, `unscoped.v` and `core.v`.
 
 ## Building the project
 
 We use Coq 8.18 and Equations 1.3.
+You can get Coq and Equations using [opam] as follows:
+
+```sh
+opam repo add coq-released https://coq.inria.fr/opam/released
+opam update
+opam pin add coq 8.18.0
+opam install coq-equations
+```
+
 Running `make` at the root of the project is enough to build everything.
+It should compile without warnings or errors. The `Param` module takes a while
+to build.
+
+
+
+[Autosubst 2 OCaml]: https://github.com/uds-psl/autosubst-ocaml
+[opam]: https://opam.ocaml.org/

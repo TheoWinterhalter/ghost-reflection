@@ -1793,7 +1793,7 @@ Proof.
       2: eapply sscoping_comp_one.
       ssimpl. eapply ext_cterm_scoped.
       1:{ eapply param_scoping. eassumption. }
-      (* The following we do basically four times, but I don't know how
+      (* The following we do basically four times, but we don't know how
         to factorise.
       *)
       intros [| []] hx. all: cbn. 1,2: reflexivity.

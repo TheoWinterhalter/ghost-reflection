@@ -35,14 +35,11 @@ Notation "Γ ,,, Δ" :=
   Variable handling is going to become much more complicated because erasure
   removes some variables, while parametricity adds some in a non-uniform way
   so computing offsets and weakenings will be painful arithmetic.
-  I propose to use flexible contexts that instead of one declaration per
+  We propose to use flexible contexts that instead of one declaration per
   position can have zero or one.
 
-  TODO: Mention this idea of flexible variables in the paper.
-
-  We can also consider having a final translation to get rid of those but
-  this will be much nicer probably, we separate matters nicely.
-  I would argue though that we don't really need it.
+  We could also consider having a final translation to get rid of those but
+  we argue that it is not necessary.
 
  **)
 
