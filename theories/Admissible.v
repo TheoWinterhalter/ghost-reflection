@@ -208,6 +208,28 @@ Section Admissible.
     - cbn. reflexivity.
   Qed.
 
+  Lemma type_if :
+    ∀ i m b P t f,
+      m ≠ mKind →
+      Γ ⊢ b : tbool →
+      Γ ⊢ P : tbool ⇒[ 0 | (usup m i) / mType | mKind ] Sort m i →
+      Γ ⊢ t : app P ttrue →
+      Γ ⊢ f : app P tfalse →
+      Γ ⊢ tif m b P t f : app P b.
+  Proof.
+    intros i m b P t f hm hb hP ht hf.
+    adm.
+    - eapply type_pi. all: constructor.
+    - eapply meta_conv.
+      + eapply type_app. 1: eassumption.
+        constructor.
+      + reflexivity.
+    - eapply meta_conv.
+      + eapply type_app. 1: eassumption.
+        constructor.
+      + reflexivity.
+  Qed.
+
   Lemma type_bot_elim :
     ∀ i m A p,
       Γ ⊢ A : Sort m i →
