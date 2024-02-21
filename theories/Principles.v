@@ -178,6 +178,17 @@ Definition beq b b' :=
     app (var 0) (S ⋅ b) ⇒[ 0 | 0 / mProp | mProp ] app (var 0) (S ⋅ b')
   ).
 
+Lemma type_pi_opt :
+  ∀ Γ i j mx m A B,
+    wf Γ →
+    Γ ⊢ A : Sort mx i →
+    (wf (Γ ,, (mx, A)) → Γ ,, (mx, A) ⊢ B : Sort m j) →
+    Γ ⊢ Pi i j m mx A B : Sort m (umax mx m i j).
+Proof.
+  intros Γ i j mx m A B hΓ hA hB.
+  eapply type_pi. all: auto.
+  apply hB. eapply wf_cons. all: eauto.
+Qed.
 
 (* Sanity check *)
 Lemma type_beq :
@@ -188,19 +199,14 @@ Lemma type_beq :
     Γ ⊢ beq b b' : Sort mProp 0.
 Proof.
   intros Γ b b' hΓ h h'.
-  assert (hext :
-    wf (Γ,, (mKind, tbool ⇒[ 0 | 0 / mType | mKind] Sort mProp 0))
-  ).
-  { eapply wf_cons. 1: assumption.
-    eapply type_pi. 1: assumption. all: constructor.
-  }
-  unfold beq. eapply type_pi.
+  unfold beq. eapply type_pi_opt.
   - assumption.
   - eapply type_pi.
     + assumption.
     + constructor.
     + cbn. constructor.
-  - eapply type_pi.
+  - intro hΓ'.
+    eapply type_pi_opt.
     + assumption.
     + eapply meta_conv.
       * {
@@ -215,11 +221,12 @@ Proof.
           + reflexivity.
       }
       * reflexivity.
-    + eapply meta_conv.
+    + intro hΓ''.
+      eapply meta_conv.
       * {
         cbn.
         eapply type_app.
-        - eapply wf_cons. 1: assumption. admit.
+        - assumption.
         - eapply meta_conv.
           + econstructor. cbn. reflexivity.
           + cbn. reflexivity.
@@ -230,4 +237,4 @@ Proof.
           + reflexivity.
       }
       * reflexivity.
-Abort.
+Qed.
