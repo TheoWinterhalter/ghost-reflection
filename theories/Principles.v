@@ -283,3 +283,71 @@ Proof.
       }
       * reflexivity.
 Qed.
+
+Lemma constant_bool :
+  ∑ prf, [] ⊢ᶜ prf : ⟦ [] | er_bool_cst ⟧p.
+Proof.
+  cbn.
+  eexists. eapply ctype_conv.
+  2:{
+    unfold pPi. apply cconv_sym.
+    econstructor.
+    1:{ eapply cconv_trans. 1: constructor. constructor. }
+    econstructor.
+    1:{
+      unfold pmPiNP. cbn. eapply cconv_trans. 1: constructor.
+      cbn. econstructor. 1: constructor.
+      econv.
+    }
+    econstructor.
+    1:{
+      eapply cconv_trans. 1: constructor.
+      econstructor. all: constructor.
+    }
+    econstructor.
+    1:{
+      unfold pmPiNP. cbn. eapply cconv_trans. 1: constructor.
+      cbn. econstructor. 1: constructor.
+      econstructor. 1: econv.
+      eapply cconv_trans. 1: constructor.
+      cbn. econv.
+    }
+    econv.
+  }
+  2:{
+    pose proof type_er_bool_cst as h.
+    eapply param_typing in h. cbn in h.
+    eapply param_pProp in h.
+    eapply h.
+  }
+  unfold vreg. cbn.
+  (** What remains to be prove now is the following:
+
+    ∀ (fe : ebool) (fP : ∀ (b : ebool) (bP : pbool b), pbool fe)
+      (P : ebool → unit) (PP : ∀ (b : ebool) (bP : pbool b), Prop),
+      PP fe (fP etrue ptrue) →
+      PP fe (fP efalse pfalse).
+
+  **)
+Admitted.
+
+(* Let's show it in Coq *)
+
+Inductive err_bool :=
+| err_true
+| err_false
+| err.
+
+Inductive pm_bool : err_bool → SProp :=
+| pm_true : pm_bool err_true
+| pm_false : pm_bool err_false.
+
+Lemma goal :
+  ∀ (fe : err_bool) (fP : ∀ (b : err_bool) (bP : pm_bool b), pm_bool fe)
+    (P : err_bool → unit) (PP : ∀ (b : err_bool) (bP : pm_bool b), Prop),
+    PP fe (fP err_true pm_true) →
+    PP fe (fP err_false pm_false).
+Proof.
+  intros fe fP _ P h.
+  exact h.
+Qed.
