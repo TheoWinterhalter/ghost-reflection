@@ -43,18 +43,6 @@ Definition beq b b' :=
     app (var 0) (S ⋅ b) ⇒[ 0 | 0 / mProp | mProp ] app (var 0) (S ⋅ b')
   ).
 
-Lemma type_pi_opt :
-  ∀ Γ i j mx m A B,
-    wf Γ →
-    Γ ⊢ A : Sort mx i →
-    (wf (Γ ,, (mx, A)) → Γ ,, (mx, A) ⊢ B : Sort m j) →
-    Γ ⊢ Pi i j m mx A B : Sort m (umax mx m i j).
-Proof.
-  intros Γ i j mx m A B hΓ hA hB.
-  eapply type_pi. all: auto.
-  apply hB. eapply wf_cons. all: eauto.
-Qed.
-
 (** Sanity check **)
 Lemma type_beq :
   ∀ Γ b b',
