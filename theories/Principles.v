@@ -170,3 +170,64 @@ Proof.
     - cbn. reflexivity.
   } *)
 Abort.
+
+(* Impredicative encoding of equality instead *)
+
+Definition beq b b' :=
+  Pi 0 0 mProp mKind (tbool ⇒[ 0 | 0 / mType | mKind ] Sort mProp 0) (
+    app (var 0) (S ⋅ b) ⇒[ 0 | 0 / mProp | mProp ] app (var 0) (S ⋅ b')
+  ).
+
+
+(* Sanity check *)
+Lemma type_beq :
+  ∀ Γ b b',
+    wf Γ →
+    Γ ⊢ b : tbool →
+    Γ ⊢ b' : tbool →
+    Γ ⊢ beq b b' : Sort mProp 0.
+Proof.
+  intros Γ b b' hΓ h h'.
+  assert (hext :
+    wf (Γ,, (mKind, tbool ⇒[ 0 | 0 / mType | mKind] Sort mProp 0))
+  ).
+  { eapply wf_cons. 1: assumption.
+    eapply type_pi. 1: assumption. all: constructor.
+  }
+  unfold beq. eapply type_pi.
+  - assumption.
+  - eapply type_pi.
+    + assumption.
+    + constructor.
+    + cbn. constructor.
+  - eapply type_pi.
+    + assumption.
+    + eapply meta_conv.
+      * {
+        eapply type_app.
+        - assumption.
+        - eapply meta_conv.
+          + econstructor. reflexivity.
+          + cbn. reflexivity.
+        - eapply meta_conv.
+          + eapply typing_ren. 1: apply rtyping_S.
+            eassumption.
+          + reflexivity.
+      }
+      * reflexivity.
+    + eapply meta_conv.
+      * {
+        cbn.
+        eapply type_app.
+        - eapply wf_cons. 1: assumption. admit.
+        - eapply meta_conv.
+          + econstructor. cbn. reflexivity.
+          + cbn. reflexivity.
+        - eapply meta_conv.
+          + eapply typing_ren. 1: apply rtyping_S.
+            eapply typing_ren. 1: apply rtyping_S.
+            eassumption.
+          + reflexivity.
+      }
+      * reflexivity.
+Abort.
