@@ -238,3 +238,48 @@ Proof.
       }
       * reflexivity.
 Qed.
+
+(* Our target property (the type we want inhabited in the model) *)
+Definition er_bool_cst :=
+  Pi 0 0 mProp mType cst_ty (
+    beq (app (var 0) (hide ttrue)) (app (var 0) (hide tfalse))
+  ).
+
+Lemma type_er_bool_cst :
+  [] ⊢ er_bool_cst : Sort mProp 0.
+Proof.
+  unfold er_bool_cst.
+  eapply type_pi_opt.
+  - constructor.
+  - unfold cst_ty. eapply type_pi.
+    + constructor.
+    + eapply type_erased. 1: constructor.
+      constructor.
+    + cbn. constructor.
+  - intro hwf.
+    eapply type_beq. 1: assumption.
+    + eapply meta_conv.
+      * {
+        eapply type_app.
+        - assumption.
+        - eapply meta_conv.
+          + econstructor. reflexivity.
+          + cbn. reflexivity.
+        - eapply type_hide. 1: assumption.
+          + constructor.
+          + constructor.
+      }
+      * reflexivity.
+    + eapply meta_conv.
+      * {
+        eapply type_app.
+        - assumption.
+        - eapply meta_conv.
+          + econstructor. reflexivity.
+          + cbn. reflexivity.
+        - eapply type_hide. 1: assumption.
+          + constructor.
+          + constructor.
+      }
+      * reflexivity.
+Qed.
