@@ -31,6 +31,8 @@ theories/Param.v
 theories/Model.v
 theories/Admissible.v
 
+theories/FreeTheorem.v
+
 theories/RTyping.v
 theories/Potential.v
 theories/ElimReflection.v
