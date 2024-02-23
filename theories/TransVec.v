@@ -68,3 +68,49 @@ Lemma err_vec_elim_vcons :
 Proof.
   reflexivity.
 Qed.
+
+(** Parametricity **)
+
+Inductive pm_vec (A : ty) (AP : El A → SProp) : ∀ n (nP : pm_nat n), err_vec A → SProp :=
+| pm_vnil : pm_vec A AP err_O pm_O err_vnil
+| pm_vcons a (aP : AP a) n nP v :
+    pm_vec A AP n nP v →
+    pm_vec A AP (err_S n) (pm_S n nP) (err_vcons a v).
+
+Arguments pm_vnil {A AP}.
+Arguments pm_vcons {A AP}.
+
+Lemma pm_vec_elim :
+  ∀ A (AP : El A → SProp)
+    (Pe : err_vec A → ty)
+    (PP : ∀ n nP (v : err_vec A) (vP : pm_vec A AP n nP v), El (Pe v) → SProp)
+    (ze : El (Pe err_vnil)) (zP : PP err_O pm_O err_vnil pm_vnil ze)
+    (se : ∀ (a : El A) (v : err_vec A), El (Pe v) → El (Pe (err_vcons a v)))
+    (sP :
+      ∀ a aP n nP v vP (h : El (Pe v)) (hP : PP n nP v vP h),
+        PP (err_S n) (pm_S n nP) (err_vcons a v) (pm_vcons a aP n nP v vP) (se a v h)
+    )
+    n nP v vP,
+    PP n nP v vP (err_vec_elim A Pe ze se v).
+Proof.
+  intros A AP Pe PP ze zP se sP n nP v vP.
+  induction vP. all: eauto.
+Qed.
+
+Lemma pm_vec_elim_Prop :
+  ∀ A (AP : El A → SProp)
+    (Pe : err_vec A → unit)
+    (PP : ∀ n nP (v : err_vec A) (vP : pm_vec A AP n nP v), SProp)
+    (z : PP err_O pm_O err_vnil pm_vnil)
+    (s :
+      ∀ a aP n nP v vP (h : PP n nP v vP),
+        PP (err_S n) (pm_S n nP) (err_vcons a v) (pm_vcons a aP n nP v vP)
+    )
+    n nP v vP,
+    PP n nP v vP.
+Proof.
+  intros A AP Pe PP z s n nP v vP.
+  induction vP. all: eauto.
+Qed.
+
+(** Computation rules are trivial because we are in SProp **)
