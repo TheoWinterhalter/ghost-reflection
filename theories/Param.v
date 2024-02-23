@@ -2648,25 +2648,6 @@ Proof.
   apply param_pKind. all: assumption.
 Qed.
 
-Ltac hide_rhs rhs :=
-  lazymatch goal with
-  | |- _ ⊢ᶜ _ ≡ ?t => set (rhs := t)
-  | |- _ = ?t => set (rhs := t)
-  end.
-
-Ltac lhs_ssimpl :=
-  let rhs := fresh "rhs" in
-  hide_rhs rhs ; ssimpl ; subst rhs.
-
-Ltac hide_ty na :=
-  lazymatch goal with
-  | |- _ ⊢ᶜ _ : ?t => set (na := t)
-  end.
-
-Ltac tm_ssimpl :=
-  let na := fresh "na" in
-  hide_ty na ; ssimpl ; subst na.
-
 Hint Resolve crtyping_comp crtyping_S : cc_type.
 
 (** etype together with some extras
