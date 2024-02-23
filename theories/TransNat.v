@@ -4,8 +4,6 @@
   time consuming so instead we opt for a more synthetic approach where we build
   those terms in Coq in order to justify that we could have built them by hand.
 
-  We import here the various translations to serve as a guide. (TODO?)
-
   TODO: Should we keep all the El stuff, not sure what's the best strategy
   here.
 
