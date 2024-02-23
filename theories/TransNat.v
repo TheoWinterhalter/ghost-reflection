@@ -122,10 +122,29 @@ Inductive pm_nat : err_nat → SProp :=
 | pm_O : pm_nat err_O
 | pm_S : ∀ n, pm_nat n → pm_nat (err_S n).
 
-Fail Lemma pm_nat_elim_Ty@{i si} :
-  ∀ (Pe : err_nat → ty@{i}) (PP : ∀ n (nP : pm_nat n), El (Pe n) → Type@{i})
+Lemma pm_nat_elim :
+  ∀ (Pe : err_nat → ty) (PP : ∀ n (nP : pm_nat n), El (Pe n) → SProp)
     (ze : El (Pe err_O)) (zP : PP err_O pm_O ze)
     (se : ∀ n, El (Pe n) → El (Pe (err_S n)))
     (sP : ∀ n nP (h : El (Pe n)) (hP : PP n nP h), PP (err_S n) (pm_S n nP) (se _ h))
     n (nP : pm_nat n),
-    PP n nP (err_nat_elim@{i si} Pe ze se n).
+    PP n nP (err_nat_elim Pe ze se n).
+Proof.
+  intros Pe PP ze zP se sP n nP.
+  induction nP.
+  - cbn. assumption.
+  - cbn. eapply sP. assumption.
+Qed.
+
+Lemma pm_nat_elim_Prop :
+  ∀ (Pe : err_nat → unit) (PP : ∀ n (nP : pm_nat n), SProp)
+    (z : PP err_O pm_O)
+    (s : ∀ n nP (h : PP n nP), PP (err_S n) (pm_S n nP))
+    n (nP : pm_nat n),
+    PP n nP.
+Proof.
+  intros Pe PP z s n nP.
+  induction nP. all: eauto.
+Qed.
+
+(** Computation rules are trivial because we are in SProp **)
