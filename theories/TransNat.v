@@ -94,10 +94,6 @@ Proof.
   - apply Err.
 Defined.
 
-(* TODO: We need also the Prop version of the eliminator?
-  Or rather no because erasure?
-*)
-
 (** Computation rules **)
 
 Lemma err_nat_elim_O :
