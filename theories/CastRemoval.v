@@ -28,6 +28,10 @@ Equations castrm : term → term := {
   ε| ttrue | := ttrue ;
   ε| tfalse | := tfalse ;
   ε| tif m b P t f | := tif m ε|b| ε|P| ε|t| ε|f| ;
+  ε| tnat | := tnat ;
+  ε| tzero | := tzero ;
+  ε| tsucc n | := tsucc ε|n| ;
+  ε| tnat_elim m n P z s | := tnat_elim m ε|n| ε|P| ε|z| ε|s| ;
   ε| bot | := bot ;
   ε| bot_elim m A p | := bot_elim m ε|A| ε|p|
 }

@@ -536,6 +536,10 @@ Proof.
     reflexivity.
   - cbn. erewrite scoping_md. 2: eassumption.
     reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    reflexivity.
   - cbn. rewrite IHh3. reflexivity.
   - etransitivity. all: eassumption.
   - erewrite 2!scoping_md. 2,3: eassumption.
@@ -700,6 +704,10 @@ Proof.
     f_equal. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
     econstructor. all: eauto. all: scoping_ren_finish.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    econstructor. all: eauto. all: try scoping_ren_finish.
+    eapply meta_conv. 1: apply IHht4. 1: auto.
+    f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_ren_finish.
     rewrite 2!castrm_ren.
@@ -880,6 +888,10 @@ Proof.
     f_equal. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
     econstructor. all: eauto. all: scoping_subst_finish.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    econstructor. all: eauto. all: try scoping_subst_finish.
+    eapply meta_conv. 1: apply IHht4. 1: auto.
+    f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_subst_finish.
     rewrite 2!castrm_subst.
@@ -1208,7 +1220,7 @@ Lemma type_if_inv :
       cscoping Γ t m ∧
       cscoping Γ f m ∧
       Γ ⊢ b : tbool ∧
-      Γ ⊢ P : tbool ⇒[ 0 | (usup m i) / mType | mKind ] Sort m i ∧
+      Γ ⊢ P : tbool ⇒[ 0 | usup m i / mType | mKind ] Sort m i ∧
       Γ ⊢ t : app P ttrue ∧
       Γ ⊢ f : app P tfalse ∧
       Γ ⊢ app P b ε≡ C.
@@ -1219,6 +1231,66 @@ Proof.
     apply conv_refl.
   - destruct_exists IHh1. eexists _.
     intuition idtac. 1: eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_nat_inv :
+  ∀ Γ C,
+    Γ ⊢ tnat : C →
+    Γ ⊢ Sort mType 0 ε≡ C.
+Proof.
+  intros Γ C h.
+  dependent induction h.
+  - apply conv_refl.
+  - eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_zero_inv :
+  ∀ Γ C,
+    Γ ⊢ tzero : C →
+    Γ ⊢ tnat ε≡ C.
+Proof.
+  intros Γ C h.
+  dependent induction h.
+  - apply conv_refl.
+  - eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_succ_inv :
+  ∀ Γ n C,
+    Γ ⊢ tsucc n : C →
+    cscoping Γ n mType ∧
+    Γ ⊢ n : tnat ∧
+    Γ ⊢ tnat ε≡ C.
+Proof.
+  intros Γ n C h.
+  dependent induction h.
+  - intuition idtac. apply conv_refl.
+  - intuition auto.
+    eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_nat_elim_inv :
+  ∀ Γ m n P z s C,
+    Γ ⊢ tnat_elim m n P z s : C →
+    ∃ i,
+      m ≠ mKind ∧
+      cscoping Γ n mType ∧
+      cscoping Γ P mKind ∧
+      cscoping Γ z m ∧
+      cscoping Γ s m ∧
+      Γ ⊢ n : tnat ∧
+      Γ ⊢ P : tnat ⇒[ 0 | usup m i / mType | mKind ] Sort m i ∧
+      Γ ⊢ z : app P tzero ∧
+      Γ ⊢ s : Pi 0 i m mType tnat (app (S ⋅ P) (var 0) ⇒[ i | i / m | m ] app (S ⋅ P) (tsucc (var 0))) ∧
+      Γ ⊢ app P n ε≡ C.
+Proof.
+  intros Γ m n P z s C h.
+  dependent induction h.
+  - eexists. intuition idtac. 1,2: eauto.
+    apply conv_refl.
+  - destruct_exists IHh1. eexists _.
+    intuition idtac. 1,2: eauto.
     eapply conv_trans. all: eauto.
 Qed.
 
@@ -1272,6 +1344,10 @@ Ltac ttinv h h' :=
     | ttrue => eapply type_true_inv in h as h'
     | tfalse => eapply type_false_inv in h as h'
     | tif _ _ _ _ _ => eapply type_if_inv in h as h'
+    | tnat => eapply type_nat_inv in h as h'
+    | tzero => eapply type_zero_inv in h as h'
+    | tsucc _ => eapply type_succ_inv in h as h'
+    | tnat_elim _ _ _ _ _ => eapply type_nat_elim_inv in h as h'
     | bot => eapply type_bot_inv in h as h'
     | bot_elim _ _ _ => eapply type_bot_elim_inv in h as h'
     end
@@ -1377,13 +1453,16 @@ Proof.
       Unshelve. assumption.
   - split.
     + cbn. econstructor. all: eauto.
-    + eexists. cbn. eapply meta_conv. 1: econstructor.
-      5: eassumption. all: try eassumption.
-      * cbn. constructor.
-      * constructor.
-      * constructor.
-      * cbn. constructor.
-      * cbn. reflexivity.
+    + eexists. cbn. eapply meta_conv.
+      * econstructor. 5: eassumption. all: try eassumption.
+        all: cbn. all: constructor.
+      * reflexivity.
+  - split.
+    + cbn. constructor. all: eauto.
+    + eexists. cbn. eapply meta_conv.
+      * econstructor. 5: eassumption. all: try eassumption.
+        all: cbn. all: constructor.
+      * reflexivity.
   - split.
     + cbn. constructor. all: auto.
     + eexists. cbn. eassumption.

@@ -48,3 +48,14 @@ pbool : cterm
 ptrue : cterm
 pfalse : cterm
 pif : cterm -> cterm -> cterm -> cterm -> cterm
+
+enat : cterm
+ezero : cterm
+esucc : cterm -> cterm
+enat_elim : cterm -> cterm -> cterm -> cterm -> cterm
+
+pnat : cterm
+pzero : cterm
+psucc : cterm -> cterm
+pnat_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm

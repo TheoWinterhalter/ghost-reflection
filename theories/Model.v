@@ -99,6 +99,10 @@ Fixpoint urm (t : term) : term :=
   | ttrue => ttrue
   | tfalse => tfalse
   | tif m b P t f => tif m (urm b) (urm P) (urm t) (urm f)
+  | tnat => tnat
+  | tzero => tzero
+  | tsucc n => tsucc (urm n)
+  | tnat_elim m n P z s => tnat_elim m (urm n) (urm P) (urm z) (urm s)
   | bot => bot
   | bot_elim m A p => bot_elim m (urm A) (urm p)
   end.

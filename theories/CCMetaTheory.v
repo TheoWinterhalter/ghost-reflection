@@ -352,6 +352,27 @@ Proof.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    asimpl. eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+    asimpl in IHht8.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal. f_equal. f_equal. f_equal.
+      ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal. ssimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    eapply cmeta_conv. 1: eauto.
+    f_equal. f_equal.
+    ssimpl. reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_ren. all: eassumption.
@@ -558,6 +579,48 @@ Proof.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    asimpl. eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+    asimpl in IHht8.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal. f_equal. f_equal. f_equal.
+      ssimpl. eapply ext_cterm.
+      intros [].
+      * ssimpl. reflexivity.
+      * ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. f_equal. f_equal. f_equal.
+      eapply ext_cterm.
+      intros [].
+      * ssimpl. reflexivity.
+      * ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal. ssimpl. f_equal.
+      * {
+        f_equal. f_equal. eapply ext_cterm.
+        intros [].
+        - ssimpl. reflexivity.
+        - ssimpl. reflexivity.
+      }
+      * {
+        f_equal. all: f_equal. all: f_equal. all: f_equal.
+        - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+        - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+        - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      }
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    eapply cmeta_conv. 1: eauto.
+    f_equal. f_equal.
+    ssimpl. f_equal. all: f_equal. all: f_equal.
+    + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+    + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.
