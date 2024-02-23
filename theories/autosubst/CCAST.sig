@@ -57,5 +57,5 @@ enat_elim : cterm -> cterm -> cterm -> cterm -> cterm
 pnat : cterm
 pzero : cterm
 psucc : cterm -> cterm
-pnat_elim : cterm -> cterm -> cterm -> cterm -> cterm
-pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm
+pnat_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm

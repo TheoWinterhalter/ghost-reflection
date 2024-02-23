@@ -51,14 +51,18 @@ Inductive conversion (Γ : context) : term → term → Prop :=
 | conv_nat_elim_zero :
     ∀ m P z s,
       m ≠ mKind →
+      cscoping Γ P mKind →
       cscoping Γ z m →
+      cscoping Γ s m →
       Γ ⊢ tnat_elim m tzero P z s ≡ z
 
 | conv_nat_elim_succ :
     ∀ m P z s n,
       m ≠ mKind →
-      cscoping Γ s m →
       cscoping Γ n mType →
+      cscoping Γ P mKind →
+      cscoping Γ z m →
+      cscoping Γ s m →
       Γ ⊢ tnat_elim m (tsucc n) P z s ≡ app (app s n) (tnat_elim m n P z s)
 
 (** Congruence rules **)

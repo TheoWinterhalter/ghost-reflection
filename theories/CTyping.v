@@ -3,6 +3,7 @@ From GhostTT.autosubst Require Import CCAST unscoped.
 From GhostTT Require Import BasicAST SubstNotations ContextDecl CScoping.
 
 Import ListNotations.
+Import CombineNotations.
 
 Set Default Goal Selector "!".
 
@@ -175,6 +176,34 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ z ≡ z' →
       Γ ⊢ᶜ s ≡ s' →
       Γ ⊢ᶜ enat_elim n P z s ≡ enat_elim n' P' z' s'
+
+(* Morally unnecessary because of proof irrelevance, but we would need scoping *)
+| ccong_psucc :
+    ∀ n n',
+      Γ ⊢ᶜ n ≡ n' →
+      Γ ⊢ᶜ psucc n ≡ psucc n'
+
+(* Same *)
+| ccong_pnat_elim :
+    ∀ ne nP Pe PP ze zP se sP ne' nP' Pe' PP' ze' zP' se' sP',
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ ze ≡ ze' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ se ≡ se' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pnat_elim ne nP Pe PP ze zP se sP ≡ pnat_elim ne' nP' Pe' PP' ze' zP' se' sP'
+
+(* Same *)
+| ccong_pnat_elimP :
+    ∀ ne nP Pe PP zP sP ne' nP' Pe' PP' zP' sP',
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pnat_elimP ne nP Pe PP zP sP ≡ pnat_elimP ne' nP' Pe' PP' zP' sP'
 
 (** Structural rules **)
 
@@ -391,6 +420,64 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       ) →
       Γ ⊢ᶜ enat_elim n P z s : cEl (capp P n)
 
+| ctype_pnat :
+    Γ ⊢ᶜ pnat : cPi cType (cEl enat) (cSort cProp 0)
+
+| ctype_pzero :
+    Γ ⊢ᶜ pzero : capp pnat ezero
+
+| ctype_psucc :
+    ∀ n nP,
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ psucc nP : capp pnat (esucc n)
+
+| ctype_pnat_elim :
+    ∀ i ne nP Pe PP ze zP se sP,
+      Γ ⊢ᶜ ne : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat ne →
+      Γ ⊢ᶜ Pe : cPi cType (cEl enat) (cty i) →
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (capp ((S >> S) ⋅ Pe) (cvar 1))) (
+            cSort cProp 0
+          )
+        )
+      ) →
+      Γ ⊢ᶜ ze : cEl (capp Pe ezero) →
+      Γ ⊢ᶜ zP : capp (capp (capp PP ezero) pzero) ze →
+      Γ ⊢ᶜ se : cPi cType (cEl enat) (
+        cPi cType (cEl (capp (S ⋅ Pe) (cvar 0))) (
+          cEl (capp ((S >> S) ⋅ Pe) (esucc (cvar 1)))
+        )
+      ) →
+      Γ ⊢ᶜ sP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (capp ((S >> S) ⋅ Pe) (cvar 1))) (
+            cPi cProp (capp (capp (capp ((S >> S >> S) ⋅ PP) (cvar 2)) (cvar 1)) (cvar 0)) (
+              capp (capp (capp ((S >> S >> S >> S) ⋅ PP) (esucc (cvar 3))) (psucc (cvar 2))) (capp (capp ((S >> S >> S >> S) ⋅ se) (cvar 3)) (cvar 1))
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pnat_elim ne nP Pe PP ze zP se sP :
+      capp (capp (capp PP ne) nP) (enat_elim ne Pe ze se)
+
+| ctype_pnat_elimP :
+    ∀ ne nP Pe PP zP sP,
+      Γ ⊢ᶜ ne : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat ne →
+      Γ ⊢ᶜ Pe : cPi cType (cEl enat) cunit → (* Could be removed *)
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (cPi cProp (capp pnat (cvar 0)) (cSort cProp 0)) →
+      Γ ⊢ᶜ zP : capp (capp PP ezero) pzero →
+      Γ ⊢ᶜ sP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cProp (capp (capp ((S >> S) ⋅ PP) (cvar 1)) (cvar 0)) (
+            capp (capp ((S >> S >> S) ⋅ PP) (esucc (cvar 2))) (psucc (cvar 1))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pnat_elimP ne nP Pe PP zP sP : capp (capp PP ne) nP
+
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -434,7 +521,7 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   ccong_tyval ccong_El ccong_Err ccong_squash ccong_teq ccong_trefl ccong_tJ
   cconv_if_true cconv_if_false cconv_if_err ccong_eif cconv_pif_true
   cconv_pif_false ccong_pif cconv_enat_elim_zero cconv_enat_elim_succ
-  ccong_esucc ccong_enat_elim
+  ccong_esucc ccong_enat_elim ccong_psucc ccong_pnat_elim ccong_pnat_elimP
   cconv_refl
 : cc_conv.
 
@@ -443,7 +530,8 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tyerr ctype_El ctype_Err ctype_squash ctype_sq ctype_sq_elim
   ctype_teq ctype_trefl ctype_tJ ctype_ebool ctype_etrue ctype_efalse
   ctype_bool_err ctype_eif ctype_pbool ctype_ptrue ctype_pfalse ctype_pif
-  ctype_enat ctype_ezero ctype_esucc ctype_enat_elim
+  ctype_enat ctype_ezero ctype_esucc ctype_enat_elim ctype_pnat ctype_pzero
+  ctype_psucc ctype_pnat_elim ctype_pnat_elimP
 : cc_type.
 
 Ltac econv :=
