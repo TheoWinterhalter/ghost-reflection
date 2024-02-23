@@ -352,6 +352,10 @@ Proof.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    asimpl. eauto.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_ren. all: eassumption.
@@ -558,6 +562,10 @@ Proof.
   - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    asimpl. eauto.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.

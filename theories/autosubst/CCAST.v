@@ -36,7 +36,16 @@ Inductive cterm : Type :=
   | pbool : cterm
   | ptrue : cterm
   | pfalse : cterm
-  | pif : cterm -> cterm -> cterm -> cterm -> cterm.
+  | pif : cterm -> cterm -> cterm -> cterm -> cterm
+  | enat : cterm
+  | ezero : cterm
+  | esucc : cterm -> cterm
+  | enat_elim : cterm -> cterm -> cterm -> cterm -> cterm
+  | pnat : cterm
+  | pzero : cterm
+  | psucc : cterm -> cterm
+  | pnat_elim : cterm -> cterm -> cterm -> cterm -> cterm
+  | pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm.
 
 Lemma congr_cSort {s0 : cmode} {s1 : level} {t0 : cmode} {t1 : level}
   (H0 : s0 = t0) (H1 : s1 = t1) : cSort s0 s1 = cSort t0 t1.
@@ -249,6 +258,80 @@ exact (eq_trans
          (ap (fun x => pif t0 t1 t2 x) H3)).
 Qed.
 
+Lemma congr_enat : enat = enat.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_ezero : ezero = ezero.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_esucc {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
+  esucc s0 = esucc t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => esucc x) H0)).
+Qed.
+
+Lemma congr_enat_elim {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
+  enat_elim s0 s1 s2 s3 = enat_elim t0 t1 t2 t3.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans eq_refl (ap (fun x => enat_elim x s1 s2 s3) H0))
+               (ap (fun x => enat_elim t0 x s2 s3) H1))
+            (ap (fun x => enat_elim t0 t1 x s3) H2))
+         (ap (fun x => enat_elim t0 t1 t2 x) H3)).
+Qed.
+
+Lemma congr_pnat : pnat = pnat.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_pzero : pzero = pzero.
+Proof.
+exact (eq_refl).
+Qed.
+
+Lemma congr_psucc {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
+  psucc s0 = psucc t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => psucc x) H0)).
+Qed.
+
+Lemma congr_pnat_elim {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
+  pnat_elim s0 s1 s2 s3 = pnat_elim t0 t1 t2 t3.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans eq_refl (ap (fun x => pnat_elim x s1 s2 s3) H0))
+               (ap (fun x => pnat_elim t0 x s2 s3) H1))
+            (ap (fun x => pnat_elim t0 t1 x s3) H2))
+         (ap (fun x => pnat_elim t0 t1 t2 x) H3)).
+Qed.
+
+Lemma congr_pnat_elimP {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
+  pnat_elimP s0 s1 s2 s3 = pnat_elimP t0 t1 t2 t3.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans eq_refl (ap (fun x => pnat_elimP x s1 s2 s3) H0))
+               (ap (fun x => pnat_elimP t0 x s2 s3) H1))
+            (ap (fun x => pnat_elimP t0 t1 x s3) H2))
+         (ap (fun x => pnat_elimP t0 t1 t2 x) H3)).
+Qed.
+
 Lemma upRen_cterm_cterm (xi : nat -> nat) : nat -> nat.
 Proof.
 exact (up_ren xi).
@@ -303,6 +386,21 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   | pfalse => pfalse
   | pif s0 s1 s2 s3 =>
       pif (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+  | enat => enat
+  | ezero => ezero
+  | esucc s0 => esucc (ren_cterm xi_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      enat_elim (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+  | pnat => pnat
+  | pzero => pzero
+  | psucc s0 => psucc (ren_cterm xi_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      pnat_elim (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      pnat_elimP (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
         (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
   end.
 
@@ -363,6 +461,21 @@ cterm :=
   | pfalse => pfalse
   | pif s0 s1 s2 s3 =>
       pif (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+  | enat => enat
+  | ezero => ezero
+  | esucc s0 => esucc (subst_cterm sigma_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      enat_elim (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+  | pnat => pnat
+  | pzero => pzero
+  | psucc s0 => psucc (subst_cterm sigma_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      pnat_elim (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      pnat_elimP (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
         (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
   end.
 
@@ -441,6 +554,27 @@ subst_cterm sigma_cterm s = s :=
   | pfalse => congr_pfalse
   | pif s0 s1 s2 s3 =>
       congr_pif (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 => congr_esucc (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 => congr_psucc (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP (idSubst_cterm sigma_cterm Eq_cterm s0)
         (idSubst_cterm sigma_cterm Eq_cterm s1)
         (idSubst_cterm sigma_cterm Eq_cterm s2)
         (idSubst_cterm sigma_cterm Eq_cterm s3)
@@ -527,6 +661,27 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 => congr_esucc (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 => congr_psucc (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
   end.
 
 Lemma upExt_cterm_cterm (sigma : nat -> cterm) (tau : nat -> cterm)
@@ -605,6 +760,27 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
   | pfalse => congr_pfalse
   | pif s0 s1 s2 s3 =>
       congr_pif (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 => congr_esucc (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 => congr_psucc (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
@@ -699,6 +875,34 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
   | pfalse => congr_pfalse
   | pif s0 s1 s2 s3 =>
       congr_pif (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 =>
+      congr_esucc
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 =>
+      congr_psucc
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
@@ -803,6 +1007,34 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
   | pfalse => congr_pfalse
   | pif s0 s1 s2 s3 =>
       congr_pif
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 =>
+      congr_esucc
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 =>
+      congr_psucc
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
@@ -923,6 +1155,34 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 =>
+      congr_esucc
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 =>
+      congr_psucc
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
   end.
 
 Lemma up_subst_subst_cterm_cterm (sigma : nat -> cterm)
@@ -1037,6 +1297,34 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
   | pfalse => congr_pfalse
   | pif s0 s1 s2 s3 =>
       congr_pif
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 =>
+      congr_esucc
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 =>
+      congr_psucc
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
@@ -1197,6 +1485,29 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
   | pfalse => congr_pfalse
   | pif s0 s1 s2 s3 =>
       congr_pif (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+  | enat => congr_enat
+  | ezero => congr_ezero
+  | esucc s0 =>
+      congr_esucc (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | enat_elim s0 s1 s2 s3 =>
+      congr_enat_elim (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+  | pnat => congr_pnat
+  | pzero => congr_pzero
+  | psucc s0 =>
+      congr_psucc (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | pnat_elim s0 s1 s2 s3 =>
+      congr_pnat_elim (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+  | pnat_elimP s0 s1 s2 s3 =>
+      congr_pnat_elimP (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
@@ -1459,6 +1770,24 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
       and (allfv_cterm p_cterm s0)
         (and (allfv_cterm p_cterm s1)
            (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
+  | enat => True
+  | ezero => True
+  | esucc s0 => and (allfv_cterm p_cterm s0) True
+  | enat_elim s0 s1 s2 s3 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
+  | pnat => True
+  | pzero => True
+  | psucc s0 => and (allfv_cterm p_cterm s0) True
+  | pnat_elim s0 s1 s2 s3 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
+  | pnat_elimP s0 s1 s2 s3 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
   end.
 
 Lemma upAllfvTriv_cterm_cterm {p : nat -> Prop} (H : forall x, p x) :
@@ -1540,6 +1869,27 @@ allfv_cterm p_cterm s :=
   | ptrue => I
   | pfalse => I
   | pif s0 s1 s2 s3 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3) I)))
+  | enat => I
+  | ezero => I
+  | esucc s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | enat_elim s0 s1 s2 s3 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3) I)))
+  | pnat => I
+  | pzero => I
+  | psucc s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | pnat_elim s0 s1 s2 s3 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3) I)))
+  | pnat_elimP s0 s1 s2 s3 =>
       conj (allfvTriv_cterm p_cterm H_cterm s0)
         (conj (allfvTriv_cterm p_cterm H_cterm s1)
            (conj (allfvTriv_cterm p_cterm H_cterm s2)
@@ -1860,6 +2210,138 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
   | ptrue => fun HP => I
   | pfalse => fun HP => I
   | pif s0 s1 s2 s3 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end) I)))
+  | enat => fun HP => I
+  | ezero => fun HP => I
+  | esucc s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | enat_elim s0 s1 s2 s3 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end) I)))
+  | pnat => fun HP => I
+  | pzero => fun HP => I
+  | psucc s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | pnat_elim s0 s1 s2 s3 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end) I)))
+  | pnat_elimP s0 s1 s2 s3 =>
       fun HP =>
       conj
         (allfvImpl_cterm p_cterm q_cterm H_cterm s0
@@ -2242,6 +2724,130 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
                             end
                         end
                     end) I)))
+  | enat => fun H => I
+  | ezero => fun H => I
+  | esucc s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | enat_elim s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pnat => fun H => I
+  | pzero => fun H => I
+  | psucc s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | pnat_elim s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pnat_elimP s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
   end.
 
 Lemma upAllfvRenR_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -2552,6 +3158,130 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
   | ptrue => fun H => I
   | pfalse => fun H => I
   | pif s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | enat => fun H => I
+  | ezero => fun H => I
+  | esucc s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | enat_elim s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pnat => fun H => I
+  | pzero => fun H => I
+  | psucc s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | pnat_elim s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pnat_elimP s0 s1 s2 s3 =>
       fun H =>
       conj
         (allfvRenR_cterm p_cterm xi_cterm s0 match H with

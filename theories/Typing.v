@@ -48,6 +48,19 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       cscoping Γ f m →
       Γ ⊢ tif m tfalse P t f ≡ f
 
+| conv_nat_elim_zero :
+    ∀ m P z s,
+      m ≠ mKind →
+      cscoping Γ z m →
+      Γ ⊢ tnat_elim m tzero P z s ≡ z
+
+| conv_nat_elim_succ :
+    ∀ m P z s n,
+      m ≠ mKind →
+      cscoping Γ s m →
+      cscoping Γ n mType →
+      Γ ⊢ tnat_elim m (tsucc n) P z s ≡ app (app s n) (tnat_elim m n P z s)
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -120,6 +133,19 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ t ≡ t' →
       Γ ⊢ f ≡ f' →
       Γ ⊢ tif m b P t f ≡ tif m b' P' t' f'
+
+| cong_succ :
+    ∀ n n',
+      Γ ⊢ n ≡ n' →
+      Γ ⊢ tsucc n ≡ tsucc n'
+
+| cong_nat_elim :
+    ∀ m n P z s n' P' z' s',
+      Γ ⊢ n ≡ n' →
+      Γ ⊢ P ≡ P' →
+      Γ ⊢ z ≡ z' →
+      Γ ⊢ s ≡ s' →
+      Γ ⊢ tnat_elim m n P z s ≡ tnat_elim m n' P' z' s'
 
 (* Maybe not needed? *)
 | cong_bot_elim :
@@ -306,10 +332,35 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ t m →
       cscoping Γ f m →
       Γ ⊢ b : tbool →
-      Γ ⊢ P : tbool ⇒[ 0 | (usup m i) / mType | mKind ] Sort m i →
+      Γ ⊢ P : tbool ⇒[ 0 | usup m i / mType | mKind ] Sort m i →
       Γ ⊢ t : app P ttrue →
       Γ ⊢ f : app P tfalse →
       Γ ⊢ tif m b P t f : app P b
+
+| type_nat :
+    Γ ⊢ tnat : Sort mType 0
+
+| type_zero :
+    Γ ⊢ tzero : tnat
+
+| type_succ :
+    ∀ n,
+      cscoping Γ n mType →
+      Γ ⊢ n : tnat →
+      Γ ⊢ tsucc n : tnat
+
+| type_nat_elim :
+    ∀ i m n P z s,
+      m ≠ mKind →
+      cscoping Γ n mType →
+      cscoping Γ P mKind →
+      cscoping Γ z m →
+      cscoping Γ s m →
+      Γ ⊢ n : tnat →
+      Γ ⊢ P : tnat ⇒[ 0 | usup m i / mType | mKind ] Sort m i →
+      Γ ⊢ z : app P tzero →
+      Γ ⊢ s : Pi 0 i m mType tnat (app (S ⋅ P) (var 0) ⇒[ i | i / m | m ] app (S ⋅ P) (tsucc (var 0))) →
+      Γ ⊢ tnat_elim m n P z s : app P n
 
 | type_bot :
     Γ ⊢ bot : Sort mProp 0

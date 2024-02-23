@@ -64,6 +64,14 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
     ∀ P t f,
       Γ ⊢ᶜ pif pfalse P t f ≡ f
 
+| cconv_enat_elim_zero :
+    ∀ P z s,
+      Γ ⊢ᶜ enat_elim ezero P z s ≡ z
+
+| cconv_enat_elim_succ :
+    ∀ P z s n,
+      Γ ⊢ᶜ enat_elim (esucc n) P z s ≡ capp (capp s n) (enat_elim n P z s)
+
 (** Congruence rules **)
 
 (** A rule to quotient away all levels of Prop, making it impredicative **)
@@ -154,6 +162,19 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ t ≡ t' →
       Γ ⊢ᶜ f ≡ f' →
       Γ ⊢ᶜ pif bP P t f ≡ pif bP' P' t' f'
+
+| ccong_esucc :
+    ∀ n n',
+      Γ ⊢ᶜ n ≡ n' →
+      Γ ⊢ᶜ esucc n ≡ esucc n'
+
+| ccong_enat_elim :
+    ∀ n P z s n' P' z' s',
+      Γ ⊢ᶜ n ≡ n' →
+      Γ ⊢ᶜ P ≡ P' →
+      Γ ⊢ᶜ z ≡ z' →
+      Γ ⊢ᶜ s ≡ s' →
+      Γ ⊢ᶜ enat_elim n P z s ≡ enat_elim n' P' z' s'
 
 (** Structural rules **)
 
@@ -346,6 +367,30 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ f : capp (capp P efalse) pfalse →
       Γ ⊢ᶜ pif bP P t f : capp (capp P b) bP
 
+| ctype_enat :
+    Γ ⊢ᶜ enat : cty 0
+
+| ctype_ezero :
+    Γ ⊢ᶜ ezero : cEl enat
+
+| ctype_esucc :
+    ∀ n,
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ esucc n : cEl enat
+
+| ctype_enat_elim :
+    ∀ n P z s i,
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ P : cPi cType (cEl enat) (cty i) →
+      Γ ⊢ᶜ z : cEl (capp P ezero) →
+      Γ ⊢ᶜ s :
+      cPi cType (cEl enat) (
+        cPi cType (cEl (capp (S ⋅ P) (cvar 0))) (
+          cEl (capp (S ⋅ S ⋅ P) (esucc (cvar 1)))
+        )
+      ) →
+      Γ ⊢ᶜ enat_elim n P z s : cEl (capp P n)
+
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -388,7 +433,8 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   cconv_J_refl ccong_Prop ccong_Pi ccong_clam ccong_app ccong_bot_elim
   ccong_tyval ccong_El ccong_Err ccong_squash ccong_teq ccong_trefl ccong_tJ
   cconv_if_true cconv_if_false cconv_if_err ccong_eif cconv_pif_true
-  cconv_pif_false ccong_pif
+  cconv_pif_false ccong_pif cconv_enat_elim_zero cconv_enat_elim_succ
+  ccong_esucc ccong_enat_elim
   cconv_refl
 : cc_conv.
 
@@ -397,6 +443,7 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_tyerr ctype_El ctype_Err ctype_squash ctype_sq ctype_sq_elim
   ctype_teq ctype_trefl ctype_tJ ctype_ebool ctype_etrue ctype_efalse
   ctype_bool_err ctype_eif ctype_pbool ctype_ptrue ctype_pfalse ctype_pif
+  ctype_enat ctype_ezero ctype_esucc ctype_enat_elim
 : cc_type.
 
 Ltac econv :=

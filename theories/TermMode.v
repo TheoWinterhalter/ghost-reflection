@@ -42,6 +42,10 @@ Section Mode.
     | ttrue => mType
     | tfalse => mType
     | tif m b P t f => m
+    | tnat => mKind
+    | tzero => mType
+    | tsucc n => mType
+    | tnat_elim m n P z s => m
     | bot => mKind
     | bot_elim m A p => m
     end.

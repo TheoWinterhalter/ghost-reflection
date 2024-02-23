@@ -28,5 +28,10 @@ ttrue : term
 tfalse : term
 tif : mode -> term -> term -> term -> term -> term
 
+tnat : term
+tzero : term
+tsucc : term -> term
+tnat_elim : mode -> term -> term -> term -> term -> term
+
 bot : term
 bot_elim : mode -> term -> term -> term
