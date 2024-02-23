@@ -36,3 +36,6 @@ theories/FreeTheorem.v
 theories/RTyping.v
 theories/Potential.v
 theories/ElimReflection.v
+
+theories/TransNat.v
+theories/TransVec.v

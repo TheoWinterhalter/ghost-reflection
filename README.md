@@ -95,6 +95,18 @@ Autosubst library and some notations.
 | `Potential`      | Notion of potential translation |
 | `ElimReflection` | Translation from GRTT to GTT    |
 
+### Inductive types
+
+We handle booleans directly in the syntax of GTT and CC, but for natural numbers
+and vectors we opted for a different approach: we build the terms directly in
+Coq as it is much easier to do. This demonstrates the feasibility of adding them
+to the development.
+
+| Module           | Description                         |
+| :--------------- | :---------------------------------- |
+| `TransNat`       | Erasure and parametricity for `nat` |
+| `TransVec`       | Erasure and parametricity for `vec` |
+
 ## Assumptions
 
 You will find only two axioms in the whole development. Both are found in the
