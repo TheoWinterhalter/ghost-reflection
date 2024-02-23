@@ -40,17 +40,17 @@ Definition El@{i} (T : ty@{i}) : Type@{i} :=
   | tyerr => unit
   end.
 
-Definition Err T : El T :=
+Definition Err@{i} T : El@{i} T :=
   match T with
   | tyval mk A a => a
   | tyerr => tt
   end.
 
-Definition erase_pi A (B : El A → ty) :=
+Definition erase_pi@{i j k} (A : ty@{i}) (B : El A → ty@{j}) : ty@{k} :=
   tyval Any (∀ x, El (B x)) (λ x, Err (B x)).
 
-Definition erase_Type :=
-  tyval Any ty tyerr.
+Definition erase_Type@{i si} :=
+  tyval@{si} Any ty@{i} tyerr@{i}.
 
 (** Recall the definition of natural numbers **)
 
@@ -64,13 +64,13 @@ Succeed Inductive nat :=
 
 **)
 
-Inductive err_nat :=
+Inductive err_nat : Set :=
 | err_O
 | err_S (n : err_nat)
 | nat_err.
 
 Definition erase_nat :=
-  tyval Any err_nat nat_err.
+  tyval@{Set} Any err_nat nat_err.
 
 Definition erase_O : El erase_nat :=
   err_O.
@@ -78,12 +78,12 @@ Definition erase_O : El erase_nat :=
 Definition erase_S : El (erase_pi erase_nat (λ _, erase_nat)) :=
   err_S.
 
-Lemma err_nat_elim :
-  El (
-    erase_pi (erase_pi erase_nat (λ _, erase_Type)) (λ P,
-      erase_pi (P erase_O) (λ _,
-        erase_pi (erase_pi erase_nat (λ n, erase_pi (P n) (λ _, P (erase_S n)))) (λ _,
-          erase_pi erase_nat (λ n, P n)
+Lemma err_nat_elim@{i si} :
+  El@{si} (
+    erase_pi@{si i si} (erase_pi@{Set si si} erase_nat (λ _, erase_Type@{i si})) (λ P,
+      erase_pi@{i i i} (P erase_O) (λ _,
+        erase_pi@{i i i} (erase_pi@{Set i i} erase_nat (λ n, erase_pi@{i i i} (P n) (λ _, P (erase_S n)))) (λ _,
+          erase_pi@{Set i i} erase_nat (λ n, P n)
         )
       )
     )
@@ -115,3 +115,17 @@ Lemma err_nat_elim_S :
 Proof.
   reflexivity.
 Qed.
+
+(** Parametricity **)
+
+Inductive pm_nat : err_nat → SProp :=
+| pm_O : pm_nat err_O
+| pm_S : ∀ n, pm_nat n → pm_nat (err_S n).
+
+Fail Lemma pm_nat_elim_Ty@{i si} :
+  ∀ (Pe : err_nat → ty@{i}) (PP : ∀ n (nP : pm_nat n), El (Pe n) → Type@{i})
+    (ze : El (Pe err_O)) (zP : PP err_O pm_O ze)
+    (se : ∀ n, El (Pe n) → El (Pe (err_S n)))
+    (sP : ∀ n nP (h : El (Pe n)) (hP : PP n nP h), PP (err_S n) (pm_S n nP) (se _ h))
+    n (nP : pm_nat n),
+    PP n nP (err_nat_elim@{i si} Pe ze se n).
