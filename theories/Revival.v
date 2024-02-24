@@ -57,6 +57,9 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | tnat_elim m n P z s ⟧v :=
     if isGhost m then enat_elim ⟦ Γ | n ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧v ⟦ Γ | s ⟧v
     else cDummy ;
+  ⟦ Γ | tvec_elim m v P z s ⟧v :=
+    if isGhost m then evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧v ⟦ Γ | s ⟧v
+    else cDummy ;
   ⟦ Γ | bot_elim m A p ⟧v := if isGhost m then ⟦ Γ | A ⟧∅ else cDummy ;
   ⟦ _ | _ ⟧v := cDummy
 }
@@ -99,6 +102,7 @@ Proof.
     destruct_if e. 2: reflexivity.
     destruct (md Γ _) eqn:e'. all: discriminate.
   - cbn in *. eauto.
+  - cbn in *. rewrite hm. reflexivity.
   - cbn in *. rewrite hm. reflexivity.
   - cbn in *. rewrite hm. reflexivity.
   - cbn in *. rewrite hm. reflexivity.
@@ -233,6 +237,8 @@ Proof.
     escope.
     + apply scoping_to_rev. apply erase_scoping.
     + apply scoping_to_rev. apply erase_scoping.
+  - cbn. destruct_if e. 2: constructor.
+    escope. all: apply scoping_to_rev. all: apply erase_scoping.
   - cbn.
     destruct_if e. 2: constructor.
     constructor. eapply scoping_to_rev. eapply erase_scoping.
@@ -287,6 +293,10 @@ Proof.
     cbn. erewrite IHt3, IHt4. 2-5: eassumption.
     erewrite !erase_ren. 2-5: eassumption.
     f_equal. ssimpl. reflexivity.
+  - cbn. destruct_ifs. 2: eauto.
+    cbn. erewrite IHt3, IHt4. 2-5: eassumption.
+    erewrite !erase_ren. 2-5: eassumption.
+    reflexivity.
   - cbn. destruct_ifs. 2: eauto.
     cbn. erewrite IHt3, IHt4. 2-5: eassumption.
     erewrite !erase_ren. 2-5: eassumption.
@@ -426,6 +436,13 @@ Proof.
     destruct_if eg. 2: reflexivity.
     reflexivity.
   - cbn.
+    erewrite IHt3. 2,3: eassumption.
+    erewrite IHt4. 2,3: eassumption.
+    erewrite !erase_subst. 2-5: eassumption.
+    rewrite !erase_rev_subst.
+    destruct_if eg. 2: reflexivity.
+    reflexivity.
+  - cbn.
     destruct_ifs. 2: reflexivity.
     erewrite erase_subst. 2,3: eassumption.
     cbn. f_equal. apply erase_rev_subst.
@@ -531,6 +548,13 @@ Proof.
   - cbn. remd. destruct_if eg. 2: constructor.
     mode_eqs. cbn.
     constructor.
+  - cbn. destruct_if eg.
+    + constructor.
+    + erewrite revive_ng. 2:{ remd. assumption. }
+      constructor.
+  - cbn. remd. cbn. destruct_if eg. 2: constructor.
+    mode_eqs. cbn. eapply cconv_trans. 1: constructor.
+    econv.
   - cbn.
     cbn in IHh2, IHh3.
     eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
