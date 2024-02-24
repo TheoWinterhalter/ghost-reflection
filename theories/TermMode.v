@@ -49,7 +49,7 @@ Section Mode.
     | tvec A n => mKind
     | tvnil A => mType
     | tvcons a n v => mType
-    | tvec_elim m v P z s => m
+    | tvec_elim m A n v P z s => m
     | bot => mKind
     | bot_elim m A p => m
     end.

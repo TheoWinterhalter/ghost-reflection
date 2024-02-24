@@ -538,24 +538,6 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ A : cty i →
       Γ ⊢ᶜ evec_elim v P z s : cEl (capp P v)
 
-(* | ctype_evec_elimG :
-    ∀ v P z s n A i j,
-      Γ ⊢ᶜ v : cEl (evec A) →
-      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty j) →
-      Γ ⊢ᶜ z : cEl (capp P (evnil A)) →
-      Γ ⊢ᶜ s : cPi cType (cEl A) (
-        cPi cType (cEl enat) (
-          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
-            cPi cType (cEl (capp ((S >> S >> S) ⋅ P) (cvar 0))) (
-              cEl (capp ((S >> S >> S >> S) ⋅ P) (evcons (cvar 3) (cvar 1)))
-            )
-          )
-        )
-      ) →
-      Γ ⊢ᶜ n : cEl enat →
-      Γ ⊢ᶜ A : cty i →
-      Γ ⊢ᶜ evec_elimG v P z s : cEl (capp P v) *)
-
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -612,7 +594,7 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_bool_err ctype_eif ctype_pbool ctype_ptrue ctype_pfalse ctype_pif
   ctype_enat ctype_ezero ctype_esucc ctype_enat_elim ctype_pnat ctype_pzero
   ctype_psucc ctype_pnat_elim ctype_pnat_elimP ctype_evec ctype_evnil
-  ctype_evcons ctype_evec_elim (* ctype_evec_elimG *)
+  ctype_evcons ctype_evec_elim
 : cc_type.
 
 Ltac econv :=

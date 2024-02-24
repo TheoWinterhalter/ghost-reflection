@@ -77,19 +77,20 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       cscoping Γ P mKind →
       cscoping Γ z m →
       cscoping Γ s m →
-      Γ ⊢ tvec_elim m (tvnil A) P z s ≡ z
+      Γ ⊢ tvec_elim m A (hide tzero) (tvnil A) P z s ≡ z
 
 | conv_vec_elim_cons :
-    ∀ m a n v P z s,
+    ∀ m A a n v P z s,
       m ≠ mKind →
+      cscoping Γ A mKind →
       cscoping Γ a mType →
       cscoping Γ n mGhost →
       cscoping Γ v mType →
       cscoping Γ P mKind →
       cscoping Γ z m →
       cscoping Γ s m →
-      Γ ⊢ tvec_elim m (tvcons a n v) P z s ≡
-      app (app (app (app s a) n) v) (tvec_elim m v P z s)
+      Γ ⊢ tvec_elim m A (gS n) (tvcons a n v) P z s ≡
+      app (app (app (app s a) n) v) (tvec_elim m A n v P z s)
 
 (** Congruence rules **)
 
@@ -190,12 +191,14 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ tvcons a n v ≡ tvcons a' n' v'
 
 | cong_vec_elim :
-    ∀ m v P z s v' P' z' s',
+    ∀ m A n v P z s A' n' v' P' z' s',
+      Γ ⊢ A ≡ A' →
+      Γ ⊢ n ≡ n' →
       Γ ⊢ v ≡ v' →
       Γ ⊢ P ≡ P' →
       Γ ⊢ z ≡ z' →
       Γ ⊢ s ≡ s' →
-      Γ ⊢ tvec_elim m v P z s ≡ tvec_elim m v' P' z' s'
+      Γ ⊢ tvec_elim m A n v P z s ≡ tvec_elim m A' n' v' P' z' s'
 
 (* Maybe not needed? *)
 | cong_bot_elim :
@@ -462,7 +465,7 @@ Inductive typing (Γ : context) : term → term → Prop :=
       cscoping Γ A mKind →
       Γ ⊢ n : Erased tnat →
       Γ ⊢ A : Sort mType i →
-      Γ ⊢ tvec_elim m v P z s : app (app P n) v
+      Γ ⊢ tvec_elim m A n v P z s : app (app P n) v
 
 | type_bot :
     Γ ⊢ bot : Sort mProp 0

@@ -141,7 +141,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | tvec A n ⟧ε := evec ⟦ Γ | A ⟧ε ;
   ⟦ Γ | tvnil A ⟧ε := evnil ⟦ Γ | A ⟧ε ;
   ⟦ Γ | tvcons a n v ⟧ε := evcons ⟦ Γ | a ⟧ε ⟦ Γ | v ⟧ε ;
-  ⟦ Γ | tvec_elim m v P z s ⟧ε :=
+  ⟦ Γ | tvec_elim m A n v P z s ⟧ε :=
     if relm m then evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧ε ⟦ Γ | s ⟧ε
     else cDummy ;
   ⟦ Γ | bot ⟧ε := ctt ;
@@ -355,7 +355,7 @@ Proof.
     reflexivity.
   - cbn. erewrite IHt1, IHt3. 2-5: eassumption.
     reflexivity.
-  - cbn. erewrite IHt1, IHt2, IHt3, IHt4. 2-9: eassumption.
+  - cbn. erewrite IHt3, IHt4, IHt5, IHt6. 2-9: eassumption.
     destruct_if e. all: reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
@@ -512,7 +512,7 @@ Proof.
   - cbn. erewrite IHt1, IHt3. 2-5: eassumption.
     reflexivity.
   - cbn.
-    erewrite IHt1, IHt2, IHt3, IHt4. 2-9: eassumption.
+    erewrite IHt3, IHt4, IHt5, IHt6. 2-9: eassumption.
     destruct_if e. all: reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
@@ -678,7 +678,7 @@ Proof.
   - cbn. erewrite IHt1, IHt2. rewrite <- !md_castrm. reflexivity.
   - cbn. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
   - cbn. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
-  - cbn. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
+  - cbn. erewrite IHt3, IHt4, IHt5, IHt6. reflexivity.
   - cbn. erewrite IHt1. reflexivity.
 Qed.
 

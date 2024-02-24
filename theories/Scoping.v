@@ -161,13 +161,15 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ (tvcons a n v) mType
 
 | scope_vec_elim :
-    ∀ m v P z s,
+    ∀ m A n v P z s,
       m ≠ mKind →
+      scoping Γ A mKind →
+      scoping Γ n mGhost →
       scoping Γ v mType →
       scoping Γ P mKind →
       scoping Γ z m →
       scoping Γ s m →
-      scoping Γ (tvec_elim m v P z s) m
+      scoping Γ (tvec_elim m A n v P z s) m
 
 | scope_bot :
     scoping Γ bot mKind

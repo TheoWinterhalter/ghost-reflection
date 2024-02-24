@@ -1366,9 +1366,9 @@ Proof.
 Qed.
 
 Lemma type_vec_elim_inv :
-  ∀ Γ m v P z s C,
-    Γ ⊢ tvec_elim m v P z s : C →
-    ∃ i j A n,
+  ∀ Γ m A n v P z s C,
+    Γ ⊢ tvec_elim m A n v P z s : C →
+    ∃ i j,
       m ≠ mKind ∧
       cscoping Γ v mType ∧
       cscoping Γ P mKind ∧
@@ -1393,11 +1393,11 @@ Lemma type_vec_elim_inv :
       Γ ⊢ n : Erased tnat ∧
       Γ ⊢ app (app P n) v ε≡ C.
 Proof.
-  intros Γ m v P z s C h.
+  intros Γ m A n v P z s C h.
   dependent induction h.
-  - eexists _,_,_,_. intuition eauto.
+  - eexists _,_. intuition eauto.
     apply conv_refl.
-  - destruct_exists IHh1. eexists _,_,_,_.
+  - destruct_exists IHh1. eexists _,_.
     intuition eauto.
     eapply conv_trans. all: eauto.
 Qed.
@@ -1459,7 +1459,7 @@ Ltac ttinv h h' :=
     | tvec _ _ => eapply type_vec_inv in h as h'
     | tvnil _ => eapply type_vnil_inv in h as h'
     | tvcons _ _ _ => eapply type_vcons_inv in h as h'
-    | tvec_elim _ _ _ _ _ => eapply type_vec_elim_inv in h as h'
+    | tvec_elim _ _ _ _ _ _ _ => eapply type_vec_elim_inv in h as h'
     | bot => eapply type_bot_inv in h as h'
     | bot_elim _ _ _ => eapply type_bot_elim_inv in h as h'
     end
