@@ -593,25 +593,41 @@ Proof.
       lhs_ssimpl. econv.
     }
     constructor. 1: econv.
-    constructor. 1-3: econv.
-    constructor. 1: econv.
-    constructor. 1: econv.
     eapply cconv_trans.
     1:{
+      constructor. 1-3: econv.
+      constructor. 1: econv.
+      constructor. 1: econv.
       constructor. 2-4: econv.
       constructor.
     }
-    cbn.
-    eapply cconv_trans. 1: constructor.
+    cbn. eapply cconv_trans.
+    1:{
+      constructor. 1-3: econv.
+      constructor. 1: econv.
+      constructor. 1: econv.
+      constructor.
+    }
     eapply cconv_trans.
     1:{
+      constructor. 1-3: econv.
+      constructor. 1: econv.
+      constructor. 1: econv.
       constructor. 2: econv.
       constructor.
     }
-    cbn.
-    eapply cconv_trans. 1: constructor.
+    cbn. eapply cconv_trans.
+    1:{
+      constructor. 1-3: econv.
+      constructor. 1: econv.
+      constructor. 1: econv.
+      constructor.
+    }
     lhs_ssimpl.
-    (* Did I apply one too many congruence? *)
+    constructor. 1-3: econv.
+    constructor. 1: econv.
+    constructor. 1: econv.
+    (* What's going on? *)
   - cbn.
     cbn in IHh2, IHh3.
     eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
