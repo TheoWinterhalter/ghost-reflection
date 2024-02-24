@@ -589,12 +589,29 @@ Proof.
         constructor. 2: econv.
         constructor.
       }
-      cbn. constructor.
+      cbn. eapply cconv_trans. 1: constructor.
+      lhs_ssimpl. econv.
     }
-    lhs_ssimpl.
-    econv.
+    constructor. 1: econv.
+    constructor. 1-3: econv.
+    constructor. 1: econv.
+    constructor. 1: econv.
+    eapply cconv_trans.
+    1:{
+      constructor. 2-4: econv.
+      constructor.
+    }
+    cbn.
     eapply cconv_trans. 1: constructor.
-    cbn. (* Even with pred we get this goal! *)
+    eapply cconv_trans.
+    1:{
+      constructor. 2: econv.
+      constructor.
+    }
+    cbn.
+    eapply cconv_trans. 1: constructor.
+    lhs_ssimpl.
+    (* Did I apply one too many congruence? *)
   - cbn.
     cbn in IHh2, IHh3.
     eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
