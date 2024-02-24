@@ -19,6 +19,19 @@ Definition ghv (Γ : scope) x :=
   | None => false
   end.
 
+(** Ghost predecessor (lifting from regular predecessor) **)
+
+Definition tpred n :=
+  tnat_elim mType n (lam mType tnat (Sort mType 0) tnat)
+    (* 0 => *) tzero
+    (* S n => *) (lam mType tnat (tnat ⇒[ 0 | 0 / mType | mType ] tnat) (
+      lam mType tnat tnat (var 1)
+    )).
+
+Definition gpred n :=
+  reveal n (lam mGhost (Erased tnat) (Sort mGhost 0) (Erased tnat))
+    (lam mType tnat (Erased tnat) (hide (tpred (var 0)))).
+
 (** Revival translation **)
 
 Reserved Notation "⟦ G | u '⟧v'" (at level 9, G, u at next level).
@@ -59,10 +72,10 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
     else cDummy ;
   ⟦ Γ | tvec_elim m A n v P z s ⟧v :=
     if isGhost m then (
-      (* We need to pass n as argument to s *)
+      (** We need to pass n as argument to s, or rather its predecessor **)
       let s' :=
         clam cType ⟦ Γ | A ⟧τ (
-          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ ⟦ Γ | n ⟧v)
+          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ (gpred ⟦ Γ | n ⟧v))
         )
       in
       evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧v s'
