@@ -26,7 +26,7 @@ Set Universe Polymorphism.
 
 Transparent close ignore epm_lift rpm_lift.
 
-(** We first define ty and various other types **)
+(** We first define ty **)
 
 Inductive ty@{i} :=
 | tyval (mk : mark) (A : Type@{i}) (a : A)
@@ -43,12 +43,6 @@ Definition Err@{i} T : El@{i} T :=
   | tyval mk A a => a
   | tyerr => tt
   end.
-
-Definition erase_pi@{i j k} (A : ty@{i}) (B : El A → ty@{j}) : ty@{k} :=
-  tyval Any (∀ x, El (B x)) (λ x, Err (B x)).
-
-Definition erase_Type@{i si} :=
-  tyval@{si} Any ty@{i} tyerr@{i}.
 
 (** Recall the definition of natural numbers **)
 
@@ -67,25 +61,21 @@ Inductive err_nat : Set :=
 | err_S (n : err_nat)
 | nat_err.
 
-Definition erase_nat :=
+Definition erase_nat : ty :=
   tyval@{Set} Any err_nat nat_err.
 
 Definition erase_O : El erase_nat :=
   err_O.
 
-Definition erase_S : El (erase_pi erase_nat (λ _, erase_nat)) :=
+Definition erase_S : El erase_nat → El erase_nat :=
   err_S.
 
-Lemma err_nat_elim@{i si} :
-  El@{si} (
-    erase_pi@{si i si} (erase_pi@{Set si si} erase_nat (λ _, erase_Type@{i si})) (λ P,
-      erase_pi@{i i i} (P erase_O) (λ _,
-        erase_pi@{i i i} (erase_pi@{Set i i} erase_nat (λ n, erase_pi@{i i i} (P n) (λ _, P (erase_S n)))) (λ _,
-          erase_pi@{Set i i} erase_nat (λ n, P n)
-        )
-      )
-    )
-  ).
+Lemma err_nat_elim :
+  ∀ (P : El erase_nat → ty)
+    (z : El (P erase_O))
+    (s : ∀ (n : El erase_nat), El (P n) → El (P (erase_S n)))
+    (n : El erase_nat),
+    El (P n).
 Proof.
   cbn. intros P z s n.
   induction n.
@@ -117,17 +107,15 @@ Inductive pm_nat : err_nat → SProp :=
 | pm_S : ∀ n, pm_nat n → pm_nat (err_S n).
 
 Lemma pm_nat_elim :
-  ∀ (Pe : err_nat → ty) (PP : ∀ n (nP : pm_nat n), El (Pe n) → SProp)
+  ∀ (Pe : El erase_nat → ty) (PP : ∀ n (nP : pm_nat n), El (Pe n) → SProp)
     (ze : El (Pe err_O)) (zP : PP err_O pm_O ze)
     (se : ∀ n, El (Pe n) → El (Pe (err_S n)))
     (sP : ∀ n nP (h : El (Pe n)) (hP : PP n nP h), PP (err_S n) (pm_S n nP) (se _ h))
     n (nP : pm_nat n),
     PP n nP (err_nat_elim Pe ze se n).
 Proof.
-  intros Pe PP ze zP se sP n nP.
-  induction nP.
-  - cbn. assumption.
-  - cbn. eapply sP. assumption.
+  cbn. intros Pe PP ze zP se sP n nP.
+  induction nP. all: eauto.
 Qed.
 
 Lemma pm_nat_elim_Prop :

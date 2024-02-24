@@ -100,7 +100,8 @@ Autosubst library and some notations.
 We handle booleans directly in the syntax of GTT and CC, but for natural numbers
 and vectors we opted for a different approach: we build the terms directly in
 Coq as it is much easier to do. This demonstrates the feasibility of adding them
-to the development.
+to the development. We in fact do it for `nat` by assuming constants in CC with
+exactly the types we inhabit in `TransNat`.
 
 | Module           | Description                         |
 | :--------------- | :---------------------------------- |
