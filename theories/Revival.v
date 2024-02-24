@@ -19,18 +19,14 @@ Definition ghv (Γ : scope) x :=
   | None => false
   end.
 
-(** Ghost predecessor (lifting from regular predecessor) **)
+(** Predecessor for enat **)
 
-Definition tpred n :=
-  tnat_elim mType n (lam mType tnat (Sort mType 0) tnat)
-    (* 0 => *) tzero
-    (* S n => *) (lam mType tnat (tnat ⇒[ 0 | 0 / mType | mType ] tnat) (
-      lam mType tnat tnat (var 1)
+Definition cpred n :=
+  enat_elim n (clam cType (cEl enat) enat)
+    (* 0 => *) ezero
+    (* S n => *) (clam cType (cEl enat) (
+      clam cType (cEl enat) (cvar 1)
     )).
-
-Definition gpred n :=
-  reveal n (lam mGhost (Erased tnat) (Sort mGhost 0) (Erased tnat))
-    (lam mType tnat (Erased tnat) (hide (tpred (var 0)))).
 
 (** Revival translation **)
 
@@ -75,7 +71,7 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
       (** We need to pass n as argument to s, or rather its predecessor **)
       let s' :=
         clam cType ⟦ Γ | A ⟧τ (
-          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ (gpred ⟦ Γ | n ⟧v))
+          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ (cpred ⟦ Γ | n ⟧v))
         )
       in
       evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧v s'
@@ -259,7 +255,7 @@ Proof.
     + apply scoping_to_rev. apply erase_scoping.
     + apply scoping_to_rev. apply erase_scoping.
   - cbn. destruct_if e. 2: constructor.
-    escope. 5: reflexivity.
+    escope. 5,7: reflexivity.
     4,5: eapply cscoping_ren ; eauto using crscoping_S.
     all: apply scoping_to_rev. all: apply erase_scoping.
   - cbn.
@@ -579,13 +575,26 @@ Proof.
     1:{
       econstructor. 2: econv.
       econstructor. 2: econv.
-      constructor.
+      eapply cconv_trans. 1: constructor.
+      cbn. lhs_ssimpl.
+      constructor. 1: econv.
+      eapply cconv_trans.
+      1:{
+        constructor. 2-4: econv.
+        constructor.
+      }
+      cbn. eapply cconv_trans. 1: constructor.
+      eapply cconv_trans.
+      1:{
+        constructor. 2: econv.
+        constructor.
+      }
+      cbn. constructor.
     }
-    cbn. lhs_ssimpl.
+    lhs_ssimpl.
     econv.
-    + eapply cconv_trans. 1: constructor.
-      cbn.
-    +
+    eapply cconv_trans. 1: constructor.
+    cbn. (* Even with pred we get this goal! *)
   - cbn.
     cbn in IHh2, IHh3.
     eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
