@@ -145,7 +145,8 @@ Ltac mode_eqs :=
   | e : isProp ?m = true |- _ => eapply isProp_eq in e ; try subst m
   end.
 
-Definition mode_inb := inb mode_eqb.
-
-Notation relm m :=
-  (mode_inb m [ mType ; mKind ]).
+Definition relm m :=
+  match m with
+  | mKind | mType => true
+  | _ => false
+  end.

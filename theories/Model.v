@@ -60,7 +60,7 @@ Proof.
   intros hcons. intros [t ht].
   eapply hcons.
   apply param_typing in ht as htp.
-  cbn in htp. unfold ptype in htp. cbn - [mode_inb] in htp.
+  cbn in htp. unfold ptype in htp. cbn in htp.
   eapply validity in ht as h. 2: constructor.
   destruct h as [hs [i h]].
   ttinv h h'. cbn in h'.
