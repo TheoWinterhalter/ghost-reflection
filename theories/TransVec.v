@@ -59,10 +59,7 @@ Lemma err_vec_elimG :
     El (P v).
 Proof.
   intros A P z s n v.
-  induction v.
-  - assumption.
-  - apply s. all: assumption.
-  - apply Err.
+  exact (err_vec_elim A P z (λ a, s a n) v).
 Defined.
 
 (** Computation rules **)
