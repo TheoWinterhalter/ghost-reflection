@@ -540,6 +540,10 @@ Proof.
     reflexivity.
   - cbn. erewrite scoping_md. 2: eassumption.
     reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    reflexivity.
+  - cbn. erewrite scoping_md. 2: eassumption.
+    reflexivity.
   - cbn. rewrite IHh3. reflexivity.
   - etransitivity. all: eassumption.
   - erewrite 2!scoping_md. 2,3: eassumption.
@@ -708,6 +712,13 @@ Proof.
     econstructor. all: eauto. all: try scoping_ren_finish.
     eapply meta_conv. 1: apply IHht4. 1: auto.
     f_equal. asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    asimpl in IHht5. asimpl in IHht6.
+    econstructor. 8: eauto. all: eauto. all: try scoping_ren_finish.
+    + eapply meta_conv. 1: eauto.
+      f_equal. cbn. f_equal. f_equal. asimpl. reflexivity.
+    + eapply meta_conv. 1: eauto.
+      f_equal. cbn. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_ren_finish.
     rewrite 2!castrm_ren.
@@ -892,6 +903,13 @@ Proof.
     econstructor. all: eauto. all: try scoping_subst_finish.
     eapply meta_conv. 1: apply IHht4. 1: auto.
     f_equal. asimpl. reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    asimpl in IHht5. asimpl in IHht6.
+    econstructor. 8: eauto. all: eauto. all: try scoping_subst_finish.
+    + eapply meta_conv. 1: eauto.
+      f_equal. cbn. f_equal. f_equal. asimpl. reflexivity.
+    + eapply meta_conv. 1: eauto.
+      f_equal. cbn. f_equal. asimpl. reflexivity.
   - asimpl. asimpl in IHht2.
     econstructor. all: eauto. all: try scoping_subst_finish.
     rewrite 2!castrm_subst.
@@ -1294,6 +1312,96 @@ Proof.
     eapply conv_trans. all: eauto.
 Qed.
 
+Lemma type_vec_inv :
+  ∀ Γ A n C,
+    Γ ⊢ tvec A n : C →
+    ∃ i,
+      cscoping Γ A mKind ∧
+      cscoping Γ n mGhost ∧
+      Γ ⊢ A : Sort mType i ∧
+      Γ ⊢ n : Erased tnat ∧
+      Γ ⊢ Sort mType i ε≡ C.
+Proof.
+  intros Γ A n C h.
+  dependent induction h.
+  - eexists. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists.
+    intuition eauto. eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_vnil_inv :
+  ∀ Γ A C,
+    Γ ⊢ tvnil A : C →
+    ∃ i,
+      cscoping Γ A mKind ∧
+      Γ ⊢ A : Sort mType i ∧
+      Γ ⊢ tvec A (hide tzero) ε≡ C.
+Proof.
+  intros Γ A C h.
+  dependent induction h.
+  - eexists. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists.
+    intuition eauto. eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_vcons_inv :
+  ∀ Γ a n v C,
+    Γ ⊢ tvcons a n v : C →
+    ∃ i A,
+      cscoping Γ a mType ∧
+      cscoping Γ n mGhost ∧
+      cscoping Γ v mType ∧
+      Γ ⊢ a : A ∧
+      Γ ⊢ n : Erased tnat ∧
+      Γ ⊢ v : tvec A n ∧
+      Γ ⊢ A : Sort mType i ∧
+      cscoping Γ A mKind ∧
+      Γ ⊢ tvec A (gS n) ε≡ C.
+Proof.
+  intros Γ a n v C h.
+  dependent induction h.
+  - eexists _,_. intuition eauto. apply conv_refl.
+  - destruct_exists IHh1. eexists _,_.
+    intuition eauto. eapply conv_trans. all: eauto.
+Qed.
+
+Lemma type_vec_elim_inv :
+  ∀ Γ m v P z s C,
+    Γ ⊢ tvec_elim m v P z s : C →
+    ∃ i j A n,
+      m ≠ mKind ∧
+      cscoping Γ v mType ∧
+      cscoping Γ P mKind ∧
+      cscoping Γ z m ∧
+      cscoping Γ s m ∧
+      Γ ⊢ v : tvec A n ∧
+      Γ ⊢ P : Pi 0 (umax mType mKind i (usup m j)) mKind mGhost (Erased tnat) (
+        tvec (S ⋅ A) (var 0) ⇒[ i | usup m j / mType | mKind ] Sort m j
+      ) ∧
+      Γ ⊢ z : app (app P (hide tzero)) (tvnil A) ∧
+      Γ ⊢ s : Pi i (umax mGhost m 0 (umax mType m i (umax m m j j))) m mType A (
+        Pi 0 (umax mType m i (umax m m j j)) m mGhost (Erased tnat) (
+          Pi i (umax m m j j) m mType (tvec (S ⋅ S ⋅ A) (var 0)) (
+            app (app (S ⋅ S ⋅ S ⋅ P) (var 1)) (var 0) ⇒[ j | j / m | m ]
+            app (app (S ⋅ S ⋅ S ⋅ P) (gS (var 1))) (tvcons (var 2) (var 1) (var 0))
+          )
+        )
+      ) ∧
+      cscoping Γ n mGhost ∧
+      cscoping Γ A mKind ∧
+      Γ ⊢ A : Sort mType i ∧
+      Γ ⊢ n : Erased tnat ∧
+      Γ ⊢ app (app P n) v ε≡ C.
+Proof.
+  intros Γ m v P z s C h.
+  dependent induction h.
+  - eexists _,_,_,_. intuition eauto.
+    apply conv_refl.
+  - destruct_exists IHh1. eexists _,_,_,_.
+    intuition eauto.
+    eapply conv_trans. all: eauto.
+Qed.
+
 Lemma type_bot_inv :
   ∀ Γ C,
     Γ ⊢ bot : C →
@@ -1348,6 +1456,10 @@ Ltac ttinv h h' :=
     | tzero => eapply type_zero_inv in h as h'
     | tsucc _ => eapply type_succ_inv in h as h'
     | tnat_elim _ _ _ _ _ => eapply type_nat_elim_inv in h as h'
+    | tvec _ _ => eapply type_vec_inv in h as h'
+    | tvnil _ => eapply type_vnil_inv in h as h'
+    | tvcons _ _ _ => eapply type_vcons_inv in h as h'
+    | tvec_elim _ _ _ _ _ => eapply type_vec_elim_inv in h as h'
     | bot => eapply type_bot_inv in h as h'
     | bot_elim _ _ _ => eapply type_bot_elim_inv in h as h'
     end
@@ -1462,6 +1574,69 @@ Proof.
     + eexists. cbn. eapply meta_conv.
       * econstructor. 5: eassumption. all: try eassumption.
         all: cbn. all: constructor.
+      * reflexivity.
+  - split.
+    + cbn. constructor. auto.
+    + cbn. eexists. econstructor. all: gtype.
+  - split.
+    + cbn. gscope.
+    + cbn. eexists. gtype.
+      1:{ cbn. auto. }
+      1: reflexivity.
+      unfold gS. eapply type_conv.
+      4:{
+        econstructor. 6: eauto. all: gtype.
+        1: reflexivity.
+        1: cbn ; auto.
+        cbn. eapply type_conv.
+        4:{
+          gtype. all: try reflexivity.
+          eapply meta_conv.
+          - gtype. reflexivity.
+          - reflexivity.
+        }
+        4:{
+          gconv. 2,3: compute ; auto.
+          apply conv_sym. gconv. reflexivity.
+        }
+        1-3: gscope. 1,2: reflexivity.
+        gtype. 1: reflexivity.
+        eapply meta_conv.
+        - econstructor.
+          6:{
+            econstructor.
+            4:{ gtype. reflexivity. }
+            all: cbn. all: gtype.
+            reflexivity.
+          }
+          all: cbn.
+          3:{ econstructor. gscope. reflexivity. }
+          4: gtype.
+          all: gtype.
+        - reflexivity.
+      }
+      4:{ cbn. gconv. eapply scoping_castrm. assumption. }
+      all: gtype.
+      * lazy. auto.
+      * reflexivity.
+  - split.
+    + cbn. gscope.
+    + eexists. eapply meta_conv.
+      * econstructor. 6: eauto.
+        5:{
+          eapply meta_conv.
+          - econstructor. 5: eauto. all: gtype. all: try reflexivity.
+            1-3: eapply scoping_ren ; cbn ; eauto using rscoping_S.
+            + eapply meta_conv.
+              * eapply typing_ren. 1: apply rtyping_S.
+                eauto.
+              * reflexivity.
+            + eapply meta_conv.
+              * gtype. reflexivity.
+              * reflexivity.
+          - cbn. f_equal. ssimpl. rewrite instId'_term. reflexivity.
+        }
+        all: gtype.
       * reflexivity.
   - split.
     + cbn. constructor. all: auto.
