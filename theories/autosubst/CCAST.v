@@ -51,7 +51,7 @@ Inductive cterm : Type :=
   | evec : cterm -> cterm
   | evnil : cterm -> cterm
   | evcons : cterm -> cterm -> cterm
-  | evec_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+  | evec_elim : cterm -> cterm -> cterm -> cterm -> cterm
   | pvec : cterm -> cterm -> cterm -> cterm -> cterm -> cterm
   | pvnil : cterm -> cterm
   | pvcons : cterm -> cterm -> cterm -> cterm
@@ -389,20 +389,17 @@ exact (eq_trans (eq_trans eq_refl (ap (fun x => evcons x s1) H0))
 Qed.
 
 Lemma congr_evec_elim {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
-  {s4 : cterm} {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm}
-  {t4 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3)
-  (H4 : s4 = t4) : evec_elim s0 s1 s2 s3 s4 = evec_elim t0 t1 t2 t3 t4.
+  {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
+  evec_elim s0 s1 s2 s3 = evec_elim t0 t1 t2 t3.
 Proof.
 exact (eq_trans
          (eq_trans
             (eq_trans
-               (eq_trans
-                  (eq_trans eq_refl
-                     (ap (fun x => evec_elim x s1 s2 s3 s4) H0))
-                  (ap (fun x => evec_elim t0 x s2 s3 s4) H1))
-               (ap (fun x => evec_elim t0 t1 x s3 s4) H2))
-            (ap (fun x => evec_elim t0 t1 t2 x s4) H3))
-         (ap (fun x => evec_elim t0 t1 t2 t3 x) H4)).
+               (eq_trans eq_refl (ap (fun x => evec_elim x s1 s2 s3) H0))
+               (ap (fun x => evec_elim t0 x s2 s3) H1))
+            (ap (fun x => evec_elim t0 t1 x s3) H2))
+         (ap (fun x => evec_elim t0 t1 t2 x) H3)).
 Qed.
 
 Lemma congr_pvec {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
@@ -611,10 +608,9 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
   | evec s0 => evec (ren_cterm xi_cterm s0)
   | evnil s0 => evnil (ren_cterm xi_cterm s0)
   | evcons s0 s1 => evcons (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       evec_elim (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
         (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
-        (ren_cterm xi_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       pvec (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
         (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
@@ -718,10 +714,9 @@ cterm :=
   | evnil s0 => evnil (subst_cterm sigma_cterm s0)
   | evcons s0 s1 =>
       evcons (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       evec_elim (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
         (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
-        (subst_cterm sigma_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       pvec (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
         (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
@@ -855,12 +850,11 @@ subst_cterm sigma_cterm s = s :=
   | evcons s0 s1 =>
       congr_evcons (idSubst_cterm sigma_cterm Eq_cterm s0)
         (idSubst_cterm sigma_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim (idSubst_cterm sigma_cterm Eq_cterm s0)
         (idSubst_cterm sigma_cterm Eq_cterm s1)
         (idSubst_cterm sigma_cterm Eq_cterm s2)
         (idSubst_cterm sigma_cterm Eq_cterm s3)
-        (idSubst_cterm sigma_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec (idSubst_cterm sigma_cterm Eq_cterm s0)
         (idSubst_cterm sigma_cterm Eq_cterm s1)
@@ -1010,12 +1004,11 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
   | evcons s0 s1 =>
       congr_evcons (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
-        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
@@ -1163,12 +1156,11 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
   | evcons s0 s1 =>
       congr_evcons (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
-        (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
@@ -1340,13 +1332,12 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
       congr_evcons
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
-        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
@@ -1535,13 +1526,12 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
       congr_evcons
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
-        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
@@ -1742,13 +1732,12 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
       congr_evcons
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
-        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
@@ -1951,13 +1940,12 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
       congr_evcons
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
-        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
@@ -2192,12 +2180,11 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
   | evcons s0 s1 =>
       congr_evcons (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       congr_evec_elim (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
-        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
   | pvec s0 s1 s2 s3 s4 =>
       congr_pvec (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
@@ -2522,12 +2509,10 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
   | evnil s0 => and (allfv_cterm p_cterm s0) True
   | evcons s0 s1 =>
       and (allfv_cterm p_cterm s0) (and (allfv_cterm p_cterm s1) True)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       and (allfv_cterm p_cterm s0)
         (and (allfv_cterm p_cterm s1)
-           (and (allfv_cterm p_cterm s2)
-              (and (allfv_cterm p_cterm s3)
-                 (and (allfv_cterm p_cterm s4) True))))
+           (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
   | pvec s0 s1 s2 s3 s4 =>
       and (allfv_cterm p_cterm s0)
         (and (allfv_cterm p_cterm s1)
@@ -2678,12 +2663,11 @@ allfv_cterm p_cterm s :=
   | evcons s0 s1 =>
       conj (allfvTriv_cterm p_cterm H_cterm s0)
         (conj (allfvTriv_cterm p_cterm H_cterm s1) I)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       conj (allfvTriv_cterm p_cterm H_cterm s0)
         (conj (allfvTriv_cterm p_cterm H_cterm s1)
            (conj (allfvTriv_cterm p_cterm H_cterm s2)
-              (conj (allfvTriv_cterm p_cterm H_cterm s3)
-                 (conj (allfvTriv_cterm p_cterm H_cterm s4) I))))
+              (conj (allfvTriv_cterm p_cterm H_cterm s3) I)))
   | pvec s0 s1 s2 s3 s4 =>
       conj (allfvTriv_cterm p_cterm H_cterm s0)
         (conj (allfvTriv_cterm p_cterm H_cterm s1)
@@ -3355,7 +3339,7 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
                              | conj HP _ => HP
                              end
               end) I)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       fun HP =>
       conj
         (allfvImpl_cterm p_cterm q_cterm H_cterm s0
@@ -3392,24 +3376,7 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
                                 end
                             end
                         end
-                    end)
-                 (conj
-                    (allfvImpl_cterm p_cterm q_cterm H_cterm s4
-                       match HP with
-                       | conj _ HP =>
-                           match HP with
-                           | conj _ HP =>
-                               match HP with
-                               | conj _ HP =>
-                                   match HP with
-                                   | conj _ HP =>
-                                       match HP with
-                                       | conj HP _ => HP
-                                       end
-                                   end
-                               end
-                           end
-                       end) I))))
+                    end) I)))
   | pvec s0 s1 s2 s3 s4 =>
       fun HP =>
       conj
@@ -4557,7 +4524,7 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
                             | conj H _ => H
                             end
               end) I)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       fun H =>
       conj
         (allfvRenL_cterm p_cterm xi_cterm s0 match H with
@@ -4592,24 +4559,7 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
                                           end
                             end
                         end
-                    end)
-                 (conj
-                    (allfvRenL_cterm p_cterm xi_cterm s4
-                       match H with
-                       | conj _ H =>
-                           match H with
-                           | conj _ H =>
-                               match H with
-                               | conj _ H =>
-                                   match H with
-                                   | conj _ H =>
-                                       match H with
-                                       | conj H _ => H
-                                       end
-                                   end
-                               end
-                           end
-                       end) I))))
+                    end) I)))
   | pvec s0 s1 s2 s3 s4 =>
       fun H =>
       conj
@@ -5744,7 +5694,7 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
                             | conj H _ => H
                             end
               end) I)
-  | evec_elim s0 s1 s2 s3 s4 =>
+  | evec_elim s0 s1 s2 s3 =>
       fun H =>
       conj
         (allfvRenR_cterm p_cterm xi_cterm s0 match H with
@@ -5779,24 +5729,7 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
                                           end
                             end
                         end
-                    end)
-                 (conj
-                    (allfvRenR_cterm p_cterm xi_cterm s4
-                       match H with
-                       | conj _ H =>
-                           match H with
-                           | conj _ H =>
-                               match H with
-                               | conj _ H =>
-                                   match H with
-                                   | conj _ H =>
-                                       match H with
-                                       | conj H _ => H
-                                       end
-                                   end
-                               end
-                           end
-                       end) I))))
+                    end) I)))
   | pvec s0 s1 s2 s3 s4 =>
       fun H =>
       conj

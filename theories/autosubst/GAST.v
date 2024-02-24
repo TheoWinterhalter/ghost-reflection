@@ -259,7 +259,8 @@ exact (eq_trans
          (eq_trans
             (eq_trans
                (eq_trans
-                  (eq_trans eq_refl (ap (fun x => tvec_elim x s1 s2 s3 s4) H0))
+                  (eq_trans eq_refl
+                     (ap (fun x => tvec_elim x s1 s2 s3 s4) H0))
                   (ap (fun x => tvec_elim t0 x s2 s3 s4) H1))
                (ap (fun x => tvec_elim t0 t1 x s3 s4) H2))
             (ap (fun x => tvec_elim t0 t1 t2 x s4) H3))
@@ -345,7 +346,7 @@ Proof.
 exact (scons (var var_zero) (funcomp (ren_term shift) sigma)).
 Defined.
 
-Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} :
+Fixpoint subst_term (sigma_term : nat -> term) (s : term) {struct s} : 
 term :=
   match s with
   | var s0 => sigma_term s0
@@ -1493,7 +1494,7 @@ Tactic Notation "auto_unfold" "in" "*" := repeat
                                            unfold VarInstance_term, Var, ids,
                                             Ren_term, Ren1, ren1,
                                             Up_term_term, Up_term, up_term,
-                                            Subst_term, Subst1, subst1
+                                            Subst_term, Subst1, subst1 
                                             in *.
 
 Ltac asimpl' := repeat (first

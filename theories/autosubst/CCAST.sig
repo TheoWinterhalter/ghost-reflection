@@ -63,7 +63,7 @@ pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
 evec : cterm -> cterm
 evnil : cterm -> cterm
 evcons : cterm -> cterm -> cterm
-evec_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+evec_elim : cterm -> cterm -> cterm -> cterm -> cterm
 
 pvec : cterm -> cterm -> cterm -> cterm -> cterm -> cterm
 pvnil : cterm -> cterm

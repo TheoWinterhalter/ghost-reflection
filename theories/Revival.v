@@ -624,25 +624,6 @@ Proof.
     + erewrite ih. 2: eauto. reflexivity.
 Qed.
 
-Ltac hide_rhs rhs :=
-  lazymatch goal with
-  | |- _ ⊢ᶜ _ ≡ ?t => set (rhs := t)
-  | |- _ = ?t => set (rhs := t)
-  end.
-
-Ltac lhs_ssimpl :=
-  let rhs := fresh "rhs" in
-  hide_rhs rhs ; ssimpl ; subst rhs.
-
-Ltac hide_ty na :=
-  lazymatch goal with
-  | |- _ ⊢ᶜ _ : ?t => set (na := t)
-  end.
-
-Ltac tm_ssimpl :=
-  let na := fresh "na" in
-  hide_ty na ; ssimpl ; subst na.
-
 Theorem revive_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
