@@ -14,20 +14,14 @@
 
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
-From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
-  Scoping TermMode CastRemoval Typing BasicMetaTheory CScoping CTyping
-  CCMetaTheory Admissible Erasure Revival Param Model TransNat.
-From Coq Require Import Setoid Morphisms Relation_Definitions.
+From GhostTT Require Import Util BasicAST.
+From GhostTT Require Import TransNat.
 
 Import ListNotations.
-Import CombineNotations.
 
 Set Default Goal Selector "!".
 Set Equations Transparent.
 Set Universe Polymorphism.
-
-Transparent close ignore epm_lift rpm_lift.
 
 (** Erasure **)
 
@@ -53,6 +47,24 @@ Proof.
   - apply Err.
 Defined.
 
+Lemma err_vec_elimG :
+  ∀ (A : ty) (P : err_vec A → ty)
+    (z : El (P err_vnil))
+    (s : ∀ (a : El A) (n : El erase_nat) (v : err_vec A),
+      El (P v) →
+      El (P (err_vcons a v))
+    )
+    (n : El erase_nat)
+    (v : err_vec A),
+    El (P v).
+Proof.
+  intros A P z s n v.
+  induction v.
+  - assumption.
+  - apply s. all: assumption.
+  - apply Err.
+Defined.
+
 (** Computation rules **)
 
 Lemma err_vec_elim_vnil :
@@ -65,6 +77,20 @@ Qed.
 Lemma err_vec_elim_vcons :
   ∀ A P z s a v,
     err_vec_elim A P z s (err_vcons a v) = s a v (err_vec_elim A P z s v).
+Proof.
+  reflexivity.
+Qed.
+
+Lemma err_vec_elimG_vnil :
+  ∀ A P z s n,
+    err_vec_elimG A P z s n err_vnil = z.
+Proof.
+  reflexivity.
+Qed.
+
+Lemma err_vec_elimG_vcons :
+  ∀ A P z s a n v,
+    err_vec_elimG A P z s n (err_vcons a v) = s a n v (err_vec_elimG A P z s n v).
 Proof.
   reflexivity.
 Qed.

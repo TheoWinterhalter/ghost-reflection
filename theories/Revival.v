@@ -1268,6 +1268,7 @@ Proof.
           }
         + reflexivity.
     }
+    cbn in IHh5. remd in IHh5. forward IHh5 by reflexivity.
     fail.
     etype. 1: reflexivity.
     revert IHh4. ssimpl. rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.

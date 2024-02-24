@@ -4,27 +4,18 @@
   time consuming so instead we opt for a more synthetic approach where we build
   those terms in Coq in order to justify that we could have built them by hand.
 
-  TODO: Should we keep all the El stuff, not sure what's the best strategy
-  here.
-
 ***)
 
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
-From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
-  Scoping TermMode CastRemoval Typing BasicMetaTheory CScoping CTyping
-  CCMetaTheory Admissible Erasure Revival Param Model.
+From GhostTT Require Import Util BasicAST.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
-Import CombineNotations.
 
 Set Default Goal Selector "!".
 Set Equations Transparent.
 Set Universe Polymorphism.
-
-Transparent close ignore epm_lift rpm_lift.
 
 (** We first define ty **)
 
