@@ -554,7 +554,8 @@ Proof.
       constructor.
   - cbn. remd. cbn. destruct_if eg. 2: constructor.
     mode_eqs. cbn. eapply cconv_trans. 1: constructor.
-    econv.
+    apply ccmeta_refl. f_equal.
+    admit.
   - cbn.
     cbn in IHh2, IHh3.
     eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
@@ -585,6 +586,8 @@ Proof.
     eapply conv_to_rev. eapply erase_conv. assumption.
   - cbn. destruct_if eg. 2: constructor.
     econv. all: eapply conv_to_rev. all: eapply erase_conv ; eauto.
+  - cbn. destruct_if e. 2: constructor.
+    econv. all: apply conv_to_rev. all: eapply erase_conv ; eauto.
   - cbn.
     destruct_ifs. 2: constructor.
     constructor. eapply conv_to_rev. eapply erase_conv. assumption.
@@ -592,7 +595,8 @@ Proof.
   - eapply cconv_trans. all: eauto.
   - rewrite 2!revive_ng. 1: constructor.
     all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
-Qed.
+(* Qed. *)
+Admitted.
 
 (** Revival ignores casts **)
 
@@ -611,6 +615,7 @@ Proof.
   - cbn. erewrite !erase_castrm. reflexivity.
   - cbn. erewrite IHt1, IHt3.
     rewrite <- !md_castrm. reflexivity.
+  - cbn. erewrite IHt3, IHt4. erewrite !erase_castrm. reflexivity.
   - cbn. erewrite IHt3, IHt4. erewrite !erase_castrm. reflexivity.
   - cbn. erewrite IHt3, IHt4. erewrite !erase_castrm. reflexivity.
   - cbn. erewrite !erase_castrm. reflexivity.
@@ -1179,6 +1184,91 @@ Proof.
           }
         + reflexivity.
     }
+    etype. 1: reflexivity.
+    revert IHh4. ssimpl. rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+    auto.
+  - cbn in hm. subst.
+    cbn. remd. cbn.
+    eapply erase_typing in h1 as hve. 2:{ remd. reflexivity. }
+    cbn in hve. eapply type_to_rev in hve.
+    eapply erase_typing in h6 as hAe. 2:{ remd. reflexivity. }
+    cbn in hAe. eapply type_to_rev in hAe.
+    eapply ctype_conv in hAe. 2: constructor. 2: ertype.
+    eapply erase_typing in h2 as hPe. 2:{ remd. reflexivity. }
+    cbn in hPe. eapply type_to_rev in hPe.
+    eapply ctype_conv in hPe.
+    2:{
+      eapply cconv_trans. 1: constructor.
+      eapply cconv_trans. 1: constructor.
+      constructor.
+      - erewrite erase_ren. 2,3: eauto using rscoping_S, rscoping_comp_S.
+        lhs_ssimpl. econv.
+      - constructor.
+    }
+    2: etype.
+    cbn in IHh3. remd in IHh3. cbn in IHh3. forward IHh3 by reflexivity.
+    cbn in IHh4.
+    erewrite !md_ren in IHh4. 2-15: eauto using rscoping_S, rscoping_comp_S.
+    remd in IHh4. cbn in IHh4.
+    forward IHh4 by reflexivity.
+    eapply ctype_conv in IHh4.
+    2:{
+      clear.
+      eapply cconv_trans. 1: constructor.
+      constructor. 1: econv.
+      eapply cconv_trans. 1: constructor.
+      constructor. 1: econv.
+      eapply cconv_trans. 1: constructor.
+      erewrite !erase_ren. 2-19: eauto using rscoping_S, rscoping_comp_S.
+      constructor.
+      1:{
+        apply ccmeta_refl. lhs_ssimpl.
+        rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+        reflexivity.
+      }
+      eapply cconv_trans. 1: constructor.
+      constructor.
+      1:{
+        apply ccmeta_refl. lhs_ssimpl.
+        rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+        reflexivity.
+      }
+      apply ccmeta_refl. lhs_ssimpl. cbn. lhs_ssimpl.
+      unfold shift.
+      rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+      reflexivity.
+    }
+    2:{
+      clear IHh4.
+      ertype.
+      - eapply ccmeta_conv.
+        + ertype.
+        + reflexivity.
+      - eapply ccmeta_conv.
+        + ertype. 2: reflexivity.
+          eapply ccmeta_conv.
+          * ertype.
+          * cbn. f_equal. ssimpl. reflexivity.
+        + reflexivity.
+      - eapply ccmeta_conv.
+        + econstructor.
+          * eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          * {
+            ertype.
+            - eapply ccmeta_conv.
+              + ertype. reflexivity.
+              + cbn. reflexivity.
+            - eapply ccmeta_conv.
+              + ertype. reflexivity.
+              + cbn. f_equal. ssimpl. reflexivity.
+            - eapply ccmeta_conv.
+              + ertype.
+              + reflexivity.
+          }
+        + reflexivity.
+    }
+    fail.
     etype. 1: reflexivity.
     revert IHh4. ssimpl. rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
     auto.
