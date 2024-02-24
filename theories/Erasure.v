@@ -1275,19 +1275,24 @@ Proof.
           cbn. f_equal. f_equal. f_equal. ssimpl. reflexivity.
         + reflexivity.
       - eapply ccmeta_conv.
-        + ertype.
-          * {
-            eapply ccmeta_conv.
-            - ertype.
-            - (* cbn. f_equal. f_equal. f_equal. *)
-              (* I got a mismatch here! *)
-              fail.
+        + econstructor.
+          2:{
+            econstructor.
+            - eapply ccmeta_conv.
+              + ertype. reflexivity.
+              + cbn. reflexivity.
+            - eapply ccmeta_conv.
+              + ertype. reflexivity.
+              + cbn. ssimpl. reflexivity.
+            - eapply ccmeta_conv.
+              + ertype.
+              + reflexivity.
           }
-          *
-          *
-        +
+          eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+        + reflexivity.
     }
-    etype. all: reflexivity.
+    ertype.
   - cbn. econstructor.
     + eauto with cc_type.
     + apply cconv_sym. constructor.
