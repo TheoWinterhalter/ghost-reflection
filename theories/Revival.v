@@ -643,6 +643,19 @@ Proof.
       to conceed it. Still less ad-hoc than length.
 
       If we do that, maybe we should have one evec_elimG and pmG too.
+
+      Another thinng to consider (and mention in the paper maybe) is that there
+      is no reason for the argument to vec_elim to be exactly (convertible to)
+      gS n, as it could be merely equal to it since casts are removed for
+      conversion. So no forced argument as usual here. But if we keep it
+      abstract in the rule then we can no longer use it to compute can we?
+      Computing the length from v might actually be general in the end.
+      But then should we use length in the continuation too? That sounds odd.
+      Morally this computation rule should not inspect the nat argument to vcons
+      anyway so maybe I have some freedom here?
+
+      Wait, does the length actually make sense? It's also a recursive call to
+      the eliminator in a way. Maybe that's fine though?
     *)
   - cbn.
     cbn in IHh2, IHh3.
