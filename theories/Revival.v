@@ -627,7 +627,23 @@ Proof.
     constructor. 1-3: econv.
     constructor. 1: econv.
     constructor. 1: econv.
-    (* What's going on? *)
+    (* Ah now I see, of course, I include the n in the branch function
+      so it stays constant, but it shouldn't essentially.
+      Do I need to change the dynamics of vec_elim?
+      I could for instance chain length v instead of n in the continuation.
+      In GRTT it wouldn't matter, and at extraction it's no problem either.
+      But to write term it's inconvenient because you can't just write the
+      deep identity easily this way.
+
+      Probably the right solution, and less ad-hoc actually, is to thread the
+      natural number argument, like by induction on v, we prove ∀ n, P n v
+      and then in the successor case, we get some n and we pass pred n to s.
+      In a way we are matching on n and destructing it as we go.
+      This is only possible because gS is somehow invertible so we would have
+      to conceed it. Still less ad-hoc than length.
+
+      If we do that, maybe we should have one evec_elimG and pmG too.
+    *)
   - cbn.
     cbn in IHh2, IHh3.
     eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
