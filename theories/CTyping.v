@@ -612,14 +612,14 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
 
 | ctype_pvcons :
     ∀ i A AP a aP n nP v vP,
-      Γ ⊢ᶜ a : cEl A →
-      Γ ⊢ᶜ aP : capp AP a →
-      Γ ⊢ᶜ n : cEl enat →
-      Γ ⊢ᶜ nP : capp pnat n →
-      Γ ⊢ᶜ v : cEl (evec A) →
-      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
-      Γ ⊢ᶜ A : cty i →
-      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+    Γ ⊢ᶜ aP : capp AP a →
+    Γ ⊢ᶜ a : cEl A →
+    Γ ⊢ᶜ nP : capp pnat n →
+    Γ ⊢ᶜ n : cEl enat →
+    Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+    Γ ⊢ᶜ v : cEl (evec A) →
+    Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+    Γ ⊢ᶜ A : cty i →
       Γ ⊢ᶜ pvcons aP nP vP : capp (pvec A AP (esucc n) (psucc nP)) (evcons a v)
 
 | ctype_conv :

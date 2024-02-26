@@ -6277,7 +6277,39 @@ Proof.
     eapply param_erase_typing in h3 as hve. 2: ertype.
     cbn in hve. change (epm_lift ?t) with (vreg ⋅ t) in hve. cbn in hve.
     change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε) in hve.
-    ertype.
+    econstructor.
+    + ertype. all: assumption.
+    + econv. all: apply cconv_sym. 1: econv.
+      unfold plam. eapply cconv_trans.
+      1:{ constructor. 2: econv. constructor. }
+      cbn. econv.
+    + eapply ccmeta_conv.
+      * {
+        ertype. 1,4: assumption.
+        - eapply ccmeta_conv.
+          + ertype. eapply ccmeta_conv. 1: ertype.
+            reflexivity.
+          + reflexivity.
+        - econstructor.
+          + ertype. eapply ccmeta_conv.
+            * {
+              ertype. eapply ccmeta_conv.
+              - ertype. eapply ccmeta_conv. 1: ertype.
+                reflexivity.
+              - reflexivity.
+            }
+            * cbn. reflexivity.
+          + cbn. ssimpl. apply cconv_sym. econv.
+          + eapply ccmeta_conv.
+            * {
+              ertype. eapply ccmeta_conv.
+              - ertype. eapply ccmeta_conv. 1: ertype.
+                reflexivity.
+              - reflexivity.
+            }
+            * reflexivity.
+      }
+      * reflexivity.
   - todo.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
