@@ -368,17 +368,6 @@ Qed.
 
 (** ⟦ Γ ⟧ε is a sub-context of ⟦ Γ ⟧p **)
 
-Lemma crscoping_comp :
-  ∀ Γ Δ Ξ ρ δ,
-    crscoping Γ ρ Δ →
-    crscoping Δ δ Ξ →
-    crscoping Γ (δ >> ρ) Ξ.
-Proof.
-  intros Γ Δ Ξ ρ δ hρ hδ.
-  intros x m e.
-  unfold_funcomp. eapply hρ. eapply hδ. assumption.
-Qed.
-
 Lemma scoping_er_sub_param :
   ∀ Γ,
     crscoping (param_sc Γ) vreg (erase_sc Γ).
@@ -506,8 +495,6 @@ Qed.
 Hint Resolve erase_scoping_eq : cc_scope.
 Hint Resolve revive_scoping_eq : cc_scope.
 Hint Resolve revive_scoping : cc_scope.
-Hint Resolve cscoping_ren : cc_scope.
-Hint Resolve crscoping_S : cc_scope.
 Hint Resolve crscoping_plus : cc_scope.
 
 Lemma pPi_scoping :

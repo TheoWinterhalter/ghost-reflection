@@ -32,6 +32,13 @@ Definition elength A v :=
       )
     )).
 
+(** n-ary application **)
+Fixpoint capps t us :=
+  match us with
+  | u :: us => capps (capp t u) us
+  | [] => t
+  end.
+
 (** Revival translation **)
 
 Reserved Notation "⟦ G | u '⟧v'" (at level 9, G, u at next level).
@@ -75,7 +82,13 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
       (** We need to pass a nat argument to s, we use elength **)
       let s' :=
         clam cType ⟦ Γ | A ⟧τ (
-          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ (elength ⟦ Γ | A ⟧ε ⟦ Γ | v ⟧ε))
+          clam cType (cEl (evec (S ⋅ ⟦ Γ | A ⟧ε))) (
+            capps ((S >> S) ⋅ ⟦ Γ | s ⟧v) [
+              cvar 1 ;
+              elength ((S >> S) ⋅ ⟦ Γ | A ⟧ε) (cvar 0) ;
+              cvar 0
+            ]
+          )
         )
       in
       evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧v s'
@@ -217,6 +230,20 @@ Qed.
 
 (** Revival preserves scoping **)
 
+Lemma crscoping_comp :
+  ∀ Γ Δ Ξ ρ δ,
+    crscoping Γ ρ Δ →
+    crscoping Δ δ Ξ →
+    crscoping Γ (δ >> ρ) Ξ.
+Proof.
+  intros Γ Δ Ξ ρ δ hρ hδ.
+  intros x m e.
+  unfold_funcomp. eapply hρ. eapply hδ. assumption.
+Qed.
+
+Hint Resolve cscoping_ren : cc_scope.
+Hint Resolve crscoping_S : cc_scope.
+
 Lemma revive_scoping :
   ∀ Γ t,
     ccscoping (revive_sc Γ) ⟦ Γ | t ⟧v cType.
@@ -250,8 +277,7 @@ Proof.
   - cbn. destruct_if e. 2: constructor.
     escope.
     + apply scoping_to_rev. apply erase_scoping.
-    + eapply cscoping_ren. 1: apply crscoping_S.
-      apply scoping_to_rev. apply erase_scoping.
+    + apply scoping_to_rev. apply erase_scoping.
     + reflexivity.
     + apply scoping_to_rev. apply erase_scoping.
   - cbn. destruct_if e. 2: constructor.
@@ -260,8 +286,7 @@ Proof.
     + apply scoping_to_rev. apply erase_scoping.
   - cbn. destruct_if e. 2: constructor.
     escope. all: try reflexivity.
-    all: try repeat eapply cscoping_ren ; eauto using crscoping_S.
-    7:{ eapply crscoping_shift. apply crscoping_S. }
+    all: try eapply crscoping_comp ; etype.
     all: apply scoping_to_rev. all: apply erase_scoping.
   - cbn.
     destruct_if e. 2: constructor.
@@ -324,7 +349,7 @@ Proof.
   - cbn. destruct_ifs. 2: eauto.
     cbn. erewrite IHt5, IHt6. 2-5: eassumption.
     erewrite !erase_ren. 2-7: eassumption.
-    f_equal. f_equal. ssimpl. reflexivity.
+    unfold elength. ssimpl. reflexivity.
   - cbn.
     destruct_ifs. 2: eauto.
     erewrite erase_ren. 2,3: eassumption.
@@ -463,7 +488,7 @@ Proof.
     erewrite !erase_subst. 2-7: eassumption.
     rewrite !erase_rev_subst.
     destruct_if eg. 2: reflexivity.
-    cbn. f_equal. f_equal. ssimpl. reflexivity.
+    cbn. unfold elength. ssimpl. reflexivity.
   - cbn.
     destruct_ifs. 2: reflexivity.
     erewrite erase_subst. 2,3: eassumption.
@@ -578,49 +603,35 @@ Proof.
     mode_eqs. cbn. eapply cconv_trans. 1: econstructor.
     eapply cconv_trans.
     1:{
-      constructor.
-      - constructor. 2: econv.
-        eapply cconv_trans. 1: constructor.
-        cbn. lhs_ssimpl.
-        constructor. 1: econv.
-        eapply cconv_trans. 1: constructor.
-        constructor. 2: econv.
-        eapply cconv_trans.
-        1:{
-          constructor. 2: econv.
-          eapply cconv_trans. 1: constructor.
-          cbn. lhs_ssimpl. econv.
-        }
-        eapply cconv_trans. 1: constructor.
-        lhs_ssimpl. econv.
-      - constructor. 1-3: econv.
-        constructor. 1: econv.
-        constructor. 1: econv.
-        eapply cconv_trans. 1: constructor.
-        eapply cconv_trans.
-        1:{
-          constructor. 2: econv.
-          constructor. 2: econv.
-          constructor.
-        }
-        cbn. eapply cconv_trans.
-        1:{
-          constructor. 2: econv.
-          constructor.
-        }
-        cbn. eapply cconv_trans. 1: constructor.
-        cbn. econv.
+      constructor. 2: econv.
+      constructor. 2: econv.
+      eapply cconv_trans. 1: constructor.
+      cbn. lhs_ssimpl. econv.
     }
     eapply cconv_trans.
     1:{
       constructor. 2: econv.
-      constructor. 2: econv.
-      constructor. 1: econv.
-      constructor.
+      eapply cconv_trans. 1: constructor.
+      cbn. lhs_ssimpl. econv.
     }
-    cbn.
     erewrite !erase_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
-    ssimpl. econv.
+    econv.
+    + ssimpl. econv.
+    + ssimpl. rewrite <- rinstInst'_cterm. econv.
+    + apply cconv_sym. eapply cconv_trans.
+      1:{
+        constructor. 2: econv.
+        constructor. 2: econv.
+        constructor.
+      }
+      cbn. eapply cconv_trans.
+      1:{
+        constructor. 2: econv.
+        constructor.
+      }
+      cbn. eapply cconv_trans. 1: constructor.
+      cbn. constructor. 1: econv.
+      constructor.
   - cbn.
     cbn in IHh2.
     eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
@@ -653,6 +664,7 @@ Proof.
     econv. all: eapply conv_to_rev. all: eapply erase_conv ; eauto.
   - cbn. destruct_if e. 2: constructor.
     econv.
+    all: try repeat eapply cconv_ren ; etype.
     all: apply conv_to_rev. all: eapply erase_conv ; eauto.
   - cbn.
     destruct_ifs. 2: constructor.
@@ -661,8 +673,7 @@ Proof.
   - eapply cconv_trans. all: eauto.
   - rewrite 2!revive_ng. 1: constructor.
     all: erewrite scoping_md ; [| eassumption ]. all: reflexivity.
-(* Qed. *)
-Admitted.
+Qed.
 
 (** Revival ignores casts **)
 
