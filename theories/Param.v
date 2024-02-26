@@ -2478,6 +2478,12 @@ Proof.
     + econv.
     + econv.
     + econv.
+  - cbn. rewrite !erase_castrm, !revive_castrm.
+    destruct m.
+    + contradiction.
+    + econv.
+    + econv.
+    + econv.
 Qed.
 
 Lemma param_castrm_conv :
@@ -6205,6 +6211,10 @@ Proof.
           + reflexivity.
       }
       ertype.
+  -
+  -
+  -
+  -
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.
