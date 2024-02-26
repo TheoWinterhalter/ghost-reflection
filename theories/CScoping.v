@@ -235,6 +235,56 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ z cType →
       ccscoping Γ s cType →
       ccscoping Γ (evec_elim v P z s) cType
+
+| cscope_pvec :
+    ∀ A AP n nP,
+      ccscoping Γ A cType →
+      ccscoping Γ AP cType →
+      ccscoping Γ n cType →
+      ccscoping Γ nP cProp →
+      ccscoping Γ (pvec A AP n nP) cType
+
+| cscope_pvnil :
+    ∀ AP,
+      ccscoping Γ AP cType →
+      ccscoping Γ (pvnil AP) cProp
+
+| cscope_pvcons :
+    ∀ aP nP vP,
+      ccscoping Γ aP cProp →
+      ccscoping Γ nP cProp →
+      ccscoping Γ vP cProp →
+      ccscoping Γ (pvcons aP nP vP) cProp
+
+| cscope_pvec_elim :
+    ∀ A AP n nP v vP P PP z zP s sP,
+      ccscoping Γ A cType →
+      ccscoping Γ AP cType →
+      ccscoping Γ n cType →
+      ccscoping Γ nP cProp →
+      ccscoping Γ v cType →
+      ccscoping Γ vP cProp →
+      ccscoping Γ P cType →
+      ccscoping Γ PP cType →
+      ccscoping Γ z cType →
+      ccscoping Γ zP cProp →
+      ccscoping Γ s cType →
+      ccscoping Γ sP cProp →
+      ccscoping Γ (pvec_elim A AP n nP v vP P PP z zP s sP) cProp
+
+| cscope_pvec_elimP :
+    ∀ A AP n nP v vP P PP z s,
+      ccscoping Γ A cType →
+      ccscoping Γ AP cType →
+      ccscoping Γ n cType →
+      ccscoping Γ nP cProp →
+      ccscoping Γ v cType →
+      ccscoping Γ vP cProp →
+      ccscoping Γ P cType →
+      ccscoping Γ PP cType →
+      ccscoping Γ z cProp →
+      ccscoping Γ s cProp →
+      ccscoping Γ (pvec_elimP A AP n nP v vP P PP z s) cProp
 .
 
 Notation ccxscoping Γ := (ccscoping (csc Γ)).

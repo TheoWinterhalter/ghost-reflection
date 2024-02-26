@@ -256,6 +256,30 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     | mGhost => pnat_elim ne nP Pe PP zv zP sv sP
     | mProp => pnat_elimP ne nP Pe PP zP sP
     end ;
+  ⟦ Γ | tvec A n ⟧p := pvec ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ Γ | n ⟧pε ⟦ Γ | n ⟧p ;
+  ⟦ Γ | tvnil A ⟧p := pvnil ⟦ Γ | A ⟧p ;
+  ⟦ Γ | tvcons a n v ⟧p := pvcons ⟦ Γ | a ⟧p  ⟦ Γ | n ⟧p ⟦ Γ | v ⟧p ;
+  ⟦ Γ | tvec_elim m A n v P z s ⟧p :=
+    let Ae := ⟦ Γ | A ⟧pε in
+    let AP := ⟦ Γ | A ⟧p in
+    let nv := ⟦ Γ | n ⟧pv in
+    let nP := ⟦ Γ | n ⟧p in
+    let ve := ⟦ Γ | v ⟧pε in
+    let vP := ⟦ Γ | v ⟧p in
+    let Pe := ⟦ Γ | P ⟧pε in
+    let PP := ⟦ Γ | P ⟧p in
+    let ze := ⟦ Γ | z ⟧pε in
+    let zv := ⟦ Γ | z ⟧pv in
+    let zP := ⟦ Γ | z ⟧p in
+    let se := ⟦ Γ | s ⟧pε in
+    let sv := ⟦ Γ | s ⟧pv in
+    let sP := ⟦ Γ | s ⟧p in
+    match m with
+    | mKind => cDummy
+    | mType =>  pvec_elim Ae AP nv nP ve vP Pe PP ze zP se sP
+    | mGhost => pvec_elim Ae AP nv nP ve vP Pe PP zv zP sv sP
+    | mProp => pvec_elimP Ae AP nv nP ve vP Pe PP zP sP
+    end ;
   ⟦ Γ | bot ⟧p := cbot ;
   ⟦ Γ | bot_elim m A p ⟧p :=
     if isProp m then cbot_elim cProp ⟦ Γ | A ⟧p ⟦ Γ | p ⟧p
@@ -654,6 +678,12 @@ Proof.
     + cbn in *. escope. all: reflexivity.
     + cbn in *. escope. all: reflexivity.
     + cbn in *. escope.
+  - cbn in *.
+    destruct m.
+    + contradiction.
+    + cbn in *. escope. all: reflexivity.
+    + cbn in *. escope. all: reflexivity.
+    + cbn in *. escope. all: reflexivity.
   - cbn in *.
     destruct m.
     + contradiction.
@@ -1084,6 +1114,20 @@ Proof.
   - cbn.
     erewrite IHt1, IHt2, IHt3, IHt4. 2-9: eassumption.
     erewrite ?erase_ren, ?revive_ren. 2-13: eassumption.
+    rewrite <- !pren_epm_lift.
+    change (epm_lift ⟦ ?G | ?t ⟧v) with (⟦ G | t⟧pv).
+    destruct m. all: reflexivity.
+  - cbn. erewrite IHt1, IHt2. 2-5: eassumption.
+    erewrite ?erase_ren. 2-5: eassumption.
+    rewrite <- !pren_epm_lift.
+    reflexivity.
+  - cbn. erewrite IHt. 2-3: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt1, IHt2, IHt3. 2-7: eassumption.
+    reflexivity.
+  - cbn.
+    erewrite IHt1, IHt2, IHt3, IHt4, IHt5, IHt6. 2-13: eassumption.
+    erewrite ?erase_ren, ?revive_ren. 2-17: eassumption.
     rewrite <- !pren_epm_lift.
     change (epm_lift ⟦ ?G | ?t ⟧v) with (⟦ G | t⟧pv).
     destruct m. all: reflexivity.
@@ -1608,6 +1652,21 @@ Proof.
     erewrite <- !psubst_rpm_lift. 2-3: eapply revive_scoping.
     erewrite <- !psubst_epm_lift. 2-5: eapply erase_scoping.
     destruct m. all: reflexivity.
+  - cbn. erewrite IHt1, IHt2. 2-5: eassumption.
+    erewrite !erase_subst. 2-5: eassumption.
+    erewrite <- !psubst_epm_lift. 2-3: eapply erase_scoping.
+    reflexivity.
+  - cbn. erewrite IHt. 2-3: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt1, IHt2, IHt3. 2-7: eassumption.
+    reflexivity.
+  - cbn.
+    erewrite IHt1, IHt2, IHt3, IHt4, IHt5, IHt6. 2-13: eassumption.
+    erewrite !erase_subst. 2-11: eassumption.
+    erewrite !revive_subst. 2-7: eassumption.
+    erewrite <- !psubst_rpm_lift. 2-4: eapply revive_scoping.
+    erewrite <- !psubst_epm_lift. 2-6: eapply erase_scoping.
+    destruct m. all: reflexivity.
   - cbn. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
@@ -1786,6 +1845,20 @@ Qed.
 
 Hint Opaque pmif : cc_conv.
 Hint Resolve ccong_pmif : cc_conv.
+
+Lemma pren_S :
+  ∀ n, pren S n = S (S n).
+Proof.
+  intro n.
+  change (pren S n) with (pren (id >> S) n).
+  rewrite pren_comp_S. rewrite pren_id. reflexivity.
+Qed.
+
+Lemma pren_S_pw :
+  pointwise_relation _ eq (pren S) (S >> S).
+Proof.
+  intro n. apply pren_S.
+Qed.
 
 Lemma param_conv :
   ∀ Γ u v,
@@ -2046,6 +2119,110 @@ Proof.
         eapply scoping_epm_lift. 1: escope. 1: reflexivity.
         apply csc_param_ctx.
       * escope. all: eauto using csc_param_ctx.
+  - cbn. eapply param_scoping in H0, H1, H2, H3.
+    rewrite <- csc_param_ctx in H0, H1, H2, H3.
+    destruct m.
+    + contradiction.
+    + cbn in *. eapply cconv_irr.
+      * {
+        escope. all: eauto using csc_param_ctx.
+        - change (rpm_lift ?t) with t. escope.
+        - change (epm_lift ?t) with (vreg ⋅ t). cbn.
+          change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+          escope. apply csc_param_ctx.
+      }
+      * auto.
+    + cbn in *. eapply cconv_irr.
+      * {
+        escope. all: eauto using csc_param_ctx.
+        - change (rpm_lift ?t) with t. escope.
+        - change (epm_lift ?t) with (vreg ⋅ t). cbn.
+          change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+          escope. apply csc_param_ctx.
+      }
+      * auto.
+    + cbn in *. eapply cconv_irr.
+      * {
+        escope. all: eauto using csc_param_ctx.
+        - change (rpm_lift ?t) with t. escope.
+        - change (epm_lift ?t) with (vreg ⋅ t). cbn.
+          change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+          escope. apply csc_param_ctx.
+      }
+      * auto.
+  - simpl. remd.
+    eapply param_scoping in H0, H1, H2, H3, H4, H5, H6, H7.
+    rewrite <- csc_param_ctx in H0, H1, H2, H3, H4, H5, H6, H7.
+    destruct m.
+    + contradiction.
+    + cbn in *. eapply cconv_irr.
+      * {
+        escope. all: eauto using csc_param_ctx.
+        change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        escope. all: apply csc_param_ctx.
+      }
+      * change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        change (rpm_lift ?t) with (vreg ⋅ t). cbn.
+        erewrite !erase_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+        erewrite !param_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+        change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        change (vreg ⋅ ⟦ ?G | ?t ⟧v) with (⟦ G | t ⟧pv).
+        ssimpl. rewrite pren_S_pw. ssimpl.
+        rewrite <- !rinstInst'_cterm.
+        change (S >> vreg) with (vreg >> S >> S).
+        rewrite <- !funcomp_assoc.
+        change (S >> vreg) with (vreg >> S >> S).
+        rewrite !funcomp_assoc.
+        rewrite <- !renRen_cterm.
+        change (ren_cterm vreg ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        escope. all: cbn. all: eauto using csc_param_ctx.
+    + cbn in *. eapply cconv_irr.
+      * {
+        escope. all: eauto using csc_param_ctx.
+        change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        escope. all: apply csc_param_ctx.
+      }
+      * change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        change (rpm_lift ?t) with (vreg ⋅ t). cbn.
+        erewrite !erase_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+        erewrite !param_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+        change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        change (vreg ⋅ ⟦ ?G | ?t ⟧v) with (⟦ G | t ⟧pv).
+        ssimpl. rewrite pren_S_pw. ssimpl.
+        rewrite <- !rinstInst'_cterm.
+        change (S >> vreg) with (vreg >> S >> S).
+        rewrite <- !funcomp_assoc.
+        change (S >> vreg) with (vreg >> S >> S).
+        rewrite !funcomp_assoc.
+        rewrite <- !renRen_cterm.
+        change (ren_cterm vreg ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        change (ren_cterm vreg ⟦ ?G | ?t ⟧v) with (⟦ G | t ⟧pv).
+        escope. all: cbn. all: eauto using csc_param_ctx.
+    + cbn in *. eapply cconv_irr.
+      * {
+        escope. all: eauto using csc_param_ctx.
+        change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        escope. all: apply csc_param_ctx.
+      }
+      * change (epm_lift ?t) with (vreg ⋅ t). cbn.
+        change (rpm_lift ?t) with (vreg ⋅ t). cbn.
+        erewrite !erase_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+        erewrite !param_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+        change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        change (vreg ⋅ ⟦ ?G | ?t ⟧v) with (⟦ G | t ⟧pv).
+        ssimpl. rewrite pren_S_pw. ssimpl.
+        rewrite <- !rinstInst'_cterm.
+        change (S >> vreg) with (vreg >> S >> S).
+        rewrite <- !funcomp_assoc.
+        change (S >> vreg) with (vreg >> S >> S).
+        rewrite !funcomp_assoc.
+        rewrite <- !renRen_cterm.
+        change (ren_cterm vreg ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+        change (ren_cterm vreg ⟦ ?G | ?t ⟧v) with (⟦ G | t ⟧pv).
+        escope. all: cbn. all: eauto using csc_param_ctx.
   - cbn. apply cconv_refl.
   - cbn.
     destruct m, mx. all: simpl.
@@ -2148,6 +2325,9 @@ Proof.
   - cbn. econv.
   - cbn. destruct m.
     all: econv. all: reflexivity.
+  - cbn. admit.
+  - cbn. admit.
+  - cbn. admit.
   - cbn.
     destruct_ifs. all: econv. all: reflexivity.
   - econv.
@@ -2492,20 +2672,6 @@ Lemma cstyping_shift_eq :
 Proof.
   intros Γ Γ' Δ mx A σ h ->.
   apply cstyping_shift. assumption.
-Qed.
-
-Lemma pren_S :
-  ∀ n, pren S n = S (S n).
-Proof.
-  intro n.
-  change (pren S n) with (pren (id >> S) n).
-  rewrite pren_comp_S. rewrite pren_id. reflexivity.
-Qed.
-
-Lemma pren_S_pw :
-  pointwise_relation _ eq (pren S) (S >> S).
-Proof.
-  intro n. apply pren_S.
 Qed.
 
 Hint Extern 11 (relm _ = _) =>
