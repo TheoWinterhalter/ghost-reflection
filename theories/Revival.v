@@ -1346,10 +1346,124 @@ Proof.
         + reflexivity.
     }
     cbn in IHh5. remd in IHh5. forward IHh5 by reflexivity.
-    fail.
-    etype. 1: reflexivity.
-    revert IHh4. ssimpl. rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
-    auto.
+    ertype.
+    1:{
+      eapply ccmeta_conv. 1: ertype.
+      reflexivity.
+    }
+    eapply ccmeta_conv.
+    + ertype. 2: reflexivity.
+      eapply ccmeta_conv.
+      * {
+        ertype.
+        - econstructor.
+          + ertype. 2: reflexivity.
+            eapply ccmeta_conv. 1: ertype.
+            cbn. reflexivity.
+          + cbn. econv. apply cconv_sym. econv.
+          + tm_ssimpl. ertype.
+            * {
+              eapply ccmeta_conv.
+              - ertype.
+                + eapply ccmeta_conv. 1: ertype.
+                  reflexivity.
+                + eapply ccmeta_conv.
+                  * ertype. reflexivity.
+                  * cbn. ssimpl. reflexivity.
+              - reflexivity.
+            }
+            * rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+              eapply ccmeta_conv. 1: ertype.
+              reflexivity.
+            * {
+              rewrite <- !funcomp_assoc. rewrite <- !rinstInst'_cterm.
+              eapply ccmeta_conv.
+              - ertype. 2: reflexivity.
+                eapply ccmeta_conv. 1: ertype.
+                cbn. f_equal. f_equal. f_equal. ssimpl. reflexivity.
+              - reflexivity.
+            }
+            * {
+              rewrite <- !funcomp_assoc. rewrite <- !rinstInst'_cterm.
+              eapply ccmeta_conv.
+              - econstructor.
+                + eapply ccmeta_conv. 1: ertype.
+                  cbn. reflexivity.
+                + ertype.
+                  * {
+                    eapply ccmeta_conv.
+                    - ertype. reflexivity.
+                    - reflexivity.
+                  }
+                  * {
+                    eapply ccmeta_conv.
+                    - ertype. reflexivity.
+                    - cbn. f_equal. f_equal. ssimpl. reflexivity.
+                  }
+                  * eapply ccmeta_conv. 1: ertype.
+                    reflexivity.
+              - reflexivity.
+            }
+        - eapply ccmeta_conv.
+          + ertype. reflexivity.
+          + cbn. f_equal. f_equal. ssimpl. reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+        - econstructor.
+          + ertype.
+          + apply cconv_sym. econv.
+          + ertype. eapply ccmeta_conv.
+            * {
+              ertype.
+              - eapply ccmeta_conv. 1: ertype.
+                reflexivity.
+              - eapply ccmeta_conv. 1: ertype.
+                reflexivity.
+            }
+            * reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+        - eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+        - econstructor.
+          + ertype. eapply ccmeta_conv.
+            * ertype. reflexivity.
+            * reflexivity.
+          + cbn. apply cconv_sym. econv.
+          + cbn. ertype.
+            * {
+              eapply ccmeta_conv.
+              - ertype.
+                + eapply ccmeta_conv. 1: ertype.
+                  reflexivity.
+                + eapply ccmeta_conv.
+                  * ertype. reflexivity.
+                  * cbn. f_equal. f_equal. ssimpl. reflexivity.
+              - reflexivity.
+            }
+            * {
+              eapply ccmeta_conv.
+              - ertype.
+                + eapply ccmeta_conv. 1: ertype.
+                  reflexivity.
+                + eapply ccmeta_conv.
+                  * ertype. reflexivity.
+                  * reflexivity.
+                + eapply ccmeta_conv.
+                  * ertype. reflexivity.
+                  * cbn. f_equal. f_equal. ssimpl. reflexivity.
+                + eapply ccmeta_conv. 1: ertype.
+                  reflexivity.
+              - reflexivity.
+            }
+        - eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+      }
+      * cbn. f_equal. ssimpl. rewrite <- !funcomp_assoc.
+        rewrite <- rinstInst'_cterm. reflexivity.
+    + cbn. f_equal. all: f_equal. all: f_equal.
+      * ssimpl. rewrite rinstInst'_cterm. reflexivity.
+      * ssimpl. rewrite rinstInst'_cterm. reflexivity.
   - cbn.
     cbn in hm. subst. cbn.
     eapply erase_typing in h1.
