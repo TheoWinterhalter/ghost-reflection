@@ -256,7 +256,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     | mGhost => pnat_elim ne nP Pe PP zv zP sv sP
     | mProp => pnat_elimP ne nP Pe PP zP sP
     end ;
-  ⟦ Γ | tvec A n ⟧p := pvec ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ Γ | n ⟧pε ⟦ Γ | n ⟧p ;
+  ⟦ Γ | tvec A n ⟧p := pvec ⟦ Γ | A ⟧pε ⟦ Γ | A ⟧p ⟦ Γ | n ⟧pv ⟦ Γ | n ⟧p ;
   ⟦ Γ | tvnil A ⟧p := pvnil ⟦ Γ | A ⟧p ;
   ⟦ Γ | tvcons a n v ⟧p := pvcons ⟦ Γ | a ⟧p  ⟦ Γ | n ⟧p ⟦ Γ | v ⟧p ;
   ⟦ Γ | tvec_elim m A n v P z s ⟧p :=
@@ -1118,7 +1118,7 @@ Proof.
     change (epm_lift ⟦ ?G | ?t ⟧v) with (⟦ G | t⟧pv).
     destruct m. all: reflexivity.
   - cbn. erewrite IHt1, IHt2. 2-5: eassumption.
-    erewrite ?erase_ren. 2-5: eassumption.
+    erewrite ?erase_ren, ?revive_ren. 2-5: eassumption.
     rewrite <- !pren_epm_lift.
     reflexivity.
   - cbn. erewrite IHt. 2-3: eassumption.
@@ -1653,8 +1653,10 @@ Proof.
     erewrite <- !psubst_epm_lift. 2-5: eapply erase_scoping.
     destruct m. all: reflexivity.
   - cbn. erewrite IHt1, IHt2. 2-5: eassumption.
-    erewrite !erase_subst. 2-5: eassumption.
-    erewrite <- !psubst_epm_lift. 2-3: eapply erase_scoping.
+    erewrite !erase_subst, !revive_subst. 2-5: eassumption.
+    erewrite <- !psubst_epm_lift, <- !psubst_rpm_lift.
+    2: eapply revive_scoping.
+    2: eapply erase_scoping.
     reflexivity.
   - cbn. erewrite IHt. 2-3: eassumption.
     reflexivity.
@@ -6208,9 +6210,74 @@ Proof.
           + reflexivity.
       }
       ertype.
-  - todo.
-  - todo.
-  - todo.
+  - unfold ptype. cbn.
+    change (epm_lift ?t) with (vreg ⋅ t). cbn.
+    change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+    unfold ptype in IHh1. remd in IHh1. cbn in IHh1.
+    eapply param_pType in IHh1. 2,3: assumption.
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
+    eapply param_erase_typing in h1 as hAe. 2: ertype.
+    cbn in hAe.
+    eapply ctype_conv in hAe.
+    2:{
+      rewrite epm_lift_eq. cbn. constructor.
+    }
+    2: ertype.
+    eapply param_revive_typing in h2 as hne. 2: ertype.
+    cbn in hne.
+    eapply ccmeta_conv in hne.
+    2:{
+      rewrite epm_lift_eq. cbn. reflexivity.
+    }
+    econstructor.
+    + ertype. assumption.
+    + apply cconv_sym. unfold pType. eapply cconv_trans. 1: constructor.
+      cbn. econv.
+    + eapply ccmeta_conv.
+      * ertype.
+      * reflexivity.
+  - unfold ptype. cbn. change (rpm_lift ?t) with t.
+    change (epm_lift ?t) with (vreg ⋅ t). cbn.
+    change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+    unfold ptype in IHh. remd in IHh. cbn in IHh.
+    eapply param_pType in IHh. 2,3: assumption.
+    eapply param_erase_typing in h as hAe. 2: ertype.
+    cbn in hAe.
+    eapply ctype_conv in hAe.
+    2:{
+      rewrite epm_lift_eq. cbn. constructor.
+    }
+    2: ertype.
+    ertype.
+    assumption.
+  - unfold ptype. cbn.
+    change (epm_lift ?t) with (vreg ⋅ t). cbn.
+    change (rpm_lift ?t) with (vreg ⋅ t). cbn.
+    change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε).
+    change (vreg ⋅ ⟦ ?G | ?t ⟧v) with (⟦ G | t ⟧pv).
+    unfold ptype in IHh1. remd in IHh1. cbn in IHh1.
+    unfold ptype in IHh2. remd in IHh2. cbn in IHh2.
+    unfold ptype in IHh3. remd in IHh3. cbn in IHh3.
+    unfold ptype in IHh4. remd in IHh4. cbn in IHh4.
+    eapply param_pType in IHh4. 2,3: assumption.
+    eapply param_erase_typing in h4 as hAe. 2: ertype.
+    cbn in hAe.
+    eapply ctype_conv in hAe.
+    2:{
+      rewrite epm_lift_eq. cbn. constructor.
+    }
+    2: ertype.
+    eapply param_erase_typing in h1 as hae. 2: ertype.
+    eapply param_revive_typing in h2 as hne. 2: ertype.
+    cbn in hne.
+    eapply ccmeta_conv in hne.
+    2:{
+      rewrite epm_lift_eq. cbn. reflexivity.
+    }
+    eapply param_erase_typing in h3 as hve. 2: ertype.
+    cbn in hve. change (epm_lift ?t) with (vreg ⋅ t) in hve. cbn in hve.
+    change (vreg ⋅ ⟦ ?G | ?t ⟧ε) with (⟦ G | t ⟧pε) in hve.
+    ertype.
   - todo.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.

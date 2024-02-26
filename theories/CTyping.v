@@ -596,6 +596,32 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ A : cty i →
       Γ ⊢ᶜ evec_elim v P z s : cEl (capp P v)
 
+| ctype_pvec :
+    ∀ i A AP n nP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ pvec A AP n nP : cEl (evec A) ⇒[ cType ] cSort cProp 0
+
+| ctype_pvnil :
+    ∀ i A AP,
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ pvnil AP : capp (pvec A AP ezero pzero) (evnil A)
+
+| ctype_pvcons :
+    ∀ i A AP a aP n nP v vP,
+      Γ ⊢ᶜ a : cEl A →
+      Γ ⊢ᶜ aP : capp AP a →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ pvcons aP nP vP : capp (pvec A AP (esucc n) (psucc nP)) (evcons a v)
+
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -653,7 +679,7 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_bool_err ctype_eif ctype_pbool ctype_ptrue ctype_pfalse ctype_pif
   ctype_enat ctype_ezero ctype_esucc ctype_enat_elim ctype_pnat ctype_pzero
   ctype_psucc ctype_pnat_elim ctype_pnat_elimP ctype_evec ctype_evnil
-  ctype_evcons ctype_evec_elim
+  ctype_evcons ctype_evec_elim ctype_pvec ctype_pvnil ctype_pvcons
 : cc_type.
 
 Ltac econv :=
