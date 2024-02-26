@@ -238,6 +238,50 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ s ≡ s' →
       Γ ⊢ᶜ evec_elim v P z s ≡ evec_elim v' P' z' s'
 
+(* Also unnecessary *)
+| ccong_pvnil :
+    ∀ A A',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ pvnil A ≡ pvnil A'
+
+(* Also unnecessary *)
+| ccong_pvcons :
+    ∀ a n v a' n' v',
+      Γ ⊢ᶜ a ≡ a' →
+      Γ ⊢ᶜ n ≡ n' →
+      Γ ⊢ᶜ v ≡ v' →
+      Γ ⊢ᶜ pvcons a n v ≡ pvcons a' n' v'
+
+(* Same *)
+| ccong_pvec_elim :
+    ∀ Ae AP ne nP ve vP Pe PP ze zP se sP Ae' AP' ne' ve' vP' nP' Pe' PP' ze' zP' se' sP',
+      Γ ⊢ᶜ Ae ≡ Ae' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ ve ≡ ve' →
+      Γ ⊢ᶜ vP ≡ vP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ ze ≡ ze' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ se ≡ se' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pvec_elim Ae AP ne nP ve vP Pe PP ze zP se sP ≡ pvec_elim Ae' AP' ne' nP' ve' vP' Pe' PP' ze' zP' se' sP'
+
+(* Same *)
+| ccong_pvec_elimP :
+    ∀ Ae AP ne nP ve vP Pe PP zP sP Ae' AP' ne' nP' ve' vP' Pe' PP' zP' sP',
+      Γ ⊢ᶜ Ae ≡ Ae' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ ve ≡ ve' →
+      Γ ⊢ᶜ vP ≡ vP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pvec_elimP Ae AP ne nP ve vP Pe PP zP sP ≡ pvec_elimP Ae' AP' ne' nP' ve' vP' Pe' PP' zP' sP'
+
 (** Structural rules **)
 
 | cconv_refl :
@@ -588,7 +632,7 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   cconv_pif_false ccong_pif cconv_enat_elim_zero cconv_enat_elim_succ
   ccong_esucc ccong_enat_elim ccong_psucc ccong_pnat_elim ccong_pnat_elimP
   cconv_evec_elim_nil cconv_evec_elim_cons ccong_evec ccong_evnil ccong_evcons
-  ccong_evec_elim
+  ccong_evec_elim ccong_pvnil ccong_pvcons ccong_pvec_elim ccong_pvec_elimP
   cconv_refl
 : cc_conv.
 

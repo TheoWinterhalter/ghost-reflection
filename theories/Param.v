@@ -2325,9 +2325,13 @@ Proof.
   - cbn. econv.
   - cbn. destruct m.
     all: econv. all: reflexivity.
-  - cbn. admit.
-  - cbn. admit.
-  - cbn. admit.
+  - cbn. econv.
+  - cbn. econv.
+  - cbn. destruct m.
+    + econv.
+    + econv. all: reflexivity.
+    + econv. all: reflexivity.
+    + econv. all: reflexivity.
   - cbn.
     destruct_ifs. all: econv. all: reflexivity.
   - econv.
