@@ -9,7 +9,7 @@ term(var) : Type
 Sort : mode -> level -> term
 
 Pi : level -> level -> mode -> mode -> term -> (bind term in term) -> term
-lam : mode -> term -> (bind term in term) -> (bind term in term) -> term
+lam : mode -> term -> (bind term in term) -> term
 app : term -> term -> term
 
 Erased : term -> term

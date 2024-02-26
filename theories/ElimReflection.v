@@ -176,24 +176,6 @@ Proof.
   - cbn. reflexivity.
 Qed.
 
-(* Conversion only requires the scope not the full context *)
-Lemma conv_upto :
-  ∀ Γ Δ u v,
-    Γ ⊢ u ≡ v →
-    sc Γ = sc Δ →
-    Δ ⊢ u ≡ v.
-Proof.
-  intros Γ Δ u v h e.
-  induction h in Δ, e |- *.
-  all: try solve [ econstructor ; eauto ].
-  all: try solve [ rewrite ?e in * ; econstructor ; eauto ].
-  - econstructor. all: eauto.
-    eapply IHh2. cbn. f_equal. assumption.
-  - econstructor. all: eauto.
-    + eapply IHh2. cbn. f_equal. assumption.
-    + eapply IHh3. cbn. f_equal. assumption.
-Qed.
-
 Theorem elim_reflection :
   ∀ Γ t A Γ',
     Γ ⊢ˣ t : A →
@@ -226,7 +208,7 @@ Proof.
     specialize IHh3 with (1 := hext). destruct IHh3 as [t' [B'' ht]].
     eapply tr_choice in ht. 2-4: eassumption.
     unfold tr_ctx, tr_ty in *. intuition subst.
-    eexists (lam mx A' B' t'), _. split.
+    eexists (lam mx A' t'), _. split.
     + eapply type_lam. all: eauto.
     + cbn. intuition reflexivity.
   - specialize IHh3 with (1 := hctx). destruct IHh3 as [A' [s' hA]].

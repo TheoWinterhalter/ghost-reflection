@@ -97,9 +97,6 @@ Proof.
     + apply IHht2. constructor.
       * asimpl. apply sscoping_weak. assumption.
       * asimpl. constructor. reflexivity.
-    + apply IHht3. constructor.
-      * asimpl. apply sscoping_weak. assumption.
-      * asimpl. constructor. reflexivity.
 Qed.
 
 Lemma sscoping_shift :
@@ -215,10 +212,8 @@ Proof.
     asimpl. repeat core.unfold_funcomp. rewrite IHt2.
     auto.
   - asimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
-    + asimpl. repeat core.unfold_funcomp. rewrite IHt2.
-      auto.
-    + asimpl. repeat core.unfold_funcomp. rewrite IHt3.
-      auto.
+    asimpl. repeat core.unfold_funcomp. rewrite IHt2.
+    auto.
 Qed.
 
 (** Inversion for scoping **)
@@ -236,13 +231,12 @@ Proof.
 Qed.
 
 Lemma scope_lam_inv :
-  ∀ Γ mx A B t m,
-    scoping Γ (lam mx A B t) m →
+  ∀ Γ mx A t m,
+    scoping Γ (lam mx A t) m →
     scoping Γ A mKind ∧
-    scoping (mx :: Γ) B mKind ∧
     scoping (mx :: Γ) t m.
 Proof.
-  intros Γ mx A B t m h.
+  intros Γ mx A t m h.
   inversion h. subst.
   intuition eauto.
 Qed.
@@ -472,7 +466,7 @@ Proof.
     destruct (nth_error Δ n) eqn:e.
     + eapply hρ in e. rewrite e. reflexivity.
     + eapply hcρ in e. rewrite e. reflexivity.
-  - cbn. eapply IHt3.
+  - cbn. eapply IHt2.
     + eapply rscoping_shift. assumption.
     + eapply rscoping_comp_upren. assumption.
   - cbn. erewrite IHt3. 2,3: eauto.
@@ -499,7 +493,7 @@ Proof.
       * cbn in e. eapply ih. assumption.
     + eapply hcσ in e. destruct e as [m [e1 e2]].
       rewrite e1. cbn. rewrite nth_nth_error. rewrite e2. reflexivity.
-  - cbn. eapply IHt3.
+  - cbn. eapply IHt2.
     + eapply sscoping_shift. assumption.
     + eapply sscoping_comp_shift. assumption.
   - cbn. erewrite IHt3. 2,3: eauto.
@@ -671,10 +665,8 @@ Proof.
     asimpl. reflexivity.
   - asimpl. constructor. all: auto.
     eapply IHh2. apply rtyping_shift. assumption.
-  - asimpl. constructor.
-    + auto.
-    + eapply IHh2. apply rtyping_shift. assumption.
-    + eapply IHh3. apply rtyping_shift. assumption.
+  - asimpl. constructor. 1: auto.
+    eapply IHh2. apply rtyping_shift. assumption.
 Qed.
 
 Lemma typing_ren :
@@ -837,10 +829,8 @@ Proof.
     + asimpl. reflexivity.
   - asimpl. constructor. all: auto.
     eapply IHh2. cbn. apply sscoping_shift. assumption.
-  - asimpl. constructor.
-    + auto.
-    + eapply IHh2. cbn. apply sscoping_shift. assumption.
-    + eapply IHh3. cbn. apply sscoping_shift. assumption.
+  - asimpl. constructor. 1: auto.
+    eapply IHh2. cbn. apply sscoping_shift. assumption.
 Qed.
 
 Lemma sscoping_castrm :
@@ -962,9 +952,9 @@ Proof.
 Qed.
 
 Lemma type_lam_inv :
-  ∀ Γ mx A B t C,
-    Γ ⊢ lam mx A B t : C →
-    ∃ i j m,
+  ∀ Γ mx A t C,
+    Γ ⊢ lam mx A t : C →
+    ∃ i j m B,
       cscoping Γ A mKind ∧
       cscoping (Γ ,, (mx, A)) B mKind ∧
       cscoping (Γ ,, (mx, A)) t m ∧
@@ -973,11 +963,11 @@ Lemma type_lam_inv :
       Γ ,, (mx, A) ⊢ t : B ∧
       Γ ⊢ Pi i j m mx A B ε≡ C.
 Proof.
-  intros Γ mx A B t C h.
+  intros Γ mx A t C h.
   dependent induction h.
-  - eexists _,_,_. intuition eauto.
+  - eexists _,_,_,_. intuition eauto.
     apply conv_refl.
-  - destruct_exists IHh1. eexists _,_,_. intuition eauto.
+  - destruct_exists IHh1. eexists _,_,_,_. intuition eauto.
     eapply conv_trans. all: eauto.
 Qed.
 
@@ -1329,7 +1319,7 @@ Ltac ttinv h h' :=
     | var _ => eapply type_var_inv in h as h'
     | Sort _ _ => eapply type_sort_inv in h as h'
     | Pi _ _ _ _ _ _ => eapply type_pi_inv in h as h'
-    | lam _ _ _ _ => eapply type_lam_inv in h as h'
+    | lam _ _ _ => eapply type_lam_inv in h as h'
     | app _ _ => eapply type_app_inv in h as h'
     | Erased _ => eapply type_erased_inv in h as h'
     | hide _ => eapply type_hide_inv in h as h'

@@ -25,7 +25,7 @@ Reserved Notation "⟦ G | u '⟧v'" (at level 9, G, u at next level).
 
 Equations revive_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | var x ⟧v := if ghv Γ x then cvar x else cDummy ;
-  ⟦ Γ | lam mx A B t ⟧v :=
+  ⟦ Γ | lam mx A t ⟧v :=
     if isGhost (md (mx :: Γ) t)
     then
       if isProp mx
@@ -211,8 +211,8 @@ Proof.
       eauto.
     + constructor.
       * eapply scoping_to_rev. constructor. eapply erase_scoping.
-      * specialize IHt3 with (Γ := m :: Γ). cbn in IHt3.
-        rewrite e0 in IHt3. eauto.
+      * specialize IHt2 with (Γ := m :: Γ). cbn in IHt2.
+        rewrite e0 in IHt2. eauto.
     + constructor.
   - cbn - [mode_inb].
     destruct_ifs. 4: eauto with cc_scope.
@@ -256,7 +256,7 @@ Proof.
       destruct (isGhost m). all: reflexivity.
     + eapply hcρ in e. rewrite e. reflexivity.
   - cbn - [mode_inb]. ssimpl.
-    erewrite IHt3.
+    erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     erewrite md_ren.
@@ -345,7 +345,7 @@ Proof.
     2:{ eapply sscoping_shift. eassumption. }
     2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
     erewrite erase_subst. 2,3: eassumption.
-    erewrite IHt3.
+    erewrite IHt2.
     2:{ eapply sscoping_shift. eassumption. }
     2:{ ssimpl. eapply sscoping_comp_shift. assumption. }
     destruct_ifs.
@@ -532,8 +532,8 @@ Proof.
     mode_eqs. cbn.
     constructor.
   - cbn - [mode_inb].
-    cbn - [mode_inb] in IHh2, IHh3.
-    eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
+    cbn - [mode_inb] in IHh2.
+    eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
     destruct_ifs.
     + eapply cconv_close. eauto.
     + constructor.
@@ -580,7 +580,7 @@ Proof.
   induction t in Γ |- *.
   all: try reflexivity.
   all: try solve [ cbn - [mode_inb] ; eauto ].
-  - cbn - [mode_inb]. erewrite IHt3. erewrite !erase_castrm.
+  - cbn - [mode_inb]. erewrite IHt2. erewrite !erase_castrm.
     rewrite <- md_castrm. reflexivity.
   - cbn - [mode_inb]. erewrite IHt1, IHt2. erewrite !erase_castrm.
     rewrite <- !md_castrm. reflexivity.
