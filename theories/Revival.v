@@ -644,7 +644,7 @@ Proof.
 
       If we do that, maybe we should have one evec_elimG and pmG too.
 
-      Another thinng to consider (and mention in the paper maybe) is that there
+      Another thing to consider (and mention in the paper maybe) is that there
       is no reason for the argument to vec_elim to be exactly (convertible to)
       gS n, as it could be merely equal to it since casts are removed for
       conversion. So no forced argument as usual here. But if we keep it

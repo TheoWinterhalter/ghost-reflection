@@ -15,6 +15,33 @@ Definition gS n :=
   reveal n (lam mGhost (Erased tnat) (Sort mGhost 0) (Erased tnat))
     (lam mType tnat (Erased tnat) (hide (tsucc (var 0)))).
 
+(** We also need something which is essentially the length function
+  but whose main idea is to recompute the index of a vector.
+**)
+Definition glength i A n v :=
+  tvec_elim mGhost A n v
+    (* return *) (lam mGhost (Erased tnat)
+      (tvec (S ⋅ A) (var 0) ⇒[ i | 1 / mType | mKind ] Sort mGhost 0)
+      (lam mType (tvec (S ⋅ A) (var 0)) (Sort mGhost 0) (Erased tnat))
+    )
+    (* vnil => *) (hide tzero)
+    (* vcons => *) (lam mType A
+      (Pi 0 i mGhost mGhost (Erased tnat) (
+        Pi i 0 mGhost mType (tvec (S ⋅ S ⋅ A) (var 0)) (
+          (Erased tnat) ⇒[ 0 | 0 / mGhost | mGhost ] (Erased tnat)
+        )
+      ))
+      (lam mGhost (Erased tnat)
+        (Pi i 0 mGhost mType (tvec (S ⋅ S ⋅ A) (var 0)) (
+          (Erased tnat) ⇒[ 0 | 0 / mGhost | mGhost ] (Erased tnat)
+        ))
+        (lam mType (tvec (S ⋅ S ⋅ A) (var 0))
+          ((Erased tnat) ⇒[ 0 | 0 / mGhost | mGhost ] (Erased tnat))
+          (lam mGhost (Erased tnat) (Erased tnat) (gS (var 0)))
+        )
+      )
+    ).
+
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
 
@@ -80,17 +107,19 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ tvec_elim m A (hide tzero) (tvnil A) P z s ≡ z
 
 | conv_vec_elim_cons :
-    ∀ m A a n v P z s,
+    ∀ m A a n n' v P z s,
       m ≠ mKind →
       cscoping Γ A mKind →
       cscoping Γ a mType →
       cscoping Γ n mGhost →
+      cscoping Γ n' mGhost →
       cscoping Γ v mType →
       cscoping Γ P mKind →
       cscoping Γ z m →
       cscoping Γ s m →
-      Γ ⊢ tvec_elim m A (gS n) (tvcons a n v) P z s ≡
-      app (app (app (app s a) n) v) (tvec_elim m A n v P z s)
+      Γ ⊢ tvec_elim m A n' (tvcons a n v) P z s ≡
+      app (app (app (app s a) (glength ? A n v)) v) (tvec_elim m A n v P z s)
+      (* makes we want to get rid of A n in the elim and codomains in Pi *)
 
 (** Congruence rules **)
 
