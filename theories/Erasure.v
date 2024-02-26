@@ -279,7 +279,7 @@ Proof.
     + destruct (relm m0) eqn:e2. 1: discriminate.
       eauto with cc_scope.
   - cbn.
-    specialize IHt2 with (Γ := m :: Γ). cbn - [mode_inb] in IHt2.
+    specialize IHt2 with (Γ := m :: Γ). cbn in IHt2.
     fold (erase_sc Γ) in IHt2.
     destruct_ifs. all: eauto with cc_scope.
   - cbn. destruct (relm m) eqn:er. 2: constructor.

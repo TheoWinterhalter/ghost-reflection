@@ -214,6 +214,11 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ sP ≡ sP' →
       Γ ⊢ᶜ pnat_elimP ne nP Pe PP zP sP ≡ pnat_elimP ne' nP' Pe' PP' zP' sP'
 
+| ccong_evec :
+    ∀ A A',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ evec A ≡ evec A'
+
 | ccong_evnil :
     ∀ A A',
       Γ ⊢ᶜ A ≡ A' →
@@ -582,7 +587,7 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   cconv_if_true cconv_if_false cconv_if_err ccong_eif cconv_pif_true
   cconv_pif_false ccong_pif cconv_enat_elim_zero cconv_enat_elim_succ
   ccong_esucc ccong_enat_elim ccong_psucc ccong_pnat_elim ccong_pnat_elimP
-  cconv_evec_elim_nil cconv_evec_elim_cons ccong_evnil ccong_evcons
+  cconv_evec_elim_nil cconv_evec_elim_cons ccong_evec ccong_evnil ccong_evcons
   ccong_evec_elim
   cconv_refl
 : cc_conv.

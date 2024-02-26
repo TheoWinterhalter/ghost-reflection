@@ -650,6 +650,14 @@ Proof.
   intros Γ u v ? h <-. assumption.
 Qed.
 
+Lemma meta_conv_refl :
+  ∀ Γ u v,
+    u = v →
+    Γ ⊢ u ≡ v.
+Proof.
+  intros Γ u ? <-. gconv.
+Qed.
+
 Ltac scoping_ren_finish :=
   eapply scoping_ren ; [| eassumption] ;
   try apply rscoping_shift ;
@@ -667,7 +675,12 @@ Proof.
   - asimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try scoping_ren_finish.
     asimpl. reflexivity.
-  - asimpl. constructor. all: auto.
+  - asimpl. eapply conv_trans. 1: econstructor.
+    all: try scoping_ren_finish. 1: auto.
+    cbn. gconv.
+    + ssimpl. gconv.
+    + ssimpl. gconv.
+  - constructor. all: auto.
     eapply IHh2. apply rtyping_shift. assumption.
   - asimpl. constructor. 1: auto.
     eapply IHh2. apply rtyping_shift. assumption.
@@ -838,6 +851,13 @@ Proof.
     intros [].
     + asimpl. reflexivity.
     + asimpl. reflexivity.
+  - cbn. ssimpl. eapply conv_trans.
+    1:{ econstructor. all: try conv_subst_finish. assumption. }
+    gconv.
+    + ssimpl. gconv.
+    + apply meta_conv_refl. f_equal. ssimpl.
+      eapply ext_term. intro x.
+      ssimpl. cbn. ssimpl. reflexivity.
   - asimpl. constructor. all: auto.
     eapply IHh2. cbn. apply sscoping_shift. assumption.
   - asimpl. constructor. 1: auto.
@@ -1576,21 +1596,37 @@ Proof.
       unfold gS. eapply type_conv.
       4:{
         econstructor. 6: eauto. all: gtype.
-        1: reflexivity.
+        1,3,4: reflexivity.
         1: cbn ; auto.
-        cbn. eapply type_conv.
-        4:{
-          gtype. all: try reflexivity.
+        1:{
           eapply meta_conv.
-          - gtype. reflexivity.
+          - econstructor.
+            5:{
+              cbn. econstructor. 6: gtype. all: gtype.
+            }
+            all: gtype.
+            1,2: reflexivity.
+            eapply meta_conv.
+            + gtype. reflexivity.
+            + reflexivity.
           - reflexivity.
         }
+        cbn. eapply type_conv.
         4:{
-          gconv. 2,3: compute ; auto.
+          econstructor.
+          4:{
+            gtype. 1: reflexivity.
+            eapply meta_conv.
+            - gtype. reflexivity.
+            - reflexivity.
+          }
+          all: gtype.
+          reflexivity.
+        }
+        4:{
           apply conv_sym. gconv. reflexivity.
         }
         1-3: gscope. 1,2: reflexivity.
-        gtype. 1: reflexivity.
         eapply meta_conv.
         - econstructor.
           6:{
@@ -1601,7 +1637,9 @@ Proof.
           }
           all: cbn.
           3:{ econstructor. gscope. reflexivity. }
-          4: gtype.
+          4:{
+            econstructor. 6: gtype. all: gtype.
+          }
           all: gtype.
         - reflexivity.
       }

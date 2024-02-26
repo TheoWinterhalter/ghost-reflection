@@ -19,13 +19,17 @@ Definition ghv (Γ : scope) x :=
   | None => false
   end.
 
-(** Predecessor for enat **)
+(** Length of an evec **)
 
-Definition cpred n :=
-  enat_elim n (clam cType (cEl enat) enat)
-    (* 0 => *) ezero
-    (* S n => *) (clam cType (cEl enat) (
-      clam cType (cEl enat) (cvar 1)
+Definition elength A v :=
+  evec_elim v (clam cType (cEl (evec A)) enat)
+    (* vnil => *) ezero
+    (* vcons => *) (clam cType (cEl A) (
+      clam cType (cEl (evec (S ⋅ A))) (
+        clam cType (cEl enat) (
+          esucc (cvar 0)
+        )
+      )
     )).
 
 (** Revival translation **)
@@ -68,10 +72,10 @@ Equations revive_term (Γ : scope) (t : term) : cterm := {
     else cDummy ;
   ⟦ Γ | tvec_elim m A n v P z s ⟧v :=
     if isGhost m then (
-      (** We need to pass n as argument to s, or rather its predecessor **)
+      (** We need to pass a nat argument to s, we use elength **)
       let s' :=
         clam cType ⟦ Γ | A ⟧τ (
-          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ (cpred ⟦ Γ | n ⟧v))
+          capp (capp (S ⋅ ⟦ Γ | s ⟧v) (cvar 0)) (S ⋅ (elength ⟦ Γ | A ⟧ε ⟦ Γ | v ⟧ε))
         )
       in
       evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧v s'
@@ -255,8 +259,9 @@ Proof.
     + apply scoping_to_rev. apply erase_scoping.
     + apply scoping_to_rev. apply erase_scoping.
   - cbn. destruct_if e. 2: constructor.
-    escope. 5,7: reflexivity.
-    4,5: eapply cscoping_ren ; eauto using crscoping_S.
+    escope. all: try reflexivity.
+    all: try repeat eapply cscoping_ren ; eauto using crscoping_S.
+    7:{ eapply crscoping_shift. apply crscoping_S. }
     all: apply scoping_to_rev. all: apply erase_scoping.
   - cbn.
     destruct_if e. 2: constructor.
@@ -317,7 +322,7 @@ Proof.
     erewrite !erase_ren. 2-5: eassumption.
     reflexivity.
   - cbn. destruct_ifs. 2: eauto.
-    cbn. erewrite IHt2, IHt5, IHt6. 2-7: eassumption.
+    cbn. erewrite IHt5, IHt6. 2-5: eassumption.
     erewrite !erase_ren. 2-7: eassumption.
     f_equal. f_equal. ssimpl. reflexivity.
   - cbn.
@@ -454,7 +459,7 @@ Proof.
     rewrite !erase_rev_subst.
     destruct_if eg. 2: reflexivity.
     reflexivity.
-  - cbn. erewrite IHt2, IHt5, IHt6. 2-7: eassumption.
+  - cbn. erewrite IHt5, IHt6. 2-5: eassumption.
     erewrite !erase_subst. 2-7: eassumption.
     rewrite !erase_rev_subst.
     destruct_if eg. 2: reflexivity.
@@ -570,93 +575,52 @@ Proof.
     + erewrite revive_ng. 2:{ remd. assumption. }
       constructor.
   - cbn. remd. cbn. destruct_if eg. 2: constructor.
-    mode_eqs. cbn. eapply cconv_trans. 1: constructor.
+    mode_eqs. cbn. eapply cconv_trans. 1: econstructor.
     eapply cconv_trans.
     1:{
-      econstructor. 2: econv.
-      econstructor. 2: econv.
-      eapply cconv_trans. 1: constructor.
-      cbn. lhs_ssimpl.
-      constructor. 1: econv.
-      eapply cconv_trans.
-      1:{
-        constructor. 2-4: econv.
-        constructor.
-      }
-      cbn. eapply cconv_trans. 1: constructor.
-      eapply cconv_trans.
-      1:{
+      constructor.
+      - constructor. 2: econv.
+        eapply cconv_trans. 1: constructor.
+        cbn. lhs_ssimpl.
+        constructor. 1: econv.
+        eapply cconv_trans. 1: constructor.
         constructor. 2: econv.
-        constructor.
-      }
-      cbn. eapply cconv_trans. 1: constructor.
-      lhs_ssimpl. econv.
+        eapply cconv_trans.
+        1:{
+          constructor. 2: econv.
+          eapply cconv_trans. 1: constructor.
+          cbn. lhs_ssimpl. econv.
+        }
+        eapply cconv_trans. 1: constructor.
+        lhs_ssimpl. econv.
+      - constructor. 1-3: econv.
+        constructor. 1: econv.
+        constructor. 1: econv.
+        eapply cconv_trans. 1: constructor.
+        eapply cconv_trans.
+        1:{
+          constructor. 2: econv.
+          constructor. 2: econv.
+          constructor.
+        }
+        cbn. eapply cconv_trans.
+        1:{
+          constructor. 2: econv.
+          constructor.
+        }
+        cbn. eapply cconv_trans. 1: constructor.
+        cbn. econv.
     }
-    constructor. 1: econv.
     eapply cconv_trans.
     1:{
-      constructor. 1-3: econv.
-      constructor. 1: econv.
-      constructor. 1: econv.
-      constructor. 2-4: econv.
-      constructor.
-    }
-    cbn. eapply cconv_trans.
-    1:{
-      constructor. 1-3: econv.
-      constructor. 1: econv.
-      constructor. 1: econv.
-      constructor.
-    }
-    eapply cconv_trans.
-    1:{
-      constructor. 1-3: econv.
-      constructor. 1: econv.
-      constructor. 1: econv.
       constructor. 2: econv.
-      constructor.
-    }
-    cbn. eapply cconv_trans.
-    1:{
-      constructor. 1-3: econv.
-      constructor. 1: econv.
+      constructor. 2: econv.
       constructor. 1: econv.
       constructor.
     }
-    lhs_ssimpl.
-    constructor. 1-3: econv.
-    constructor. 1: econv.
-    constructor. 1: econv.
-    (* Ah now I see, of course, I include the n in the branch function
-      so it stays constant, but it shouldn't essentially.
-      Do I need to change the dynamics of vec_elim?
-      I could for instance chain length v instead of n in the continuation.
-      In GRTT it wouldn't matter, and at extraction it's no problem either.
-      But to write term it's inconvenient because you can't just write the
-      deep identity easily this way.
-
-      Probably the right solution, and less ad-hoc actually, is to thread the
-      natural number argument, like by induction on v, we prove ∀ n, P n v
-      and then in the successor case, we get some n and we pass pred n to s.
-      In a way we are matching on n and destructing it as we go.
-      This is only possible because gS is somehow invertible so we would have
-      to conceed it. Still less ad-hoc than length.
-
-      If we do that, maybe we should have one evec_elimG and pmG too.
-
-      Another thing to consider (and mention in the paper maybe) is that there
-      is no reason for the argument to vec_elim to be exactly (convertible to)
-      gS n, as it could be merely equal to it since casts are removed for
-      conversion. So no forced argument as usual here. But if we keep it
-      abstract in the rule then we can no longer use it to compute can we?
-      Computing the length from v might actually be general in the end.
-      But then should we use length in the continuation too? That sounds odd.
-      Morally this computation rule should not inspect the nat argument to vcons
-      anyway so maybe I have some freedom here?
-
-      Wait, does the length actually make sense? It's also a recursive call to
-      the eliminator in a way. Maybe that's fine though?
-    *)
+    cbn.
+    erewrite !erase_ren. 2-7: eauto using rscoping_S, rscoping_comp_S.
+    ssimpl. econv.
   - cbn.
     cbn in IHh2.
     eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
@@ -688,7 +652,8 @@ Proof.
   - cbn. destruct_if eg. 2: constructor.
     econv. all: eapply conv_to_rev. all: eapply erase_conv ; eauto.
   - cbn. destruct_if e. 2: constructor.
-    econv. all: apply conv_to_rev. all: eapply erase_conv ; eauto.
+    econv.
+    all: apply conv_to_rev. all: eapply erase_conv ; eauto.
   - cbn.
     destruct_ifs. 2: constructor.
     constructor. eapply conv_to_rev. eapply erase_conv. assumption.
@@ -718,7 +683,7 @@ Proof.
     rewrite <- !md_castrm. reflexivity.
   - cbn. erewrite IHt3, IHt4. erewrite !erase_castrm. reflexivity.
   - cbn. erewrite IHt3, IHt4. erewrite !erase_castrm. reflexivity.
-  - cbn. erewrite IHt3, IHt4. erewrite !erase_castrm. reflexivity.
+  - cbn. erewrite IHt5, IHt6. erewrite !erase_castrm. reflexivity.
   - cbn. erewrite !erase_castrm. reflexivity.
 Qed.
 
