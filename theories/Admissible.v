@@ -53,7 +53,7 @@ Section Admissible.
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ,, (mx, A) ⊢ t : B →
-      Γ ⊢ lam mx A B t : Pi i j m mx A B.
+      Γ ⊢ lam mx A t : Pi i j m mx A B.
   Proof.
     intros. adm.
   Qed.

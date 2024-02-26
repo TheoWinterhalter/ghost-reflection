@@ -105,7 +105,7 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
     else if isProp m
     then ctt
     else cty_lift (close ⟦ mx :: Γ | B ⟧ε) ;
-  ⟦ Γ | lam mx A B t ⟧ε :=
+  ⟦ Γ | lam mx A t ⟧ε :=
     if relm (md (mx :: Γ) t)
     then
       if relm mx
@@ -279,8 +279,8 @@ Proof.
     + destruct (relm m0) eqn:e2. 1: discriminate.
       eauto with cc_scope.
   - cbn.
-    specialize IHt3 with (Γ := m :: Γ). cbn in IHt3.
-    fold (erase_sc Γ) in IHt3.
+    specialize IHt2 with (Γ := m :: Γ). cbn - [mode_inb] in IHt2.
+    fold (erase_sc Γ) in IHt2.
     destruct_ifs. all: eauto with cc_scope.
   - cbn. destruct (relm m) eqn:er. 2: constructor.
     econstructor. all: eauto with cc_scope.
@@ -320,7 +320,7 @@ Proof.
     ssimpl. cbn. ssimpl. unfold nones. ssimpl. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
-    erewrite IHt3.
+    erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. assumption. }
     erewrite md_ren.
@@ -461,7 +461,7 @@ Proof.
     2:{ eapply sscoping_comp_shift. assumption. }
     destruct_ifs.
     + erewrite IHt1. 2,3: eauto.
-      erewrite IHt3.
+      erewrite IHt2.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
       ssimpl. f_equal.
@@ -473,7 +473,7 @@ Proof.
         2:{ eapply rscoping_comp_S. }
         ssimpl. reflexivity.
     + unfold close. ssimpl.
-      erewrite IHt3.
+      erewrite IHt2.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
       ssimpl. eapply ext_cterm. intros [].
@@ -620,8 +620,8 @@ Proof.
       eapply cconv_ty_lift.
       eapply cconv_close. eauto.
   - cbn.
-    cbn in IHh2, IHh3.
-    eapply conv_md in h3 as e3. simpl in e3. rewrite <- e3.
+    cbn in IHh2.
+    eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
     destruct_ifs.
     + constructor. 1: constructor. all: eauto.
     + eapply cconv_close. eauto.
@@ -670,10 +670,10 @@ Proof.
   intros Γ t.
   induction t in Γ |- *.
   all: try reflexivity.
-  all: try solve [ cbn  ; eauto ].
-  all: try solve [ cbn  ; f_equal ; eauto ].
+  all: try solve [ cbn ; eauto ].
+  all: try solve [ cbn ; f_equal ; eauto ].
   - cbn. erewrite IHt1, IHt2. reflexivity.
-  - cbn. erewrite IHt1, IHt3.
+  - cbn. erewrite IHt1, IHt2.
     rewrite <- md_castrm. reflexivity.
   - cbn. erewrite IHt1, IHt2. rewrite <- !md_castrm. reflexivity.
   - cbn. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.

@@ -50,7 +50,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       Γ ⊢ˣ A : Sort mx i →
       Γ ,, (mx, A) ⊢ˣ B : Sort m j →
       Γ ,, (mx, A) ⊢ˣ t : B →
-      Γ ⊢ˣ lam mx A B t : Pi i j m mx A B
+      Γ ⊢ˣ lam mx A t : Pi i j m mx A B
 
 | rtype_app :
     ∀ i j mx m A B t u,

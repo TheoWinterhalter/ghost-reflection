@@ -174,7 +174,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     let Ap := ⟦ Γ | A ⟧p in
     let Bp := ⟦ mx :: Γ | B ⟧p in
     pmPi mx m Te Ae Ap Bp ;
-  ⟦ Γ | lam mx A B t ⟧p :=
+  ⟦ Γ | lam mx A t ⟧p :=
     if isProp mx then clam cProp ⟦ Γ | A ⟧p (close ⟦ mx :: Γ | t ⟧p)
     else (
       let cm := if isKind mx then cType else cProp in
@@ -940,7 +940,7 @@ Proof.
       ssimpl. rewrite pren_SS. ssimpl. rewrite pren_comp_S. cbn. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
-    erewrite IHt3.
+    erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
     2:{ eapply rscoping_comp_upren. eassumption. }
     unfold plam.
@@ -1504,7 +1504,7 @@ Proof.
       rewrite rinstInst'_cterm. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
-    erewrite IHt3.
+    erewrite IHt2.
     2:{ eapply sscoping_shift. eassumption. }
     2:{ eapply sscoping_comp_shift. assumption. }
     erewrite erase_subst. 2,3: eassumption.
@@ -2273,17 +2273,17 @@ Proof.
     + econstructor. 1: eauto.
       eapply cconv_close.
       eapply meta_ctx_conv_conv.
-      * eapply IHh3 with (Δ := Δ ,, (mx, ε|A|)).
+      * eapply IHh2 with (Δ := Δ ,, (mx, ε|A|)).
         subst. reflexivity.
       * cbn. subst. rewrite !erase_castrm. rewrite e0. reflexivity.
     + econv.
       eapply meta_ctx_conv_conv.
-      * eapply IHh3 with (Δ := Δ ,, (mx, ε|A|)).
+      * eapply IHh2 with (Δ := Δ ,, (mx, ε|A|)).
         subst. reflexivity.
       * cbn. subst. rewrite !erase_castrm. rewrite e0,e1. reflexivity.
     + econv.
       eapply meta_ctx_conv_conv.
-      * eapply IHh3 with (Δ := Δ ,, (mx, ε|A|)).
+      * eapply IHh2 with (Δ := Δ ,, (mx, ε|A|)).
         subst. reflexivity.
       * cbn. subst. rewrite !erase_castrm. rewrite e0,e1. reflexivity.
   - eapply cconv_trans. 1:{ eapply IHh6. eassumption. }

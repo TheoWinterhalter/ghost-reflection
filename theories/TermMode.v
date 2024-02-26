@@ -23,7 +23,7 @@ Section Mode.
     | var x => nth x Γ dummy
     | Sort m l => mKind
     | Pi i j m mx A B => mKind
-    | lam mx A B t => md (mx :: Γ) t
+    | lam mx A t => md (mx :: Γ) t
     | app u v => md Γ u
     | Erased A => mKind
     | hide t => mGhost

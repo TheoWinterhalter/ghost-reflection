@@ -84,7 +84,7 @@ Fixpoint urm (t : term) : term :=
   | var x => var x
   | Sort m i => Sort m 0
   | Pi i j m mx A B => Pi 0 0 m mx (urm A) (urm B)
-  | lam mx A B t => lam mx (urm A) (urm B) (urm t)
+  | lam mx A t => lam mx (urm A) (urm t)
   | app u v => app (urm u) (urm v)
   | Erased A => Erased (urm A)
   | hide t => hide (urm t)
@@ -129,12 +129,9 @@ Proof.
     intros []. 1: reflexivity.
     cbn. ssimpl. rewrite urm_ren. reflexivity.
   - cbn. f_equal. 1:eauto.
-    + rewrite IHt2. apply ext_term.
-      intros []. 1: reflexivity.
-      cbn. ssimpl. rewrite urm_ren. reflexivity.
-    + rewrite IHt3. apply ext_term.
-      intros []. 1: reflexivity.
-      cbn. ssimpl. rewrite urm_ren. reflexivity.
+    rewrite IHt2. apply ext_term.
+    intros []. 1: reflexivity.
+    cbn. ssimpl. rewrite urm_ren. reflexivity.
 Qed.
 
 Lemma urm_scoping :
@@ -256,6 +253,22 @@ Proof.
     + ssimpl. eapply urm_scoping. assumption.
 Qed.
 
+(* Conversion only requires the scope not the full context *)
+Lemma conv_upto :
+  ∀ Γ Δ u v,
+    Γ ⊢ u ≡ v →
+    sc Γ = sc Δ →
+    Δ ⊢ u ≡ v.
+Proof.
+  intros Γ Δ u v h e.
+  induction h in Δ, e |- *.
+  all: try solve [ cbn ; econstructor ; rewrite <- ?e ; eauto ].
+  - constructor. all: eauto.
+    eapply IHh2. cbn. f_equal. assumption.
+  - constructor. all: eauto.
+    eapply IHh2. cbn. f_equal. assumption.
+Qed.
+
 Lemma type_unique :
   ∀ Γ t A B,
     Γ ⊢ t : A →
@@ -266,8 +279,12 @@ Proof.
   induction t in Γ, A, B, hA, hB |- *.
   all: try unitac hA hB. all: try apply conv_refl.
   - apply conv_meta_refl. congruence.
-  - repeat scoping_fun.
-    cbn. apply conv_refl.
+  - cbn. repeat scoping_fun.
+    eapply IHt2 in H10. 2: exact H9.
+    cbn in H10.
+    constructor. 1: apply conv_refl. 2,3: compute ; auto.
+    eapply conv_upto. 1: eassumption.
+    cbn. reflexivity.
   - repeat scoping_fun.
     eapply IHt1 in H8. 2: exact H7.
     cbn in H8. eapply pi_inj in H8.
