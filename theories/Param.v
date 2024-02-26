@@ -3841,9 +3841,10 @@ Proof.
             unfold vpar. lia.
           ++ rewrite epm_lift_eq. cbn. f_equal. unfold vpar, vreg. lia.
         -- destruct m. all: discriminate.
-  - cbn. destruct_ifs. all: mode_eqs.
+  - cbn. destruct_ifs. all: mode_eqs. all: try discriminate.
     + cbn. rewrite epm_lift_eq. cbn.
-      econstructor. 1: etype.
+      econstructor.
+      * etype.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
         cbn. econv.
       * eapply ccmeta_conv. 1: etype.
@@ -3854,7 +3855,7 @@ Proof.
         cbn. econv.
       * eapply ccmeta_conv. 1: etype.
         reflexivity.
-    + cbn. rewrite e0. rewrite epm_lift_eq. cbn.
+    + rewrite epm_lift_eq. cbn.
       econstructor.
       * ertype.
       * apply cconv_sym. eapply cconv_trans. 1: constructor.
@@ -4887,28 +4888,24 @@ Proof.
           2: apply sscoping_comp_one.
           eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
           intros [| []] hx. all: cbn.
-          + rewrite erx. reflexivity.
-          + rewrite erx. reflexivity.
+          + reflexivity.
+          + reflexivity.
           + apply psubst_SS_id. assumption.
         - mode_eqs. cbn. ssimpl. f_equal.
           erewrite param_subst.
           2:{ apply sscoping_one. escope. }
           2: apply sscoping_comp_one.
           eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
-          intros [| []] hx. all: cbn.
-          + rewrite erx. reflexivity.
-          + rewrite erx. reflexivity.
-          + apply psubst_SS_id. assumption.
+          intros [| []] hx. all: cbn. 1,2: reflexivity.
+          apply psubst_SS_id. assumption.
         - destruct m. all: try discriminate.
           ssimpl.
           erewrite param_subst.
           2:{ apply sscoping_one. escope. }
           2: apply sscoping_comp_one.
           eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
-          intros [| []] hx. all: cbn.
-          + rewrite erx. reflexivity.
-          + rewrite erx. reflexivity.
-          + apply psubst_SS_id. assumption.
+          intros [| []] hx. all: cbn. 1,2: reflexivity.
+          apply psubst_SS_id. assumption.
       }
     + destruct mx. all: try discriminate.
       eapply ccmeta_conv.
@@ -4931,8 +4928,8 @@ Proof.
           2: apply sscoping_comp_one.
           eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
           intros [| []] hx. all: cbn.
-          + rewrite erx. reflexivity.
-          + rewrite erx. reflexivity.
+          + cbn in hx. discriminate.
+          + reflexivity.
           + apply psubst_SS_id. assumption.
         - mode_eqs. cbn. ssimpl. f_equal.
           erewrite param_subst.
@@ -4940,8 +4937,8 @@ Proof.
           2: apply sscoping_comp_one.
           eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
           intros [| []] hx. all: cbn.
-          + rewrite erx. reflexivity.
-          + rewrite erx. reflexivity.
+          + discriminate.
+          + reflexivity.
           + apply psubst_SS_id. assumption.
         - destruct m. all: try discriminate.
           ssimpl.
@@ -4950,8 +4947,8 @@ Proof.
           2: apply sscoping_comp_one.
           eapply ext_cterm_scoped. 1:{ apply param_scoping. eassumption. }
           intros [| []] hx. all: cbn.
-          + rewrite erx. reflexivity.
-          + rewrite erx. reflexivity.
+          + discriminate.
+          + reflexivity.
           + apply psubst_SS_id. assumption.
       }
   - unfold ptype in *. cbn in *.
@@ -6211,10 +6208,10 @@ Proof.
           + reflexivity.
       }
       ertype.
-  -
-  -
-  -
-  -
+  - todo.
+  - todo.
+  - todo.
+  - todo.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.
