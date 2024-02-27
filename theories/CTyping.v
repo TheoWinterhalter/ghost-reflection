@@ -13,6 +13,13 @@ Notation "A ⇒[ mx ] B" :=
   (cPi mx A (shift ⋅ B))
   (at level 20, mx at next level, right associativity).
 
+(** n-ary application **)
+Fixpoint capps t us :=
+  match us with
+  | u :: us => capps (capp t u) us
+  | [] => t
+  end.
+
 Reserved Notation "Γ ⊢ᶜ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢ᶜ  t  :  A").
 
@@ -622,6 +629,63 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
     Γ ⊢ᶜ A : cty i →
       Γ ⊢ᶜ pvcons aP nP vP : capp (pvec A AP (esucc n) (psucc nP)) (evcons a v)
 
+| ctype_pvec_elim :
+    ∀ i A AP n nP v vP P PP z zP s sP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty i) →
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
+            cPi cProp
+              (capp (pvec ((S >> S >> S) ⋅ A) ((S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0))
+              (cPi cType (cEl (capp ((S >> S >> S >> S) ⋅ P) (cvar 1))) (cSort cProp 0))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ z : cEl (capp P (evnil A)) →
+      Γ ⊢ᶜ zP : capp (capp (capp PP ezero) pzero) z →
+      Γ ⊢ᶜ s : cPi cType (cEl A) (
+        cPi cType (cEl (evec (S ⋅ A))) (
+          cPi cType (cEl (capp ((S >> S) ⋅ P) (cvar 0))) (
+            cEl (capp ((S >> S >> S) ⋅ P) (evcons (cvar 2) (cvar 1)))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ sP : cPi cType (cEl (evec A)) (
+        cPi cProp (capp (S ⋅ A) (cvar 0)) (
+          cPi cType (cEl enat) (
+            cPi cProp (capp pnat (cvar 0)) (
+              cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
+                cPi cProp (capp (pvec ((S >> S >> S >> S >> S) ⋅ A) ((S >> S >> S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0)) (
+                  cPi cType (cEl (capp ((S >> S >> S >> S >> S >> S) ⋅ P) (cvar 1))) (
+                    cPi cProp (capps ((S >> S >> S >> S >> S >> S >> S) ⋅ PP) [ cvar 4 ; cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
+                      capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ PP) [
+                        esucc (cvar 5) ;
+                        psucc (cvar 4) ;
+                        evcons (cvar 7) (cvar 3) ;
+                        pvcons (cvar 6) (cvar 4) (cvar 2) ;
+                        capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ s) [
+                          cvar 7 ;
+                          cvar 3 ;
+                          cvar 1
+                        ]
+                      ]
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pvec_elim A AP n nP v vP P PP z zP s sP :
+      capps PP [ n ; nP ; v ; vP ; evec_elim v P z s ]
+
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -680,6 +744,7 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_enat ctype_ezero ctype_esucc ctype_enat_elim ctype_pnat ctype_pzero
   ctype_psucc ctype_pnat_elim ctype_pnat_elimP ctype_evec ctype_evnil
   ctype_evcons ctype_evec_elim ctype_pvec ctype_pvnil ctype_pvcons
+  ctype_pvec_elim
 : cc_type.
 
 Ltac econv :=

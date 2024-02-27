@@ -32,13 +32,6 @@ Definition elength A v :=
       )
     )).
 
-(** n-ary application **)
-Fixpoint capps t us :=
-  match us with
-  | u :: us => capps (capp t u) us
-  | [] => t
-  end.
-
 (** Revival translation **)
 
 Reserved Notation "⟦ G | u '⟧v'" (at level 9, G, u at next level).
