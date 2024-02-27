@@ -630,14 +630,14 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ pvcons aP nP vP : capp (pvec A AP (esucc n) (psucc nP)) (evcons a v)
 
 | ctype_pvec_elim :
-    ∀ i A AP n nP v vP P PP z zP s sP,
+    ∀ i j A AP n nP v vP P PP z zP s sP,
       Γ ⊢ᶜ A : cty i →
       Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
       Γ ⊢ᶜ n : cEl enat →
       Γ ⊢ᶜ nP : capp pnat n →
       Γ ⊢ᶜ v : cEl (evec A) →
       Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
-      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty i) →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty j) →
       Γ ⊢ᶜ PP : cPi cType (cEl enat) (
         cPi cProp (capp pnat (cvar 0)) (
           cPi cType (cEl (evec ((S >> S) ⋅ A))) (
@@ -648,7 +648,7 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
         )
       ) →
       Γ ⊢ᶜ z : cEl (capp P (evnil A)) →
-      Γ ⊢ᶜ zP : capp (capp (capp PP ezero) pzero) z →
+      Γ ⊢ᶜ zP : capps PP [ ezero ; pzero ; evnil A ; pvnil AP ; z ] →
       Γ ⊢ᶜ s : cPi cType (cEl A) (
         cPi cType (cEl (evec (S ⋅ A))) (
           cPi cType (cEl (capp ((S >> S) ⋅ P) (cvar 0))) (
@@ -656,8 +656,8 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
           )
         )
       ) →
-      Γ ⊢ᶜ sP : cPi cType (cEl (evec A)) (
-        cPi cProp (capp (S ⋅ A) (cvar 0)) (
+      Γ ⊢ᶜ sP : cPi cType (cEl A) (
+        cPi cProp (capp (S ⋅ AP) (cvar 0)) (
           cPi cType (cEl enat) (
             cPi cProp (capp pnat (cvar 0)) (
               cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
