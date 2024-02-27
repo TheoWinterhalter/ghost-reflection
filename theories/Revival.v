@@ -19,19 +19,6 @@ Definition ghv (Γ : scope) x :=
   | None => false
   end.
 
-(** Length of an evec **)
-
-Definition elength A v :=
-  evec_elim v (clam cType (cEl (evec A)) enat)
-    (* vnil => *) ezero
-    (* vcons => *) (clam cType (cEl A) (
-      clam cType (cEl (evec (S ⋅ A))) (
-        clam cType (cEl enat) (
-          esucc (cvar 0)
-        )
-      )
-    )).
-
 (** Revival translation **)
 
 Reserved Notation "⟦ G | u '⟧v'" (at level 9, G, u at next level).
