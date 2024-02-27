@@ -7508,7 +7508,14 @@ Proof.
           }
           reflexivity.
       }
-      admit.
+      ertype. all: try assumption.
+      * eapply ccmeta_conv. 1: eassumption.
+        f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
+        ssimpl. reflexivity.
+      * eapply ccmeta_conv. 1: eassumption.
+        f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
+        cbn. f_equal. f_equal. f_equal. f_equal.
+        ssimpl. reflexivity.
     + simpl in IHh4. erewrite !md_ren in IHh4.
       2-7: eauto using rscoping_S, rscoping_comp_S.
       remd in IHh4. cbn in IHh4.

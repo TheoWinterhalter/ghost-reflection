@@ -765,7 +765,7 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
         evec_elim v P z (
           clam cType (cEl A) (
             clam cType (cEl (evec (S ⋅ A))) (
-              capps s [
+              capps ((S >> S) ⋅ s) [
                 cvar 1 ;
                 elength ((S >> S) ⋅ A) (cvar 0) ;
                 cvar 0

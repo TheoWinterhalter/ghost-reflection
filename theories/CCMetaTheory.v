@@ -393,6 +393,35 @@ Proof.
       f_equal. unfold capps. cbn. f_equal. all: f_equal.
       all: f_equal. all: f_equal. all: f_equal. 1,2: f_equal.
       all: ssimpl. all: reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
+    asimpl in IHht12.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal.
+      ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. f_equal. f_equal. f_equal. f_equal. f_equal.
+      f_equal. unfold capps. cbn. f_equal. all: f_equal.
+      all: f_equal. all: f_equal. all: f_equal. 1,2: f_equal.
+      all: ssimpl. all: reflexivity.
+    + cbn. unfold elength. f_equal. f_equal. f_equal. ssimpl.
+      reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal.
+      ssimpl. reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. f_equal. f_equal. f_equal. f_equal.
+      f_equal. f_equal. cbn. f_equal.
+      all: f_equal. all: f_equal. all: f_equal. all: f_equal.
+      all: ssimpl. all: reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_ren. all: eassumption.
@@ -668,6 +697,54 @@ Proof.
       f_equal. ssimpl. f_equal. f_equal. f_equal. unfold capps. cbn. f_equal.
       all: f_equal. all: f_equal. 2-4: f_equal.
       4-6: f_equal. 5-7: f_equal. 5-7: f_equal. 5-7: f_equal.
+      5-6: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
+    asimpl in IHht12.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal.
+      ssimpl. f_equal. all: f_equal. all: f_equal. 2,3: f_equal. 4: f_equal.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. f_equal. f_equal.  all: f_equal. all: f_equal.
+      2,3: f_equal.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. ssimpl. f_equal. f_equal. f_equal. unfold capps. cbn. f_equal.
+      all: f_equal. all: f_equal. 2-4: f_equal.
+      4-6: f_equal. 5-7: f_equal. 5-7: f_equal. 5-7: f_equal.
+      5-7: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
+    + cbn. unfold elength. f_equal. f_equal. f_equal.
+      ssimpl. f_equal. f_equal. f_equal.
+      all: f_equal. 2,3: f_equal. 2-4: f_equal. 2,4: f_equal.
+      3: f_equal.
+      all: ssimpl.
+      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10.
+    eapply cmeta_conv. 1: econstructor. all: eauto.
+    + eapply cmeta_conv. 1: eauto.
+      f_equal. f_equal.
+      ssimpl. f_equal. all: f_equal. all: f_equal. 2: f_equal.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+    + eapply cmeta_conv. 1: eauto.
+      unfold capps.
+      f_equal. ssimpl. f_equal. clear. f_equal. f_equal. f_equal. all: f_equal.
+      all: f_equal. 2-4: f_equal. 4-6: f_equal. 5-6: f_equal. 5-6: f_equal.
       5-6: f_equal.
       all: ssimpl.
       all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
