@@ -272,6 +272,22 @@ Inductive ccscoping (Γ : cscope) : cterm → cmode → Prop :=
       ccscoping Γ sP cProp →
       ccscoping Γ (pvec_elim A AP n nP v vP P PP z zP s sP) cProp
 
+| cscope_pvec_elimG :
+    ∀ A AP n nP v vP P PP z zP s sP,
+      ccscoping Γ A cType →
+      ccscoping Γ AP cType →
+      ccscoping Γ n cType →
+      ccscoping Γ nP cProp →
+      ccscoping Γ v cType →
+      ccscoping Γ vP cProp →
+      ccscoping Γ P cType →
+      ccscoping Γ PP cType →
+      ccscoping Γ z cType →
+      ccscoping Γ zP cProp →
+      ccscoping Γ s cType →
+      ccscoping Γ sP cProp →
+      ccscoping Γ (pvec_elimG A AP n nP v vP P PP z zP s sP) cProp
+
 | cscope_pvec_elimP :
     ∀ A AP n nP v vP P PP z s,
       ccscoping Γ A cType →

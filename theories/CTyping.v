@@ -775,6 +775,49 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
         )
       ]
 
+| ctype_pvec_elimP :
+    ∀ i A AP n nP v vP P PP zP sP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) cunit →
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
+            cPi cProp
+              (capp (pvec ((S >> S >> S) ⋅ A) ((S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0))
+              (cSort cProp 0)
+          )
+        )
+      ) →
+      Γ ⊢ᶜ zP : capps PP [ ezero ; pzero ; evnil A ; pvnil AP ] →
+      Γ ⊢ᶜ sP : cPi cType (cEl A) (
+        cPi cProp (capp (S ⋅ AP) (cvar 0)) (
+          cPi cType (cEl enat) (
+            cPi cProp (capp pnat (cvar 0)) (
+              cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
+                cPi cProp (capp (pvec ((S >> S >> S >> S >> S) ⋅ A) ((S >> S >> S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0)) (
+                  cPi cType (cEl (capp ((S >> S >> S >> S >> S >> S) ⋅ P) (cvar 1))) (
+                    cPi cProp (capps ((S >> S >> S >> S >> S >> S >> S) ⋅ P) [ cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
+                      capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ P) [
+                        esucc (cvar 4) ;
+                        psucc (cvar 3) ;
+                        evcons (cvar 6) (cvar 2) ;
+                        pvcons (cvar 5) (cvar 3) (cvar 1)
+                      ]
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pvec_elimP A AP n nP v vP P PP zP sP : capps PP [ n ; nP ; v ; vP ]
+
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -833,7 +876,7 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_enat ctype_ezero ctype_esucc ctype_enat_elim ctype_pnat ctype_pzero
   ctype_psucc ctype_pnat_elim ctype_pnat_elimP ctype_evec ctype_evnil
   ctype_evcons ctype_evec_elim ctype_pvec ctype_pvnil ctype_pvcons
-  ctype_pvec_elim ctype_pvec_elimG
+  ctype_pvec_elim ctype_pvec_elimG ctype_pvec_elimP
 : cc_type.
 
 Ltac econv :=

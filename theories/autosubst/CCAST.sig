@@ -69,4 +69,5 @@ pvec : cterm -> cterm -> cterm -> cterm -> cterm
 pvnil : cterm -> cterm
 pvcons : cterm -> cterm -> cterm -> cterm
 pvec_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+pvec_elimG : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
 pvec_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
