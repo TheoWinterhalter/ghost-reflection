@@ -108,20 +108,6 @@ Proof.
     constructor. reflexivity.
 Qed.
 
-Lemma err_vec_elim_ext :
-  ∀ A Pe ze se se' AP n nP v,
-    pm_vec A AP n nP v →
-    (∀ a m mP v, pm_vec A AP m mP v → squash (se a v = se' a v)) →
-    squash (err_vec_elim A Pe ze se v = err_vec_elim A Pe ze se' v).
-Proof.
-  intros A Pe ze se se' AP n nP v vP h.
-  induction vP.
-  - cbn. constructor. reflexivity.
-  - cbn. destruct IHvP as [e].
-    specialize (h a n nP v vP). destruct h as [h].
-    constructor. rewrite h. f_equal. exact e.
-Qed.
-
 Lemma pm_vec_elimG :
   ∀ A (AP : El A → SProp)
     (Pe : err_vec A → ty)
@@ -136,12 +122,10 @@ Lemma pm_vec_elimG :
     PP n nP v vP (err_vec_elim A Pe ze (λ a v, se a (err_length v) v) v).
 Proof.
   intros A AP Pe PP ze zP se sP n nP v vP.
-  eapply (err_vec_elim_ext A Pe ze) in vP as e.
-  1: destruct e as [e]. 1: rewrite e.
-  (* Need ext with an eliminator for pm_vec maybe? *)
-  (* induction vP. 1: eauto. *)
-(* Qed. *)
-Admitted.
+  induction vP. 1: eauto.
+  cbn. eapply err_length_eq in vP as en. destruct en. subst.
+  eauto.
+Qed.
 
 Lemma pm_vec_elim_Prop :
   ∀ A (AP : El A → SProp)
