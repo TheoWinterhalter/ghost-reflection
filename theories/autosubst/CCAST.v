@@ -47,7 +47,33 @@ Inductive cterm : Type :=
   | pnat_elim :
       cterm ->
       cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
-  | pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm.
+  | pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+  | evec : cterm -> cterm
+  | evnil : cterm -> cterm
+  | evcons : cterm -> cterm -> cterm
+  | evec_elim : cterm -> cterm -> cterm -> cterm -> cterm
+  | pvec : cterm -> cterm -> cterm -> cterm -> cterm
+  | pvnil : cterm -> cterm
+  | pvcons : cterm -> cterm -> cterm -> cterm
+  | pvec_elim :
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+  | pvec_elimG :
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+  | pvec_elimP :
+      cterm ->
+      cterm ->
+      cterm ->
+      cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm.
 
 Lemma congr_cSort {s0 : cmode} {s1 : level} {t0 : cmode} {t1 : level}
   (H0 : s0 = t0) (H1 : s1 = t1) : cSort s0 s1 = cSort t0 t1.
@@ -352,6 +378,238 @@ exact (eq_trans
          (ap (fun x => pnat_elimP t0 t1 t2 t3 t4 x) H5)).
 Qed.
 
+Lemma congr_evec {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) : evec s0 = evec t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => evec x) H0)).
+Qed.
+
+Lemma congr_evnil {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
+  evnil s0 = evnil t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => evnil x) H0)).
+Qed.
+
+Lemma congr_evcons {s0 : cterm} {s1 : cterm} {t0 : cterm} {t1 : cterm}
+  (H0 : s0 = t0) (H1 : s1 = t1) : evcons s0 s1 = evcons t0 t1.
+Proof.
+exact (eq_trans (eq_trans eq_refl (ap (fun x => evcons x s1) H0))
+         (ap (fun x => evcons t0 x) H1)).
+Qed.
+
+Lemma congr_evec_elim {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
+  evec_elim s0 s1 s2 s3 = evec_elim t0 t1 t2 t3.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans eq_refl (ap (fun x => evec_elim x s1 s2 s3) H0))
+               (ap (fun x => evec_elim t0 x s2 s3) H1))
+            (ap (fun x => evec_elim t0 t1 x s3) H2))
+         (ap (fun x => evec_elim t0 t1 t2 x) H3)).
+Qed.
+
+Lemma congr_pvec {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm} (H0 : s0 = t0)
+  (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) :
+  pvec s0 s1 s2 s3 = pvec t0 t1 t2 t3.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans (eq_trans eq_refl (ap (fun x => pvec x s1 s2 s3) H0))
+               (ap (fun x => pvec t0 x s2 s3) H1))
+            (ap (fun x => pvec t0 t1 x s3) H2))
+         (ap (fun x => pvec t0 t1 t2 x) H3)).
+Qed.
+
+Lemma congr_pvnil {s0 : cterm} {t0 : cterm} (H0 : s0 = t0) :
+  pvnil s0 = pvnil t0.
+Proof.
+exact (eq_trans eq_refl (ap (fun x => pvnil x) H0)).
+Qed.
+
+Lemma congr_pvcons {s0 : cterm} {s1 : cterm} {s2 : cterm} {t0 : cterm}
+  {t1 : cterm} {t2 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) :
+  pvcons s0 s1 s2 = pvcons t0 t1 t2.
+Proof.
+exact (eq_trans
+         (eq_trans (eq_trans eq_refl (ap (fun x => pvcons x s1 s2) H0))
+            (ap (fun x => pvcons t0 x s2) H1))
+         (ap (fun x => pvcons t0 t1 x) H2)).
+Qed.
+
+Lemma congr_pvec_elim {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {s4 : cterm} {s5 : cterm} {s6 : cterm} {s7 : cterm} {s8 : cterm}
+  {s9 : cterm} {s10 : cterm} {s11 : cterm} {t0 : cterm} {t1 : cterm}
+  {t2 : cterm} {t3 : cterm} {t4 : cterm} {t5 : cterm} {t6 : cterm}
+  {t7 : cterm} {t8 : cterm} {t9 : cterm} {t10 : cterm} {t11 : cterm}
+  (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) (H4 : s4 = t4)
+  (H5 : s5 = t5) (H6 : s6 = t6) (H7 : s7 = t7) (H8 : s8 = t8) (H9 : s9 = t9)
+  (H10 : s10 = t10) (H11 : s11 = t11) :
+  pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =
+  pvec_elim t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans
+                  (eq_trans
+                     (eq_trans
+                        (eq_trans
+                           (eq_trans
+                              (eq_trans
+                                 (eq_trans
+                                    (eq_trans
+                                       (eq_trans eq_refl
+                                          (ap
+                                             (fun x =>
+                                              pvec_elim x s1 s2 s3 s4 s5 s6
+                                                s7 s8 s9 s10 s11) H0))
+                                       (ap
+                                          (fun x =>
+                                           pvec_elim t0 x s2 s3 s4 s5 s6 s7
+                                             s8 s9 s10 s11) H1))
+                                    (ap
+                                       (fun x =>
+                                        pvec_elim t0 t1 x s3 s4 s5 s6 s7 s8
+                                          s9 s10 s11) H2))
+                                 (ap
+                                    (fun x =>
+                                     pvec_elim t0 t1 t2 x s4 s5 s6 s7 s8 s9
+                                       s10 s11) H3))
+                              (ap
+                                 (fun x =>
+                                  pvec_elim t0 t1 t2 t3 x s5 s6 s7 s8 s9 s10
+                                    s11) H4))
+                           (ap
+                              (fun x =>
+                               pvec_elim t0 t1 t2 t3 t4 x s6 s7 s8 s9 s10 s11)
+                              H5))
+                        (ap
+                           (fun x =>
+                            pvec_elim t0 t1 t2 t3 t4 t5 x s7 s8 s9 s10 s11)
+                           H6))
+                     (ap
+                        (fun x =>
+                         pvec_elim t0 t1 t2 t3 t4 t5 t6 x s8 s9 s10 s11) H7))
+                  (ap
+                     (fun x => pvec_elim t0 t1 t2 t3 t4 t5 t6 t7 x s9 s10 s11)
+                     H8))
+               (ap (fun x => pvec_elim t0 t1 t2 t3 t4 t5 t6 t7 t8 x s10 s11)
+                  H9))
+            (ap (fun x => pvec_elim t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 x s11) H10))
+         (ap (fun x => pvec_elim t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 x) H11)).
+Qed.
+
+Lemma congr_pvec_elimG {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {s4 : cterm} {s5 : cterm} {s6 : cterm} {s7 : cterm} {s8 : cterm}
+  {s9 : cterm} {s10 : cterm} {s11 : cterm} {t0 : cterm} {t1 : cterm}
+  {t2 : cterm} {t3 : cterm} {t4 : cterm} {t5 : cterm} {t6 : cterm}
+  {t7 : cterm} {t8 : cterm} {t9 : cterm} {t10 : cterm} {t11 : cterm}
+  (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3) (H4 : s4 = t4)
+  (H5 : s5 = t5) (H6 : s6 = t6) (H7 : s7 = t7) (H8 : s8 = t8) (H9 : s9 = t9)
+  (H10 : s10 = t10) (H11 : s11 = t11) :
+  pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =
+  pvec_elimG t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans
+                  (eq_trans
+                     (eq_trans
+                        (eq_trans
+                           (eq_trans
+                              (eq_trans
+                                 (eq_trans
+                                    (eq_trans
+                                       (eq_trans eq_refl
+                                          (ap
+                                             (fun x =>
+                                              pvec_elimG x s1 s2 s3 s4 s5 s6
+                                                s7 s8 s9 s10 s11) H0))
+                                       (ap
+                                          (fun x =>
+                                           pvec_elimG t0 x s2 s3 s4 s5 s6 s7
+                                             s8 s9 s10 s11) H1))
+                                    (ap
+                                       (fun x =>
+                                        pvec_elimG t0 t1 x s3 s4 s5 s6 s7 s8
+                                          s9 s10 s11) H2))
+                                 (ap
+                                    (fun x =>
+                                     pvec_elimG t0 t1 t2 x s4 s5 s6 s7 s8 s9
+                                       s10 s11) H3))
+                              (ap
+                                 (fun x =>
+                                  pvec_elimG t0 t1 t2 t3 x s5 s6 s7 s8 s9 s10
+                                    s11) H4))
+                           (ap
+                              (fun x =>
+                               pvec_elimG t0 t1 t2 t3 t4 x s6 s7 s8 s9 s10
+                                 s11) H5))
+                        (ap
+                           (fun x =>
+                            pvec_elimG t0 t1 t2 t3 t4 t5 x s7 s8 s9 s10 s11)
+                           H6))
+                     (ap
+                        (fun x =>
+                         pvec_elimG t0 t1 t2 t3 t4 t5 t6 x s8 s9 s10 s11) H7))
+                  (ap
+                     (fun x =>
+                      pvec_elimG t0 t1 t2 t3 t4 t5 t6 t7 x s9 s10 s11) H8))
+               (ap (fun x => pvec_elimG t0 t1 t2 t3 t4 t5 t6 t7 t8 x s10 s11)
+                  H9))
+            (ap (fun x => pvec_elimG t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 x s11) H10))
+         (ap (fun x => pvec_elimG t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 x) H11)).
+Qed.
+
+Lemma congr_pvec_elimP {s0 : cterm} {s1 : cterm} {s2 : cterm} {s3 : cterm}
+  {s4 : cterm} {s5 : cterm} {s6 : cterm} {s7 : cterm} {s8 : cterm}
+  {s9 : cterm} {t0 : cterm} {t1 : cterm} {t2 : cterm} {t3 : cterm}
+  {t4 : cterm} {t5 : cterm} {t6 : cterm} {t7 : cterm} {t8 : cterm}
+  {t9 : cterm} (H0 : s0 = t0) (H1 : s1 = t1) (H2 : s2 = t2) (H3 : s3 = t3)
+  (H4 : s4 = t4) (H5 : s5 = t5) (H6 : s6 = t6) (H7 : s7 = t7) (H8 : s8 = t8)
+  (H9 : s9 = t9) :
+  pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =
+  pvec_elimP t0 t1 t2 t3 t4 t5 t6 t7 t8 t9.
+Proof.
+exact (eq_trans
+         (eq_trans
+            (eq_trans
+               (eq_trans
+                  (eq_trans
+                     (eq_trans
+                        (eq_trans
+                           (eq_trans
+                              (eq_trans
+                                 (eq_trans eq_refl
+                                    (ap
+                                       (fun x =>
+                                        pvec_elimP x s1 s2 s3 s4 s5 s6 s7 s8
+                                          s9) H0))
+                                 (ap
+                                    (fun x =>
+                                     pvec_elimP t0 x s2 s3 s4 s5 s6 s7 s8 s9)
+                                    H1))
+                              (ap
+                                 (fun x =>
+                                  pvec_elimP t0 t1 x s3 s4 s5 s6 s7 s8 s9) H2))
+                           (ap
+                              (fun x =>
+                               pvec_elimP t0 t1 t2 x s4 s5 s6 s7 s8 s9) H3))
+                        (ap
+                           (fun x => pvec_elimP t0 t1 t2 t3 x s5 s6 s7 s8 s9)
+                           H4))
+                     (ap (fun x => pvec_elimP t0 t1 t2 t3 t4 x s6 s7 s8 s9)
+                        H5))
+                  (ap (fun x => pvec_elimP t0 t1 t2 t3 t4 t5 x s7 s8 s9) H6))
+               (ap (fun x => pvec_elimP t0 t1 t2 t3 t4 t5 t6 x s8 s9) H7))
+            (ap (fun x => pvec_elimP t0 t1 t2 t3 t4 t5 t6 t7 x s9) H8))
+         (ap (fun x => pvec_elimP t0 t1 t2 t3 t4 t5 t6 t7 t8 x) H9)).
+Qed.
+
 Lemma upRen_cterm_cterm (xi : nat -> nat) : nat -> nat.
 Proof.
 exact (up_ren xi).
@@ -425,6 +683,39 @@ Fixpoint ren_cterm (xi_cterm : nat -> nat) (s : cterm) {struct s} : cterm :=
       pnat_elimP (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
         (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
         (ren_cterm xi_cterm s4) (ren_cterm xi_cterm s5)
+  | evec s0 => evec (ren_cterm xi_cterm s0)
+  | evnil s0 => evnil (ren_cterm xi_cterm s0)
+  | evcons s0 s1 => evcons (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      evec_elim (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      pvec (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+  | pvnil s0 => pvnil (ren_cterm xi_cterm s0)
+  | pvcons s0 s1 s2 =>
+      pvcons (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      pvec_elim (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+        (ren_cterm xi_cterm s4) (ren_cterm xi_cterm s5)
+        (ren_cterm xi_cterm s6) (ren_cterm xi_cterm s7)
+        (ren_cterm xi_cterm s8) (ren_cterm xi_cterm s9)
+        (ren_cterm xi_cterm s10) (ren_cterm xi_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      pvec_elimG (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+        (ren_cterm xi_cterm s4) (ren_cterm xi_cterm s5)
+        (ren_cterm xi_cterm s6) (ren_cterm xi_cterm s7)
+        (ren_cterm xi_cterm s8) (ren_cterm xi_cterm s9)
+        (ren_cterm xi_cterm s10) (ren_cterm xi_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      pvec_elimP (ren_cterm xi_cterm s0) (ren_cterm xi_cterm s1)
+        (ren_cterm xi_cterm s2) (ren_cterm xi_cterm s3)
+        (ren_cterm xi_cterm s4) (ren_cterm xi_cterm s5)
+        (ren_cterm xi_cterm s6) (ren_cterm xi_cterm s7)
+        (ren_cterm xi_cterm s8) (ren_cterm xi_cterm s9)
   end.
 
 Lemma up_cterm_cterm (sigma : nat -> cterm) : nat -> cterm.
@@ -503,6 +794,40 @@ cterm :=
       pnat_elimP (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
         (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
         (subst_cterm sigma_cterm s4) (subst_cterm sigma_cterm s5)
+  | evec s0 => evec (subst_cterm sigma_cterm s0)
+  | evnil s0 => evnil (subst_cterm sigma_cterm s0)
+  | evcons s0 s1 =>
+      evcons (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      evec_elim (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      pvec (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+  | pvnil s0 => pvnil (subst_cterm sigma_cterm s0)
+  | pvcons s0 s1 s2 =>
+      pvcons (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      pvec_elim (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+        (subst_cterm sigma_cterm s4) (subst_cterm sigma_cterm s5)
+        (subst_cterm sigma_cterm s6) (subst_cterm sigma_cterm s7)
+        (subst_cterm sigma_cterm s8) (subst_cterm sigma_cterm s9)
+        (subst_cterm sigma_cterm s10) (subst_cterm sigma_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      pvec_elimG (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+        (subst_cterm sigma_cterm s4) (subst_cterm sigma_cterm s5)
+        (subst_cterm sigma_cterm s6) (subst_cterm sigma_cterm s7)
+        (subst_cterm sigma_cterm s8) (subst_cterm sigma_cterm s9)
+        (subst_cterm sigma_cterm s10) (subst_cterm sigma_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      pvec_elimP (subst_cterm sigma_cterm s0) (subst_cterm sigma_cterm s1)
+        (subst_cterm sigma_cterm s2) (subst_cterm sigma_cterm s3)
+        (subst_cterm sigma_cterm s4) (subst_cterm sigma_cterm s5)
+        (subst_cterm sigma_cterm s6) (subst_cterm sigma_cterm s7)
+        (subst_cterm sigma_cterm s8) (subst_cterm sigma_cterm s9)
   end.
 
 Lemma upId_cterm_cterm (sigma : nat -> cterm)
@@ -610,6 +935,63 @@ subst_cterm sigma_cterm s = s :=
         (idSubst_cterm sigma_cterm Eq_cterm s3)
         (idSubst_cterm sigma_cterm Eq_cterm s4)
         (idSubst_cterm sigma_cterm Eq_cterm s5)
+  | evec s0 => congr_evec (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | evnil s0 => congr_evnil (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+  | pvnil s0 => congr_pvnil (idSubst_cterm sigma_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+        (idSubst_cterm sigma_cterm Eq_cterm s4)
+        (idSubst_cterm sigma_cterm Eq_cterm s5)
+        (idSubst_cterm sigma_cterm Eq_cterm s6)
+        (idSubst_cterm sigma_cterm Eq_cterm s7)
+        (idSubst_cterm sigma_cterm Eq_cterm s8)
+        (idSubst_cterm sigma_cterm Eq_cterm s9)
+        (idSubst_cterm sigma_cterm Eq_cterm s10)
+        (idSubst_cterm sigma_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+        (idSubst_cterm sigma_cterm Eq_cterm s4)
+        (idSubst_cterm sigma_cterm Eq_cterm s5)
+        (idSubst_cterm sigma_cterm Eq_cterm s6)
+        (idSubst_cterm sigma_cterm Eq_cterm s7)
+        (idSubst_cterm sigma_cterm Eq_cterm s8)
+        (idSubst_cterm sigma_cterm Eq_cterm s9)
+        (idSubst_cterm sigma_cterm Eq_cterm s10)
+        (idSubst_cterm sigma_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP (idSubst_cterm sigma_cterm Eq_cterm s0)
+        (idSubst_cterm sigma_cterm Eq_cterm s1)
+        (idSubst_cterm sigma_cterm Eq_cterm s2)
+        (idSubst_cterm sigma_cterm Eq_cterm s3)
+        (idSubst_cterm sigma_cterm Eq_cterm s4)
+        (idSubst_cterm sigma_cterm Eq_cterm s5)
+        (idSubst_cterm sigma_cterm Eq_cterm s6)
+        (idSubst_cterm sigma_cterm Eq_cterm s7)
+        (idSubst_cterm sigma_cterm Eq_cterm s8)
+        (idSubst_cterm sigma_cterm Eq_cterm s9)
   end.
 
 Lemma upExtRen_cterm_cterm (xi : nat -> nat) (zeta : nat -> nat)
@@ -720,6 +1102,63 @@ ren_cterm xi_cterm s = ren_cterm zeta_cterm s :=
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
         (extRen_cterm xi_cterm zeta_cterm Eq_cterm s5)
+  | evec s0 => congr_evec (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | evnil s0 => congr_evnil (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+  | pvnil s0 => congr_pvnil (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s5)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s6)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s7)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s8)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s9)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s10)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s5)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s6)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s7)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s8)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s9)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s10)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP (extRen_cterm xi_cterm zeta_cterm Eq_cterm s0)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s1)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s2)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s3)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s4)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s5)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s6)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s7)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s8)
+        (extRen_cterm xi_cterm zeta_cterm Eq_cterm s9)
   end.
 
 Lemma upExt_cterm_cterm (sigma : nat -> cterm) (tau : nat -> cterm)
@@ -828,6 +1267,63 @@ subst_cterm sigma_cterm s = subst_cterm tau_cterm s :=
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
         (ext_cterm sigma_cterm tau_cterm Eq_cterm s5)
+  | evec s0 => congr_evec (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | evnil s0 => congr_evnil (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+  | pvnil s0 => congr_pvnil (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s5)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s6)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s7)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s8)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s9)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s10)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s5)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s6)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s7)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s8)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s9)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s10)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP (ext_cterm sigma_cterm tau_cterm Eq_cterm s0)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s1)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s2)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s3)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s4)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s5)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s6)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s7)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s8)
+        (ext_cterm sigma_cterm tau_cterm Eq_cterm s9)
   end.
 
 Lemma up_ren_ren_cterm_cterm (xi : nat -> nat) (zeta : nat -> nat)
@@ -956,6 +1452,74 @@ ren_cterm zeta_cterm (ren_cterm xi_cterm s) = ren_cterm rho_cterm s :=
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
         (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s5)
+  | evec s0 =>
+      congr_evec (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | evnil s0 =>
+      congr_evnil
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+  | pvnil s0 =>
+      congr_pvnil
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s5)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s6)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s7)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s8)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s9)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s10)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s5)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s6)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s7)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s8)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s9)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s10)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s0)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s1)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s2)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s3)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s4)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s5)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s6)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s7)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s8)
+        (compRenRen_cterm xi_cterm zeta_cterm rho_cterm Eq_cterm s9)
   end.
 
 Lemma up_ren_subst_cterm_cterm (xi : nat -> nat) (tau : nat -> cterm)
@@ -1095,6 +1659,76 @@ subst_cterm tau_cterm (ren_cterm xi_cterm s) = subst_cterm theta_cterm s :=
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
         (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s5)
+  | evec s0 =>
+      congr_evec
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | evnil s0 =>
+      congr_evnil
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pvnil s0 =>
+      congr_pvnil
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s5)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s6)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s7)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s8)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s9)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s10)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s5)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s6)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s7)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s8)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s9)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s10)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s5)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s6)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s7)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s8)
+        (compRenSubst_cterm xi_cterm tau_cterm theta_cterm Eq_cterm s9)
   end.
 
 Lemma up_subst_ren_cterm_cterm (sigma : nat -> cterm)
@@ -1245,6 +1879,76 @@ ren_cterm zeta_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
         (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s5)
+  | evec s0 =>
+      congr_evec
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | evnil s0 =>
+      congr_evnil
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+  | pvnil s0 =>
+      congr_pvnil
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s5)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s6)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s7)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s8)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s9)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s10)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s5)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s6)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s7)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s8)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s9)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s10)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s0)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s1)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s2)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s3)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s4)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s5)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s6)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s7)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s8)
+        (compSubstRen_cterm sigma_cterm zeta_cterm theta_cterm Eq_cterm s9)
   end.
 
 Lemma up_subst_subst_cterm_cterm (sigma : nat -> cterm)
@@ -1397,6 +2101,76 @@ subst_cterm tau_cterm (subst_cterm sigma_cterm s) = subst_cterm theta_cterm s
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
         (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s5)
+  | evec s0 =>
+      congr_evec
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | evnil s0 =>
+      congr_evnil
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+  | pvnil s0 =>
+      congr_pvnil
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s5)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s6)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s7)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s8)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s9)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s10)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s5)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s6)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s7)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s8)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s9)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s10)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s0)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s1)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s2)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s3)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s4)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s5)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s6)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s7)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s8)
+        (compSubstSubst_cterm sigma_cterm tau_cterm theta_cterm Eq_cterm s9)
   end.
 
 Lemma renRen_cterm (xi_cterm : nat -> nat) (zeta_cterm : nat -> nat)
@@ -1585,6 +2359,65 @@ Fixpoint rinst_inst_cterm (xi_cterm : nat -> nat)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
         (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s5)
+  | evec s0 => congr_evec (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | evnil s0 =>
+      congr_evnil (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | evcons s0 s1 =>
+      congr_evcons (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+  | evec_elim s0 s1 s2 s3 =>
+      congr_evec_elim (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+  | pvec s0 s1 s2 s3 =>
+      congr_pvec (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+  | pvnil s0 =>
+      congr_pvnil (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+  | pvcons s0 s1 s2 =>
+      congr_pvcons (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elim (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s5)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s6)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s7)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s8)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s9)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s10)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s11)
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      congr_pvec_elimG (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s5)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s6)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s7)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s8)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s9)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s10)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s11)
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      congr_pvec_elimP (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s0)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s1)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s2)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s3)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s4)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s5)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s6)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s7)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s8)
+        (rinst_inst_cterm xi_cterm sigma_cterm Eq_cterm s9)
   end.
 
 Lemma rinstInst'_cterm (xi_cterm : nat -> nat) (s : cterm) :
@@ -1870,6 +2703,59 @@ Fixpoint allfv_cterm (p_cterm : nat -> Prop) (s : cterm) {struct s} : Prop :=
               (and (allfv_cterm p_cterm s3)
                  (and (allfv_cterm p_cterm s4)
                     (and (allfv_cterm p_cterm s5) True)))))
+  | evec s0 => and (allfv_cterm p_cterm s0) True
+  | evnil s0 => and (allfv_cterm p_cterm s0) True
+  | evcons s0 s1 =>
+      and (allfv_cterm p_cterm s0) (and (allfv_cterm p_cterm s1) True)
+  | evec_elim s0 s1 s2 s3 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
+  | pvec s0 s1 s2 s3 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2) (and (allfv_cterm p_cterm s3) True)))
+  | pvnil s0 => and (allfv_cterm p_cterm s0) True
+  | pvcons s0 s1 s2 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1) (and (allfv_cterm p_cterm s2) True))
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2)
+              (and (allfv_cterm p_cterm s3)
+                 (and (allfv_cterm p_cterm s4)
+                    (and (allfv_cterm p_cterm s5)
+                       (and (allfv_cterm p_cterm s6)
+                          (and (allfv_cterm p_cterm s7)
+                             (and (allfv_cterm p_cterm s8)
+                                (and (allfv_cterm p_cterm s9)
+                                   (and (allfv_cterm p_cterm s10)
+                                      (and (allfv_cterm p_cterm s11) True)))))))))))
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2)
+              (and (allfv_cterm p_cterm s3)
+                 (and (allfv_cterm p_cterm s4)
+                    (and (allfv_cterm p_cterm s5)
+                       (and (allfv_cterm p_cterm s6)
+                          (and (allfv_cterm p_cterm s7)
+                             (and (allfv_cterm p_cterm s8)
+                                (and (allfv_cterm p_cterm s9)
+                                   (and (allfv_cterm p_cterm s10)
+                                      (and (allfv_cterm p_cterm s11) True)))))))))))
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      and (allfv_cterm p_cterm s0)
+        (and (allfv_cterm p_cterm s1)
+           (and (allfv_cterm p_cterm s2)
+              (and (allfv_cterm p_cterm s3)
+                 (and (allfv_cterm p_cterm s4)
+                    (and (allfv_cterm p_cterm s5)
+                       (and (allfv_cterm p_cterm s6)
+                          (and (allfv_cterm p_cterm s7)
+                             (and (allfv_cterm p_cterm s8)
+                                (and (allfv_cterm p_cterm s9) True)))))))))
   end.
 
 Lemma upAllfvTriv_cterm_cterm {p : nat -> Prop} (H : forall x, p x) :
@@ -1982,6 +2868,69 @@ allfv_cterm p_cterm s :=
               (conj (allfvTriv_cterm p_cterm H_cterm s3)
                  (conj (allfvTriv_cterm p_cterm H_cterm s4)
                     (conj (allfvTriv_cterm p_cterm H_cterm s5) I)))))
+  | evec s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | evnil s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | evcons s0 s1 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1) I)
+  | evec_elim s0 s1 s2 s3 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3) I)))
+  | pvec s0 s1 s2 s3 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3) I)))
+  | pvnil s0 => conj (allfvTriv_cterm p_cterm H_cterm s0) I
+  | pvcons s0 s1 s2 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2) I))
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3)
+                 (conj (allfvTriv_cterm p_cterm H_cterm s4)
+                    (conj (allfvTriv_cterm p_cterm H_cterm s5)
+                       (conj (allfvTriv_cterm p_cterm H_cterm s6)
+                          (conj (allfvTriv_cterm p_cterm H_cterm s7)
+                             (conj (allfvTriv_cterm p_cterm H_cterm s8)
+                                (conj (allfvTriv_cterm p_cterm H_cterm s9)
+                                   (conj
+                                      (allfvTriv_cterm p_cterm H_cterm s10)
+                                      (conj
+                                         (allfvTriv_cterm p_cterm H_cterm s11)
+                                         I)))))))))))
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3)
+                 (conj (allfvTriv_cterm p_cterm H_cterm s4)
+                    (conj (allfvTriv_cterm p_cterm H_cterm s5)
+                       (conj (allfvTriv_cterm p_cterm H_cterm s6)
+                          (conj (allfvTriv_cterm p_cterm H_cterm s7)
+                             (conj (allfvTriv_cterm p_cterm H_cterm s8)
+                                (conj (allfvTriv_cterm p_cterm H_cterm s9)
+                                   (conj
+                                      (allfvTriv_cterm p_cterm H_cterm s10)
+                                      (conj
+                                         (allfvTriv_cterm p_cterm H_cterm s11)
+                                         I)))))))))))
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      conj (allfvTriv_cterm p_cterm H_cterm s0)
+        (conj (allfvTriv_cterm p_cterm H_cterm s1)
+           (conj (allfvTriv_cterm p_cterm H_cterm s2)
+              (conj (allfvTriv_cterm p_cterm H_cterm s3)
+                 (conj (allfvTriv_cterm p_cterm H_cterm s4)
+                    (conj (allfvTriv_cterm p_cterm H_cterm s5)
+                       (conj (allfvTriv_cterm p_cterm H_cterm s6)
+                          (conj (allfvTriv_cterm p_cterm H_cterm s7)
+                             (conj (allfvTriv_cterm p_cterm H_cterm s8)
+                                (conj (allfvTriv_cterm p_cterm H_cterm s9) I)))))))))
   end.
 
 Lemma upAllfvImpl_cterm_cterm {p : nat -> Prop} {q : nat -> Prop}
@@ -2590,6 +3539,946 @@ allfv_cterm p_cterm s -> allfv_cterm q_cterm s :=
                                   end
                               end
                           end) I)))))
+  | evec s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | evnil s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | evcons s0 s1 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end) I)
+  | evec_elim s0 s1 s2 s3 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end) I)))
+  | pvec s0 s1 s2 s3 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end) I)))
+  | pvnil s0 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end) I
+  | pvcons s0 s1 s2 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end) I))
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvImpl_cterm p_cterm q_cterm H_cterm s4
+                       match HP with
+                       | conj _ HP =>
+                           match HP with
+                           | conj _ HP =>
+                               match HP with
+                               | conj _ HP =>
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj HP _ => HP
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvImpl_cterm p_cterm q_cterm H_cterm s5
+                          match HP with
+                          | conj _ HP =>
+                              match HP with
+                              | conj _ HP =>
+                                  match HP with
+                                  | conj _ HP =>
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj HP _ => HP
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvImpl_cterm p_cterm q_cterm H_cterm s6
+                             match HP with
+                             | conj _ HP =>
+                                 match HP with
+                                 | conj _ HP =>
+                                     match HP with
+                                     | conj _ HP =>
+                                         match HP with
+                                         | conj _ HP =>
+                                             match HP with
+                                             | conj _ HP =>
+                                                 match HP with
+                                                 | conj _ HP =>
+                                                     match HP with
+                                                     | conj HP _ => HP
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvImpl_cterm p_cterm q_cterm H_cterm s7
+                                match HP with
+                                | conj _ HP =>
+                                    match HP with
+                                    | conj _ HP =>
+                                        match HP with
+                                        | conj _ HP =>
+                                            match HP with
+                                            | conj _ HP =>
+                                                match HP with
+                                                | conj _ HP =>
+                                                    match HP with
+                                                    | conj _ HP =>
+                                                        match HP with
+                                                        | conj _ HP =>
+                                                            match HP with
+                                                            | conj HP _ => HP
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvImpl_cterm p_cterm q_cterm H_cterm s8
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj _ HP =>
+                                           match HP with
+                                           | conj _ HP =>
+                                               match HP with
+                                               | conj _ HP =>
+                                                   match HP with
+                                                   | conj _ HP =>
+                                                       match HP with
+                                                       | conj _ HP =>
+                                                           match HP with
+                                                           | conj _ HP =>
+                                                               match HP with
+                                                               | conj _ HP =>
+                                                                   match
+                                                                    HP
+                                                                   with
+                                                                   | conj HP
+                                                                    _ => HP
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvImpl_cterm p_cterm q_cterm H_cterm
+                                      s9
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj _ HP =>
+                                                  match HP with
+                                                  | conj _ HP =>
+                                                      match HP with
+                                                      | conj _ HP =>
+                                                          match HP with
+                                                          | conj _ HP =>
+                                                              match HP with
+                                                              | conj _ HP =>
+                                                                  match
+                                                                    HP
+                                                                  with
+                                                                  | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end)
+                                   (conj
+                                      (allfvImpl_cterm p_cterm q_cterm
+                                         H_cterm s10
+                                         match HP with
+                                         | conj _ HP =>
+                                             match HP with
+                                             | conj _ HP =>
+                                                 match HP with
+                                                 | conj _ HP =>
+                                                     match HP with
+                                                     | conj _ HP =>
+                                                         match HP with
+                                                         | conj _ HP =>
+                                                             match HP with
+                                                             | conj _ HP =>
+                                                                 match
+                                                                   HP
+                                                                 with
+                                                                 | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                 end
+                                                             end
+                                                         end
+                                                     end
+                                                 end
+                                             end
+                                         end)
+                                      (conj
+                                         (allfvImpl_cterm p_cterm q_cterm
+                                            H_cterm s11
+                                            match HP with
+                                            | conj _ HP =>
+                                                match HP with
+                                                | conj _ HP =>
+                                                    match HP with
+                                                    | conj _ HP =>
+                                                        match HP with
+                                                        | conj _ HP =>
+                                                            match HP with
+                                                            | conj _ HP =>
+                                                                match HP with
+                                                                | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end) I)))))))))))
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvImpl_cterm p_cterm q_cterm H_cterm s4
+                       match HP with
+                       | conj _ HP =>
+                           match HP with
+                           | conj _ HP =>
+                               match HP with
+                               | conj _ HP =>
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj HP _ => HP
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvImpl_cterm p_cterm q_cterm H_cterm s5
+                          match HP with
+                          | conj _ HP =>
+                              match HP with
+                              | conj _ HP =>
+                                  match HP with
+                                  | conj _ HP =>
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj HP _ => HP
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvImpl_cterm p_cterm q_cterm H_cterm s6
+                             match HP with
+                             | conj _ HP =>
+                                 match HP with
+                                 | conj _ HP =>
+                                     match HP with
+                                     | conj _ HP =>
+                                         match HP with
+                                         | conj _ HP =>
+                                             match HP with
+                                             | conj _ HP =>
+                                                 match HP with
+                                                 | conj _ HP =>
+                                                     match HP with
+                                                     | conj HP _ => HP
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvImpl_cterm p_cterm q_cterm H_cterm s7
+                                match HP with
+                                | conj _ HP =>
+                                    match HP with
+                                    | conj _ HP =>
+                                        match HP with
+                                        | conj _ HP =>
+                                            match HP with
+                                            | conj _ HP =>
+                                                match HP with
+                                                | conj _ HP =>
+                                                    match HP with
+                                                    | conj _ HP =>
+                                                        match HP with
+                                                        | conj _ HP =>
+                                                            match HP with
+                                                            | conj HP _ => HP
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvImpl_cterm p_cterm q_cterm H_cterm s8
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj _ HP =>
+                                           match HP with
+                                           | conj _ HP =>
+                                               match HP with
+                                               | conj _ HP =>
+                                                   match HP with
+                                                   | conj _ HP =>
+                                                       match HP with
+                                                       | conj _ HP =>
+                                                           match HP with
+                                                           | conj _ HP =>
+                                                               match HP with
+                                                               | conj _ HP =>
+                                                                   match
+                                                                    HP
+                                                                   with
+                                                                   | conj HP
+                                                                    _ => HP
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvImpl_cterm p_cterm q_cterm H_cterm
+                                      s9
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj _ HP =>
+                                                  match HP with
+                                                  | conj _ HP =>
+                                                      match HP with
+                                                      | conj _ HP =>
+                                                          match HP with
+                                                          | conj _ HP =>
+                                                              match HP with
+                                                              | conj _ HP =>
+                                                                  match
+                                                                    HP
+                                                                  with
+                                                                  | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end)
+                                   (conj
+                                      (allfvImpl_cterm p_cterm q_cterm
+                                         H_cterm s10
+                                         match HP with
+                                         | conj _ HP =>
+                                             match HP with
+                                             | conj _ HP =>
+                                                 match HP with
+                                                 | conj _ HP =>
+                                                     match HP with
+                                                     | conj _ HP =>
+                                                         match HP with
+                                                         | conj _ HP =>
+                                                             match HP with
+                                                             | conj _ HP =>
+                                                                 match
+                                                                   HP
+                                                                 with
+                                                                 | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                 end
+                                                             end
+                                                         end
+                                                     end
+                                                 end
+                                             end
+                                         end)
+                                      (conj
+                                         (allfvImpl_cterm p_cterm q_cterm
+                                            H_cterm s11
+                                            match HP with
+                                            | conj _ HP =>
+                                                match HP with
+                                                | conj _ HP =>
+                                                    match HP with
+                                                    | conj _ HP =>
+                                                        match HP with
+                                                        | conj _ HP =>
+                                                            match HP with
+                                                            | conj _ HP =>
+                                                                match HP with
+                                                                | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end) I)))))))))))
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      fun HP =>
+      conj
+        (allfvImpl_cterm p_cterm q_cterm H_cterm s0
+           match HP with
+           | conj HP _ => HP
+           end)
+        (conj
+           (allfvImpl_cterm p_cterm q_cterm H_cterm s1
+              match HP with
+              | conj _ HP => match HP with
+                             | conj HP _ => HP
+                             end
+              end)
+           (conj
+              (allfvImpl_cterm p_cterm q_cterm H_cterm s2
+                 match HP with
+                 | conj _ HP =>
+                     match HP with
+                     | conj _ HP => match HP with
+                                    | conj HP _ => HP
+                                    end
+                     end
+                 end)
+              (conj
+                 (allfvImpl_cterm p_cterm q_cterm H_cterm s3
+                    match HP with
+                    | conj _ HP =>
+                        match HP with
+                        | conj _ HP =>
+                            match HP with
+                            | conj _ HP =>
+                                match HP with
+                                | conj HP _ => HP
+                                end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvImpl_cterm p_cterm q_cterm H_cterm s4
+                       match HP with
+                       | conj _ HP =>
+                           match HP with
+                           | conj _ HP =>
+                               match HP with
+                               | conj _ HP =>
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj HP _ => HP
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvImpl_cterm p_cterm q_cterm H_cterm s5
+                          match HP with
+                          | conj _ HP =>
+                              match HP with
+                              | conj _ HP =>
+                                  match HP with
+                                  | conj _ HP =>
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj HP _ => HP
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvImpl_cterm p_cterm q_cterm H_cterm s6
+                             match HP with
+                             | conj _ HP =>
+                                 match HP with
+                                 | conj _ HP =>
+                                     match HP with
+                                     | conj _ HP =>
+                                         match HP with
+                                         | conj _ HP =>
+                                             match HP with
+                                             | conj _ HP =>
+                                                 match HP with
+                                                 | conj _ HP =>
+                                                     match HP with
+                                                     | conj HP _ => HP
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvImpl_cterm p_cterm q_cterm H_cterm s7
+                                match HP with
+                                | conj _ HP =>
+                                    match HP with
+                                    | conj _ HP =>
+                                        match HP with
+                                        | conj _ HP =>
+                                            match HP with
+                                            | conj _ HP =>
+                                                match HP with
+                                                | conj _ HP =>
+                                                    match HP with
+                                                    | conj _ HP =>
+                                                        match HP with
+                                                        | conj _ HP =>
+                                                            match HP with
+                                                            | conj HP _ => HP
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvImpl_cterm p_cterm q_cterm H_cterm s8
+                                   match HP with
+                                   | conj _ HP =>
+                                       match HP with
+                                       | conj _ HP =>
+                                           match HP with
+                                           | conj _ HP =>
+                                               match HP with
+                                               | conj _ HP =>
+                                                   match HP with
+                                                   | conj _ HP =>
+                                                       match HP with
+                                                       | conj _ HP =>
+                                                           match HP with
+                                                           | conj _ HP =>
+                                                               match HP with
+                                                               | conj _ HP =>
+                                                                   match
+                                                                    HP
+                                                                   with
+                                                                   | conj HP
+                                                                    _ => HP
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvImpl_cterm p_cterm q_cterm H_cterm
+                                      s9
+                                      match HP with
+                                      | conj _ HP =>
+                                          match HP with
+                                          | conj _ HP =>
+                                              match HP with
+                                              | conj _ HP =>
+                                                  match HP with
+                                                  | conj _ HP =>
+                                                      match HP with
+                                                      | conj _ HP =>
+                                                          match HP with
+                                                          | conj _ HP =>
+                                                              match HP with
+                                                              | conj _ HP =>
+                                                                  match
+                                                                    HP
+                                                                  with
+                                                                  | conj _ HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj _
+                                                                    HP =>
+                                                                    match
+                                                                    HP
+                                                                    with
+                                                                    | conj HP
+                                                                    _ => HP
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end) I)))))))))
   end.
 
 Lemma upAllfvRenL_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -3182,6 +5071,922 @@ allfv_cterm (funcomp p_cterm xi_cterm) s :=
                                   end
                               end
                           end) I)))))
+  | evec s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | evnil s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | evcons s0 s1 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end) I)
+  | evec_elim s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pvec s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pvnil s0 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | pvcons s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenL_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenL_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvRenL_cterm p_cterm xi_cterm s6
+                             match H with
+                             | conj _ H =>
+                                 match H with
+                                 | conj _ H =>
+                                     match H with
+                                     | conj _ H =>
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj H _ => H
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvRenL_cterm p_cterm xi_cterm s7
+                                match H with
+                                | conj _ H =>
+                                    match H with
+                                    | conj _ H =>
+                                        match H with
+                                        | conj _ H =>
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj H _ => H
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvRenL_cterm p_cterm xi_cterm s8
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj _ H =>
+                                           match H with
+                                           | conj _ H =>
+                                               match H with
+                                               | conj _ H =>
+                                                   match H with
+                                                   | conj _ H =>
+                                                       match H with
+                                                       | conj _ H =>
+                                                           match H with
+                                                           | conj _ H =>
+                                                               match H with
+                                                               | conj _ H =>
+                                                                   match
+                                                                    H
+                                                                   with
+                                                                   | conj H _ =>
+                                                                    H
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvRenL_cterm p_cterm xi_cterm s9
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj _ H =>
+                                                  match H with
+                                                  | conj _ H =>
+                                                      match H with
+                                                      | conj _ H =>
+                                                          match H with
+                                                          | conj _ H =>
+                                                              match H with
+                                                              | conj _ H =>
+                                                                  match
+                                                                    H
+                                                                  with
+                                                                  | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end)
+                                   (conj
+                                      (allfvRenL_cterm p_cterm xi_cterm s10
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj _ H =>
+                                                         match H with
+                                                         | conj _ H =>
+                                                             match H with
+                                                             | conj _ H =>
+                                                                 match H with
+                                                                 | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                 end
+                                                             end
+                                                         end
+                                                     end
+                                                 end
+                                             end
+                                         end)
+                                      (conj
+                                         (allfvRenL_cterm p_cterm xi_cterm
+                                            s11
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj _ H =>
+                                                                match H with
+                                                                | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end) I)))))))))))
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenL_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenL_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvRenL_cterm p_cterm xi_cterm s6
+                             match H with
+                             | conj _ H =>
+                                 match H with
+                                 | conj _ H =>
+                                     match H with
+                                     | conj _ H =>
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj H _ => H
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvRenL_cterm p_cterm xi_cterm s7
+                                match H with
+                                | conj _ H =>
+                                    match H with
+                                    | conj _ H =>
+                                        match H with
+                                        | conj _ H =>
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj H _ => H
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvRenL_cterm p_cterm xi_cterm s8
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj _ H =>
+                                           match H with
+                                           | conj _ H =>
+                                               match H with
+                                               | conj _ H =>
+                                                   match H with
+                                                   | conj _ H =>
+                                                       match H with
+                                                       | conj _ H =>
+                                                           match H with
+                                                           | conj _ H =>
+                                                               match H with
+                                                               | conj _ H =>
+                                                                   match
+                                                                    H
+                                                                   with
+                                                                   | conj H _ =>
+                                                                    H
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvRenL_cterm p_cterm xi_cterm s9
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj _ H =>
+                                                  match H with
+                                                  | conj _ H =>
+                                                      match H with
+                                                      | conj _ H =>
+                                                          match H with
+                                                          | conj _ H =>
+                                                              match H with
+                                                              | conj _ H =>
+                                                                  match
+                                                                    H
+                                                                  with
+                                                                  | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end)
+                                   (conj
+                                      (allfvRenL_cterm p_cterm xi_cterm s10
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj _ H =>
+                                                         match H with
+                                                         | conj _ H =>
+                                                             match H with
+                                                             | conj _ H =>
+                                                                 match H with
+                                                                 | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                 end
+                                                             end
+                                                         end
+                                                     end
+                                                 end
+                                             end
+                                         end)
+                                      (conj
+                                         (allfvRenL_cterm p_cterm xi_cterm
+                                            s11
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj _ H =>
+                                                                match H with
+                                                                | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end) I)))))))))))
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      fun H =>
+      conj
+        (allfvRenL_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenL_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenL_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenL_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenL_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenL_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvRenL_cterm p_cterm xi_cterm s6
+                             match H with
+                             | conj _ H =>
+                                 match H with
+                                 | conj _ H =>
+                                     match H with
+                                     | conj _ H =>
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj H _ => H
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvRenL_cterm p_cterm xi_cterm s7
+                                match H with
+                                | conj _ H =>
+                                    match H with
+                                    | conj _ H =>
+                                        match H with
+                                        | conj _ H =>
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj H _ => H
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvRenL_cterm p_cterm xi_cterm s8
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj _ H =>
+                                           match H with
+                                           | conj _ H =>
+                                               match H with
+                                               | conj _ H =>
+                                                   match H with
+                                                   | conj _ H =>
+                                                       match H with
+                                                       | conj _ H =>
+                                                           match H with
+                                                           | conj _ H =>
+                                                               match H with
+                                                               | conj _ H =>
+                                                                   match
+                                                                    H
+                                                                   with
+                                                                   | conj H _ =>
+                                                                    H
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvRenL_cterm p_cterm xi_cterm s9
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj _ H =>
+                                                  match H with
+                                                  | conj _ H =>
+                                                      match H with
+                                                      | conj _ H =>
+                                                          match H with
+                                                          | conj _ H =>
+                                                              match H with
+                                                              | conj _ H =>
+                                                                  match
+                                                                    H
+                                                                  with
+                                                                  | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end) I)))))))))
   end.
 
 Lemma upAllfvRenR_cterm_cterm (p : nat -> Prop) (xi : nat -> nat) :
@@ -3774,6 +6579,922 @@ allfv_cterm p_cterm (ren_cterm xi_cterm s) :=
                                   end
                               end
                           end) I)))))
+  | evec s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | evnil s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | evcons s0 s1 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end) I)
+  | evec_elim s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pvec s0 s1 s2 s3 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end) I)))
+  | pvnil s0 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end) I
+  | pvcons s0 s1 s2 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end) I))
+  | pvec_elim s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenR_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenR_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvRenR_cterm p_cterm xi_cterm s6
+                             match H with
+                             | conj _ H =>
+                                 match H with
+                                 | conj _ H =>
+                                     match H with
+                                     | conj _ H =>
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj H _ => H
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvRenR_cterm p_cterm xi_cterm s7
+                                match H with
+                                | conj _ H =>
+                                    match H with
+                                    | conj _ H =>
+                                        match H with
+                                        | conj _ H =>
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj H _ => H
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvRenR_cterm p_cterm xi_cterm s8
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj _ H =>
+                                           match H with
+                                           | conj _ H =>
+                                               match H with
+                                               | conj _ H =>
+                                                   match H with
+                                                   | conj _ H =>
+                                                       match H with
+                                                       | conj _ H =>
+                                                           match H with
+                                                           | conj _ H =>
+                                                               match H with
+                                                               | conj _ H =>
+                                                                   match
+                                                                    H
+                                                                   with
+                                                                   | conj H _ =>
+                                                                    H
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvRenR_cterm p_cterm xi_cterm s9
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj _ H =>
+                                                  match H with
+                                                  | conj _ H =>
+                                                      match H with
+                                                      | conj _ H =>
+                                                          match H with
+                                                          | conj _ H =>
+                                                              match H with
+                                                              | conj _ H =>
+                                                                  match
+                                                                    H
+                                                                  with
+                                                                  | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end)
+                                   (conj
+                                      (allfvRenR_cterm p_cterm xi_cterm s10
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj _ H =>
+                                                         match H with
+                                                         | conj _ H =>
+                                                             match H with
+                                                             | conj _ H =>
+                                                                 match H with
+                                                                 | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                 end
+                                                             end
+                                                         end
+                                                     end
+                                                 end
+                                             end
+                                         end)
+                                      (conj
+                                         (allfvRenR_cterm p_cterm xi_cterm
+                                            s11
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj _ H =>
+                                                                match H with
+                                                                | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end) I)))))))))))
+  | pvec_elimG s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenR_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenR_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvRenR_cterm p_cterm xi_cterm s6
+                             match H with
+                             | conj _ H =>
+                                 match H with
+                                 | conj _ H =>
+                                     match H with
+                                     | conj _ H =>
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj H _ => H
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvRenR_cterm p_cterm xi_cterm s7
+                                match H with
+                                | conj _ H =>
+                                    match H with
+                                    | conj _ H =>
+                                        match H with
+                                        | conj _ H =>
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj H _ => H
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvRenR_cterm p_cterm xi_cterm s8
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj _ H =>
+                                           match H with
+                                           | conj _ H =>
+                                               match H with
+                                               | conj _ H =>
+                                                   match H with
+                                                   | conj _ H =>
+                                                       match H with
+                                                       | conj _ H =>
+                                                           match H with
+                                                           | conj _ H =>
+                                                               match H with
+                                                               | conj _ H =>
+                                                                   match
+                                                                    H
+                                                                   with
+                                                                   | conj H _ =>
+                                                                    H
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvRenR_cterm p_cterm xi_cterm s9
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj _ H =>
+                                                  match H with
+                                                  | conj _ H =>
+                                                      match H with
+                                                      | conj _ H =>
+                                                          match H with
+                                                          | conj _ H =>
+                                                              match H with
+                                                              | conj _ H =>
+                                                                  match
+                                                                    H
+                                                                  with
+                                                                  | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end)
+                                   (conj
+                                      (allfvRenR_cterm p_cterm xi_cterm s10
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj _ H =>
+                                                         match H with
+                                                         | conj _ H =>
+                                                             match H with
+                                                             | conj _ H =>
+                                                                 match H with
+                                                                 | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                 end
+                                                             end
+                                                         end
+                                                     end
+                                                 end
+                                             end
+                                         end)
+                                      (conj
+                                         (allfvRenR_cterm p_cterm xi_cterm
+                                            s11
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj _ H =>
+                                                                match H with
+                                                                | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end) I)))))))))))
+  | pvec_elimP s0 s1 s2 s3 s4 s5 s6 s7 s8 s9 =>
+      fun H =>
+      conj
+        (allfvRenR_cterm p_cterm xi_cterm s0 match H with
+                                             | conj H _ => H
+                                             end)
+        (conj
+           (allfvRenR_cterm p_cterm xi_cterm s1
+              match H with
+              | conj _ H => match H with
+                            | conj H _ => H
+                            end
+              end)
+           (conj
+              (allfvRenR_cterm p_cterm xi_cterm s2
+                 match H with
+                 | conj _ H =>
+                     match H with
+                     | conj _ H => match H with
+                                   | conj H _ => H
+                                   end
+                     end
+                 end)
+              (conj
+                 (allfvRenR_cterm p_cterm xi_cterm s3
+                    match H with
+                    | conj _ H =>
+                        match H with
+                        | conj _ H =>
+                            match H with
+                            | conj _ H => match H with
+                                          | conj H _ => H
+                                          end
+                            end
+                        end
+                    end)
+                 (conj
+                    (allfvRenR_cterm p_cterm xi_cterm s4
+                       match H with
+                       | conj _ H =>
+                           match H with
+                           | conj _ H =>
+                               match H with
+                               | conj _ H =>
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj H _ => H
+                                       end
+                                   end
+                               end
+                           end
+                       end)
+                    (conj
+                       (allfvRenR_cterm p_cterm xi_cterm s5
+                          match H with
+                          | conj _ H =>
+                              match H with
+                              | conj _ H =>
+                                  match H with
+                                  | conj _ H =>
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj H _ => H
+                                              end
+                                          end
+                                      end
+                                  end
+                              end
+                          end)
+                       (conj
+                          (allfvRenR_cterm p_cterm xi_cterm s6
+                             match H with
+                             | conj _ H =>
+                                 match H with
+                                 | conj _ H =>
+                                     match H with
+                                     | conj _ H =>
+                                         match H with
+                                         | conj _ H =>
+                                             match H with
+                                             | conj _ H =>
+                                                 match H with
+                                                 | conj _ H =>
+                                                     match H with
+                                                     | conj H _ => H
+                                                     end
+                                                 end
+                                             end
+                                         end
+                                     end
+                                 end
+                             end)
+                          (conj
+                             (allfvRenR_cterm p_cterm xi_cterm s7
+                                match H with
+                                | conj _ H =>
+                                    match H with
+                                    | conj _ H =>
+                                        match H with
+                                        | conj _ H =>
+                                            match H with
+                                            | conj _ H =>
+                                                match H with
+                                                | conj _ H =>
+                                                    match H with
+                                                    | conj _ H =>
+                                                        match H with
+                                                        | conj _ H =>
+                                                            match H with
+                                                            | conj H _ => H
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                             (conj
+                                (allfvRenR_cterm p_cterm xi_cterm s8
+                                   match H with
+                                   | conj _ H =>
+                                       match H with
+                                       | conj _ H =>
+                                           match H with
+                                           | conj _ H =>
+                                               match H with
+                                               | conj _ H =>
+                                                   match H with
+                                                   | conj _ H =>
+                                                       match H with
+                                                       | conj _ H =>
+                                                           match H with
+                                                           | conj _ H =>
+                                                               match H with
+                                                               | conj _ H =>
+                                                                   match
+                                                                    H
+                                                                   with
+                                                                   | conj H _ =>
+                                                                    H
+                                                                   end
+                                                               end
+                                                           end
+                                                       end
+                                                   end
+                                               end
+                                           end
+                                       end
+                                   end)
+                                (conj
+                                   (allfvRenR_cterm p_cterm xi_cterm s9
+                                      match H with
+                                      | conj _ H =>
+                                          match H with
+                                          | conj _ H =>
+                                              match H with
+                                              | conj _ H =>
+                                                  match H with
+                                                  | conj _ H =>
+                                                      match H with
+                                                      | conj _ H =>
+                                                          match H with
+                                                          | conj _ H =>
+                                                              match H with
+                                                              | conj _ H =>
+                                                                  match
+                                                                    H
+                                                                  with
+                                                                  | conj _ H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj _
+                                                                    H =>
+                                                                    match
+                                                                    H
+                                                                    with
+                                                                    | conj H
+                                                                    _ => H
+                                                                    end
+                                                                    end
+                                                                  end
+                                                              end
+                                                          end
+                                                      end
+                                                  end
+                                              end
+                                          end
+                                      end) I)))))))))
   end.
 
 End Allfv.

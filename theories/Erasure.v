@@ -138,6 +138,12 @@ Equations erase_term (Γ : scope) (t : term) : cterm := {
   ⟦ Γ | tnat_elim m n P z s ⟧ε :=
     if relm m then enat_elim ⟦ Γ | n ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧ε ⟦ Γ | s ⟧ε
     else cDummy ;
+  ⟦ Γ | tvec A n ⟧ε := evec ⟦ Γ | A ⟧ε ;
+  ⟦ Γ | tvnil A ⟧ε := evnil ⟦ Γ | A ⟧ε ;
+  ⟦ Γ | tvcons a n v ⟧ε := evcons ⟦ Γ | a ⟧ε ⟦ Γ | v ⟧ε ;
+  ⟦ Γ | tvec_elim m A n v P z s ⟧ε :=
+    if relm m then evec_elim ⟦ Γ | v ⟧ε ⟦ Γ | P ⟧ε ⟦ Γ | z ⟧ε ⟦ Γ | s ⟧ε
+    else cDummy ;
   ⟦ Γ | bot ⟧ε := ctt ;
   ⟦ Γ | bot_elim m A p ⟧ε := if relm m then ⟦ Γ | A ⟧∅ else cDummy ;
   ⟦ _ | _ ⟧ε := cDummy
@@ -171,18 +177,19 @@ Proof.
   induction t in Γ, hm |- *.
   all: try reflexivity.
   all: try discriminate hm.
-  - cbn - [mode_inb] in *. unfold relv.
+  - cbn in *. unfold relv.
     destruct (nth_error _ _) eqn:e. 2: reflexivity.
     erewrite nth_error_nth in hm. 2: eassumption.
     rewrite hm. reflexivity.
-  - cbn - [mode_inb] in *.
+  - cbn in *.
     rewrite hm. cbn. reflexivity.
-  - cbn - [mode_inb] in *.
+  - cbn in *.
     rewrite hm. reflexivity.
-  - cbn - [mode_inb] in *. eauto.
-  - cbn - [mode_inb] in *. rewrite hm. reflexivity.
-  - cbn - [mode_inb] in *. rewrite hm. reflexivity.
-  - cbn - [mode_inb] in *. rewrite hm. reflexivity.
+  - cbn in *. eauto.
+  - cbn in *. rewrite hm. reflexivity.
+  - cbn in *. rewrite hm. reflexivity.
+  - cbn in *. rewrite hm. reflexivity.
+  - cbn in *. rewrite hm. reflexivity.
 Qed.
 
 (** Erasure of context and of variables **)
@@ -195,7 +202,7 @@ Lemma erase_sc_var :
 Proof.
   intros Γ x m e hr.
   unfold erase_sc. rewrite nth_error_map.
-  rewrite e. cbn - [mode_inb]. rewrite hr. reflexivity.
+  rewrite e. cbn. rewrite hr. reflexivity.
 Qed.
 
 Lemma erase_ctx_var :
@@ -209,10 +216,10 @@ Proof.
   1: destruct x ; discriminate.
   destruct x.
   - cbn in e. noconf e.
-    cbn - [mode_inb]. rewrite hr. reflexivity.
-  - cbn in e. cbn - [mode_inb skipn]. destruct (mode_inb my _) eqn:ey.
+    cbn. rewrite hr. reflexivity.
+  - cbn in e. cbn - [skipn]. destruct (relm my) eqn:ey.
     + erewrite ih. 2,3: eauto. reflexivity.
-    + cbn - [mode_inb skipn]. erewrite ih. 2,3: eauto. reflexivity.
+    + cbn - [skipn]. erewrite ih. 2,3: eauto. reflexivity.
 Qed.
 
 Lemma rscoping_weak :
@@ -256,8 +263,8 @@ Proof.
     constructor. unfold relv in e.
     destruct nth_error eqn:e1. 2: discriminate.
     eapply erase_sc_var. all: eauto.
-  - cbn - [mode_inb].
-    specialize IHt2 with (Γ := m0 :: Γ). cbn - [mode_inb] in IHt2.
+  - cbn.
+    specialize IHt2 with (Γ := m0 :: Γ). cbn in IHt2.
     fold (erase_sc Γ) in IHt2.
     destruct_ifs.
     all: try solve [ eauto with cc_scope cc_type ].
@@ -271,11 +278,11 @@ Proof.
       * eapply cscope_ignore. eauto.
     + destruct (relm m0) eqn:e2. 1: discriminate.
       eauto with cc_scope.
-  - cbn - [mode_inb].
-    specialize IHt2 with (Γ := m :: Γ). cbn - [mode_inb] in IHt2.
+  - cbn.
+    specialize IHt2 with (Γ := m :: Γ). cbn in IHt2.
     fold (erase_sc Γ) in IHt2.
     destruct_ifs. all: eauto with cc_scope.
-  - cbn - [mode_inb]. destruct (relm m) eqn:er. 2: constructor.
+  - cbn. destruct (relm m) eqn:er. 2: constructor.
     econstructor. all: eauto with cc_scope.
     constructor. 1: constructor.
     constructor. econstructor.
@@ -295,15 +302,15 @@ Proof.
   intros Γ Δ ρ t hρ hcρ.
   induction t in Γ, Δ, ρ, hρ, hcρ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
-  - cbn - [mode_inb].
+  - cbn.
     unfold relv.
     destruct (nth_error Δ n) eqn:e.
     + eapply hρ in e. rewrite e.
       destruct (relm m). all: reflexivity.
     + eapply hcρ in e. rewrite e. reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     destruct_if e. all: eauto.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
@@ -311,7 +318,7 @@ Proof.
     destruct_ifs. all: try solve [ eauto ].
     2:{ unfold close. ssimpl. cbn. unfold cty_lift. ssimpl. reflexivity. }
     ssimpl. cbn. ssimpl. unfold nones. ssimpl. reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
     2:{ eapply rscoping_upren. eassumption. }
@@ -321,13 +328,13 @@ Proof.
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: eauto.
     unfold close. ssimpl. reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite md_ren. 2,3: eassumption.
     erewrite md_ren. 2,3: eassumption.
     destruct_ifs. all: eauto.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite IHt3. 2,3: eassumption.
@@ -336,13 +343,21 @@ Proof.
     cbn. f_equal. ssimpl. reflexivity.
   - cbn. erewrite IHt. 2,3: eassumption.
     reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite IHt3. 2,3: eassumption.
     erewrite IHt4. 2,3: eassumption.
     destruct_ifs. all: eauto.
-  - cbn - [mode_inb].
+  - cbn. erewrite IHt1. 2,3: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt. 2,3: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt1, IHt3. 2-5: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt3, IHt4, IHt5, IHt6. 2-9: eassumption.
+    destruct_if e. all: reflexivity.
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: eauto.
 Qed.
@@ -358,7 +373,7 @@ Proof.
   intros Γ Δ σ t hσ hcσ.
   induction t in Γ, Δ, σ, hσ, hcσ |- *.
   all: try solve [ asimpl ; cbn ; eauto ].
-  (* all: try solve [ cbn - [mode_inb] ; destruct_ifs ; ssimpl ; eauto ]. *)
+  (* all: try solve [ cbn  ; destruct_ifs ; ssimpl ; eauto ]. *)
   (* Solves only 1 *)
   - ssimpl. cbn. unfold relv. destruct (nth_error Δ n) eqn:e.
     + destruct (relm m) eqn:em.
@@ -367,7 +382,7 @@ Proof.
         induction hσ as [| σ Δ mx hσ ih hm] in n, m, e, em |- *.
         1: destruct n ; discriminate.
         destruct n.
-        -- cbn - [mode_inb] in *.
+        -- cbn in *.
           erewrite scoping_md. 2: eassumption.
           noconf e. assumption.
         -- cbn in e. eapply ih. all: eassumption.
@@ -377,7 +392,7 @@ Proof.
   - cbn. destruct_if em.
     + cbn. reflexivity.
     + cbn. reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eauto.
     erewrite IHt2.
     2:{ eapply sscoping_shift. eassumption. }
@@ -385,16 +400,16 @@ Proof.
     destruct_ifs.
     + cbn. ssimpl. f_equal. all: f_equal. all: f_equal.
       * eapply ext_cterm. intros [].
-        -- ssimpl. cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+        -- ssimpl. cbn. destruct_if e'. 2: discriminate.
           reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
           2:{ eapply rscoping_S. }
           2:{ eapply rscoping_comp_S. }
           ssimpl. reflexivity.
-      * (* cbn - [mode_inb]. destruct_if e'. 2: discriminate. *)
+      * (* cbn. destruct_if e'. 2: discriminate. *)
         eapply ext_cterm. intros [].
-        -- ssimpl. cbn - [mode_inb]. destruct_if e'. 2: discriminate.
+        -- ssimpl. cbn. destruct_if e'. 2: discriminate.
           reflexivity.
         -- ssimpl. cbn. ssimpl.
           erewrite erase_ren.
@@ -425,7 +440,7 @@ Proof.
           eapply ext_cterm. intro x.
           cbn. ssimpl. reflexivity.
     + reflexivity.
-    + unfold close, cty_lift. ssimpl. cbn - [mode_inb].
+    + unfold close, cty_lift. ssimpl. cbn.
       destruct_if e'. 1: discriminate.
       cbn. f_equal.
       * f_equal. eapply ext_cterm. intros [].
@@ -440,7 +455,7 @@ Proof.
           2:{ eapply rscoping_S. }
           2:{ eapply rscoping_comp_S. }
           ssimpl. reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite md_subst.
     2:{ eapply sscoping_shift. eassumption. }
     2:{ eapply sscoping_comp_shift. assumption. }
@@ -451,7 +466,7 @@ Proof.
       2:{ eapply sscoping_comp_shift. assumption. }
       ssimpl. f_equal.
       eapply ext_cterm. intros [].
-      * cbn - [mode_inb]. rewrite e0. reflexivity.
+      * cbn. rewrite e0. reflexivity.
       * cbn. ssimpl.
         erewrite erase_ren.
         2:{ eapply rscoping_S. }
@@ -462,20 +477,20 @@ Proof.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
       ssimpl. eapply ext_cterm. intros [].
-      * cbn - [mode_inb]. rewrite e0. reflexivity.
+      * cbn. rewrite e0. reflexivity.
       * cbn. ssimpl.
         erewrite erase_ren.
         2:{ eapply rscoping_S. }
         2:{ eapply rscoping_comp_S. }
         ssimpl. reflexivity.
     + reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite md_subst. 2,3: eauto.
     erewrite md_subst. 2,3: eauto.
     erewrite IHt1. 2,3: eauto.
     erewrite IHt2. 2,3: eauto.
     destruct_ifs. all: reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite IHt3. 2,3: eassumption.
@@ -484,13 +499,22 @@ Proof.
     cbn. f_equal. ssimpl. reflexivity.
   - cbn. erewrite IHt. 2,3: eassumption.
     reflexivity.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2. 2,3: eassumption.
     erewrite IHt3. 2,3: eassumption.
     erewrite IHt4. 2,3: eassumption.
     destruct_ifs. all: eauto.
-  - cbn - [mode_inb].
+  - cbn. erewrite IHt1. 2,3: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt. 2,3: eassumption.
+    reflexivity.
+  - cbn. erewrite IHt1, IHt3. 2-5: eassumption.
+    reflexivity.
+  - cbn.
+    erewrite IHt3, IHt4, IHt5, IHt6. 2-9: eassumption.
+    destruct_if e. all: reflexivity.
+  - cbn.
     erewrite IHt1. 2,3: eassumption.
     destruct_ifs. all: reflexivity.
 Qed.
@@ -504,7 +528,7 @@ Lemma erase_conv :
 Proof.
   intros Γ u v h.
   induction h.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite scoping_md. 2: eassumption.
     erewrite scoping_md. 2: eassumption.
     destruct_ifs.
@@ -516,10 +540,10 @@ Proof.
       intros [| x] ex.
       * cbn. reflexivity.
       * cbn. unfold relv. unfold inscope in ex.
-        cbn - [mode_inb] in ex.
+        cbn in ex.
         rewrite nth_error_map in ex.
         destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
-        cbn - [mode_inb] in ex.
+        cbn in ex.
         destruct (relm m0). 2: discriminate.
         reflexivity.
     + unfold close. eapply cmeta_conv_trans_r. 1: constructor.
@@ -528,13 +552,13 @@ Proof.
       2: eapply sscoping_comp_one.
       ssimpl. eapply ext_cterm_scoped. 1: eapply erase_scoping.
       intros [| x] ex.
-      * unfold inscope in ex. cbn - [mode_inb] in ex.
+      * unfold inscope in ex. cbn in ex.
         rewrite e0 in ex. discriminate.
       * cbn. unfold relv. unfold inscope in ex.
-        cbn - [mode_inb] in ex.
+        cbn in ex.
         rewrite nth_error_map in ex.
         destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
-        cbn - [mode_inb] in ex.
+        cbn in ex.
         destruct (relm m0). 2: discriminate.
         reflexivity.
     + erewrite erase_irr.
@@ -545,32 +569,41 @@ Proof.
         assumption.
       }
       constructor.
-  - cbn - [mode_inb].
+  - cbn.
     erewrite scoping_md. 2: eassumption.
     cbn in H2.
     destruct_if e.
     1:{ destruct mp. all: intuition discriminate. }
     constructor.
-  - cbn - [mode_inb]. destruct (relm m) eqn:er.
+  - cbn. destruct (relm m) eqn:er.
     + constructor.
     + erewrite erase_irr. 2:{ remd. assumption. }
       constructor.
-  - cbn - [mode_inb]. destruct (relm m) eqn:er.
+  - cbn. destruct (relm m) eqn:er.
     + constructor.
     + erewrite erase_irr. 2:{ remd. assumption. }
       constructor.
-  - cbn - [mode_inb]. destruct_if e.
+  - cbn. destruct_if e.
     2:{
       erewrite erase_irr.
       - apply cconv_refl.
       - remd. assumption.
     }
     constructor.
-  - cbn - [mode_inb]. remd. destruct_if e. 2: constructor.
+  - cbn. remd. destruct_if e. 2: constructor.
     cbn. constructor.
-  - cbn - [mode_inb]. apply cconv_refl.
-  - cbn - [mode_inb].
-    cbn - [mode_inb] in IHh2.
+  - cbn. destruct_if e.
+    2:{
+      erewrite erase_irr.
+      - econv.
+      - remd. assumption.
+    }
+    constructor.
+  - cbn. remd. destruct_if e. 2: econv.
+    cbn. constructor.
+  - cbn. apply cconv_refl.
+  - cbn.
+    cbn in IHh2.
     destruct_ifs.
     + destruct (relm mx) eqn:e1. 2: discriminate.
       constructor. all: constructor. all: constructor. all: eauto.
@@ -586,26 +619,26 @@ Proof.
     + destruct (relm mx) eqn:e'. 1: discriminate.
       eapply cconv_ty_lift.
       eapply cconv_close. eauto.
-  - cbn - [mode_inb].
-    cbn - [mode_inb] in IHh2.
+  - cbn.
+    cbn in IHh2.
     eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
     destruct_ifs.
     + constructor. 1: constructor. all: eauto.
     + eapply cconv_close. eauto.
     + constructor.
-  - cbn - [mode_inb].
+  - cbn.
     eapply conv_md in h1 as e1. simpl in e1. rewrite <- e1.
     eapply conv_md in h2 as e2. simpl in e2. rewrite <- e2.
     destruct_ifs.
     + constructor. all: eauto.
     + eauto.
     + constructor.
-  - cbn - [mode_inb]. eauto.
-  - cbn - [mode_inb]. constructor.
-  - cbn - [mode_inb]. constructor.
-  - cbn - [mode_inb]. constructor.
-  - cbn - [mode_inb]. constructor.
-  - cbn - [mode_inb]. destruct_if'. 2: constructor.
+  - cbn. eauto.
+  - cbn. constructor.
+  - cbn. constructor.
+  - cbn. constructor.
+  - cbn. constructor.
+  - cbn. destruct_if'. 2: constructor.
     constructor. all: eauto.
     all: constructor. all: constructor. 2: auto. 2: econv.
     constructor. 2: constructor.
@@ -613,9 +646,13 @@ Proof.
     + apply crtyping_S.
     + auto.
   - cbn. constructor. eauto.
-  - cbn - [mode_inb]. destruct_if'. 2: constructor.
+  - cbn. destruct_if'. 2: constructor.
     constructor. all: eauto.
-  - cbn - [mode_inb]. destruct_if'.
+  - cbn. econv.
+  - cbn. econv.
+  - cbn. econv.
+  - cbn. destruct_if e. all: econv.
+  - cbn. destruct_if'.
     + constructor. eauto.
     + constructor.
   - constructor.
@@ -634,15 +671,16 @@ Proof.
   intros Γ t.
   induction t in Γ |- *.
   all: try reflexivity.
-  all: try solve [ cbn - [mode_inb] ; eauto ].
-  all: try solve [ cbn - [mode_inb] ; f_equal ; eauto ].
-  - cbn - [mode_inb]. erewrite IHt1, IHt2. reflexivity.
-  - cbn - [mode_inb]. erewrite IHt1, IHt2.
+  all: try solve [ cbn ; eauto ].
+  all: try solve [ cbn ; f_equal ; eauto ].
+  - cbn. erewrite IHt1, IHt2. reflexivity.
+  - cbn. erewrite IHt1, IHt2.
     rewrite <- md_castrm. reflexivity.
-  - cbn - [mode_inb]. erewrite IHt1, IHt2. rewrite <- !md_castrm. reflexivity.
-  - cbn - [mode_inb]. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
-  - cbn - [mode_inb]. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
-  - cbn - [mode_inb]. erewrite IHt1. reflexivity.
+  - cbn. erewrite IHt1, IHt2. rewrite <- !md_castrm. reflexivity.
+  - cbn. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
+  - cbn. erewrite IHt1, IHt2, IHt3, IHt4. reflexivity.
+  - cbn. erewrite IHt3, IHt4, IHt5, IHt6. reflexivity.
+  - cbn. erewrite IHt1. reflexivity.
 Qed.
 
 (** Erasure of erased conversion **)
@@ -688,6 +726,57 @@ Proof.
   - econstructor.
 Qed.
 
+Ltac hide_rhs rhs :=
+  lazymatch goal with
+  | |- _ ⊢ᶜ _ ≡ ?t => set (rhs := t)
+  | |- _ = ?t => set (rhs := t)
+  end.
+
+Ltac lhs_ssimpl :=
+  let rhs := fresh "rhs" in
+  hide_rhs rhs ; ssimpl ; subst rhs.
+
+Ltac hide_ty na :=
+  lazymatch goal with
+  | |- _ ⊢ᶜ _ : ?t => set (na := t)
+  end.
+
+Ltac tm_ssimpl :=
+  let na := fresh "na" in
+  hide_ty na ; ssimpl ; subst na.
+
+(** etype together with some extras
+
+  For now only ctyping_ren.
+
+**)
+Create HintDb extra_db.
+
+Ltac ertype :=
+  unshelve typeclasses eauto with cc_scope cc_type extra_db shelvedb ;
+  shelve_unifiable.
+
+Hint Resolve ctyping_ren : extra_db.
+
+Lemma crtyping_comp :
+  ∀ Γ Δ Ξ ρ δ,
+    crtyping Γ ρ Δ →
+    crtyping Δ δ Ξ →
+    crtyping Γ (δ >> ρ) Ξ.
+Proof.
+  intros Γ Δ Ξ ρ δ hρ hδ.
+  intros x m A e.
+  eapply hδ in e as [B [e eB]].
+  eapply hρ in e as [C [e eC]].
+  eexists. split.
+  - eassumption.
+  - eapply (f_equal (λ A, ρ ⋅ A)) in eB.
+    revert eB eC. ssimpl. intros eB eC.
+    rewrite eB. assumption.
+Qed.
+
+Hint Resolve crtyping_comp crtyping_S : cc_type.
+
 Theorem erase_typing :
   ∀ Γ t A,
     Γ ⊢ t : A →
@@ -699,11 +788,11 @@ Proof.
   all: try solve [ cbn in hm ; discriminate ].
   (* all: try solve [ cbn ; eauto using erase_typing_El, erase_typing_Err with cc_scope cc_type ]. *)
   - cbn. unfold relv. unfold sc. rewrite nth_error_map.
-    rewrite H. cbn - [mode_inb].
-    cbn - [mode_inb] in hm.
+    rewrite H. cbn.
+    cbn in hm.
     erewrite nth_error_nth in hm.
     2:{ unfold sc. erewrite nth_error_map. erewrite H. reflexivity. }
-    cbn - [mode_inb] in hm. rewrite hm.
+    cbn in hm. rewrite hm.
     cbn. eapply ccmeta_conv.
     + econstructor. eapply erase_ctx_var. all: eassumption.
     + cbn - [skipn]. f_equal.
@@ -721,9 +810,9 @@ Proof.
       * repeat constructor.
       * unfold usup. rewrite e. apply cconv_sym. econstructor.
       * repeat econstructor.
-  - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2.
+  - cbn. cbn in IHh1, IHh2.
     destruct_ifs.
-    (* repeat (d_if ; cbn - [mode_inb]).
+    (* repeat (d_if ; cbn ).
     all: try solve [ destruct m ; discriminate ]. *)
     + (* Redundant case *)
       destruct mx. all: discriminate.
@@ -785,9 +874,9 @@ Proof.
         -- unfold umax. rewrite e1. destruct_ifs. all: lia.
       * apply cconv_sym. constructor.
       * eauto with cc_scope cc_type.
-  - cbn - [mode_inb]. cbn - [mode_inb] in IHh1, IHh2, IHh3.
+  - cbn. cbn in IHh1, IHh2, IHh3.
     repeat (erewrite scoping_md ; [| eassumption]).
-    cbn - [mode_inb] in hm.
+    cbn in hm.
     erewrite scoping_md in hm. 2: eassumption.
     rewrite hm.
     erewrite scoping_md in IHh1. 2: eassumption.
@@ -851,7 +940,7 @@ Proof.
           ++ cbn. constructor.
           ++ eauto with cc_type.
         -- reflexivity.
-  - cbn - [mode_inb] in *.
+  - cbn in *.
     erewrite scoping_md in hm. 2: eassumption.
     erewrite scoping_md in IHh1. 2: eassumption.
     erewrite scoping_md in IHh2. 2: eassumption.
@@ -885,10 +974,10 @@ Proof.
         intros [| x] ex.
         -- cbn. reflexivity.
         -- cbn. unfold relv. unfold inscope in ex.
-          cbn - [mode_inb] in ex.
+          cbn in ex.
           rewrite nth_error_map in ex.
           destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
-          cbn - [mode_inb] in ex.
+          cbn in ex.
           destruct (relm m0). 2: discriminate.
           reflexivity.
     + destruct (isProp m) eqn:e1. 1:{ destruct m ; discriminate. }
@@ -902,13 +991,13 @@ Proof.
       2: eapply erase_scoping.
       2:{
         intros [| x] ex.
-        - unfold inscope in ex. cbn - [mode_inb] in ex.
+        - unfold inscope in ex. cbn in ex.
           rewrite e in ex. discriminate.
         - cbn. unfold relv. unfold inscope in ex.
-          cbn - [mode_inb] in ex.
+          cbn in ex.
           rewrite nth_error_map in ex.
           destruct (nth_error (sc Γ) x) eqn:e'. 2: discriminate.
-          cbn - [mode_inb] in ex.
+          cbn in ex.
           destruct (relm m0). 2: discriminate.
           reflexivity.
       }
@@ -927,20 +1016,20 @@ Proof.
     + apply cconv_sym. cbn. eapply cconv_trans. 1: constructor.
       apply cconv_sym. constructor.
     + eauto with cc_type.
-  - cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
+  - cbn in hm. erewrite scoping_md in hm. 2: eassumption.
     destruct m. all: discriminate.
-  - cbn - [mode_inb]. econstructor.
+  - cbn. econstructor.
     + eauto with cc_type.
     + apply cconv_sym. constructor.
     + eauto with cc_type.
-  - cbn - [mode_inb]. econstructor.
+  - cbn. econstructor.
     + eauto with cc_type.
     + apply cconv_sym. constructor.
     + eauto with cc_type.
-  - cbn - [mode_inb].
-    cbn - [mode_inb] in hm. erewrite scoping_md in hm. 2: eassumption.
+  - cbn.
+    cbn in hm. erewrite scoping_md in hm. 2: eassumption.
     repeat (erewrite scoping_md ; [| eassumption]). cbn.
-    cbn - [mode_inb] in IHh6.
+    cbn in IHh6.
     repeat (erewrite scoping_md in IHh6 ; [| eassumption]).
     rewrite hm in IHh6.
     cbn in IHh6. eauto.
@@ -956,7 +1045,7 @@ Proof.
     + eauto with cc_type.
     + apply cconv_sym. constructor.
     + eauto with cc_type.
-  - cbn - [mode_inb]. cbn - [mode_inb] in hm. rewrite hm.
+  - cbn. cbn in hm. rewrite hm.
     remd. cbn.
     remd in IHh1. forward IHh1 by reflexivity. cbn in IHh1.
     eapply ctype_conv in IHh1.
@@ -970,9 +1059,9 @@ Proof.
       econstructor. all: constructor.
     }
     2:{ eauto with cc_type. }
-    remd in IHh3. forward IHh3 by assumption. cbn - [mode_inb] in IHh3.
+    remd in IHh3. forward IHh3 by assumption. cbn in IHh3.
     remd in IHh3. cbn in IHh3.
-    remd in IHh4. forward IHh4 by assumption. cbn - [mode_inb] in IHh4.
+    remd in IHh4. forward IHh4 by assumption. cbn in IHh4.
     remd in IHh4. cbn in IHh4.
     econstructor.
     + econstructor.
@@ -1060,12 +1149,12 @@ Proof.
   - cbn. etype.
   - cbn. remd in IHh. forward IHh by reflexivity. cbn in IHh.
     etype.
-  - cbn - [mode_inb]. remd. cbn - [mode_inb] in hm. rewrite hm. cbn.
+  - cbn. remd. cbn in hm. rewrite hm. cbn.
     remd in IHh1. cbn in IHh1.
     remd in IHh2. cbn in IHh2.
     forward IHh2 by reflexivity.
-    cbn - [mode_inb] in IHh3. remd in IHh3. rewrite hm in IHh3. cbn in IHh3.
-    cbn - [mode_inb] in IHh4.
+    cbn in IHh3. remd in IHh3. rewrite hm in IHh3. cbn in IHh3.
+    cbn in IHh4.
     destruct (isProp m) eqn:ep. 1:{ mode_eqs. discriminate. }
     erewrite !md_ren in IHh4. 2-7: eauto using rscoping_S, rscoping_comp_S.
     remd in IHh4. rewrite hm in IHh4. cbn in IHh4.
@@ -1113,11 +1202,103 @@ Proof.
         + reflexivity.
     }
     etype. all: reflexivity.
-  - cbn - [mode_inb]. econstructor.
+  - cbn. cbn in IHh1. remd in IHh1. forward IHh1 by reflexivity.
+    eapply ctype_conv in IHh1.
+    2: constructor.
+    2: etype.
+    eapply ctype_conv.
+    + etype.
+    + apply cconv_sym. constructor.
+    + etype.
+  - cbn. cbn in IHh. remd in IHh. forward IHh by reflexivity.
+    eapply ctype_conv in IHh. 2: constructor. 2: etype.
+    etype.
+  - cbn. remd in IHh1. forward IHh1 by reflexivity.
+    remd in IHh3. cbn in IHh3. forward IHh3 by reflexivity.
+    remd in IHh4. cbn in IHh4. forward IHh4 by reflexivity.
+    eapply ctype_conv in IHh4. 2:constructor. 2: etype.
+    etype.
+  - destruct m. all: try discriminate. 1: contradiction.
+    cbn. remd. cbn.
+    remd in IHh1. cbn in IHh1. forward IHh1 by reflexivity.
+    remd in IHh6. cbn in IHh6. forward IHh6 by reflexivity.
+    eapply ctype_conv in IHh6. 2: constructor. 2: etype.
+    remd in IHh2. cbn in IHh2. forward IHh2 by reflexivity.
+    eapply ctype_conv in IHh2.
+    2:{
+      eapply cconv_trans. 1: constructor.
+      eapply cconv_trans. 1: constructor.
+      erewrite erase_ren. 2,3: eauto using rscoping_S, rscoping_comp_S.
+      lhs_ssimpl.
+      econstructor. 1: econv.
+      constructor.
+    }
+    2: etype.
+    cbn in IHh3. remd in IHh3. cbn in IHh3.
+    forward IHh3 by reflexivity.
+    remd in IHh4. cbn in IHh4.
+    erewrite !md_ren in IHh4. 2-15: eauto using rscoping_S, rscoping_comp_S.
+    remd in IHh4. cbn in IHh4.
+    forward IHh4 by reflexivity.
+    eapply ctype_conv in IHh4.
+    2:{
+      clear.
+      eapply cconv_trans. 1: constructor.
+      econstructor. 1: econv.
+      unfold cty_lift.
+      eapply cconv_trans. 1: constructor.
+      eapply cconv_trans. 1: constructor.
+      constructor.
+      1:{
+        erewrite !erase_ren. 2-5: eauto using rscoping_S, rscoping_comp_S.
+        lhs_ssimpl. rewrite <- rinstInst'_cterm. econv.
+      }
+      eapply cconv_trans. 1: constructor.
+      erewrite !erase_ren. 2-19: eauto using rscoping_S, rscoping_comp_S.
+      constructor.
+      - constructor. constructor. 2: econv.
+        apply ccmeta_refl. lhs_ssimpl.
+        rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+        reflexivity.
+      - constructor. constructor. 2: econv.
+        apply ccmeta_refl. lhs_ssimpl.
+        rewrite <- !funcomp_assoc. rewrite <- rinstInst'_cterm.
+        reflexivity.
+    }
+    2:{
+      ertype.
+      - eapply ccmeta_conv.
+        + ertype.
+        + reflexivity.
+      - eapply ccmeta_conv.
+        + ertype. 2: reflexivity.
+          eapply ccmeta_conv. 1: ertype.
+          cbn. f_equal. f_equal. f_equal. ssimpl. reflexivity.
+        + reflexivity.
+      - eapply ccmeta_conv.
+        + econstructor.
+          2:{
+            econstructor.
+            - eapply ccmeta_conv.
+              + ertype. reflexivity.
+              + cbn. reflexivity.
+            - eapply ccmeta_conv.
+              + ertype. reflexivity.
+              + cbn. ssimpl. reflexivity.
+            - eapply ccmeta_conv.
+              + ertype.
+              + reflexivity.
+          }
+          eapply ccmeta_conv. 1: ertype.
+          reflexivity.
+        + reflexivity.
+    }
+    ertype.
+  - cbn. econstructor.
     + eauto with cc_type.
     + apply cconv_sym. constructor.
     + eauto with cc_type.
-  - cbn - [mode_inb]. cbn - [mode_inb] in hm.
+  - cbn. cbn in hm.
     rewrite hm. eapply erase_typing_Err.
     + eapply IHh1. erewrite scoping_md. 2: eassumption.
       reflexivity.
@@ -1139,7 +1320,7 @@ Proof.
   intros Γ h.
   induction h.
   - constructor.
-  - cbn - [mode_inb]. destruct (relm m) eqn:er.
+  - cbn. destruct (relm m) eqn:er.
     + constructor. 1: assumption.
       cbn. exists i. eapply erase_typing_El.
       * eapply erase_typing. 1: eassumption.

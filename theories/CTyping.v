@@ -13,6 +13,26 @@ Notation "A ⇒[ mx ] B" :=
   (cPi mx A (shift ⋅ B))
   (at level 20, mx at next level, right associativity).
 
+(** n-ary application **)
+Fixpoint capps t us :=
+  match us with
+  | u :: us => capps (capp t u) us
+  | [] => t
+  end.
+
+(** Length of an evec **)
+
+Definition elength A v :=
+  evec_elim v (clam cType (cEl (evec A)) enat)
+    (* vnil => *) ezero
+    (* vcons => *) (clam cType (cEl A) (
+      clam cType (cEl (evec (S ⋅ A))) (
+        clam cType (cEl enat) (
+          esucc (cvar 0)
+        )
+      )
+    )).
+
 Reserved Notation "Γ ⊢ᶜ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢ᶜ  t  :  A").
 
@@ -72,6 +92,15 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
 | cconv_enat_elim_succ :
     ∀ P z s n,
       Γ ⊢ᶜ enat_elim (esucc n) P z s ≡ capp (capp s n) (enat_elim n P z s)
+
+| cconv_evec_elim_nil :
+    ∀ A P z s,
+      Γ ⊢ᶜ evec_elim (evnil A) P z s ≡ z
+
+| cconv_evec_elim_cons :
+    ∀ a v P z s,
+      Γ ⊢ᶜ evec_elim (evcons a v) P z s ≡
+      capp (capp (capp s a) v) (evec_elim v P z s)
 
 (** Congruence rules **)
 
@@ -204,6 +233,99 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ zP ≡ zP' →
       Γ ⊢ᶜ sP ≡ sP' →
       Γ ⊢ᶜ pnat_elimP ne nP Pe PP zP sP ≡ pnat_elimP ne' nP' Pe' PP' zP' sP'
+
+| ccong_evec :
+    ∀ A A',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ evec A ≡ evec A'
+
+| ccong_evnil :
+    ∀ A A',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ evnil A ≡ evnil A'
+
+| ccong_evcons :
+    ∀ a v a' v',
+      Γ ⊢ᶜ a ≡ a' →
+      Γ ⊢ᶜ v ≡ v' →
+      Γ ⊢ᶜ evcons a v ≡ evcons a' v'
+
+| ccong_evec_elim :
+    ∀ v P z s v' P' z' s',
+      Γ ⊢ᶜ v ≡ v' →
+      Γ ⊢ᶜ P ≡ P' →
+      Γ ⊢ᶜ z ≡ z' →
+      Γ ⊢ᶜ s ≡ s' →
+      Γ ⊢ᶜ evec_elim v P z s ≡ evec_elim v' P' z' s'
+
+(* Also unnecessary *)
+| ccong_pvec :
+    ∀ A AP n nP A' AP' n' nP',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ n ≡ n' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ pvec A AP n nP ≡ pvec A' AP' n' nP'
+
+(* Same *)
+| ccong_pvnil :
+    ∀ A A',
+      Γ ⊢ᶜ A ≡ A' →
+      Γ ⊢ᶜ pvnil A ≡ pvnil A'
+
+(* Same *)
+| ccong_pvcons :
+    ∀ a n v a' n' v',
+      Γ ⊢ᶜ a ≡ a' →
+      Γ ⊢ᶜ n ≡ n' →
+      Γ ⊢ᶜ v ≡ v' →
+      Γ ⊢ᶜ pvcons a n v ≡ pvcons a' n' v'
+
+(* Same *)
+| ccong_pvec_elim :
+    ∀ Ae AP ne nP ve vP Pe PP ze zP se sP Ae' AP' ne' ve' vP' nP' Pe' PP' ze' zP' se' sP',
+      Γ ⊢ᶜ Ae ≡ Ae' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ ve ≡ ve' →
+      Γ ⊢ᶜ vP ≡ vP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ ze ≡ ze' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ se ≡ se' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pvec_elim Ae AP ne nP ve vP Pe PP ze zP se sP ≡ pvec_elim Ae' AP' ne' nP' ve' vP' Pe' PP' ze' zP' se' sP'
+
+(* Same *)
+| ccong_pvec_elimG :
+    ∀ Ae AP ne nP ve vP Pe PP ze zP se sP Ae' AP' ne' ve' vP' nP' Pe' PP' ze' zP' se' sP',
+      Γ ⊢ᶜ Ae ≡ Ae' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ ve ≡ ve' →
+      Γ ⊢ᶜ vP ≡ vP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ ze ≡ ze' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ se ≡ se' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pvec_elimG Ae AP ne nP ve vP Pe PP ze zP se sP ≡ pvec_elimG Ae' AP' ne' nP' ve' vP' Pe' PP' ze' zP' se' sP'
+
+(* Same *)
+| ccong_pvec_elimP :
+    ∀ Ae AP ne nP ve vP Pe PP zP sP Ae' AP' ne' nP' ve' vP' Pe' PP' zP' sP',
+      Γ ⊢ᶜ Ae ≡ Ae' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ ve ≡ ve' →
+      Γ ⊢ᶜ vP ≡ vP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pvec_elimP Ae AP ne nP ve vP Pe PP zP sP ≡ pvec_elimP Ae' AP' ne' nP' ve' vP' Pe' PP' zP' sP'
 
 (** Structural rules **)
 
@@ -478,6 +600,238 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
       ) →
       Γ ⊢ᶜ pnat_elimP ne nP Pe PP zP sP : capp (capp PP ne) nP
 
+| ctype_evec :
+    ∀ A i,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ evec A : cty i
+
+| ctype_evnil :
+    ∀ A i,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ evnil A : cEl (evec A)
+
+| ctype_evcons :
+    ∀ i A a v,
+      Γ ⊢ᶜ a : cEl A →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ evcons a v : cEl (evec A)
+
+| ctype_evec_elim :
+    ∀ v P z s A i j,
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty j) →
+      Γ ⊢ᶜ z : cEl (capp P (evnil A)) →
+      Γ ⊢ᶜ s : cPi cType (cEl A) (
+        cPi cType (cEl (evec (S ⋅ A))) (
+          cPi cType (cEl (capp ((S >> S) ⋅ P) (cvar 0))) (
+            cEl (capp ((S >> S >> S) ⋅ P) (evcons (cvar 2) (cvar 1)))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ evec_elim v P z s : cEl (capp P v)
+
+| ctype_pvec :
+    ∀ i A AP n nP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ pvec A AP n nP : cEl (evec A) ⇒[ cType ] cSort cProp 0
+
+| ctype_pvnil :
+    ∀ i A AP,
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ pvnil AP : capp (pvec A AP ezero pzero) (evnil A)
+
+| ctype_pvcons :
+    ∀ i A AP a aP n nP v vP,
+    Γ ⊢ᶜ aP : capp AP a →
+    Γ ⊢ᶜ a : cEl A →
+    Γ ⊢ᶜ nP : capp pnat n →
+    Γ ⊢ᶜ n : cEl enat →
+    Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+    Γ ⊢ᶜ v : cEl (evec A) →
+    Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+    Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ pvcons aP nP vP : capp (pvec A AP (esucc n) (psucc nP)) (evcons a v)
+
+| ctype_pvec_elim :
+    ∀ i j A AP n nP v vP P PP z zP s sP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty j) →
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
+            cPi cProp
+              (capp (pvec ((S >> S >> S) ⋅ A) ((S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0))
+              (cPi cType (cEl (capp ((S >> S >> S >> S) ⋅ P) (cvar 1))) (cSort cProp 0))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ z : cEl (capp P (evnil A)) →
+      Γ ⊢ᶜ zP : capps PP [ ezero ; pzero ; evnil A ; pvnil AP ; z ] →
+      Γ ⊢ᶜ s : cPi cType (cEl A) (
+        cPi cType (cEl (evec (S ⋅ A))) (
+          cPi cType (cEl (capp ((S >> S) ⋅ P) (cvar 0))) (
+            cEl (capp ((S >> S >> S) ⋅ P) (evcons (cvar 2) (cvar 1)))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ sP : cPi cType (cEl A) (
+        cPi cProp (capp (S ⋅ AP) (cvar 0)) (
+          cPi cType (cEl enat) (
+            cPi cProp (capp pnat (cvar 0)) (
+              cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
+                cPi cProp (capp (pvec ((S >> S >> S >> S >> S) ⋅ A) ((S >> S >> S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0)) (
+                  cPi cType (cEl (capp ((S >> S >> S >> S >> S >> S) ⋅ P) (cvar 1))) (
+                    cPi cProp (capps ((S >> S >> S >> S >> S >> S >> S) ⋅ PP) [ cvar 4 ; cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
+                      capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ PP) [
+                        esucc (cvar 5) ;
+                        psucc (cvar 4) ;
+                        evcons (cvar 7) (cvar 3) ;
+                        pvcons (cvar 6) (cvar 4) (cvar 2) ;
+                        capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ s) [
+                          cvar 7 ;
+                          cvar 3 ;
+                          cvar 1
+                        ]
+                      ]
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pvec_elim A AP n nP v vP P PP z zP s sP :
+      capps PP [ n ; nP ; v ; vP ; evec_elim v P z s ]
+
+| ctype_pvec_elimG :
+    ∀ i j A AP n nP v vP P PP z zP s sP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) (cty j) →
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
+            cPi cProp
+              (capp (pvec ((S >> S >> S) ⋅ A) ((S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0))
+              (cPi cType (cEl (capp ((S >> S >> S >> S) ⋅ P) (cvar 1))) (cSort cProp 0))
+          )
+        )
+      ) →
+      Γ ⊢ᶜ z : cEl (capp P (evnil A)) →
+      Γ ⊢ᶜ zP : capps PP [ ezero ; pzero ; evnil A ; pvnil AP ; z ] →
+      Γ ⊢ᶜ s : cPi cType (cEl A) (
+        cPi cType (cEl enat) (
+          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
+            cPi cType (cEl (capp ((S >> S >> S) ⋅ P) (cvar 0))) (
+              cEl (capp ((S >> S >> S >> S) ⋅ P) (evcons (cvar 3) (cvar 1)))
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ sP : cPi cType (cEl A) (
+        cPi cProp (capp (S ⋅ AP) (cvar 0)) (
+          cPi cType (cEl enat) (
+            cPi cProp (capp pnat (cvar 0)) (
+              cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
+                cPi cProp (capp (pvec ((S >> S >> S >> S >> S) ⋅ A) ((S >> S >> S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0)) (
+                  cPi cType (cEl (capp ((S >> S >> S >> S >> S >> S) ⋅ P) (cvar 1))) (
+                    cPi cProp (capps ((S >> S >> S >> S >> S >> S >> S) ⋅ PP) [ cvar 4 ; cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
+                      capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ PP) [
+                        esucc (cvar 5) ;
+                        psucc (cvar 4) ;
+                        evcons (cvar 7) (cvar 3) ;
+                        pvcons (cvar 6) (cvar 4) (cvar 2) ;
+                        capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ s) [
+                          cvar 7 ;
+                          cvar 5 ;
+                          cvar 3 ;
+                          cvar 1
+                        ]
+                      ]
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pvec_elimG A AP n nP v vP P PP z zP s sP :
+      capps PP [
+        n ;
+        nP ;
+        v ;
+        vP ;
+        evec_elim v P z (
+          clam cType (cEl A) (
+            clam cType (cEl (evec (S ⋅ A))) (
+              capps ((S >> S) ⋅ s) [
+                cvar 1 ;
+                elength ((S >> S) ⋅ A) (cvar 0) ;
+                cvar 0
+              ]
+            )
+          )
+        )
+      ]
+
+| ctype_pvec_elimP :
+    ∀ i A AP n nP v vP P PP zP sP,
+      Γ ⊢ᶜ A : cty i →
+      Γ ⊢ᶜ AP : cEl A ⇒[ cType ] cSort cProp 0 →
+      Γ ⊢ᶜ n : cEl enat →
+      Γ ⊢ᶜ nP : capp pnat n →
+      Γ ⊢ᶜ v : cEl (evec A) →
+      Γ ⊢ᶜ vP : capp (pvec A AP n nP) v →
+      Γ ⊢ᶜ P : cPi cType (cEl (evec A)) cunit →
+      Γ ⊢ᶜ PP : cPi cType (cEl enat) (
+        cPi cProp (capp pnat (cvar 0)) (
+          cPi cType (cEl (evec ((S >> S) ⋅ A))) (
+            cPi cProp
+              (capp (pvec ((S >> S >> S) ⋅ A) ((S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0))
+              (cSort cProp 0)
+          )
+        )
+      ) →
+      Γ ⊢ᶜ zP : capps PP [ ezero ; pzero ; evnil A ; pvnil AP ] →
+      Γ ⊢ᶜ sP : cPi cType (cEl A) (
+        cPi cProp (capp (S ⋅ AP) (cvar 0)) (
+          cPi cType (cEl enat) (
+            cPi cProp (capp pnat (cvar 0)) (
+              cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
+                cPi cProp (capp (pvec ((S >> S >> S >> S >> S) ⋅ A) ((S >> S >> S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0)) (
+                  cPi cProp (capps ((S >> S >> S >> S >> S >> S) ⋅ PP) [ cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
+                    capps ((S >> S >> S >> S >> S >> S >> S) ⋅ PP) [
+                      esucc (cvar 4) ;
+                      psucc (cvar 3) ;
+                      evcons (cvar 6) (cvar 2) ;
+                      pvcons (cvar 5) (cvar 3) (cvar 1)
+                    ]
+                  )
+                )
+              )
+            )
+          )
+        )
+      ) →
+      Γ ⊢ᶜ pvec_elimP A AP n nP v vP P PP zP sP : capps PP [ n ; nP ; v ; vP ]
+
 | ctype_conv :
     ∀ i m A B t,
       Γ ⊢ᶜ t : A →
@@ -522,6 +876,9 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   cconv_if_true cconv_if_false cconv_if_err ccong_eif cconv_pif_true
   cconv_pif_false ccong_pif cconv_enat_elim_zero cconv_enat_elim_succ
   ccong_esucc ccong_enat_elim ccong_psucc ccong_pnat_elim ccong_pnat_elimP
+  cconv_evec_elim_nil cconv_evec_elim_cons ccong_evec ccong_evnil ccong_evcons
+  ccong_evec_elim ccong_pvec ccong_pvnil ccong_pvcons ccong_pvec_elim
+  ccong_pvec_elimG ccong_pvec_elimP
   cconv_refl
 : cc_conv.
 
@@ -531,7 +888,9 @@ Hint Resolve ctype_var ctype_sort ctype_pi ctype_lam ctype_app ctype_unit
   ctype_teq ctype_trefl ctype_tJ ctype_ebool ctype_etrue ctype_efalse
   ctype_bool_err ctype_eif ctype_pbool ctype_ptrue ctype_pfalse ctype_pif
   ctype_enat ctype_ezero ctype_esucc ctype_enat_elim ctype_pnat ctype_pzero
-  ctype_psucc ctype_pnat_elim ctype_pnat_elimP
+  ctype_psucc ctype_pnat_elim ctype_pnat_elimP ctype_evec ctype_evnil
+  ctype_evcons ctype_evec_elim ctype_pvec ctype_pvnil ctype_pvcons
+  ctype_pvec_elim ctype_pvec_elimG ctype_pvec_elimP
 : cc_type.
 
 Ltac econv :=

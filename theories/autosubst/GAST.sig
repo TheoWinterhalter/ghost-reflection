@@ -33,5 +33,10 @@ tzero : term
 tsucc : term -> term
 tnat_elim : mode -> term -> term -> term -> term -> term
 
+tvec : term -> term -> term
+tvnil : term -> term
+tvcons : term -> term -> term -> term
+tvec_elim : mode -> term -> term -> term -> term -> term -> term -> term
+
 bot : term
 bot_elim : mode -> term -> term -> term

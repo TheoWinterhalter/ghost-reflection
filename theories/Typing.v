@@ -10,6 +10,29 @@ Set Default Goal Selector "!".
 
 Open Scope subst_scope.
 
+(** Before we define typing for vectors we need to define the gS function **)
+Definition gS n :=
+  reveal n (lam mGhost (Erased tnat) (Erased tnat))
+    (lam mType tnat (hide (tsucc (var 0)))).
+
+(** We also need something which is essentially the length function
+  but whose main idea is to recompute the index of a vector.
+**)
+Definition glength A n v :=
+  tvec_elim mGhost A n v
+    (* return *) (lam mGhost (Erased tnat) (
+      lam mType (tvec (S ⋅ A) (var 0)) (Erased tnat)
+    )
+    )
+    (* vnil => *) (hide tzero)
+    (* vcons => *) (lam mType A (
+      lam mGhost (Erased tnat) (
+        lam mType (tvec (S ⋅ S ⋅ A) (var 0)) (
+          lam mGhost (Erased tnat) (gS (var 0))
+        )
+      )
+    )).
+
 Reserved Notation "Γ ⊢ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢  t  :  A").
 
@@ -63,6 +86,29 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       cscoping Γ z m →
       cscoping Γ s m →
       Γ ⊢ tnat_elim m (tsucc n) P z s ≡ app (app s n) (tnat_elim m n P z s)
+
+| conv_vec_elim_nil :
+    ∀ m A P z s,
+      m ≠ mKind →
+      cscoping Γ A mKind →
+      cscoping Γ P mKind →
+      cscoping Γ z m →
+      cscoping Γ s m →
+      Γ ⊢ tvec_elim m A (hide tzero) (tvnil A) P z s ≡ z
+
+| conv_vec_elim_cons :
+    ∀ m A a n n' v P z s,
+      m ≠ mKind →
+      cscoping Γ A mKind →
+      cscoping Γ a mType →
+      cscoping Γ n mGhost →
+      cscoping Γ n' mGhost →
+      cscoping Γ v mType →
+      cscoping Γ P mKind →
+      cscoping Γ z m →
+      cscoping Γ s m →
+      Γ ⊢ tvec_elim m A n' (tvcons a n v) P z s ≡
+      app (app (app (app s a) (glength A n v)) v) (tvec_elim m A n v P z s)
 
 (** Congruence rules **)
 
@@ -148,6 +194,34 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ z ≡ z' →
       Γ ⊢ s ≡ s' →
       Γ ⊢ tnat_elim m n P z s ≡ tnat_elim m n' P' z' s'
+
+| cong_vec :
+    ∀ A A' n n',
+      Γ ⊢ A ≡ A' →
+      Γ ⊢ n ≡ n' →
+      Γ ⊢ tvec A n ≡ tvec A' n'
+
+| cong_vnil :
+    ∀ A A',
+      Γ ⊢ A ≡ A' →
+      Γ ⊢ tvnil A ≡ tvnil A'
+
+| cong_vcons :
+    ∀ a n v a' n' v',
+      Γ ⊢ a ≡ a' →
+      Γ ⊢ n ≡ n' →
+      Γ ⊢ v ≡ v' →
+      Γ ⊢ tvcons a n v ≡ tvcons a' n' v'
+
+| cong_vec_elim :
+    ∀ m A n v P z s A' n' v' P' z' s',
+      Γ ⊢ A ≡ A' →
+      Γ ⊢ n ≡ n' →
+      Γ ⊢ v ≡ v' →
+      Γ ⊢ P ≡ P' →
+      Γ ⊢ z ≡ z' →
+      Γ ⊢ s ≡ s' →
+      Γ ⊢ tvec_elim m A n v P z s ≡ tvec_elim m A' n' v' P' z' s'
 
 (* Maybe not needed? *)
 | cong_bot_elim :
@@ -364,6 +438,58 @@ Inductive typing (Γ : context) : term → term → Prop :=
       Γ ⊢ s : Pi 0 i m mType tnat (app (S ⋅ P) (var 0) ⇒[ i | i / m | m ] app (S ⋅ P) (tsucc (var 0))) →
       Γ ⊢ tnat_elim m n P z s : app P n
 
+| type_vec :
+    ∀ A n i,
+      cscoping Γ A mKind →
+      cscoping Γ n mGhost →
+      Γ ⊢ A : Sort mType i →
+      Γ ⊢ n : Erased tnat →
+      Γ ⊢ tvec A n : Sort mType i
+
+| type_vnil :
+    ∀ A i,
+      cscoping Γ A mKind →
+      Γ ⊢ A : Sort mType i →
+      Γ ⊢ tvnil A : tvec A (hide tzero)
+
+| type_vcons :
+    ∀ A a n v i,
+      cscoping Γ a mType →
+      cscoping Γ n mGhost →
+      cscoping Γ v mType →
+      Γ ⊢ a : A →
+      Γ ⊢ n : Erased tnat →
+      Γ ⊢ v : tvec A n →
+      Γ ⊢ A : Sort mType i →
+      cscoping Γ A mKind →
+      Γ ⊢ tvcons a n v : tvec A (gS n)
+
+| type_vec_elim :
+    ∀ i j m A n v P z s,
+      m ≠ mKind →
+      cscoping Γ v mType →
+      cscoping Γ P mKind →
+      cscoping Γ z m →
+      cscoping Γ s m →
+      Γ ⊢ v : tvec A n →
+      Γ ⊢ P : Pi 0 (umax mType mKind i (usup m j)) mKind mGhost (Erased tnat) (
+        tvec (S ⋅ A) (var 0) ⇒[ i | usup m j / mType | mKind ] Sort m j
+      ) →
+      Γ ⊢ z : app (app P (hide tzero)) (tvnil A) →
+      Γ ⊢ s : Pi i (umax mGhost m 0 (umax mType m i (umax m m j j))) m mType A (
+        Pi 0 (umax mType m i (umax m m j j)) m mGhost (Erased tnat) (
+          Pi i (umax m m j j) m mType (tvec (S ⋅ S ⋅ A) (var 0)) (
+            app (app (S ⋅ S ⋅ S ⋅ P) (var 1)) (var 0) ⇒[ j | j / m | m ]
+            app (app (S ⋅ S ⋅ S ⋅ P) (gS (var 1))) (tvcons (var 2) (var 1) (var 0))
+          )
+        )
+      ) →
+      cscoping Γ n mGhost →
+      cscoping Γ A mKind →
+      Γ ⊢ n : Erased tnat →
+      Γ ⊢ A : Sort mType i →
+      Γ ⊢ tvec_elim m A n v P z s : app (app P n) v
+
 | type_bot :
     Γ ⊢ bot : Sort mProp 0
 
@@ -397,3 +523,26 @@ Inductive wf : context → Prop :=
       cscoping Γ A mKind →
       Γ ⊢ A : Sort m i →
       wf (Γ ,, (m, A)).
+
+Create HintDb gtt_conv discriminated.
+Create HintDb gtt_type discriminated.
+
+Hint Resolve conv_beta reveal_hide conv_if_true conv_if_false conv_nat_elim_zero
+  conv_nat_elim_succ conv_vec_elim_nil conv_vec_elim_cons cong_Prop cong_Pi
+  cong_lam cong_app cong_Erased cong_hide cong_reveal cong_Reveal cong_gheq
+  cong_if cong_succ cong_nat_elim cong_vec cong_vnil cong_vcons cong_vec_elim
+  cong_bot_elim conv_refl
+: gtt_conv.
+
+Hint Resolve type_var type_sort type_pi type_lam type_app type_erased type_hide
+  type_reveal type_Reveal type_toRev type_fromRev type_gheq type_ghrefl
+  type_ghcast type_bool type_true type_false type_if type_nat type_zero
+  type_succ type_nat_elim type_vec type_vnil type_vcons type_vec_elim type_bot
+  type_bot_elim
+: gtt_type.
+
+Ltac gconv :=
+  unshelve typeclasses eauto with gtt_scope gtt_conv shelvedb ; shelve_unifiable.
+
+Ltac gtype :=
+  unshelve typeclasses eauto with gtt_scope gtt_type shelvedb ; shelve_unifiable.

@@ -14,20 +14,14 @@
 
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
-From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
-  Scoping TermMode CastRemoval Typing BasicMetaTheory CScoping CTyping
-  CCMetaTheory Admissible Erasure Revival Param Model TransNat.
-From Coq Require Import Setoid Morphisms Relation_Definitions.
+From GhostTT Require Import Util BasicAST.
+From GhostTT Require Import TransNat.
 
 Import ListNotations.
-Import CombineNotations.
 
 Set Default Goal Selector "!".
 Set Equations Transparent.
 Set Universe Polymorphism.
-
-Transparent close ignore epm_lift rpm_lift.
 
 (** Erasure **)
 
@@ -95,6 +89,42 @@ Lemma pm_vec_elim :
 Proof.
   intros A AP Pe PP ze zP se sP n nP v vP.
   induction vP. all: eauto.
+Qed.
+
+Definition err_length {A} (v : err_vec A) : err_nat :=
+  err_vec_elim A (λ _, erase_nat) err_O (λ a v r, err_S r) v.
+
+Inductive squash (P : Prop) : SProp :=
+| sq (p : P).
+
+Lemma err_length_eq :
+  ∀ A AP n nP v (vP : pm_vec A AP n nP v),
+    squash (err_length v = n).
+Proof.
+  intros A AP n nP v vP.
+  induction vP.
+  - cbn. constructor. reflexivity.
+  - cbn. destruct IHvP. subst.
+    constructor. reflexivity.
+Qed.
+
+Lemma pm_vec_elimG :
+  ∀ A (AP : El A → SProp)
+    (Pe : err_vec A → ty)
+    (PP : ∀ n nP (v : err_vec A) (vP : pm_vec A AP n nP v), El (Pe v) → SProp)
+    (ze : El (Pe err_vnil)) (zP : PP err_O pm_O err_vnil pm_vnil ze)
+    (se : ∀ (a : El A) (n : err_nat) (v : err_vec A), El (Pe v) → El (Pe (err_vcons a v)))
+    (sP :
+      ∀ a aP n nP v vP (h : El (Pe v)) (hP : PP n nP v vP h),
+        PP (err_S n) (pm_S n nP) (err_vcons a v) (pm_vcons a aP n nP v vP) (se a n v h)
+    )
+    n nP v vP,
+    PP n nP v vP (err_vec_elim A Pe ze (λ a v, se a (err_length v) v) v).
+Proof.
+  intros A AP Pe PP ze zP se sP n nP v vP.
+  induction vP. 1: eauto.
+  cbn. eapply err_length_eq in vP as en. destruct en. subst.
+  eauto.
 Qed.
 
 Lemma pm_vec_elim_Prop :

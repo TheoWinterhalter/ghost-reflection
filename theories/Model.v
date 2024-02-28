@@ -60,7 +60,7 @@ Proof.
   intros hcons. intros [t ht].
   eapply hcons.
   apply param_typing in ht as htp.
-  cbn in htp. unfold ptype in htp. cbn - [mode_inb] in htp.
+  cbn in htp. unfold ptype in htp. cbn in htp.
   eapply validity in ht as h. 2: constructor.
   destruct h as [hs [i h]].
   ttinv h h'. cbn in h'.
@@ -103,6 +103,10 @@ Fixpoint urm (t : term) : term :=
   | tzero => tzero
   | tsucc n => tsucc (urm n)
   | tnat_elim m n P z s => tnat_elim m (urm n) (urm P) (urm z) (urm s)
+  | tvec A n => tvec (urm A) (urm n)
+  | tvnil A => tvnil (urm A)
+  | tvcons a n v => tvcons (urm a) (urm n) (urm v)
+  | tvec_elim m A n v P z s => tvec_elim m (urm A) (urm n) (urm v) (urm P) (urm z) (urm s)
   | bot => bot
   | bot_elim m A p => bot_elim m (urm A) (urm p)
   end.
@@ -179,6 +183,8 @@ Proof.
       all: eapply urm_scoping. all: rewrite sc_urm_ctx. all: eassumption.
     }
     ssimpl. apply conv_refl.
+  - cbn. rewrite !urm_ren. constructor.
+    all: try eapply urm_cscoping ; eauto.
   - cbn. constructor. all: eauto.
     all: unfold ueq. all: eauto.
 Qed.
@@ -294,6 +300,8 @@ Proof.
     apply sscoping_urm. apply sscoping_castrm. cbn. eapply sscoping_one.
     rewrite sc_urm_ctx. eassumption.
   - cbn. econstructor. eauto.
+  - cbn. constructor. 1: eauto.
+    gconv.
 Qed.
 
 (** Modes are coherent with sorts **)

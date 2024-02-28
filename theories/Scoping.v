@@ -141,6 +141,35 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       scoping Γ s m →
       scoping Γ (tnat_elim m n P z s) m
 
+| scope_vec :
+    ∀ A n,
+      scoping Γ A mKind →
+      scoping Γ n mGhost →
+      scoping Γ (tvec A n) mKind
+
+| scope_vnil :
+    ∀ A,
+      scoping Γ A mKind →
+      scoping Γ (tvnil A) mType
+
+| scope_vcons :
+    ∀ a n v,
+      scoping Γ a mType →
+      scoping Γ n mGhost →
+      scoping Γ v mType →
+      scoping Γ (tvcons a n v) mType
+
+| scope_vec_elim :
+    ∀ m A n v P z s,
+      m ≠ mKind →
+      scoping Γ A mKind →
+      scoping Γ n mGhost →
+      scoping Γ v mType →
+      scoping Γ P mKind →
+      scoping Γ z m →
+      scoping Γ s m →
+      scoping Γ (tvec_elim m A n v P z s) m
+
 | scope_bot :
     scoping Γ bot mKind
 
@@ -152,3 +181,10 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
 .
 
 Notation cscoping Γ := (scoping (sc Γ)).
+
+Create HintDb gtt_scope discriminated.
+
+Hint Constructors scoping : gtt_scope.
+
+Ltac gscope :=
+  unshelve typeclasses eauto with gtt_scope shelvedb ; shelve_unifiable.

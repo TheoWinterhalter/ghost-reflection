@@ -46,6 +46,10 @@ Section Mode.
     | tzero => mType
     | tsucc n => mType
     | tnat_elim m n P z s => m
+    | tvec A n => mKind
+    | tvnil A => mType
+    | tvcons a n v => mType
+    | tvec_elim m A n v P z s => m
     | bot => mKind
     | bot_elim m A p => m
     end.
@@ -141,7 +145,8 @@ Ltac mode_eqs :=
   | e : isProp ?m = true |- _ => eapply isProp_eq in e ; try subst m
   end.
 
-Definition mode_inb := inb mode_eqb.
-
-Notation relm m :=
-  (mode_inb m [ mType ; mKind ]).
+Definition relm m :=
+  match m with
+  | mKind | mType => true
+  | _ => false
+  end.

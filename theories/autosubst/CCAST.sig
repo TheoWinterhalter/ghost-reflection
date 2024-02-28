@@ -59,3 +59,15 @@ pzero : cterm
 psucc : cterm -> cterm
 pnat_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
 pnat_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+
+evec : cterm -> cterm
+evnil : cterm -> cterm
+evcons : cterm -> cterm -> cterm
+evec_elim : cterm -> cterm -> cterm -> cterm -> cterm
+
+pvec : cterm -> cterm -> cterm -> cterm -> cterm
+pvnil : cterm -> cterm
+pvcons : cterm -> cterm -> cterm -> cterm
+pvec_elim : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+pvec_elimG : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
+pvec_elimP : cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm -> cterm
