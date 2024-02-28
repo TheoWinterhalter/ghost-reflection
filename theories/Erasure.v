@@ -55,8 +55,6 @@ Qed.
 
 Hint Resolve ctype_ty_lift : cc_type.
 
-(* TODO MOVE *)
-
 Lemma ccmeta_refl :
   ∀ Γ u v,
     u = v →

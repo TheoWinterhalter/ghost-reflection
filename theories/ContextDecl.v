@@ -51,16 +51,3 @@ Notation cscope := (list (option cmode)).
 
 Definition csc (Γ : ccontext) : cscope :=
   map (option_map fst) Γ.
-
-(* TODO MOVE *)
-Definition option_bind {A B} (o : option A) (f : A → option B) :=
-  match o with
-  | Some x => f x
-  | None => None
-  end.
-
-Definition whenSome {A} (P : A → Prop) (o : option A) :=
-  match o with
-  | Some x => P x
-  | None => True
-  end.

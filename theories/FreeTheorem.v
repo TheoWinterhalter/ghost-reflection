@@ -137,7 +137,7 @@ Proof.
       * reflexivity.
 Qed.
 
-Lemma constant_bool :
+Lemma constant_free_theorem :
   ∑ prf, [] ⊢ᶜ prf : ⟦ [] | er_bool_cst ⟧p.
 Proof.
   cbn.
@@ -174,7 +174,7 @@ Proof.
     eapply h.
   }
   unfold vreg. cbn.
-  (** What remains to be prove now is the following:
+  (** What remains to be proven now is the following:
 
     ∀ (fe : ebool) (fP : ∀ (b : ebool) (bP : pbool b), pbool fe)
       (P : ebool → unit) (PP : ∀ (b : ebool) (bP : pbool b), Prop),
@@ -253,7 +253,7 @@ Inductive pm_bool : err_bool → SProp :=
 
 Lemma goal :
   ∀ (fe : err_bool) (fP : ∀ (b : err_bool) (bP : pm_bool b), pm_bool fe)
-    (P : err_bool → unit) (PP : ∀ (b : err_bool) (bP : pm_bool b), Prop),
+    (P : err_bool → unit) (PP : ∀ (b : err_bool) (bP : pm_bool b), SProp),
     PP fe (fP err_true pm_true) →
     PP fe (fP err_false pm_false).
 Proof.
