@@ -23,7 +23,7 @@ Set Equations Transparent.
 Reserved Notation "Γ ⊢ˣ t : A"
   (at level 80, t, A at next level, format "Γ  ⊢ˣ  t  :  A").
 
-Inductive typing (Γ : context) : term → term → Type :=
+Inductive grtyping (Γ : context) : term → term → Type :=
 
 | rtype_var :
     ∀ x m A,
@@ -179,7 +179,7 @@ Inductive typing (Γ : context) : term → term → Type :=
       Γ ⊢ˣ t : app P u →
       Γ ⊢ˣ t : app P v
 
-where "Γ ⊢ˣ t : A" := (typing Γ t A).
+where "Γ ⊢ˣ t : A" := (grtyping Γ t A).
 
 (** Context formation **)
 
