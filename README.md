@@ -107,6 +107,11 @@ exactly the types we inhabit in `TransNat` and `TransVec`.
 | `TransNat`       | Erasure and parametricity for `nat` |
 | `TransVec`       | Erasure and parametricity for `vec` |
 
+### Statistics
+
+The formalisation (excluding Autosubst generated files) spans little under
+18,000 lines of code. Autosubsts generates a little over 11,000 lines.
+
 ## Assumptions
 
 You will find only two axioms in the whole development. Both are found in the
