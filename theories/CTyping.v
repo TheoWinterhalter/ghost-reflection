@@ -298,6 +298,22 @@ Inductive conversion (Γ : ccontext) : cterm → cterm → Prop :=
       Γ ⊢ᶜ pvec_elim Ae AP ne nP ve vP Pe PP ze zP se sP ≡ pvec_elim Ae' AP' ne' nP' ve' vP' Pe' PP' ze' zP' se' sP'
 
 (* Same *)
+| ccong_pvec_elimG :
+    ∀ Ae AP ne nP ve vP Pe PP ze zP se sP Ae' AP' ne' ve' vP' nP' Pe' PP' ze' zP' se' sP',
+      Γ ⊢ᶜ Ae ≡ Ae' →
+      Γ ⊢ᶜ AP ≡ AP' →
+      Γ ⊢ᶜ ne ≡ ne' →
+      Γ ⊢ᶜ nP ≡ nP' →
+      Γ ⊢ᶜ ve ≡ ve' →
+      Γ ⊢ᶜ vP ≡ vP' →
+      Γ ⊢ᶜ Pe ≡ Pe' →
+      Γ ⊢ᶜ ze ≡ ze' →
+      Γ ⊢ᶜ zP ≡ zP' →
+      Γ ⊢ᶜ se ≡ se' →
+      Γ ⊢ᶜ sP ≡ sP' →
+      Γ ⊢ᶜ pvec_elimG Ae AP ne nP ve vP Pe PP ze zP se sP ≡ pvec_elimG Ae' AP' ne' nP' ve' vP' Pe' PP' ze' zP' se' sP'
+
+(* Same *)
 | ccong_pvec_elimP :
     ∀ Ae AP ne nP ve vP Pe PP zP sP Ae' AP' ne' nP' ve' vP' Pe' PP' zP' sP',
       Γ ⊢ᶜ Ae ≡ Ae' →
@@ -800,15 +816,13 @@ Inductive ctyping (Γ : ccontext) : cterm → cterm → Prop :=
             cPi cProp (capp pnat (cvar 0)) (
               cPi cType (cEl (evec ((S >> S >> S >> S) ⋅ A))) (
                 cPi cProp (capp (pvec ((S >> S >> S >> S >> S) ⋅ A) ((S >> S >> S >> S >> S) ⋅ AP) (cvar 2) (cvar 1)) (cvar 0)) (
-                  cPi cType (cEl (capp ((S >> S >> S >> S >> S >> S) ⋅ P) (cvar 1))) (
-                    cPi cProp (capps ((S >> S >> S >> S >> S >> S >> S) ⋅ P) [ cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
-                      capps ((S >> S >> S >> S >> S >> S >> S >> S) ⋅ P) [
-                        esucc (cvar 4) ;
-                        psucc (cvar 3) ;
-                        evcons (cvar 6) (cvar 2) ;
-                        pvcons (cvar 5) (cvar 3) (cvar 1)
-                      ]
-                    )
+                  cPi cProp (capps ((S >> S >> S >> S >> S >> S) ⋅ PP) [ cvar 3 ; cvar 2 ; cvar 1 ; cvar 0 ]) (
+                    capps ((S >> S >> S >> S >> S >> S >> S) ⋅ PP) [
+                      esucc (cvar 4) ;
+                      psucc (cvar 3) ;
+                      evcons (cvar 6) (cvar 2) ;
+                      pvcons (cvar 5) (cvar 3) (cvar 1)
+                    ]
                   )
                 )
               )
@@ -864,7 +878,7 @@ Hint Resolve cconv_beta cconv_El_val cconv_Err_val cconv_El_err cconv_Err_err
   ccong_esucc ccong_enat_elim ccong_psucc ccong_pnat_elim ccong_pnat_elimP
   cconv_evec_elim_nil cconv_evec_elim_cons ccong_evec ccong_evnil ccong_evcons
   ccong_evec_elim ccong_pvec ccong_pvnil ccong_pvcons ccong_pvec_elim
-  ccong_pvec_elimP
+  ccong_pvec_elimG ccong_pvec_elimP
   cconv_refl
 : cc_conv.
 

@@ -277,7 +277,7 @@ Equations param_term (Γ : scope) (t : term) : cterm := {
     match m with
     | mKind => cDummy
     | mType =>  pvec_elim Ae AP nv nP ve vP Pe PP ze zP se sP
-    | mGhost => pvec_elim Ae AP nv nP ve vP Pe PP zv zP sv sP
+    | mGhost => pvec_elimG Ae AP nv nP ve vP Pe PP zv zP sv sP
     | mProp => pvec_elimP Ae AP nv nP ve vP Pe PP zP sP
     end ;
   ⟦ Γ | bot ⟧p := cbot ;
@@ -7508,13 +7508,18 @@ Proof.
           }
           reflexivity.
       }
-      ertype. all: try assumption.
+      eapply ccmeta_conv. 1: ertype.
+      all: try assumption.
       * eapply ccmeta_conv. 1: eassumption.
         f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
         ssimpl. reflexivity.
       * eapply ccmeta_conv. 1: eassumption.
+        unfold capps.
         f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
-        cbn. f_equal. f_equal. f_equal. f_equal.
+        f_equal. f_equal. f_equal. f_equal. f_equal.
+        ssimpl. reflexivity.
+      * unfold elength. cbn. f_equal. f_equal. f_equal. f_equal.
+        f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
         ssimpl. reflexivity.
     + simpl in IHh4. erewrite !md_ren in IHh4.
       2-7: eauto using rscoping_S, rscoping_comp_S.
@@ -7680,7 +7685,7 @@ Proof.
       }
       cbn in *.
       unfold shift in *. unfold var_zero in *.
-      ertype.
+      ertype. all: assumption.
   - unfold ptype. cbn.
     change (epm_lift ctt) with ctt.
     econstructor.

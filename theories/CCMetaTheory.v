@@ -419,7 +419,7 @@ Proof.
       ssimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
       f_equal. ssimpl. f_equal. f_equal. f_equal. f_equal.
-      f_equal. f_equal. cbn. f_equal.
+      f_equal. cbn. f_equal.
       all: f_equal. all: f_equal. all: f_equal. all: f_equal.
       all: ssimpl. all: reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
@@ -742,10 +742,10 @@ Proof.
       * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
       * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      unfold capps.
+      unfold capps. cbn.
       f_equal. ssimpl. f_equal. clear. f_equal. f_equal. f_equal. all: f_equal.
-      all: f_equal. 2-4: f_equal. 4-6: f_equal. 5-6: f_equal. 5-6: f_equal.
-      5-6: f_equal.
+      all: f_equal. 2-4: f_equal. 4-5: f_equal. 5: f_equal. 5: f_equal.
+      4: f_equal. 4: f_equal.
       all: ssimpl.
       all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
   - asimpl. asimpl in IHht1. asimpl in IHht2.
