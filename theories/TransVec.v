@@ -47,21 +47,6 @@ Proof.
   - apply Err.
 Defined.
 
-Lemma err_vec_elimG :
-  ∀ (A : ty) (P : err_vec A → ty)
-    (z : El (P err_vnil))
-    (s : ∀ (a : El A) (n : El erase_nat) (v : err_vec A),
-      El (P v) →
-      El (P (err_vcons a v))
-    )
-    (n : El erase_nat)
-    (v : err_vec A),
-    El (P v).
-Proof.
-  intros A P z s n v.
-  exact (err_vec_elim A P z (λ a, s a n) v).
-Defined.
-
 (** Computation rules **)
 
 Lemma err_vec_elim_vnil :
@@ -74,20 +59,6 @@ Qed.
 Lemma err_vec_elim_vcons :
   ∀ A P z s a v,
     err_vec_elim A P z s (err_vcons a v) = s a v (err_vec_elim A P z s v).
-Proof.
-  reflexivity.
-Qed.
-
-Lemma err_vec_elimG_vnil :
-  ∀ A P z s n,
-    err_vec_elimG A P z s n err_vnil = z.
-Proof.
-  reflexivity.
-Qed.
-
-Lemma err_vec_elimG_vcons :
-  ∀ A P z s a n v,
-    err_vec_elimG A P z s n (err_vcons a v) = s a n v (err_vec_elimG A P z s n v).
 Proof.
   reflexivity.
 Qed.
@@ -119,6 +90,58 @@ Proof.
   intros A AP Pe PP ze zP se sP n nP v vP.
   induction vP. all: eauto.
 Qed.
+
+Definition err_length {A} (v : err_vec A) : err_nat :=
+  err_vec_elim A (λ _, erase_nat) err_O (λ a v r, err_S r) v.
+
+Inductive squash (P : Prop) : SProp :=
+| sq (p : P).
+
+Lemma err_length_eq :
+  ∀ A AP n nP v (vP : pm_vec A AP n nP v),
+    squash (err_length v = n).
+Proof.
+  intros A AP n nP v vP.
+  induction vP.
+  - cbn. constructor. reflexivity.
+  - cbn. destruct IHvP. subst.
+    constructor. reflexivity.
+Qed.
+
+Lemma err_vec_elim_ext :
+  ∀ A Pe ze se se' AP n nP v,
+    pm_vec A AP n nP v →
+    (∀ a m mP v, pm_vec A AP m mP v → squash (se a v = se' a v)) →
+    squash (err_vec_elim A Pe ze se v = err_vec_elim A Pe ze se' v).
+Proof.
+  intros A Pe ze se se' AP n nP v vP h.
+  induction vP.
+  - cbn. constructor. reflexivity.
+  - cbn. destruct IHvP as [e].
+    specialize (h a n nP v vP). destruct h as [h].
+    constructor. rewrite h. f_equal. exact e.
+Qed.
+
+Lemma pm_vec_elimG :
+  ∀ A (AP : El A → SProp)
+    (Pe : err_vec A → ty)
+    (PP : ∀ n nP (v : err_vec A) (vP : pm_vec A AP n nP v), El (Pe v) → SProp)
+    (ze : El (Pe err_vnil)) (zP : PP err_O pm_O err_vnil pm_vnil ze)
+    (se : ∀ (a : El A) (n : err_nat) (v : err_vec A), El (Pe v) → El (Pe (err_vcons a v)))
+    (sP :
+      ∀ a aP n nP v vP (h : El (Pe v)) (hP : PP n nP v vP h),
+        PP (err_S n) (pm_S n nP) (err_vcons a v) (pm_vcons a aP n nP v vP) (se a n v h)
+    )
+    n nP v vP,
+    PP n nP v vP (err_vec_elim A Pe ze (λ a v, se a (err_length v) v) v).
+Proof.
+  intros A AP Pe PP ze zP se sP n nP v vP.
+  eapply (err_vec_elim_ext A Pe ze) in vP as e.
+  1: destruct e as [e]. 1: rewrite e.
+  (* Need ext with an eliminator for pm_vec maybe? *)
+  (* induction vP. 1: eauto. *)
+(* Qed. *)
+Admitted.
 
 Lemma pm_vec_elim_Prop :
   ∀ A (AP : El A → SProp)
