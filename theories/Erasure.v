@@ -650,6 +650,7 @@ Proof.
     constructor. all: eauto.
   - cbn. econv.
   - cbn. econv.
+  - cbn. econv.
   - cbn. destruct_if e. all: econv.
   - cbn. destruct_if'.
     + constructor. eauto.

@@ -2327,6 +2327,7 @@ Proof.
   - cbn. econv.
   - cbn. destruct m.
     all: econv. all: reflexivity.
+  - cbn. econv. all: reflexivity.
   - cbn. econv.
   - cbn. econv.
   - cbn. destruct m.

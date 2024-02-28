@@ -195,6 +195,12 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ s ≡ s' →
       Γ ⊢ tnat_elim m n P z s ≡ tnat_elim m n' P' z' s'
 
+| cong_vec :
+    ∀ A A' n n',
+      Γ ⊢ A ≡ A' →
+      Γ ⊢ n ≡ n' →
+      Γ ⊢ tvec A n ≡ tvec A' n'
+
 | cong_vnil :
     ∀ A A',
       Γ ⊢ A ≡ A' →
@@ -524,7 +530,7 @@ Create HintDb gtt_type discriminated.
 Hint Resolve conv_beta reveal_hide conv_if_true conv_if_false conv_nat_elim_zero
   conv_nat_elim_succ conv_vec_elim_nil conv_vec_elim_cons cong_Prop cong_Pi
   cong_lam cong_app cong_Erased cong_hide cong_reveal cong_Reveal cong_gheq
-  cong_if cong_succ cong_nat_elim cong_vnil cong_vcons cong_vec_elim
+  cong_if cong_succ cong_nat_elim cong_vec cong_vnil cong_vcons cong_vec_elim
   cong_bot_elim conv_refl
 : gtt_conv.
 
