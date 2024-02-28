@@ -405,6 +405,21 @@ Proof.
     + cbn. intuition reflexivity.
 Qed.
 
+Corollary elim_ctx :
+  ∀ Γ,
+    rwf Γ →
+    ∑ Γ', tr_ctx Γ Γ'.
+Proof.
+  intros Γ hΓ.
+  induction hΓ as [| Γ m i A hΓ ih hsA hA].
+  - exists []. split. all: constructor.
+  - destruct ih as [Γ' h'].
+    eapply elim_reflection in hA as hA'. 2: eassumption.
+    destruct hA' as [A' [s' hA']].
+    eapply tr_sort_inv in hA'. 2: apply h'.
+    eexists. eapply tr_cons. all: eassumption.
+Qed.
+
 (** Conservativity **)
 
 Theorem conservativity :
