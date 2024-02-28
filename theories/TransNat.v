@@ -101,7 +101,7 @@ Lemma pm_nat_elim :
   ∀ (Pe : El erase_nat → ty) (PP : ∀ n (nP : pm_nat n), El (Pe n) → SProp)
     (ze : El (Pe err_O)) (zP : PP err_O pm_O ze)
     (se : ∀ n, El (Pe n) → El (Pe (err_S n)))
-    (sP : ∀ n nP (h : El (Pe n)) (hP : PP n nP h), PP (err_S n) (pm_S n nP) (se _ h))
+    (sP : ∀ n nP (h : El (Pe n)) (hP : PP n nP h), PP (err_S n) (pm_S n nP) (se n h))
     n (nP : pm_nat n),
     PP n nP (err_nat_elim Pe ze se n).
 Proof.
