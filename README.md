@@ -1,5 +1,8 @@
 # Formalisation of the "Dependent Ghosts Have a Reflection For Free" paper
 
+This formalisation is a companion to the following draft paper:
+https://hal.science/hal-04163836
+
 ## Building the syntax (optional)
 
 We build the syntax of our type theories using [Autosubst 2 OCaml].
