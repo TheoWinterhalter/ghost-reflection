@@ -60,13 +60,11 @@ Inductive conversion (Γ : context) : term → term → Prop :=
 
 | conv_if_true :
     ∀ m P t f,
-      m ≠ mKind →
       cscoping Γ t m →
       Γ ⊢ tif m ttrue P t f ≡ t
 
 | conv_if_false :
     ∀ m P t f,
-      m ≠ mKind →
       cscoping Γ f m →
       Γ ⊢ tif m tfalse P t f ≡ f
 
@@ -402,7 +400,6 @@ Inductive typing (Γ : context) : term → term → Prop :=
 
 | type_if :
     ∀ i m b P t f,
-      m ≠ mKind →
       cscoping Γ b mType →
       cscoping Γ P mKind →
       cscoping Γ t m →

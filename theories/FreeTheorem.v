@@ -260,3 +260,12 @@ Proof.
   intros fe fP _ P h.
   exact h.
 Qed.
+
+Inductive SFalse : SProp :=.
+Inductive STrue : SProp := SI.
+
+Definition inv (h : pm_bool err) : SFalse :=
+  match h in pm_bool b return match b with err => SFalse | _ => STrue end
+  with
+  | pm_true | pm_false => SI
+  end.
