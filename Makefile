@@ -11,4 +11,9 @@ autosubst:
 	cd theories/autosubst ; \
 	$(MAKE) -f Makefile
 
+force _CoqProject Makefile: ;
+
+%: Makefile.coq force
+	@+$(MAKE) -f Makefile.coq $@
+
 .PHONY: all clean autosubst
