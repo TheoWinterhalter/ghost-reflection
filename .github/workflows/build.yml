@@ -20,6 +20,11 @@ jobs:
 
     steps:
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Docker-Coq-Action
         uses: coq-community/docker-coq-action@v1
         with:
