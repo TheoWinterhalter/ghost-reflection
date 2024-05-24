@@ -15,7 +15,7 @@ to generate the [autosubst/CCAST] and [autosubst/GAST] modules.
 [autosubst/core], [autosubst/unscoped] and [SubstNotations] contain the
 Autosubst library and some notations.
 
-`ContextDecl.v` defines contexts for both theories.
+[ContextDecl] defines contexts for both theories.
 
 [BasicAST]: coqdoc/GhostTT.BasicAST.html
 [autosubst/CCAST]: coqdoc/GhostTT.autosubst.CCAST.html
@@ -23,6 +23,7 @@ Autosubst library and some notations.
 [autosubst/core]: coqdoc/GhostTT.autosubst.core.html
 [autosubst/unscoped]: coqdoc/GhostTT.autosubst.unscoped.html
 [SubstNotations]: coqdoc/GhostTT.SubstNotations.html
+[ContextDecl]: coqdoc/GhostTT.ContextDecl.html
 
 ### Ghost Type Theory
 

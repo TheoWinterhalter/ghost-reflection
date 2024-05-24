@@ -59,7 +59,7 @@ jobs:
           args: >-  # allows you to break string into multiple lines
             --standalone
             --output=doc/index.html
-            --css=coqdoc/resources/github-pandoc.css
+            --css=github-pandoc.css
             --metadata title="Ghost Reflection Overview"
             doc/index.md
       - name: Setup Pages
