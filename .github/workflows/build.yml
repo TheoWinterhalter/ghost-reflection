@@ -24,7 +24,6 @@ jobs:
         uses: coq-community/docker-coq-action@v1
         with:
           coq_version: ${{ env.coq_version }}
-          ocaml_version: ${{ env.ocaml_version }}
           before_install: |
             startGroup "Print opam config"
               sudo chown -R coq:coq .
