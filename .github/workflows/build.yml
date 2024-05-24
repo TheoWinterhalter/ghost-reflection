@@ -1,0 +1,51 @@
+name: Ghost Reflection CI
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+
+  build:
+  
+    runs-on: ubuntu-latest
+
+    env:
+      coq_version: '8.18'
+      ocaml_version: '4.14-flambda'
+      fail-fast: true
+
+    steps:
+
+      - name: Docker-Coq-Action
+        uses: coq-community/docker-coq-action@v1
+        with:
+          coq_version: ${{ env.coq_version }}
+          ocaml_version: ${{ env.ocaml_version }}
+          before_install: |
+            startGroup "Print opam config"
+              sudo chown -R coq:coq .
+              opam config list; opam repo list; opam list
+            endGroup
+          before_script: |
+            startGroup "Workaround permission issue"
+              sudo chown -R coq:coq .  # <--
+              opam exec -- ocamlfind list
+            endGroup
+          script: |
+            startGroup "Build project"
+              opam exec -- make -j 2
+              opam exec -- make coqdoc
+            endGroup
+          uninstall: |
+            startGroup "Clean project"
+            endGroup
+
+      - name: Revert permissions
+        # to avoid a warning at cleanup time
+        if: ${{ always() }}
+        run: sudo chown -R 1001:116 .  # <--
