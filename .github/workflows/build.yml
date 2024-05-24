@@ -60,7 +60,7 @@ jobs:
             --standalone
             --output=doc/index.html
             --css=coqdoc/resources/github-pandoc.css
-            --metadata title="LogRel Overview"
+            --metadata title="Ghost Reflection Overview"
             doc/index.md
       - name: Setup Pages
         if: github.ref_name == github.event.repository.default_branch
