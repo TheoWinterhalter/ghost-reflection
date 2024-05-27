@@ -21,39 +21,40 @@ Set Equations Transparent.
 
 Transparent close ignore epm_lift rpm_lift.
 
-Definition discr_bool b :=
-  tif mKind b (lam mType tbool (Sort mProp 0)) top bot.
+Definition discr_bool :=
+  lam mType tbool (
+    tif mKind (var 0) (lam mType tbool (Sort mProp 0)) top bot
+  ).
 
 Lemma type_discr_bool :
-  ∀ b,
-    scoping [] b mType →
-    [] ⊢ b : tbool →
-    [] ⊢ discr_bool b : Sort mProp 0.
+  [] ⊢ discr_bool : tbool ⇒[ 0 | 0 / mType | mKind ] Sort mProp 0.
 Proof.
-  intros b hsb hb. unfold discr_bool.
-  eapply type_conv. 1: constructor. 1: gscope.
-  - gtype.
+  unfold discr_bool.
+  eapply type_lam. 1: constructor. 1,2: gtype.
+  assert (hw : wf [ (mType, tbool) ]).
+  { eapply wf_cons. 1: constructor. gtype. }
+  cbn. eapply type_conv. 1: auto. 1:{ gscope. reflexivity. }
+  - gtype. 1: reflexivity.
+    + eapply meta_conv.
+      * gtype. reflexivity.
+      * reflexivity.
     + eapply type_conv. all: gtype.
-      * constructor.
       * cbn. apply conv_sym. gconv.
       * {
         eapply meta_conv.
-        - eapply type_app. 1: constructor. 2: gtype.
-          eapply type_lam. 1: constructor. 1,3: gtype.
-          gtype.
-        - cbn. reflexivity.
+        - eapply type_app. 1: auto. 2: gtype.
+          eapply type_lam. 1: auto. 1,3: gtype. gtype.
+        - reflexivity.
       }
     + eapply type_conv. all: gtype.
-      * constructor.
       * cbn. apply conv_sym. gconv.
       * {
         eapply meta_conv.
-        - eapply type_app. 1: constructor. 2: gtype.
-          eapply type_lam. 1: constructor. 1,3: gtype.
-          gtype.
-        - cbn. reflexivity.
+        - eapply type_app. 1: auto. 2: gtype.
+          eapply type_lam. 1: auto. 1,3: gtype. gtype.
+        - reflexivity.
       }
-  - cbn. gconv. cbn. apply scoping_castrm. assumption.
+  - cbn. gconv. reflexivity.
   - gtype.
 Qed.
 
