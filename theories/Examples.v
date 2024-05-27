@@ -58,6 +58,26 @@ Proof.
   - gtype.
 Qed.
 
+(* Anything goes actually *)
+Lemma rtyping_triv :
+  ∀ Γ, rtyping Γ id [].
+Proof.
+  intros Γ. intros x m A e.
+  destruct x. all: discriminate.
+Qed.
+
+Lemma type_discr_bool_gen :
+  ∀ Γ, Γ ⊢ discr_bool : tbool ⇒[ 0 | 0 / mType | mKind ] Sort mProp 0.
+Proof.
+  intros Γ.
+  pose proof type_discr_bool as h.
+  eapply typing_ren in h.
+  - exact h.
+  - apply rtyping_triv.
+Qed.
+
+Opaque discr_bool.
+
 Definition iszero :=
   lam mType tnat (
     tnat_elim mType (var 0) (lam mType tnat tbool)
@@ -159,3 +179,88 @@ Proof.
   - gconv. reflexivity.
   - gtype.
 Qed.
+
+Lemma type_iszero_gen :
+  ∀ Γ, Γ ⊢ iszero : tnat ⇒[ 0 | 0 / mType | mType ] tbool.
+Proof.
+  intros Γ.
+  pose proof type_iszero as h.
+  eapply typing_ren in h.
+  - exact h.
+  - apply rtyping_triv.
+Qed.
+
+Opaque iszero.
+
+Definition discr_nat :=
+  lam mType tnat (
+    app discr_bool (app iszero (var 0))
+  ).
+
+Lemma type_discr_nat :
+  [] ⊢ discr_nat : tnat ⇒[ 0 | 0 / mType | mKind ] Sort mProp 0.
+Proof.
+  unfold discr_nat.
+  eapply type_lam. 1: constructor. 1,2: gtype.
+  assert (hw : wf [ (mType, tnat) ]).
+  { eapply wf_cons. 1: constructor. gtype. }
+  cbn. eapply meta_conv.
+  - eapply type_app. 1: auto.
+    + eapply type_discr_bool_gen.
+    + eapply meta_conv.
+      * eapply type_app. 1: auto. 1: eapply type_iszero_gen.
+        eapply meta_conv. 1: gtype ; reflexivity.
+        reflexivity.
+      * reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma type_discr_nat_gen :
+  ∀ Γ, Γ ⊢ discr_nat : tnat ⇒[ 0 | 0 / mType | mKind ] Sort mProp 0.
+Proof.
+  intros Γ.
+  pose proof type_discr_nat as h.
+  eapply typing_ren in h.
+  - exact h.
+  - apply rtyping_triv.
+Qed.
+
+Opaque discr_nat.
+
+Definition erased_nat_discrP :=
+  lam mGhost (Erased tnat) (
+    Reveal (var 0) discr_nat
+  ).
+
+Lemma type_erased_nat_discrP :
+  [] ⊢ erased_nat_discrP : Erased tnat ⇒[ 0 | 0 / mGhost | mKind ] Sort mProp 0.
+Proof.
+  cbn. eapply type_lam. 1: constructor. 1,2: gtype.
+  eapply type_Reveal.
+  - eapply wf_cons. 1: constructor. gtype.
+  - eapply meta_conv.
+    + gtype. reflexivity.
+    + reflexivity.
+  - eapply type_discr_nat_gen.
+Qed.
+
+Lemma type_erased_nat_discrP_gen :
+  ∀ Γ, Γ ⊢ erased_nat_discrP : Erased tnat ⇒[ 0 | 0 / mGhost | mKind ] Sort mProp 0.
+Proof.
+  intros Γ.
+  pose proof type_erased_nat_discrP as h.
+  eapply typing_ren in h.
+  - exact h.
+  - apply rtyping_triv.
+Qed.
+
+Opaque erased_nat_discrP.
+
+Axiom dumdum : term.
+
+Definition erased_nat_discr :=
+  lam mGhost (Erased tnat) (
+    lam mProp (gheq (Erased tnat) (hide tzero) (gS (var 0))) (
+      fromRev dumdum dumdum (ghcast dumdum dumdum dumdum dumdum dumdum dumdum)
+    )
+  ).
