@@ -256,11 +256,218 @@ Qed.
 
 Opaque erased_nat_discrP.
 
+Lemma type_gS :
+  ∀ Γ n,
+    wf Γ →
+    Γ ⊢ n : Erased tnat →
+    Γ ⊢ gS n : Erased tnat.
+Proof.
+  intros Γ n hw hn.
+  unfold gS.
+  assert (hw2 : wf ((mType, tnat) :: Γ)).
+  { eapply wf_cons. 1: auto. gtype. }
+  eapply type_conv_alt. 1: auto.
+  - eapply type_reveal. 1,3: eassumption.
+    2:{
+      eapply type_lam. all: cbn. 1: auto. all: gtype.
+    }
+    + cbn. auto.
+    + eapply type_lam. all: cbn. 1: auto. 1: gtype.
+      * {
+        eapply meta_conv.
+        - eapply type_app. 1: auto.
+          2:{
+            eapply type_hide. 1: auto.
+            2:{ gtype. reflexivity. }
+            cbn. gtype.
+          }
+          eapply type_lam. all: cbn. 1: auto. 1,3: gtype. gtype.
+        - reflexivity.
+      }
+      * {
+        eapply type_conv. 1: auto. 1:{ gscope. reflexivity. }
+        - eapply type_hide. 1: auto.
+          2:{
+            gtype.
+            - reflexivity.
+            - eapply meta_conv.
+              + gtype. reflexivity.
+              + reflexivity.
+          }
+          gtype.
+        - apply conv_sym. gconv. reflexivity.
+        - eapply meta_conv.
+          + eapply type_app. 1: auto.
+            2:{
+              eapply type_hide. 1: auto.
+              2:{
+                gtype. reflexivity.
+              }
+              cbn. gtype.
+            }
+            eapply type_lam. all: cbn. 1: auto. 1,3: gtype. gtype.
+          + reflexivity.
+      }
+  - cbn. gconv.
+    eapply scoping_castrm. eapply mode_coherence. 1,3: eauto.
+    gtype.
+  - eapply meta_conv.
+    + eapply type_app. 1: auto. 2: eauto.
+      eapply type_lam. 1: auto. 1,3: gtype. gtype.
+    + reflexivity.
+  - gtype.
+Qed.
+
+Definition star :=
+  lam mProp bot (var 0).
+
+Lemma type_star :
+  [] ⊢ star : top.
+Proof.
+  gtype. all: reflexivity.
+Qed.
+
+Lemma type_star_gen :
+  ∀ Γ, Γ ⊢ star : top.
+Proof.
+  intros Γ.
+  pose proof type_star as h.
+  eapply typing_ren in h.
+  - exact h.
+  - apply rtyping_triv.
+Qed.
+
 Axiom dumdum : term.
 
 Definition erased_nat_discr :=
   lam mGhost (Erased tnat) (
     lam mProp (gheq (Erased tnat) (hide tzero) (gS (var 0))) (
-      fromRev dumdum dumdum (ghcast dumdum dumdum dumdum dumdum dumdum dumdum)
+      fromRev dumdum dumdum (ghcast (Erased tnat) (hide tzero) (gS (var 1)) (var 0) erased_nat_discrP (toRev tzero discr_nat star))
     )
   ).
+
+Lemma type_erased_nat_discr :
+  [] ⊢ erased_nat_discr :
+    Pi 0 0 mProp mGhost (Erased tnat) (
+      (gheq (Erased tnat) (hide tzero) (gS (var 0))) ⇒[ 0 | 0 / mProp | mProp ]
+      bot
+    ).
+Proof.
+  assert (hw : wf [ (mGhost, Erased tnat) ]).
+  { eapply wf_cons. 1: constructor. gtype. }
+  cbn. eapply type_lam. 1: constructor. 1: gtype.
+  - eapply type_pi. 1: auto. 2: gtype.
+    eapply type_gheq. 1: auto. all: gtype.
+    eapply type_gS. 1: auto.
+    eapply meta_conv.
+    + gtype. reflexivity.
+    + reflexivity.
+  - assert (hg : [(mGhost, Erased tnat)] ⊢ gheq (Erased tnat) (hide tzero) (gS (var 0)) : Sort mProp 0).
+    { eapply type_gheq. 1: auto. 1,2: gtype.
+      eapply type_gS. 1: auto.
+      eapply meta_conv.
+      - gtype. reflexivity.
+      - reflexivity.
+    }
+    eapply type_lam. 1: auto. 2: gtype. 1: auto.
+    assert (hw2 : wf [ (mProp, gheq (Erased tnat) (hide tzero) (gS (var 0))) ; (mGhost, Erased tnat) ]).
+    { eapply wf_cons. all: eauto. }
+    eapply type_conv_alt. 1: auto.
+    + eapply type_fromRev. 1: auto.
+      3:{
+        eapply type_conv_alt. 1: auto.
+        - eapply type_ghcast. 1: auto.
+          2:{
+            eapply meta_conv.
+            - gtype. reflexivity.
+            - cbn. reflexivity.
+          }
+          2:{
+            eapply meta_conv.
+            - eapply type_erased_nat_discrP_gen.
+            - cbn. f_equal.
+          }
+          1: discriminate.
+          eapply type_conv_alt. 1: auto.
+          + eapply type_toRev. 1: auto.
+            * eapply type_zero.
+            * eapply type_discr_nat_gen.
+            * {
+              eapply type_conv. 1: auto. 1:{ gscope. reflexivity. }
+              - eapply type_star_gen.
+              - apply conv_sym. Transparent discr_nat discr_bool iszero. cbn.
+                eapply conv_trans.
+                1:{
+                  eapply conv_beta.
+                  - gscope.
+                  - gscope. all: try reflexivity. discriminate.
+                  - gscope.
+                }
+                cbn. eapply conv_trans.
+                1:{
+                  eapply conv_beta.
+                  - gscope.
+                  - gscope. reflexivity.
+                  - gscope.
+                    + discriminate.
+                    + reflexivity.
+                }
+                cbn. eapply conv_trans.
+                1:{
+                  econstructor. 2-4: apply conv_refl.
+                  eapply conv_beta.
+                  - gscope.
+                  - gscope.
+                    + discriminate.
+                    + reflexivity.
+                  - gscope.
+                }
+                cbn. eapply conv_trans.
+                1:{
+                  econstructor. 2-4: apply conv_refl.
+                  eapply conv_nat_elim_zero.
+                  - discriminate.
+                  - gscope.
+                  - gscope.
+                  - gscope.
+                }
+                econstructor. gscope.
+              - eapply meta_conv.
+                + eapply type_app. 1: auto.
+                  * eapply type_discr_nat_gen.
+                  * eapply type_zero.
+                + reflexivity.
+            }
+          + apply conv_sym. Transparent erased_nat_discrP. cbn.
+            eapply conv_trans.
+            1:{
+              eapply conv_beta.
+              - gscope.
+              - gscope. all: try reflexivity. discriminate.
+              - gscope.
+            }
+            cbn. apply conv_refl.
+          + eapply type_Reveal. 1: auto.
+            * eapply type_hide. 1: auto. 2: eapply type_zero.
+              eapply type_nat.
+            * eapply type_discr_nat_gen.
+          + eapply meta_conv.
+            * eapply type_app. 1: auto. 1: eapply type_erased_nat_discrP_gen.
+              eapply type_hide. 1: auto. 2: eapply type_zero.
+              eapply type_nat.
+            * reflexivity.
+        - cbn. eapply conv_trans.
+          1:{
+            eapply conv_beta.
+            - gscope.
+            - gscope. all: try reflexivity. discriminate.
+            - gscope. all: try reflexivity. cbn. auto.
+          }
+          cbn. give_up. (* It's broken isn't it? *)
+      }
+      * admit.
+      * admit.
+    + admit.
+    + admit.
+    + admit.
+Abort.
