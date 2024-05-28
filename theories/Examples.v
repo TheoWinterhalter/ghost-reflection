@@ -337,7 +337,7 @@ Proof.
   - apply rtyping_triv.
 Qed.
 
-Definition erased_nat_discr :=
+Definition discr :=
   lam mGhost (Erased tnat) (
     reveal (var 0)
       (lam mGhost (Erased tnat) (gheq (Erased tnat) (hide tzero) (gS (var 0)) ⇒[ 0 | 0 / mProp | mProp ] bot))
@@ -352,8 +352,8 @@ Definition erased_nat_discr :=
       ))
   ).
 
-Lemma type_erased_nat_discr :
-  [] ⊢ erased_nat_discr :
+Lemma type_discr :
+  [] ⊢ discr :
     Pi 0 0 mProp mGhost (Erased tnat) (
       (gheq (Erased tnat) (hide tzero) (gS (var 0))) ⇒[ 0 | 0 / mProp | mProp ]
       bot
