@@ -41,8 +41,7 @@ to build.
 
 ## Browsing the files
 
-The formalisation can be found in the `theories` folder. We will now go over
-all the files it contains.
+The formalisation can be found in the `theories` folder.
 
 [A rendered version of the files is given here.](https://theowinterhalter.github.io/ghost-reflection/)
 
