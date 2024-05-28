@@ -67,6 +67,7 @@ Autosubst library and some notations.
 | [Model]       | Consequences of the model                                     |
 | [Admissible]  | Simpler typing rules for GTT, assuming injectivity of Π-types |
 | [FreeTheorem] | Proof-of-concept free theorem for GTT                         |
+| [Examples]    | Examples from the paper                                       |
 
 [Erasure]: coqdoc/GhostTT.Erasure.html
 [Revival]: coqdoc/GhostTT.Revival.html
@@ -74,6 +75,7 @@ Autosubst library and some notations.
 [Model]: coqdoc/GhostTT.Model.html
 [Admissible]: coqdoc/GhostTT.Admissible.html
 [FreeTheorem]: coqdoc/GhostTT.FreeTheorem.html
+[Examples]: coqdoc/GhostTT.Examples.html
 
 ### GRTT (theory with reflection of equality)
 
