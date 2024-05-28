@@ -1,7 +1,4 @@
-# Formalisation of the "Dependent Ghosts Have a Reflection For Free" paper
-
-This formalisation is a companion to the following draft paper:
-https://hal.science/hal-04163836
+# Formalisation of the "Dependent Ghosts Have a Reflection For Free" submission
 
 ## Building the syntax (optional)
 
