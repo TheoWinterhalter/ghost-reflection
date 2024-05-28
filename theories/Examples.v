@@ -1,7 +1,7 @@
 (*** Examples from the paper
 
-  We show how we can discriminate booleans and thus natural numbers.
-  This in turn let us write head and tail functions.
+  We show how we can discriminate booleans and thus natural numbers and thus
+  erased natural numbers.
 
 ***)
 
