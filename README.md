@@ -1,5 +1,26 @@
 # Formalisation of the "Dependent Ghosts Have a Reflection For Free" submission
 
+## Using the VM
+
+We built a virtual machine containing a pre-built version of our code.
+The virtual machine can be tested using QEMU with the following command:
+```bash
+qemu-system-x86_64 -drive file=artefact.qcow2,index=0,media=disk,format=qcow2 -m 8192
+```
+
+Once you arrive on the login screen, please use `coq` as username. No password
+is needed. You can then step inside the `ghost-reflection` directory to check
+the built files.
+
+If you only wish to check our claim that our assumptions indeed only use the
+listed axioms, you may use the following commands
+```bash
+make clean-assumptions
+make
+```
+It will only rebuild the `Assumptions.v` file.
+See the "Assumptions" section below for more information.
+
 ## Building the syntax (optional)
 
 We build the syntax of our type theories using [Autosubst 2 OCaml].
