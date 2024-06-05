@@ -40,3 +40,5 @@ theories/ElimReflection.v
 
 theories/TransNat.v
 theories/TransVec.v
+
+theories/Assumptions.v

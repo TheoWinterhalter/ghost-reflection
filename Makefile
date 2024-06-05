@@ -11,9 +11,12 @@ autosubst:
 	cd theories/autosubst ; \
 	$(MAKE) -f Makefile
 
+clean-assumptions: all
+	rm theories/Assumptions.vo
+
 force _CoqProject Makefile: ;
 
 %: Makefile.coq force
 	@+$(MAKE) -f Makefile.coq $@
 
-.PHONY: all clean autosubst
+.PHONY: all clean clean-assumptions autosubst
