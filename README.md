@@ -60,8 +60,11 @@ The only part of the development which may use those axioms is the admissible
 rules and the GRTT to GTT translation which uses those rules. We also conjecture
 it could be done without, albeit with longer proofs.
 
-The suspicious reader may use `Print Assumptions` on our main theorems to verify
-that we do not require any hidden axioms.
+We provide a file `Assumptions.v` with reference to all lemmas of the
+submissions. It uses `Print Assumptions` on all of them which has the effect
+of printing the list of axioms used for each one.
+You may run `make clean-assumptions` and then `make` again if you wish to only
+check assumptions (after the project has been fully built).
 
 
 
