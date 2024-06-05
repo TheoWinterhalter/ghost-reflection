@@ -19,8 +19,9 @@ RUN set -x \
 
 # build repo
 RUN ["/bin/bash", "--login", "-c", "set -x \
-  && git clone https://github.com/TheoWinterhalter/ghost-reflection.git \
+  && git clone --depth=1 --branch=anonymous-icfp https://github.com/TheoWinterhalter/ghost-reflection.git \
   && cd ghost-reflection \
-  && git checkout main \
+  && rm -rf .git \
+  && rm -f Dockerfile \
   && opam install . --deps-only -y -v -j ${NJOBS} \
   && make -j ${NJOBS}"]
