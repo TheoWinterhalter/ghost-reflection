@@ -1,6 +1,9 @@
 Formalisation of the "Dependent Ghosts Have a Reflection For Free" paper
 ========================================================================
 
+The list of lemmas and theorems of the paper is replicated in
+[Assumptions](coqdoc/GhostTT.Assumptions.html).
+
 ### Utility
 
 General tactics, lemmas and notations are defined in
