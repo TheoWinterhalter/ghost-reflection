@@ -8,7 +8,7 @@ From GhostTT.reduction Require Export Reduction.
 Import ListNotations.
 
 Set Default Goal Selector "!".
-
+(* Definition *)
 Inductive reduction_trans (Γ : scope) (u v: term) : Prop :=
   | Refl: u = v → reduction_trans Γ u v
   | Trans w : Γ ⊨ u ↣ w → reduction_trans Γ w v → reduction_trans Γ u v.
@@ -16,6 +16,7 @@ Inductive reduction_trans (Γ : scope) (u v: term) : Prop :=
 Notation "Γ ⊨ u ↣* v" := (reduction_trans Γ u v)
   (at level 80, u, v at next level, format "Γ ⊨ u ↣* v").
 
+(* Usefull properties *)
 Lemma red_trans_direct {Γ : scope } {u v: term} : Γ ⊨ u ↣ v → Γ ⊨ u ↣* v.
 Proof.
   refine ( λ H, Trans Γ u v v H (Refl Γ v v _)).
@@ -31,6 +32,16 @@ Proof.
   - eapply Trans; eauto.
 Qed.
 
+Corollary reds_scope (Γ : scope) (m: mode) (t t': term) :
+  Γ ⊨ t ↣* t' → Γ⊢t∷m → Γ⊢t'∷m.
+Proof.
+  intros reds_t scope_t.
+  induction reds_t.
+  - subst; assumption.
+  - eauto using red_scope.
+Qed.
+
+
 (* reds deinitions *)
 
 Local Ltac end_things H:= 
@@ -39,7 +50,7 @@ Local Ltac end_things H:=
           eapply Trans; [ gred | eassumption]].
 
 Lemma reds_beta (Γ : scope) (mx : mode) (A t t' u u' : term) :
-   mx :: Γ⊨t↣*t'→ md Γ u = mx → Γ⊨u↣*u' → Γ⊨app (lam mx A t) u↣*t' <[u'··].
+  mx :: Γ⊨t↣*t'→ md Γ u = mx → Γ⊨u↣*u' → Γ⊨app (lam mx A t) u↣*t' <[u'··].
 Proof.
   intros red_t scope_u red_u.
   induction red_u.
@@ -108,13 +119,13 @@ Qed.
 Lemma reds_Erased (Γ : scope) (A A' : term) :
   Γ⊨A↣*A' → Γ⊨Erased A↣*Erased A'.
 Proof.
-intro red_A; end_things red_A.
+  intro red_A; end_things red_A.
 Qed.
 
 Lemma reds_hide (Γ : scope) (A A' : term) :
   Γ⊨A↣*A' → Γ⊨hide A↣*hide A'.
 Proof.
-intro red_A; end_things red_A.
+  intro red_A; end_things red_A.
 Qed.
 
 Lemma reds_reveal (Γ : scope) (t t' P P' p p' : term) :
@@ -250,3 +261,60 @@ Ltac greds :=
   unshelve typeclasses eauto with gtt_scope gtt_reds gtt_red shelvedb ; shelve_unifiable.
 (** end rewriting automation **)
 
+
+(* reds inversions *)
+
+Lemma reds_lam_inv {Γ : scope} {m : mode} {A t u: term} :
+  Γ⊨lam m A t↣* u → md Γ (lam m A t) ≠ ℙ → 
+  (∃ A' t', u = lam m A' t' ∧ Γ ⊨ A ↣* A' ∧ m::Γ ⊨ t ↣* t').
+Proof.
+  intros red_lam not_Prop.
+  remember (lam m A t) as t0 eqn:e0.
+  induction red_lam as [|w u v H red_v IH] in A, t, t0, e0, red_lam, not_Prop.
+  - exists A, t. 
+    subst; repeat split; eauto using red_trans_direct, red_refl.
+  - subst.
+    red_lam_inv_auto A'' t'' e red_A red_t.
+    assert (md Γ (lam m A'' t'') ≠ ℙ) as not_Prop'.
+    { cbn in *; intro H. apply not_Prop. 
+      erewrite red_md; eauto. }
+    specialize (IH _ _ eq_refl not_Prop').
+    destruct IH as [A' [t' [e [red_A'' red_t'']]]].
+    exists A', t'. repeat split.
+    * assumption.
+    * eapply red_trans_trans; eauto using red_trans_direct.
+    * eapply red_trans_trans; eauto using red_trans_direct.
+Qed.
+
+Lemma reds_Pi_inv {Γ : scope} {i j: level} {m mx : mode} {A B t: term} :
+  Γ⊨Pi i j m mx A B↣* t → 
+  (∃ A' B' i' j', t = Pi i' j' m mx A' B' ∧ Γ ⊨ A ↣* A' ∧ mx::Γ ⊨ B ↣* B').
+Proof.
+  intro red_Pi.
+  remember (Pi i j m mx A B) as t0 eqn:e0.
+  induction red_Pi as [|w u v H red_v IH] in A, B, i, j, t0, e0, red_Pi.
+  - exists A, B, i, j. 
+    subst; repeat split; eauto using red_trans_direct, red_refl.
+  - subst. 
+    apply red_Pi_inv in H.
+    destruct H as [A''[B''[i''[j''[e []]]]]].
+    specialize (IH _ _ _ _ e).
+    destruct IH as [A' [B' [i' [j' [e' [red_A'' red_B'']]]]]].
+    exists A', B', i', j'. repeat split.
+    * assumption.
+    * eapply red_trans_trans; eauto using red_trans_direct.
+    * eapply red_trans_trans; eauto using red_trans_direct.
+Qed.
+
+Lemma reds_Sort_inv {Γ : scope} {i: level} {m : mode} {t: term} :
+  Γ⊨Sort m i ↣* t → ∃ i', t= Sort m i'.
+Proof.
+  intro red_sort.
+  remember (Sort m i) as t0 eqn:e0.
+  induction red_sort as [|w u v H red_v IH] in i, t0, e0, red_sort.
+  - subst; eauto.
+  - subst. 
+    apply red_Sort_inv in H.
+    destruct H as [i' e].
+    eauto.
+Qed.

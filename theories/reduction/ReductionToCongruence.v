@@ -76,6 +76,16 @@ Proof.
       + do 2 erewrite castrm_ren. eauto using conv_ren, rtyping_S.
 Qed.
 
+Corollary reductions_to_conversion :
+  ∀ Γ m t t', (sc Γ) ⊢ t∷m → (sc Γ) ⊨ t ↣* t' → Γ ⊢ t ε≡ t'.
+Proof.
+  intros Γ m t t' scope_t red_t.
+  induction red_t.
+  - subst; gconv.
+  - eapply conv_trans.
+    * eauto using reduction_to_conversion.
+    * eauto using red_scope.
+Qed.
 
 Local Ltac conversion_to_reduction_exists :=
   match goal with 

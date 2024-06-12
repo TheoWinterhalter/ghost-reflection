@@ -119,20 +119,45 @@ Proof.
   all: asimpl; reflexivity.
 Qed.
 
-Lemma red_lam_inv {Γ : scope} {mx md_t : mode} {A t u: term} :
-  (Γ⊨lam mx A t↣ u ) → md Γ (lam mx A t) = md_t → (md_t ≠ ℙ) →
+Lemma red_lam_inv {Γ : scope} {mx : mode} {A t u: term} :
+  (Γ⊨lam mx A t↣ u ) → md Γ (lam mx A t) ≠ ℙ →
   ( ∃ A' t', u = lam mx A' t' ∧ Γ⊨A↣A' ∧ mx :: Γ⊨t↣t').
 Proof.
-  intros prf_red scope_t not_Prop. 
+  intros red_lam not_Prop. 
   remember (lam mx A t) as lam_t eqn:e0.
   remember u as u0 eqn:e1.
-  induction prf_red.
+  induction red_lam.
   all: try solve [inversion e0].
   - inversion e0.
     inversion e1; subst.
     eauto.
   - exists A, t; auto using red_refl.
   - subst. contradiction.
+Qed.
+
+
+Lemma red_Pi_inv {Γ : scope} {i j: level} {m mx : mode} {A B t: term} :
+  Γ⊨Pi i j m mx A B↣ t → 
+  (∃ A' B' i' j', t = Pi i' j' m mx A' B' ∧ Γ ⊨ A ↣ A' ∧ mx::Γ ⊨ B ↣ B').
+Proof.
+  intro red_Pi. 
+  inversion red_Pi; subst.
+  - do 4 eexists; eauto.
+  - do 4 eexists; eauto using red_refl.
+  - do 4 eexists; eauto using red_refl.
+  - cbn in *.
+    match goal with | HC : 𝕂 = ℙ |- _ => inversion HC end.
+Qed.
+
+Lemma red_Sort_inv {Γ: scope} {i: level} {m: mode} {t: term} :
+  Γ ⊨ Sort m i ↣ t → ∃ i', t = Sort m i'.
+Proof.
+  intro red_sort.
+  inversion red_sort.
+  - eauto.
+  - eauto.
+  - cbn in *.
+    match goal with | HC : 𝕂 = ℙ |- _ => inversion HC end.
 Qed.
 
 Lemma red_hide_inv (Γ : scope) (t0 t' : term) (red_hide : Γ⊨hide t0 ↣t' ) : ∃ t0', t' = hide t0' ∧ Γ ⊨ t0 ↣ t0'.
@@ -252,6 +277,14 @@ Ltac red_lam_inv_auto A' t' e red_A' red_t':=
   | red_lam : ?Γ⊨lam ?m ?A ?t ↣?u |- _ =>
       eapply red_lam_inv in red_lam; eauto;
       destruct red_lam as [A' [t' [e [red_A' red_t']]]];
+      try subst u
+  end.
+
+Ltac red_Pi_inv_auto A' B' i' j' e red_A' red_B':=
+  match goal with 
+  | red_Pi : ?Γ⊨Pi ?i ?j ?m ?mx ?A ?B ↣?u |- _ =>
+      eapply red_Pi_inv in red_Pi; eauto;
+      destruct red_lam as [A' [B' [i' [j' [e [red_A' red_B']]]]]];
       try subst u
   end.
 

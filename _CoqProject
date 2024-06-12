@@ -26,6 +26,7 @@ theories/reduction/ReductionRho.v
 theories/reduction/ReductionAndTransitivity.v
 theories/reduction/ReductionConfluence.v
 theories/reduction/ReductionToCongruence.v
+theories/reduction/Injectivity.v
 
 
 theories/CScoping.v
@@ -40,6 +41,7 @@ theories/Model.v
 theories/Admissible.v
 
 theories/FreeTheorem.v
+theories/Examples.v
 
 theories/RTyping.v
 theories/Potential.v
