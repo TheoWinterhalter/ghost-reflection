@@ -24,6 +24,8 @@ theories/reduction/Reduction.v
 theories/reduction/ReductionProperties.v
 theories/reduction/ReductionRho.v
 theories/reduction/ReductionAndTransitivity.v
+theories/reduction/ReductionConfluence.v
+theories/reduction/ReductionToCongruence.v
 
 
 theories/CScoping.v

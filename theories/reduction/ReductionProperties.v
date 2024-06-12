@@ -63,6 +63,39 @@ Proof.
     cbn; rewrite H; reflexivity end.
 Qed.
 
+Lemma red_scope :
+  ∀ Γ m t t', Γ ⊨ t ↣ t' → Γ ⊢ t∷m → Γ ⊢ t'∷m.
+Proof.
+  intros Γ m t t' red_t scope_t.
+  induction red_t in Γ, m, t, t', red_t, scope_t |- *.
+  all: try solve [inversion scope_t; gscope].
+  - inversion scope_t.
+    match goal with H : _ ⊢ lam _ _ _∷_ |- _ =>
+        inversion H; subst end.
+    eapply scoping_subst; eauto.
+    eapply sscoping_one.
+    erewrite scoping_md; eauto.
+  - inversion scope_t.
+    match goal with H : _ ⊢ hide _∷_ |- _ =>
+        inversion H; subst end.
+    gscope.
+  - inversion scope_t.
+    match goal with H : _ ⊢ tsucc _∷_ |- _ =>
+        inversion H; subst end.
+    gscope.
+  - inversion scope_t. 
+    match goal with H : _ ⊢ tvcons _ _ _∷_ |- _ =>
+        inversion H; subst end.
+    gscope; eauto.
+    * intro H; inversion H.
+    * eapply scoping_ren; eauto using rscoping_S.
+    * eapply scoping_ren; eauto using rscoping_S.
+      eapply scoping_ren; eauto using rscoping_S.
+    * right; left. reflexivity.
+  - erewrite scoping_md in *; eauto.
+    subst. apply scope_star.
+Qed.
+
 Lemma glenght_red_subst (A n v : term) (σ : nat → term) :
   (glength A n v)<[σ] = glength (A<[σ]) (n<[σ]) (v<[σ]).
 Proof.
