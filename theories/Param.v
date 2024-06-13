@@ -2196,8 +2196,8 @@ Proof.
         eapply scoping_epm_lift. 1: escope. 1: reflexivity.
         apply csc_param_ctx.
       * escope. all: eauto using csc_param_ctx.
-  - cbn. eapply param_scoping in H0, H1, H2, H3.
-    rewrite <- csc_param_ctx in H0, H1, H2, H3.
+  - cbn. eapply param_scoping in H0, H1, H2, H3, H4.
+    rewrite <- csc_param_ctx in H0, H1, H2, H3, H4.
     destruct m.
     + contradiction.
     + cbn in *. eapply cconv_irr.
