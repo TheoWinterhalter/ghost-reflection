@@ -87,6 +87,7 @@ Proof.
     * eauto using red_scope.
 Qed.
 
+
 Local Ltac conversion_to_reduction_exists :=
   match goal with 
   | H : ∃ _, _ ∧ _ |- 

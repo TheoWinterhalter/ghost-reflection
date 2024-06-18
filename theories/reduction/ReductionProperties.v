@@ -44,10 +44,10 @@ Proof.
     erewrite H; eauto end.
 Qed.
 
-Lemma red_md : 
-  ∀ Γ t t', Γ ⊨ t ↣ t' → md Γ t = md Γ t'.
+Lemma red_md {Γ : scope} {t t' : term} :
+  Γ ⊨ t ↣ t' → md Γ t = md Γ t'.
 Proof.
-  intros Γ t t' red_t.
+  intro red_t.
   induction red_t in red_t |- *.
   all: try solve [cbn; congruence].
   - cbn in *. eapply eq_trans; eauto.
@@ -63,10 +63,10 @@ Proof.
     cbn; rewrite H; reflexivity end.
 Qed.
 
-Lemma red_scope :
-  ∀ Γ m t t', Γ ⊨ t ↣ t' → Γ ⊢ t∷m → Γ ⊢ t'∷m.
+Lemma red_scope {Γ : scope} {m : mode} {t t' : term} :
+  Γ ⊨ t ↣ t' → Γ ⊢ t∷m → Γ ⊢ t'∷m.
 Proof.
-  intros Γ m t t' red_t scope_t.
+  intros red_t scope_t.
   induction red_t in Γ, m, t, t', red_t, scope_t |- *.
   all: try solve [inversion scope_t; gscope].
   - inversion scope_t.
@@ -160,8 +160,10 @@ Proof.
     match goal with | HC : 𝕂 = ℙ |- _ => inversion HC end.
 Qed.
 
-Lemma red_hide_inv (Γ : scope) (t0 t' : term) (red_hide : Γ⊨hide t0 ↣t' ) : ∃ t0', t' = hide t0' ∧ Γ ⊨ t0 ↣ t0'.
+Lemma red_hide_inv {Γ : scope} {t0 t' : term} :
+  Γ⊨hide t0 ↣t' → ∃ t0', t' = hide t0' ∧ Γ ⊨ t0 ↣ t0'.
 Proof.
+  intro red_hide.
   inversion red_hide; subst.
   - eauto.
   - eauto using red_refl.

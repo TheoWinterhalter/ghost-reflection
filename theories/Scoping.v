@@ -19,7 +19,7 @@ Inductive scoping (Γ : scope) : term → mode → Prop :=
       nth_error Γ x = Some m →
       scoping Γ (var x) m
 
-| scpoe_sort :
+| scope_sort :
     ∀ m i,
       scoping Γ (Sort m i) mKind
 
