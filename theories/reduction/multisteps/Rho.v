@@ -3,10 +3,7 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
-From GhostTT.reduction Require Import ReductionProperties.
-From GhostTT.reduction Require Export Reduction.
-
-Import ListNotations.
+From GhostTT.reduction.multisteps Require Import Properties.
 
 Set Default Goal Selector "!".
 

@@ -2,13 +2,12 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping BasicMetaTheory.
-From GhostTT.reduction Require Export ReductionProperties ReductionConfluence.
-From GhostTT.reduction Require Export Reduction ReductionAndTransitivity.
+From GhostTT.reduction.multisteps Require Export Properties Confluence.
+From GhostTT.reduction.multisteps Require Export Reduction Transitivity.
 
 Import ListNotations.
 
-Notation "Γ ⊨ u ε↣ v" := (Γ ⊨ ε|u| ↣ ε|v|) 
-    (at level 80, u, v at next level, format "Γ ⊨ u ε↣ v").
+Notation "Γ ⊨ u ε↣ v" := (Γ ⊨ ε|u| ↣ ε|v|).
 
 Set Default Goal Selector "!".
 

@@ -48,8 +48,11 @@ Ltac ttinv_destruct h HN:=
   |_ => idtac end
   in destruct_conj HN.
 
-Theorem subjet_reduction (Γ: context) (A t t': term):
-  wf Γ → (sc Γ) ⊨ t ↣ t' → Γ ⊢ t:A → mdc Γ t ≠ ℙ → Γ⊢ t':A.
+
+
+Theorem subjet_reduction (Γ: context) (A t t': term) 
+  (wfΓ : wf Γ) ( red_t : sc Γ ⊨ t ↣ t') (type_t : Γ ⊢ t:A)
+  no_red_irr red_t → Γ⊢ t':A.
 Proof.
   intros wfΓ red_t type_t not_Prop.
   remember (sc Γ) as Γ0 eqn:e0.

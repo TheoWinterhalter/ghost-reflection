@@ -4,48 +4,10 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
 From GhostTT Require Export Univ TermNotations Typing.
+From GhostTT.reduction Require Export Notations.
 
 Import ListNotations.
-
 Set Default Goal Selector "!".
-
-Reserved Notation "Γ ⊨ u ↣ v"
-  (at level 80, u, v at next level, format "Γ ⊨ u ↣ v").
-Notation "s '··'" := (scons s ids) (at level 1, format "s ··") : subst_scope.
-Notation "Γ ⊢ A ∷ m" := (scoping Γ A m) 
-  (at level 80, A, m at next level, format "Γ ⊢ A ∷ m").
-Notation " [ Γ , s ] ⊢ A ∷ m" := (scoping (s::Γ) A m)
-  (at level 81, A, m at next level, format "[ Γ , s ] ⊢ A ∷ m").
-
-Notation ℙ := mProp.
-Notation 𝔾 := mGhost.
-Notation 𝕋 := mType.
-Notation 𝕂 := mKind.
-
-Notation "⋆" := 
-  (lam ℙ bot (var 0)).
-
-(* ------------------------------------------------------------------------- *)
-Section Properties_Star.
-
-  Lemma type_star : ∀ Γ, Γ ⊢ ⋆ : top.
-  Proof.
-    intro Γ.
-    apply type_lam.
-    all: eauto using scope_bot, type_bot.
-    - apply scope_var; reflexivity.
-    - eapply type_var; reflexivity.
-  Qed.
-
-  Lemma scope_star : ∀ Γ, Γ ⊢ ⋆ ∷ ℙ.
-  Proof.
-    intro.
-    apply scope_lam.
-    - apply scope_bot.
-    - apply scope_var; reflexivity.
-  Qed.
-
-End Properties_Star.
 
 (* ------------------------------------------------------------------------- *)
 Section Rewriting.
@@ -59,17 +21,16 @@ Section Rewriting.
   Definition red_lvl (m : mode) (i : level) : level :=
     if mode_eq m ℙ then 0 else i.
 
-
   Inductive reduction (Γ : scope) : term → term → Prop :=
 
     (* Computation rules *)
 
     | red_beta :
         ∀ mx A t t' u u', 
-        (mx::Γ) ⊨ t ↣ t' →
+        (mx::Γ) ⊨ t ⤖ t' →
         md Γ u = mx →
-        Γ ⊨ u ↣ u' →
-        Γ ⊨ app (lam mx A t) u ↣ t' <[ u' ·· ]
+        Γ ⊨ u ⤖ u' →
+        Γ ⊨ app (lam mx A t) u ⤖ t' <[ u' ·· ]
 
     | red_reveal_hide :
         ∀ t P p t' p',
@@ -283,7 +244,7 @@ Section Rewriting.
         Γ ⊨ ghcast A u v e P t ↣ ghcast A' u' v' e' P' t'
 
 
-  where "Γ ⊨ u ↣ v" := (reduction Γ u v).
+        where "Γ ⊨ u ↣ v" := (reduction Γ u v).
 
 
 End Rewriting.

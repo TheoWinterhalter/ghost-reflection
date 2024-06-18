@@ -3,8 +3,8 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
-From GhostTT.reduction Require Import ReductionProperties ReductionRho.
-From GhostTT.reduction Require Export Reduction ReductionAndTransitivity.
+From GhostTT.reduction.multisteps Require Import Rho Transitivity.
+From GhostTT.reduction.multisteps Require Export Reduction.
 
 Import ListNotations.
 

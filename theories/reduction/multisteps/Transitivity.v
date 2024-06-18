@@ -2,19 +2,18 @@ From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping BasicMetaTheory.
-From GhostTT.reduction Require Import ReductionProperties.
-From GhostTT.reduction Require Export Reduction.
+From GhostTT.reduction.multisteps Require Import Properties.
+From GhostTT.reduction.multisteps Require Export Reduction.
 
 Import ListNotations.
-
 Set Default Goal Selector "!".
+
 (* Definition *)
 Inductive reduction_trans (Γ : scope) (u v: term) : Prop :=
   | Refl: u = v → reduction_trans Γ u v
   | Trans w : Γ ⊨ u ↣ w → reduction_trans Γ w v → reduction_trans Γ u v.
 
-Notation "Γ ⊨ u ↣* v" := (reduction_trans Γ u v)
-  (at level 80, u, v at next level, format "Γ ⊨ u ↣* v").
+Notation "Γ ⊨ u ↣* v" := (reduction_trans Γ u v).
 
 (* Usefull properties *)
 Lemma red_trans_direct {Γ : scope } {u v: term} : Γ ⊨ u ↣ v → Γ ⊨ u ↣* v.

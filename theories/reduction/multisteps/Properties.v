@@ -3,10 +3,10 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
-From GhostTT.reduction Require Export Reduction.
+From GhostTT.reduction Require Import Notations.
+From GhostTT.reduction.multisteps Require Export Reduction.
 
 Import ListNotations.
-
 Set Default Goal Selector "!".
 
 Lemma md_ren' {Γ Δ :scope} {t: term} {ρ: nat → nat} (e : ∀ n, nth (ρ n) Γ 𝕋 = nth n Δ 𝕋) : 
