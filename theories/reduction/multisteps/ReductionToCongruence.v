@@ -7,13 +7,13 @@ From GhostTT.reduction.multisteps Require Export Reduction Transitivity.
 
 Import ListNotations.
 
-Notation "Γ ⊨ u ε↣ v" := (Γ ⊨ ε|u| ↣ ε|v|).
+Notation "Γ ⊨ u ε⇶ v" := (Γ ⊨ ε|u| ⇶ ε|v|).
 
 Set Default Goal Selector "!".
 
 Lemma conv_subst_r (Γ : context) (Δ : scope) (m : mode) (σ σ' : nat → term) (t : term) :
   sscoping (sc Γ) σ Δ → sscoping (sc Γ) σ' Δ →
-  Δ ⊢ ε|t|∷m → (∀ n, Γ ⊢ σ n ≡ σ' n) → Γ ⊢ ε|t| <[σ] ≡ ε|t| <[σ'].
+  Δ ⊨ ε|t|∷m → (∀ n, Γ ⊢ σ n ≡ σ' n) → Γ ⊢ ε|t| <[σ] ≡ ε|t| <[σ'].
 Proof.
   intros Hscope Hscope' scope_t conv_σ.
   induction t in Γ, Δ, Hscope, Hscope', m, scope_t, σ, σ', conv_σ |- *.
@@ -27,15 +27,15 @@ Qed.
 
 
 Theorem reduction_to_conversion :
-  ∀ Γ m t t', (sc Γ) ⊢ t∷m → (sc Γ) ⊨ t ↣ t' → Γ ⊢ t ε≡ t'.
+  ∀ Γ m t t', Γ ⊢ t∷m → (sc Γ) ⊨ t ⇶ t' → Γ ⊢ t ε≡ t'.
 Proof.
   intros Γ m t t' scope_t red_t.
   remember (sc Γ) as Γ0 eqn:e.
   induction red_t in Γ, Γ0, e, t, m, scope_t, t', red_t |- *.
-  28:{ apply conv_irr; [| apply scope_star].
+  32:{ apply conv_irr; [| apply scope_star].
     apply scoping_castrm.
     erewrite scoping_md in *; eauto. congruence. }
-  9, 27: solve [gconv]. 
+  9, 31: solve [gconv]. 
   all: inversion scope_t; subst.
   26-28: solve [apply conv_irr; apply scoping_castrm; subst; gscope; eauto using red_scope]. 
   11-26: solve [gconv; cbn; f_equal; assumption].
@@ -76,7 +76,7 @@ Proof.
 Qed.
 
 Corollary reductions_to_conversion :
-  ∀ Γ m t t', (sc Γ) ⊢ t∷m → (sc Γ) ⊨ t ↣* t' → Γ ⊢ t ε≡ t'.
+  ∀ Γ m t t', Γ ⊢ t∷m → (sc Γ) ⊨ t ⇶* t' → Γ ⊢ t ε≡ t'.
 Proof.
   intros Γ m t t' scope_t red_t.
   induction red_t.
@@ -90,24 +90,24 @@ Qed.
 Local Ltac conversion_to_reduction_exists :=
   match goal with 
   | H : ∃ _, _ ∧ _ |- 
-      ∃ w, ?Γ ⊨ ?c _ ↣* w ∧ ?Γ ⊨ ?c _ ↣* w => 
+      ∃ w, ?Γ ⊨ ?c _ ⇶* w ∧ ?Γ ⊨ ?c _ ⇶* w => 
       let w := fresh "w" in
       destruct H as [ w [ ]];
       exists (c w)
   | H0 : ∃ _, _ ∧ _, H1 : ∃ _, _ ∧ _ |-
-      ∃ w, ?Γ ⊨ ?c _ _ ↣* w ∧ ?Γ ⊨ ?c _ _↣* w => 
+      ∃ w, ?Γ ⊨ ?c _ _ ⇶* w ∧ ?Γ ⊨ ?c _ _⇶* w => 
       let w0 := fresh "w0" in let w1 := fresh "w1" in
       destruct H0 as [ w0 [ ]]; destruct H1 as [ w1 [ ]];
       exists (c w0 w1)
   | H0 : ∃ _, _ ∧ _, H1 : ∃ _, _ ∧ _, H2 : ∃ _, _ ∧ _ |-
-      ∃ w, ?Γ ⊨ ?c _ _ _ ↣* w ∧ ?Γ ⊨ ?c _ _ _ ↣* w => 
+      ∃ w, ?Γ ⊨ ?c _ _ _ ⇶* w ∧ ?Γ ⊨ ?c _ _ _ ⇶* w => 
       let w0 := fresh "w0" in let w1 := fresh "w1" in
       let w2 := fresh "w2" in
       destruct H0 as [ w0 [ ]]; destruct H1 as [ w1 [ ]];
       destruct H2 as [ w2 [ ]];
       exists (c w0 w1 w2)
   | H0 : ∃ _, _ ∧ _, H1 : ∃ _, _ ∧ _, H2 : ∃ _, _ ∧ _, H3 : ∃ _, _ ∧ _ |-
-      ∃ w, ?Γ ⊨ ?c _ _ _ _ ↣* w ∧ ?Γ ⊨ ?c _ _ _ _ ↣* w => 
+      ∃ w, ?Γ ⊨ ?c _ _ _ _ ⇶* w ∧ ?Γ ⊨ ?c _ _ _ _ ⇶* w => 
       let w0 := fresh "w0" in let w1 := fresh "w1" in
       let w2 := fresh "w2" in let w3 := fresh "w3" in
       destruct H0 as [ w0 [ ]]; destruct H1 as [ w1 [ ]];
@@ -115,7 +115,7 @@ Local Ltac conversion_to_reduction_exists :=
       exists (c w0 w1 w2 w3)
   | H0 : ∃ _, _ ∧ _, H1 : ∃ _, _ ∧ _, H2 : ∃ _, _ ∧ _, 
       H3 : ∃ _, _ ∧ _ , H4 : ∃ _, _ ∧ _, H5 : ∃ _, _ ∧ _ |-
-          ∃ w, ?Γ ⊨ tvec_elim ?m _ _ _ _ _ _ ↣* w ∧ ?Γ ⊨ tvec_elim ?m _ _ _ _ _ _↣* w =>
+          ∃ w, ?Γ ⊨ tvec_elim ?m _ _ _ _ _ _ ⇶* w ∧ ?Γ ⊨ tvec_elim ?m _ _ _ _ _ _⇶* w =>
           let w0 := fresh "w0" in let w1 := fresh "w1" in
           let w2 := fresh "w2" in let w3 := fresh "w3" in
           let w4 := fresh "w4" in let w5 := fresh "w5" in
@@ -126,13 +126,13 @@ Local Ltac conversion_to_reduction_exists :=
   end. 
 
 Theorem conversion_to_reduction :
-  ∀ Γ t t', Γ ⊢ t ≡ t' → ∃ u, (sc Γ) ⊨ t ↣* u ∧ (sc Γ) ⊨ t' ↣* u.
+  ∀ Γ t t', Γ ⊢ t ≡ t' → ∃ u, (sc Γ) ⊨ t ⇶* u ∧ (sc Γ) ⊨ t' ⇶* u.
 Proof.
   intros Γ t t' conv_t.
   induction conv_t in conv_t |- *.
-  all: try solve [match goal with | |- ∃ _, _ ∧ (_ ⊨ ?c ↣* _) => exists c end; split; apply red_trans_direct; gred; eauto using scoping_md].
+  all: try solve [match goal with | |- ∃ _, _ ∧ (_ ⊨ ?c ⇶* _) => exists c end; split; apply red_trans_direct; gred; eauto using scoping_md].
   all: try solve [conversion_to_reduction_exists; split; greds].
-  - match goal with | |- ∃ _, _ ∧ (_ ⊨ ?c ↣* _) => exists c end; split; greds.
+  - match goal with | |- ∃ _, _ ∧ (_ ⊨ ?c ⇶* _) => exists c end; split; greds.
     all: try (apply red_trans_direct; gred).
     erewrite scoping_md; eauto.
   - exists (Sort ℙ 0); split; greds.
@@ -153,7 +153,7 @@ Proof.
         destruct H0 as [ w0 [ ]]; 
         destruct H1 as [ w1 [ ]]
     end.
-    assert (∃ w: term, (sc Γ⊨w0↣*w) ∧ sc Γ⊨w1↣*w) as Hw.
+    assert (∃ w: term, (sc Γ⊨w0⇶*w) ∧ sc Γ⊨w1⇶*w) as Hw.
     { eauto using reduction_confluence. }
     destruct Hw as [wf []].
     exists wf.

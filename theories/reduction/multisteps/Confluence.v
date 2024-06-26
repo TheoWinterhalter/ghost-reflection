@@ -11,8 +11,8 @@ Import ListNotations.
 Set Default Goal Selector "!".
 
 Theorem reduction_diamond (Γ : scope) (t u v: term) : 
-  Γ ⊨ t ↣ u → Γ ⊨ t ↣ v → 
-  ∃ w, Γ ⊨ u ↣ w ∧ Γ ⊨ v ↣ w.
+  Γ ⊨ t ⇶ u → Γ ⊨ t ⇶ v → 
+  ∃ w, Γ ⊨ u ⇶ w ∧ Γ ⊨ v ⇶ w.
 Proof.
   intros red_tu red_tv.
   exists (ρ Γ t).
@@ -20,8 +20,8 @@ Proof.
 Qed.
 
 Theorem reduction_local_confluence (Γ : scope) (t u v: term) : 
-  Γ ⊨ t ↣ u → Γ ⊨ t ↣ v → 
-  ∃ w, Γ ⊨ u ↣* w ∧ Γ ⊨ v ↣* w.
+  Γ ⊨ t ⇶ u → Γ ⊨ t ⇶ v → 
+  ∃ w, Γ ⊨ u ⇶* w ∧ Γ ⊨ v ⇶* w.
 Proof.
   intros red_t0 red_t1.
   exists (ρ Γ t).
@@ -29,8 +29,8 @@ Proof.
 Qed.
 
 Theorem reduction_confluence (Γ : scope) (t u v: term) : 
-  Γ ⊨ t ↣* u → Γ ⊨ t ↣* v → 
-  ∃ w, Γ ⊨ u ↣* w ∧ Γ ⊨ v ↣* w.
+  Γ ⊨ t ⇶* u → Γ ⊨ t ⇶* v → 
+  ∃ w, Γ ⊨ u ⇶* w ∧ Γ ⊨ v ⇶* w.
 Proof.
   intros red_tu red_tv.
   induction red_tu as [t u red_tu | t u1 u0 red_tu red_u0 IH] in u, v, red_tu, red_tv |- *.
@@ -47,7 +47,7 @@ Proof.
       split.
       + constructor; reflexivity.
       + apply (Trans Γ v u1 u0); assumption.
-    * assert (∃ w, (Γ⊨(ρ Γ t)↣*w) ∧ Γ⊨v1↣*w) as H.
+    * assert (∃ w, (Γ⊨(ρ Γ t)⇶*w) ∧ Γ⊨v1⇶*w) as H.
       { eapply IH'; eauto.
       + eauto using reduction_triangle; eauto.
       + constructor; reflexivity.

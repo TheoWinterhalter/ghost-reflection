@@ -3,7 +3,6 @@ From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping BasicMetaTheory.
 From GhostTT.reduction.multisteps Require Import ReductionToCongruence.
-From GhostTT Require Import Model.
 
 Import ListNotations.
 
@@ -34,7 +33,7 @@ Proof.
 Qed.
 
 Lemma red_castrm {Γ : scope} {t t' : term} : 
-  Γ ⊨t ↣ t' → Γ ⊨ t ε↣ t'.
+  Γ ⊨t ⇶ t' → Γ ⊨ t ε⇶ t'.
 Proof.
   intro red_t.
   induction red_t.
@@ -54,8 +53,8 @@ Qed.
 
 Theorem injectivity_lam {Γ : context} {m md_t md_t': mode} {A A' t t': term} :
   md_t ≠ ℙ →
-  (sc Γ) ⊢ lam m A t∷md_t →
-  (sc Γ) ⊢ lam m A' t'∷md_t →
+  Γ ⊢ lam m A t∷md_t →
+  Γ ⊢ lam m A' t'∷md_t →
   Γ ⊢ lam m A t ≡ lam m A' t' →
   Γ ⊢ A ε≡ A' ∧ (m,A)::Γ ⊢ t ε≡ t'.
 Proof.
@@ -87,10 +86,10 @@ Proof.
 Qed.
 
 Theorem injectivity_Pi {Γ : context} {i i' j j': level} {m m' mx mx': mode} {A A' B B': term} :
-  sc Γ ⊢ Pi i j m mx A B ∷ 𝕂 →
-  sc Γ ⊢ Pi i' j' m' mx' A' B'∷ 𝕂 →
+  Γ ⊢ Pi i j m mx A B ∷ 𝕂 →
+  Γ ⊢ Pi i' j' m' mx' A' B'∷ 𝕂 →
   Γ ⊢ Pi i j m mx A B ≡ Pi i' j' m' mx' A' B' →
-  Γ ⊢ A ε≡ A' ∧ (mx,A)::Γ ⊢ B ε≡ B'.
+  m= m' ∧ mx = mx' ∧ Γ ⊢ A ε≡ A' ∧ (mx,A)::Γ ⊢ B ε≡ B'.
 Proof.
   intros scope_Pi scope_Pi' H.
   inversion scope_Pi; inversion scope_Pi'; subst.
@@ -98,23 +97,26 @@ Proof.
   destruct H as [w [red1 red2]].
   inversion red1.
   - inversion red2 as [e|]; subst.
-    * inversion e. split; gconv.
+    * inversion e. repeat split; gconv.
     * apply reds_Pi_inv in red2 as [* [* [* [* [e [ ]]]]]].
       inversion e.
-      split; apply conv_sym; subst.
+      repeat split; auto; apply conv_sym; subst.
       all: eapply reductions_to_conversion; cbn; eauto.
   - inversion red2; subst.
     * apply reds_Pi_inv in red1 as [* [* [* [* [e [ ]]]]]].
       inversion e.
+      repeat split;
       eauto using reductions_to_conversion.
     * apply reds_Pi_inv in red1 as [* [* [* [* [e [ ]]]]]].
       apply reds_Pi_inv in red2 as [* [* [* [* [e'[ ]]]]]].
       subst; inversion e'; subst.
-      split; eapply conv_trans. 
+      repeat split; auto.
+      all: eapply conv_trans. 
       2,4: apply conv_sym.
       all: eapply reductions_to_conversion; eauto.
 Qed.
 
+(* true but uses conv_upto so needs models => create another file
 Corollary injectivity_Pi_castrm {Γ : context} {i i' j j': level} {m m' mx mx': mode} {A A' B B': term} :
   sc Γ ⊢ Pi i j m mx A B ∷ 𝕂 →
   sc Γ ⊢ Pi i' j' m' mx' A' B'∷ 𝕂 →
@@ -133,7 +135,7 @@ Proof.
     gconv; eauto using scoping_castrm.
   - inversion scope_Pi'.
     gconv; eauto using scoping_castrm.
-Qed.
+   Qed. *)
 
 Theorem injectivity_Sort {Γ : context} {i i': level} {m m' : mode} :
   Γ ⊢ Sort m i ≡ Sort m' i' → m' = m.
@@ -153,4 +155,57 @@ Proof.
       apply reds_Sort_inv in red2 as [* e'].
       subst; inversion e'.
       reflexivity.
+Qed.
+
+Theorem injectivity_Erased {Γ : context} {t t': term} :
+  Γ ⊢ Erased t ∷ 𝕂 → Γ ⊢ Erased t' ∷ 𝕂 → 
+  Γ ⊢ Erased t ≡ Erased t' → Γ ⊢ t ε≡ t'.
+Proof.
+  intros scope_Erased scope_Erased' H.
+  inversion scope_Erased; inversion scope_Erased'; subst.
+  apply conversion_to_reduction in H.
+  destruct H as [w [red1 red2]].
+  inversion red1.
+  - inversion red2 as [e|]; subst.
+    * inversion e. exact (conv_refl Γ ε|t|).
+    * apply reds_Erased_inv in red2 as [* [e red_t']].
+      inversion e. apply conv_sym.
+      eapply reductions_to_conversion; eauto.
+  - inversion red2; subst.
+    * apply reds_Erased_inv in red1 as [* [e red_t']].
+      inversion e.
+      eapply reductions_to_conversion; eauto.
+    * apply reds_Erased_inv in red2 as [* [e red_t']].
+      apply reds_Erased_inv in red1 as [* [e' red_t'']].
+      subst; inversion e; subst.
+      eapply conv_trans.
+      2: apply conv_sym.
+      all: eapply reductions_to_conversion; eauto.
+Qed.
+
+
+Theorem injectivity_vec {Γ : context} {A A' n n': term} :
+  Γ ⊢ tvec A n ∷ 𝕂 → Γ ⊢ tvec A' n' ∷ 𝕂 → 
+  Γ ⊢ tvec A n ≡ tvec A' n' → Γ ⊢ A ε≡ A' ∧ Γ ⊢ n ε≡ n'.
+Proof.
+  intros scope_vec scope_vec' H.
+  inversion scope_vec; inversion scope_vec'; subst.
+  apply conversion_to_reduction in H.
+  destruct H as [w [red1 red2]].
+  inversion red1.
+  - inversion red2 as [e|]; subst.
+    * inversion e. split; apply (conv_refl Γ).
+    * apply reds_vec_inv in red2 as [A0 [ n0 [e [red_A' red_n']]]].
+      inversion e. split; apply conv_sym.
+      all: eapply reductions_to_conversion; eauto.
+  - inversion red2; subst.
+    * apply reds_vec_inv in red1 as [A0 [ n0 [e [red_A' red_n']]]].
+      inversion e.
+      split; eapply reductions_to_conversion; eauto.
+    * apply reds_vec_inv in red2 as [A0 [ n0 [e [red_A' red_n']]]].
+      apply reds_vec_inv in red1 as [A1 [ n1 [e' [red_A'' red_n'']]]].
+      subst; inversion e; subst.
+      split; eapply conv_trans.
+      2,4: apply conv_sym.
+      all: eapply reductions_to_conversion; eauto.
 Qed.

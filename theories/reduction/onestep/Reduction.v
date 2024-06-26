@@ -1,17 +1,15 @@
 (* Definition of reduction rules which corresponds to the congruence relation *)
 (* and proof that the system is confluent *)
 From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
-From GhostTT Require Export Univ TermNotations Typing.
+From GhostTT.autosubst Require Import GAST.
+From GhostTT Require Import SubstNotations.
 From GhostTT.reduction Require Export Notations Utils.
+From GhostTT.reduction.wrapping Require Export Core.
 
 Import ListNotations.
 Set Default Goal Selector "!".
 
 (* ------------------------------------------------------------------------- *)
-Reserved Notation "t ↣ t'" (at level 70).
-
 Inductive reduction : term → term → Prop :=
 
   (* Computation rules *)
@@ -55,21 +53,8 @@ Inductive reduction : term → term → Prop :=
 
   | red_subterm : ∀ u u' C,
       u ↣ u' →
-      C <[u··] ↣ C <[u'··]
-
-      (*   (* Structural rule *)
-
-         | red_refl :
-         ∀ u,
-         Γ ⊨ u ↣ u *)
-
-      (* (* Proof irrelevance *)
-
-         | red_irr :
-         ∀ p,
-         md Γ p = ℙ →
-         Γ ⊨ p ↣ ⋆ *)
+      C □ u ↣ C □ u'
 
       where "u ↣ v" := (reduction u v).
 
-      (* ------------------------------------------------------------------------- *)
+(* ------------------------------------------------------------------------- *)

@@ -264,7 +264,7 @@ Proof.
   all: case (mode_eq _ _); [reflexivity |contradiction ].
 Qed. 
 
-Theorem rho_one_step : ∀ Γ t, Γ ⊨ t ↣ ρ Γ t.
+Theorem rho_one_step : ∀ Γ t, Γ ⊨ t ⇶ ρ Γ t.
 Proof.
   intros Γ t.
   induction t in Γ |- *.
@@ -274,7 +274,7 @@ Proof.
   - unfold red_lvl. 
     case (mode_eq _ _) as [ e | ne ]; subst; gred.
   - case term_view_app as [m A t | ]; simp ρ.
-    1: assert ( Γ⊨lam m A t↣ρ Γ (lam m A t)) as red_lam; eauto.
+    1: assert ( Γ⊨lam m A t⇶ρ Γ (lam m A t)) as red_lam; eauto.
     1: simp ρ in red_lam.
     all: case (mode_eq _ _) as [ e | ne ]; gred.
     all: case (mode_eq _ _) as [ e' | ne' ]; gred.
@@ -283,7 +283,7 @@ Proof.
     assumption.
   - case term_view_reveal as [t P p | ]; simp ρ.
     all: case (mode_eq _ _) as [ e | ne ]; gred.
-    * assert (Γ⊨hide t↣ρ Γ (hide t)) as H; eauto.
+    * assert (Γ⊨hide t⇶ρ Γ (hide t)) as H; eauto.
       simp ρ in H.
       red_hide_inv_auto t' e. 
       noconf e.
@@ -299,7 +299,7 @@ Proof.
     all: repeat case (mode_eq _ _) as [ | ]; cbn.
     3: eapply red_nat_elim; gred.
     all: gred.
-    assert (Γ⊨tsucc n↣ρ Γ (tsucc n)) as H; eauto.
+    assert (Γ⊨tsucc n⇶ρ Γ (tsucc n)) as H; eauto.
     simp ρ in H.
     red_succ_inv_auto n' e'.
     noconf e'.
@@ -308,7 +308,7 @@ Proof.
     all:repeat case (mode_eq _ _) as [ | ]; cbn.
     3: eapply red_vec_elim; gred.
     all: try solve [gred].
-    assert (Γ⊨tvcons a n0 v↣ρ Γ (tvcons a n0 v)) as H; eauto.
+    assert (Γ⊨tvcons a n0 v⇶ρ Γ (tvcons a n0 v)) as H; eauto.
     simp ρ in H.
     red_conv_inv_auto a' n' v' e' red_a' red_n' red_v'.
     cbn; gred.
@@ -316,7 +316,7 @@ Proof.
 Qed.
 
 Lemma reduction_triangle (Γ : scope) (t u : term) :
-  Γ ⊨ t ↣ u → Γ ⊨ u ↣ (ρ Γ t).
+  Γ ⊨ t ⇶ u → Γ ⊨ u ⇶ (ρ Γ t).
 Proof.
   intros red_t.
   induction red_t in t, Γ, u, red_t |- *.
@@ -355,7 +355,7 @@ Proof.
     all: repeat case (mode_eq _ _) as [ | ]; gred.
     * cbn. erewrite <- red_md; eauto. cbn. assumption.
     * red_lam_inv_auto A' t' e' red_A red_u.
-      match goal with H: _ ⊨ lam _ _ _ ↣ _ |- _ => 
+      match goal with H: _ ⊨ lam _ _ _ ⇶ _ |- _ => 
           eapply red_lam_inv in H; eauto;
           [ destruct H as [A'' [t'' [ Hu'' [red_A' red_u']]]] | ] end.
       + apply sym_eq in Hu''; inversion Hu''; subst. 
