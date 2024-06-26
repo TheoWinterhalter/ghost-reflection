@@ -393,6 +393,30 @@ Proof.
   intros Γ. constructor. all: constructor.
 Qed.
 
+Section star.
+
+  Notation "⋆" := (lam mProp bot (var 0)).
+
+  Lemma type_star : ∀ Γ, Γ ⊢ ⋆ : top.
+  Proof.
+    intro Γ.
+    apply type_lam.
+    all: eauto using scope_bot, type_bot.
+    - apply scope_var; reflexivity.
+    - eapply type_var; reflexivity.
+  Qed.
+
+  Lemma scope_star {Γ : scope} :
+    scoping Γ ⋆ mProp.
+  Proof.
+    apply scope_lam.
+    - apply scope_bot.
+    - apply scope_var; reflexivity.
+  Qed.
+
+End star.
+
+
 (** Conversion entails mode equality **)
 
 Definition rscoping_comp (Γ : scope) ρ (Δ : scope) :=
