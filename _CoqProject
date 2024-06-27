@@ -34,6 +34,8 @@ theories/reduction/multisteps/ReductionToCongruence.v
 theories/reduction/Injectivity.v
 theories/reduction/Model.v
 
+theories/Admissible.v
+
 theories/reduction/wrapping/Core.v
 theories/reduction/wrapping/Properties.v
 
@@ -48,12 +50,18 @@ theories/CCMetaTheory.v
 
 theories/Erasure.v
 theories/Revival.v
-theories/Param.v
+
+theories/param/Term.v
+theories/param/Scope.v
+theories/param/Renaming.v
+theories/param/Substitution.v
+theories/param/Conversion.v
+theories/param/Cast.v
+theories/param/Typing.v
+theories/param/Param.v
+
 
 theories/Model.v
-
-
-theories/Admissible.v
 
 theories/FreeTheorem.v
 theories/Examples.v

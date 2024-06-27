@@ -16,7 +16,7 @@ From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
   Scoping TermMode CastRemoval Typing BasicMetaTheory CScoping CTyping
-  CCMetaTheory Admissible Erasure Revival Param Model.
+  CCMetaTheory Admissible Erasure Revival param.Param Model.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.

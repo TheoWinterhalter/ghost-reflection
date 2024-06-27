@@ -5,7 +5,7 @@ From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST CastRemoval SubstNotations ContextDecl
   CScoping Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory Erasure
-  Revival Param.
+  Revival param.Param.
 From GhostTT.reduction Require Export Injectivity Model.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
