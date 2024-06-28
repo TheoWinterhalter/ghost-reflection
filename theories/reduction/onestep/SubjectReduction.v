@@ -1,7 +1,7 @@
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
-  TermMode Scoping BasicMetaTheory.
+  TermMode Scoping Typing BasicMetaTheory.
 From GhostTT.reduction Require Import Injectivity Model.
 From GhostTT.reduction.wrapping Require Import Core Properties.
 From GhostTT.reduction.onestep Require Export Reduction.
@@ -22,6 +22,7 @@ Section subjet_reduction.
       |_ => idtac end
     in destruct_conj h.
 
+  Open Scope subst_scope.
   Local Notation 𝝢 := (Erased tnat).
   Local Notation "P ⁺¹" := (S ⋅ P) (at level 1).
   Local Notation "P ⁺²" := (S ⋅ S ⋅ P) (at level 1).

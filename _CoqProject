@@ -37,6 +37,7 @@ theories/reduction/Model.v
 theories/Admissible.v
 
 theories/reduction/wrapping/Core.v
+theories/reduction/wrapping/Notations.v
 theories/reduction/wrapping/Properties.v
 
 theories/reduction/onestep/Reduction.v

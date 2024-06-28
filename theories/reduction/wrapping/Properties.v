@@ -2,10 +2,9 @@
 (* and proof that the system is confluent *)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
-From GhostTT.reduction.wrapping Require Export Core.
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping Typing BasicMetaTheory.
+From GhostTT.reduction.wrapping Require Export Core Notations.
 
-Import ListNotations.
 Set Default Goal Selector "!".
 
 Ltac ttinv_destruct h HN:=
@@ -18,7 +17,7 @@ Ltac ttinv_destruct h HN:=
   in destruct_conj HN.
 
 Lemma scoping_box {Γ : scope} {m : mode } {u : term} {C: □_term} :
-  Γ ⊨ C □ u∷m → [|Γ|] □ C ⊨ u∷md ([|Γ|] □ C) u.
+  Γ ⊨ C[□/u] ∷ m → Γ⇜C ⊨ u∷md (Γ⇜C) u.
 Proof.
   intros scope_Cu.
   destruct C as [C|C].
@@ -29,7 +28,7 @@ Proof.
 Qed.
 
 Lemma scoping_change_box {Γ : scope} {m : mode } {u u': term} {C: □_term} :
-  Γ ⊨ C □ u∷m → [|Γ|] □ C ⊨ u'∷md ([|Γ|] □ C) u → Γ ⊨ C □ u'∷m.
+  Γ ⊨ C[□/u]∷m → Γ⇜C ⊨ u'∷md (Γ⇜C) u → Γ ⊨ C[□/u'] ∷ m.
 Proof.
   intros scope_Cu scope_u'.
   destruct C as [C|C].
@@ -39,7 +38,7 @@ Proof.
 Qed.
 
 Lemma typing_box {Γ : context} {u A: term} {C: □_term} :
-  Γ ⊢ C □ u : A → ∃ B, [Γ] □ C ⊢ u : B.
+  Γ ⊢ C[□/u] : A → ∃ B, Γ⇜~C ⊢ u : B.
 Proof.
   intro type_Cu.
   destruct C as [C|C].
@@ -49,7 +48,7 @@ Proof.
 Qed.
 
 Lemma sc_scope_box_term {Γ : context} {C: □_term} :
-  [| sc Γ |] □ C = sc ([ Γ ] □ C).
+  (sc Γ) ⇜ C = sc (Γ ⇜~ C).
 Proof.
   destruct C as [C|[C|C]]; reflexivity.
 Qed.

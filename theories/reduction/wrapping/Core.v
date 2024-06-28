@@ -1,13 +1,8 @@
-(* Definition of reduction rules which corresponds to the congruence relation *)
-(* and proof that the system is confluent *)
-From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping.
-From GhostTT Require Export Univ TermNotations Typing.
-From GhostTT.reduction Require Export Notations Utils.
-
-Import ListNotations.
-Set Default Goal Selector "!".
+(* Definition of partial terms and of a wrapping to complete it*)
+From Coq Require Import Utf8.
+From GhostTT.autosubst Require Import GAST.
+From GhostTT Require Import BasicAST ContextDecl.
+From GhostTT.reduction Require Export Notations.
 
 
 Inductive box_term_1 : Set := 
@@ -71,7 +66,7 @@ Inductive box_term : Set :=
   | Box_1 : box_term_1 → box_term
   | Box_2 : box_term_2 → box_term.
 
-Definition eval_box_term (C : box_term) (t0: term) : term :=
+Definition wrapping (C : box_term) (t0: term) : term :=
   match C with 
   | Box_1 (Box_Pi_1 i j m mx B) => Pi i j m mx t0 B
   | Box_2 (Box_Pi_2 i j m mx A) => Pi i j m mx A t0
@@ -128,34 +123,17 @@ Definition eval_box_term (C : box_term) (t0: term) : term :=
   | Box_1 (Box_bot_elim_2 m A) => bot_elim m A t0
   end.
 
-Definition context_box_term (Γ: context) (C : box_term) : context :=
+Definition wrapping_context (Γ: context) (C : box_term) : context :=
   match C with 
   | Box_1 _ => Γ
   | Box_2 (Box_Pi_2 i j m mx A) => (Γ,, (mx,A))
   | Box_2 (Box_lam_2 m A) => (Γ,, (m,A))
   end.
 
-Definition scope_box_term (Γ: scope) (C : box_term) : scope :=
+Definition wrapping_scope (Γ: scope) (C : box_term) : scope :=
   match C with 
   | Box_1 _ => Γ
   | Box_2 (Box_Pi_2 i j m mx A) => mx::Γ
   | Box_2 (Box_lam_2 m A) => m::Γ
   end.
-
-Notation "□¹_term" := box_term_1.
-Notation "□²_term" := box_term_2.
-Notation "□_term" := box_term.
-Notation "C □ t" := (eval_box_term C t) (at level 70).
-Notation "C □¹ t" := (eval_box_term (Box_1 C) t) (at level 70).
-Notation "C □² t" := (eval_box_term (Box_2 C) t) (at level 70).
-
-Notation "[ Γ ] □ C" := (context_box_term Γ C) (at level 70).
-Notation "[| Γ |] □ C" := (scope_box_term Γ C) (at level 70).
-
-Notation "Γ □ C ⊢ t : A" := (typing (context_box_term Γ C) t A) 
-  (at level 80, t, A at next level, format "Γ □ C ⊢ t : A", only printing).
-Notation "Γ □ C ⊢ t ∷ m" := (scoping (sc (context_box_term Γ C)) t m) 
-  (at level 80, t, m at next level, format "Γ □ C ⊢ t ∷ m", only printing).
-Notation "Γ □ C ⊨ t ∷ m" := (scoping (scope_box_term Γ C) t m) 
-  (at level 80, t, m at next level, format "Γ □ C ⊨ t ∷ m", only printing).
 

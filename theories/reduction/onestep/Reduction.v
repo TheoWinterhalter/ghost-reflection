@@ -2,11 +2,10 @@
 (* and proof that the system is confluent *)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST.
-From GhostTT Require Import SubstNotations.
+From GhostTT Require Import SubstNotations Typing.
 From GhostTT.reduction Require Export Notations Utils.
-From GhostTT.reduction.wrapping Require Export Core.
+From GhostTT.reduction.wrapping Require Export Core Notations.
 
-Import ListNotations.
 Set Default Goal Selector "!".
 
 (* ------------------------------------------------------------------------- *)
@@ -53,7 +52,7 @@ Inductive reduction : term → term → Prop :=
 
   | red_subterm : ∀ u u' C,
       u ↣ u' →
-      C □ u ↣ C □ u'
+      C[□/u] ↣ C[□/u']
 
       where "u ↣ v" := (reduction u v).
 

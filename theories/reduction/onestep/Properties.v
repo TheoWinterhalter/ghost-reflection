@@ -2,7 +2,7 @@
 (* and proof that the system is confluent *)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping Typing BasicMetaTheory.
 From GhostTT.reduction Require Import Notations Injectivity.
 From GhostTT.reduction.wrapping Require Import Properties.
 From GhostTT.reduction.onestep Require Export Reduction.
