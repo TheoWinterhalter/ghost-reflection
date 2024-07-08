@@ -1,7 +1,10 @@
 # Formalisation of the "Dependent Ghosts Have a Reflection For Free" paper
 
-This formalisation is a companion to the following draft paper:
+This formalisation is a companion to the following paper to appear at ICFP.
 https://hal.science/hal-04163836
+
+The corresponding Zenodo archive containing a VM to run the project is there:
+https://zenodo.org/records/11500966
 
 ## Building the syntax (optional)
 
