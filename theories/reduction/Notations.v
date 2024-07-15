@@ -1,6 +1,6 @@
 (* All global notations defined in the reduction folder *)
 (* Some notations used in this folder come from other parts of the repository 
- and aren't listed here (for example from GhostTT.SubstNotations or Coq.Utf8) *)
+ and aren't listed here (for example those from GhostTT.SubstNotations or Coq.Utf8) *)
 (* List of special caracters used : 
    · ℙ 𝔾 𝕋 𝕂 ⊥ ⊤ ⋆ ⊢ ⊨ ∷ ⇶ ε □ ¹ ² ↣ ⇜ *)
 

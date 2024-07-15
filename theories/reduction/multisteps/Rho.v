@@ -1,5 +1,4 @@
-(* Definition of reduction rules which corresponds to the congruence relation *)
-(* and proof that the system is confluent *)
+(*Triangle property via a function rho used in the proof that the multistep reduction system is confluent *)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval TermMode Scoping BasicMetaTheory.

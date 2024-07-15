@@ -1,4 +1,4 @@
-(* Definition of multistep reduction rules which corresponds to the congruence relation *)
+(* Definition of a few functions and lemma for the reductions*)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl 

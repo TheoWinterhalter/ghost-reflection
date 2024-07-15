@@ -1,3 +1,5 @@
+(* Proof that the conversion is the symetric ans transitive closure
+   of the multistep reduction *)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval

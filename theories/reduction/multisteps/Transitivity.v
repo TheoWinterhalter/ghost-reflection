@@ -1,3 +1,4 @@
+(* Definition of ⇶* , the transitive closure of ⇶ and inversion lemmas of ⇶* *)
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import GAST unscoped.
 From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
