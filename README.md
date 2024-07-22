@@ -13,9 +13,6 @@ When we prepared this supplementary material there was no Coq 8.18 version for
 this package so we provide instead the generated file directly in this
 repository.
 
-**Note: The generated files include comments that are not anonymised. They are
-however unrelated to the current submission and thus do not breach anonymity.**
-
 In the event you would like to build the syntax files, you can checkout the
 `coq-8.13` branch of [Autosubst 2 OCaml] and run
 ```
