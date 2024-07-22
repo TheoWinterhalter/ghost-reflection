@@ -86,13 +86,14 @@ Inductive conversion (Γ : context) : term → term → Prop :=
       Γ ⊢ tnat_elim m (tsucc n) P z s ≡ app (app s n) (tnat_elim m n P z s)
 
 | conv_vec_elim_nil :
-    ∀ m A P z s,
+    ∀ m A B P z s,
       m ≠ mKind →
       cscoping Γ A mKind →
+      cscoping Γ B mKind →
       cscoping Γ P mKind →
       cscoping Γ z m →
       cscoping Γ s m →
-      Γ ⊢ tvec_elim m A (hide tzero) (tvnil A) P z s ≡ z
+      Γ ⊢ tvec_elim m A (hide tzero) (tvnil B) P z s ≡ z
 
 | conv_vec_elim_cons :
     ∀ m A a n n' v P z s,

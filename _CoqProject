@@ -20,16 +20,49 @@ theories/TermNotations.v
 theories/Typing.v
 theories/BasicMetaTheory.v
 
+
+theories/reduction/Notations.v
+theories/reduction/Utils.v
+
+theories/reduction/multisteps/Reduction.v
+theories/reduction/multisteps/Transitivity.v
+theories/reduction/multisteps/Properties.v
+theories/reduction/multisteps/Rho.v
+theories/reduction/multisteps/Confluence.v
+theories/reduction/multisteps/ReductionToCongruence.v
+
+theories/reduction/Injectivity.v
+theories/reduction/Model.v
+
+theories/Admissible.v
+
+theories/reduction/wrapping/Core.v
+theories/reduction/wrapping/Notations.v
+theories/reduction/wrapping/Properties.v
+
+theories/reduction/onestep/Reduction.v
+theories/reduction/onestep/Properties.v
+
+
+
 theories/CScoping.v
 theories/CTyping.v
 theories/CCMetaTheory.v
 
 theories/Erasure.v
 theories/Revival.v
-theories/Param.v
+
+theories/param/Term.v
+theories/param/Scope.v
+theories/param/Renaming.v
+theories/param/Substitution.v
+theories/param/Conversion.v
+theories/param/Cast.v
+theories/param/Typing.v
+theories/param/Param.v
+
 
 theories/Model.v
-theories/Admissible.v
 
 theories/FreeTheorem.v
 theories/Examples.v

@@ -11,7 +11,8 @@ From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
 From GhostTT Require Import Util BasicAST CastRemoval SubstNotations ContextDecl
   CScoping Scoping CTyping TermMode Typing BasicMetaTheory CCMetaTheory Erasure
-  Revival Param Model.
+  Revival.
+From GhostTT.reduction Require Import Injectivity Model.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 
 Import ListNotations.
@@ -22,14 +23,13 @@ Set Equations Transparent.
 
 Section Admissible.
 
-  Context Γ (hΓ : wf Γ).
+  Context {Γ : context} (hΓ : wf Γ).
 
-  Lemma wf_cons :
-    ∀ m i A,
+  Lemma wf_cons {m : mode} {i : level} {A : term} :
       Γ ⊢ A : Sort m i →
       wf (Γ ,, (m, A)).
   Proof.
-    intros m i A h.
+    intro h.
     econstructor. all: eauto.
     eapply mode_coherence. all: eauto.
     constructor.
@@ -39,8 +39,7 @@ Section Admissible.
     econstructor ; eauto ; try eapply mode_coherence ; eauto using wf_cons ;
     try solve [ constructor ].
 
-  Lemma type_pi :
-    ∀ i j mx m A B,
+  Lemma type_pi {i j : level} {mx m : mode} {A B : term } :
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ⊢ Pi i j m mx A B : Sort m (umax mx m i j).
@@ -48,8 +47,7 @@ Section Admissible.
     intros. adm.
   Qed.
 
-  Lemma type_lam :
-    ∀ mx m i j A B t,
+  Lemma type_lam {mx m : mode} {i j : level} {A B t : term} :
       Γ ⊢ A : Sort mx i →
       Γ ,, (mx, A) ⊢ B : Sort m j →
       Γ ,, (mx, A) ⊢ t : B →
@@ -58,29 +56,26 @@ Section Admissible.
     intros. adm.
   Qed.
 
-  Lemma type_app :
-    ∀ i j mx m A B t u,
+  Lemma type_app {i j : level} {mx m : mode} {A B t u : term} :
       Γ ⊢ t : Pi i j m mx A B →
       Γ ⊢ u : A →
       Γ ⊢ app t u : B <[ u .. ].
   Proof.
-    intros i j mx m A B t u ht hu.
+    intros ht hu.
     eapply validity in ht as hP. 2: assumption.
     destruct hP as [_ [k hP]]. ttinv hP hP'.
     intuition subst.
     adm. eapply type_pi. all: eauto.
   Qed.
 
-  Lemma type_erased :
-    ∀ i A,
+  Lemma type_erased {i : level} {A : term} :
       Γ ⊢ A : Sort mType i →
       Γ ⊢ Erased A : Sort mGhost i.
   Proof.
     intros. adm.
   Qed.
 
-  Lemma type_hide :
-    ∀ i A t,
+  Lemma type_hide {i : level} {A t : term} :
       Γ ⊢ A : Sort mType i →
       Γ ⊢ t : A →
       Γ ⊢ hide t : Erased A.
@@ -88,15 +83,14 @@ Section Admissible.
     intros. adm.
   Qed.
 
-  Lemma type_reveal :
-    ∀ i j m A t P p,
+  Lemma type_reveal {i j : level} {m : mode} {A t P p : term} :
       In m [ mProp ; mGhost ] →
       Γ ⊢ t : Erased A →
       Γ ⊢ P : Erased A ⇒[ i | usup m j / mGhost | mKind ] Sort m j →
       Γ ⊢ p : Pi i j m mType A (app (S ⋅ P) (hide (var 0))) →
       Γ ⊢ reveal t P p : app P t.
   Proof.
-    intros i j m A t P p hm ht hP hp.
+    intros hm ht hP hp.
     eapply validity in ht as hE. 2: assumption.
     destruct hE as [_ [l hE]]. ttinv hE hA.
     destruct hA as [k ?]. intuition idtac.
@@ -106,26 +100,25 @@ Section Admissible.
     eapply validity in hp as hp'. 2: assumption.
     destruct hp' as [_ [ll hp']].
     ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
-    cbn in hc. apply sort_mode_inj in hc. subst.
+    cbn in hc. apply injectivity_Sort in hc. subst.
     adm. adm.
   Qed.
 
-  Lemma type_Reveal :
-    ∀ i A t p,
+  Lemma type_Reveal {i : level} {A t p : term} :
       Γ ⊢ t : Erased A →
       Γ ⊢ p : A ⇒[ i | 0 / mType | mKind ] Sort mProp 0 →
       Γ ⊢ Reveal t p : Sort mProp 0.
   Proof.
-    intros i A t p ht hp.
+    intros ht hp.
     eapply validity in ht as hE. 2: assumption.
     destruct hE as [_ [j hE]]. ttinv hE hA.
     destruct hA as [k [? [? hc]]].
-    set (mt := mdc Γ t) in *. clearbody mt. apply sort_mode_inj in hc. subst.
+    set (mt := mdc Γ t) in *. clearbody mt. apply injectivity_Sort in hc. subst.
     eapply validity in hp as hp'. 2: assumption.
     destruct hp' as [_ [l hp']].
     ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
     set (mp := mdc Γ p) in *. clearbody mp. cbn in hc.
-    apply sort_mode_inj in hc. subst.
+    apply injectivity_Sort in hc. subst.
     adm.
   Qed.
 
@@ -141,7 +134,7 @@ Section Admissible.
     destruct hp' as [_ [l hp']].
     ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
     set (mp := mdc Γ p) in *. clearbody mp. cbn in hc.
-    apply sort_mode_inj in hc. subst.
+    apply injectivity_Sort in hc. subst.
     adm.
     eapply meta_conv.
     - eapply type_app. all: eassumption.
@@ -160,7 +153,7 @@ Section Admissible.
     destruct hp' as [_ [l hp']].
     ttinv hp' hp''. destruct hp'' as [? [? [? [? hc]]]].
     set (mp := mdc Γ p) in *. clearbody mp. cbn in hc.
-    apply sort_mode_inj in hc. subst.
+    apply injectivity_Sort in hc. subst.
     adm. eapply type_Reveal. 2: eassumption.
     eapply type_hide. all: eassumption.
   Qed.
@@ -197,12 +190,12 @@ Section Admissible.
     destruct he' as [_ [l he']].
     ttinv he' he''. destruct he'' as [? [? [? [? [? [? [? hc]]]]]]].
     set (me := mdc Γ e) in *. clearbody me. cbn in hc.
-    apply sort_mode_inj in hc. subst.
+    apply injectivity_Sort in hc. subst.
     eapply validity in hP as hP'. 2: assumption.
     destruct hP' as [_ [lP hP']].
     ttinv hP' hP''. destruct hP'' as [? [? [? [? hc]]]].
     set (mp := mdc Γ P) in *. clearbody mp. cbn in hc.
-    apply sort_mode_inj in hc. subst.
+    apply injectivity_Sort in hc. subst.
     adm. eapply meta_conv.
     - eapply type_app. all: eauto.
     - cbn. reflexivity.
@@ -230,8 +223,7 @@ Section Admissible.
       + reflexivity.
   Qed.
 
-  Lemma type_bot_elim :
-    ∀ i m A p,
+  Lemma type_bot_elim {i : level} {m : mode} {A p : term} :
       Γ ⊢ A : Sort m i →
       Γ ⊢ p : bot →
       Γ ⊢ bot_elim m A p : A.
@@ -239,30 +231,28 @@ Section Admissible.
     intros. adm.
   Qed.
 
-  Lemma type_conv :
-    ∀ i m A B t,
+  Lemma type_conv {i : level} {m : mode} {A B t : term} :
       cscoping Γ t m →
       Γ ⊢ t : A →
       Γ ⊢ A ε≡ B →
       Γ ⊢ B : Sort m i →
       Γ ⊢ t : B.
   Proof.
-    intros i m A B t hst ht hc hB.
+    intros hst ht hc hB.
     eapply validity in ht as hE. 2: assumption.
     destruct hE as [_ [j hE]].
     econstructor. all: eauto.
     all: eapply mode_coherence. all: eauto. all: constructor.
   Qed.
 
-  Lemma type_conv_alt :
-    ∀ i j m A B t,
+  Lemma type_conv_alt {i j : level} {m : mode} {A B t: term} :
       Γ ⊢ t : A →
       Γ ⊢ A ε≡ B →
       Γ ⊢ A : Sort m i →
       Γ ⊢ B : Sort m j →
       Γ ⊢ t : B.
   Proof.
-    intros i j m A B t ht hc hA hB.
+    intros ht hc hA hB.
     eapply type_conv. all: eauto.
     eapply mode_coherence. 3: eassumption. all: eassumption.
   Qed.
