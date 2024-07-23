@@ -55,6 +55,11 @@ Inductive quoted_cterm :=
 | qren (r : quoted_ren) (t : quoted_cterm)
 | qsubst (s : quoted_subst) (t : quoted_cterm).
 
+(* Inductive quoted_goal : Type → Type :=
+| qcterm (t : quoted_cterm) : quoted_goal cterm
+| qapp {A B} (f : A → quoted_goal B) (a : quoted_goal A) : quoted_goal B
+| qgoal {A} (a : A) : quoted_goal A. *)
+
 Fixpoint unquote_ren q :=
   match q with
   | qren_atom ρ => ρ
@@ -75,9 +80,16 @@ Fixpoint unquote_subst q :=
 Fixpoint unquote_cterm q :=
   match q with
   | qatom t => t
-  | qren r t => ren1 (unquote_ren r) (unquote_cterm t)
-  | qsubst s t => subst1 (unquote_subst s) (unquote_cterm t)
+  | qren r t => ren_cterm (unquote_ren r) (unquote_cterm t)
+  | qsubst s t => subst_cterm (unquote_subst s) (unquote_cterm t)
   end.
+
+(* Fixpoint unquote_goal {A} (q : quoted_goal A) : A :=
+  match q with
+  | qcterm t => unquote_cterm t
+  | qapp f a => unquote_goal (f (unquote_goal a))
+  | qgoal a => a
+  end. *)
 
 (** Evaluation **)
 
@@ -108,7 +120,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | _, qsubst_id => u
     | _, qsubst_comp x y => qsubst_comp (qsubst_comp u x) y
     | _, qsubst_cons t s =>
-      qsubst_cons (subst1 (unquote_subst s) t) (qsubst_comp u s)
+      qsubst_cons (subst_cterm (unquote_subst s) t) (qsubst_comp u s)
     | _, _ => qsubst_comp u v
     end
   | _ => s
@@ -133,6 +145,13 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
   | _ => t
   end.
 
+(* Fixpoint eval_goal {A} (q : quoted_goal A) : quoted_goal A :=
+  match q with
+  | qcterm t => qcterm (eval_cterm t)
+  | qapp f a => qapp (λ x, eval_goal (f x)) (eval_goal a)
+  | qgoal a => qgoal a
+  end. *)
+
 (** Correctness **)
 
 Lemma eval_ren_sound :
@@ -156,6 +175,12 @@ Lemma eval_cterm_sound :
     unquote_cterm t = unquote_cterm (eval_cterm t).
 Proof.
 Admitted.
+
+(* Lemma eval_goal_sound :
+  ∀ A (g : quoted_goal A),
+    unquote_goal g = unquote_goal (eval_goal g).
+Proof.
+Admitted. *)
 
 (** Quoting **)
 
@@ -193,11 +218,48 @@ Ltac quote_cterm t :=
     let qr := quote_ren r in
     let qt := quote_cterm t in
     constr:(qren qr qt)
+  | ren_cterm ?r ?t =>
+    let qr := quote_ren r in
+    let qt := quote_cterm t in
+    constr:(qren qr qt)
   | subst1 ?s ?t =>
+    let qs := quote_subst s in
+    let qt := quote_cterm t in
+    constr:(qsubst qs qt)
+  | subst_cterm ?s ?t =>
     let qs := quote_subst s in
     let qt := quote_cterm t in
     constr:(qsubst qs qt)
   | _ => constr:(qatom t)
   end.
 
-(** Main tactic TODO **)
+(* Ltac quote_goal g :=
+  match g with
+  | ren1 _ _ =>
+    let q := quote_cterm g in
+    constr:(qcterm q)
+  | subst1 _ _ =>
+    let q := quote_cterm g in
+    constr:(qcterm q)
+  | ?f ?u =>
+    let qf := quote_goal f in
+    let qu := quote_goal u in
+    constr:(qapp qf qu)
+  | _ => constr:(qgoal g)
+  end. *)
+
+(** Main tactic **)
+
+Ltac rasimpl1 :=
+  match goal with
+  | |- context G[ ?t ] =>
+    let q := quote_cterm t in
+    change t with (unquote_cterm q) ;
+    rewrite eval_cterm_sound ;
+    cbn [
+      unquote_cterm eval_cterm
+      unquote_ren eval_ren
+      unquote_subst eval_subst
+      ren_cterm subst_cterm
+    ]
+  end.
