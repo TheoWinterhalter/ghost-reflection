@@ -129,7 +129,24 @@ Fixpoint eval_ren (r : quoted_ren) :=
   | _ => r
   end.
 
-Inductive eval_ren_view : quoted_ren → Type :=
+(* Equations eval_ren (r : quoted_ren) : quoted_ren :=
+  eval_ren qr with qr := {
+  | qren_comp r q with eval_ren r, eval_ren q := {
+    | qren_id, _ => q
+    | _, qren_id => r
+    | qren_cons n r', qren_shift => r'
+    | _, qren_comp u v => qren_comp (qren_comp r u) v
+    | _, qren_cons n q' => qren_cons (apply_ren r n) (qren_comp r q')
+    | _, _ => qren_comp r q
+    }
+  | qren_cons q0 qren_shift => qren_id
+  | qren_cons n r with eval_ren r := {
+    | r' => qren_cons n r
+    }
+  | _ => qr
+  }. *)
+
+(* Inductive eval_ren_view : quoted_ren → Type :=
 | eval_ren_comp r q : eval_ren_view (qren_comp r q)
 | eval_ren_cons_0_shift : eval_ren_view (qren_cons q0 qren_shift)
 | eval_ren_cons n r : eval_ren_view (qren_cons n r)
@@ -159,7 +176,7 @@ Definition eval_ren_comp_c r q : eval_ren_comp_view r q :=
   | r, qren_comp u v => eval_ren_comp_r r u v
   | r, qren_cons n q => eval_ren_cons_r r n q
   | r, q =>  eval_ren_comp_other r q
-  end.
+  end. *)
 
 (* Equations eval_ren (r : quoted_ren) : quoted_ren :=
   eval_ren r with eval_ren_c r := {
