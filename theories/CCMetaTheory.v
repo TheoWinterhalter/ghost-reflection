@@ -221,7 +221,7 @@ Proof.
   destruct y.
   - cbn in *. noconf hy. eexists.
     split. 1: reflexivity.
-    asimpl. reflexivity.
+    rasimpl. reflexivity.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
     rasimpl.
@@ -700,7 +700,7 @@ Proof.
       5-6: f_equal.
       all: ssimpl.
       all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
     asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
     asimpl in IHht12.
