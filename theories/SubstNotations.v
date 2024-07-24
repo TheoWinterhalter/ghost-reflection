@@ -5,6 +5,7 @@
 **)
 
 From Coq Require Import Utf8 List.
+(* From Equations Require Import Equations. *)
 From GhostTT.autosubst Require Import core unscoped GAST CCAST.
 Import ListNotations.
 
@@ -122,8 +123,61 @@ Fixpoint eval_ren (r : quoted_ren) :=
     | _, _ => qren_comp r q
     end
   | qren_cons q0 qren_shift => qren_id
+  | qren_cons n r =>
+    let r := eval_ren r in
+    qren_cons n r
   | _ => r
   end.
+
+Inductive eval_ren_view : quoted_ren → Type :=
+| eval_ren_comp r q : eval_ren_view (qren_comp r q)
+| eval_ren_cons_0_shift : eval_ren_view (qren_cons q0 qren_shift)
+| eval_ren_cons n r : eval_ren_view (qren_cons n r)
+| eval_ren_other r : eval_ren_view r.
+
+Definition eval_ren_c r : eval_ren_view r :=
+  match r as r return eval_ren_view r with
+  | qren_comp r q => eval_ren_comp r q
+  | qren_cons q0 qren_shift => eval_ren_cons_0_shift
+  | qren_cons n r => eval_ren_cons n r
+  | r => eval_ren_other r
+  end.
+
+Inductive eval_ren_comp_view : quoted_ren → quoted_ren → Type :=
+| eval_ren_id_l q : eval_ren_comp_view qren_id q
+| eval_ren_id_r r : eval_ren_comp_view r qren_id
+| eval_ren_cons_shift n r : eval_ren_comp_view (qren_cons n r) qren_shift
+| eval_ren_comp_r r u v : eval_ren_comp_view r (qren_comp u v)
+| eval_ren_cons_r r n q : eval_ren_comp_view r (qren_cons n q)
+| eval_ren_comp_other r q : eval_ren_comp_view r q.
+
+Definition eval_ren_comp_c r q : eval_ren_comp_view r q :=
+  match r, q with
+  | qren_id, q => eval_ren_id_l q
+  | r, qren_id => eval_ren_id_r r
+  | qren_cons n r, qren_shift => eval_ren_cons_shift n r
+  | r, qren_comp u v => eval_ren_comp_r r u v
+  | r, qren_cons n q => eval_ren_cons_r r n q
+  | r, q =>  eval_ren_comp_other r q
+  end.
+
+(* Equations eval_ren (r : quoted_ren) : quoted_ren :=
+  eval_ren r with eval_ren_c r := {
+  (* | eval_ren_comp r q with eval_ren_comp_c (eval_ren r) (eval_ren q) := {
+    | eval_ren_id_l q => q ;
+    | eval_ren_id_r r => r ;
+    | eval_ren_cons_shift n r => r ;
+    | eval_ren_comp_r r u v => qren_comp (qren_comp r u) v ;
+    | eval_ren_cons_r r n q => qren_cons (apply_ren r n) (qren_comp r q) ;
+    | eval_ren_comp_other r q => qren_comp r q
+    } ; *)
+  | eval_ren_comp r q => r ;
+  | eval_ren_cons_0_shift => qren_id ;
+  | eval_ren_cons n r =>
+    let r := eval_ren r in
+    qren_cons n r ;
+  | eval_ren_other r => r
+  }. *)
 
 Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
   match s with
