@@ -256,12 +256,39 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
 
 (** Correctness **)
 
+Lemma apply_ren_sound :
+  ∀ r n,
+    unquote_nat (apply_ren r n) = unquote_ren r (unquote_nat n).
+Proof.
+  intros r n.
+  induction r in n |- *.
+  all: try reflexivity.
+  - cbn. destruct n.
+    + reflexivity.
+    + cbn. rewrite IHr1, IHr2. reflexivity.
+    + cbn. rewrite IHr1, IHr2. reflexivity.
+  - cbn. destruct n.
+    + reflexivity.
+    + reflexivity.
+    + cbn. rewrite IHr. reflexivity.
+Qed.
+
 Ltac set_eval_ren na :=
   lazymatch goal with
   | |- context [ eval_ren ?r ] =>
     set (na := eval_ren r) in * ;
     clearbody na
   end.
+
+Ltac set_unquote_ren na :=
+  lazymatch goal with
+  | |- context [ unquote_ren ?r ] =>
+    set (na := unquote_ren r) in * ;
+    clearbody na
+  end.
+
+Ltac set_unquote_rens :=
+  repeat (let n := fresh "r" in set_unquote_ren n).
 
 Lemma eval_ren_sound :
   ∀ r n,
@@ -272,12 +299,42 @@ Proof.
   all: try reflexivity.
   - cbn. set_eval_ren er1. set_eval_ren er2.
     destruct er1, er2.
-    all: unfold funcomp ; cbn in *.
+    all: unfold funcomp ; cbn - [apply_ren] in *.
     all: try solve [ rewrite IHr1, IHr2 ; reflexivity ].
     + rewrite IHr1, IHr2. apply scons_comp'.
-    + rewrite IHr1, IHr2. destruct n0.
-      * cbn. admit.
-Admitted.
+    + rewrite IHr1, IHr2.
+      destruct n0.
+      * cbn. destruct n. all: reflexivity.
+      * cbn. rewrite 2!apply_ren_sound. set_unquote_rens. cbn.
+        destruct n. all: reflexivity.
+      * cbn. rewrite 2!apply_ren_sound. set_unquote_rens. cbn.
+        destruct n. all: reflexivity.
+    + rewrite apply_ren_sound. rewrite IHr1, IHr2. cbn.
+      destruct n. all: reflexivity.
+    + rewrite apply_ren_sound. rewrite IHr1, IHr2. cbn.
+      destruct n. all: reflexivity.
+  - cbn. destruct n0.
+    + cbn. eapply scons_morphism. 1: reflexivity.
+      assumption.
+    + destruct r. all: try reflexivity.
+      * set (rr := eval_ren _) in *.
+        etransitivity.
+        1:{
+          eapply scons_morphism. 1: reflexivity.
+          intro. eapply IHr.
+        }
+        destruct n. all: reflexivity.
+      * set (rr := eval_ren _) in *.
+        etransitivity.
+        1:{
+          eapply scons_morphism. 1: reflexivity.
+          intro. eapply IHr.
+        }
+        destruct n. all: reflexivity.
+      * cbn. apply scons_eta_id'.
+    + cbn. apply scons_morphism. 1: reflexivity.
+      assumption.
+Qed.
 
 Lemma eval_subst_sound :
   ∀ s n,
