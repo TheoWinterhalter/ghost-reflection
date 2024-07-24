@@ -177,12 +177,20 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     let t := eval_cterm t in
     match t with
     | qsubst s' t => qsubst (qsubst_comp s' s) t
+    | qren r t => qsubst (qsubst_compr s r) t
     | _ => qsubst s t
     end
   | _ => t
   end.
 
 (** Correctness **)
+
+Ltac set_eval_ren na :=
+  lazymatch goal with
+  | |- context [ eval_ren ?r ] =>
+    set (na := eval_ren r) in * ;
+    clearbody na
+  end.
 
 Lemma eval_ren_sound :
   ∀ r n,
@@ -191,7 +199,13 @@ Proof.
   intros r n.
   induction r in n |- *.
   all: try reflexivity.
-  (* TODO Maybe funelim instead *)
+  - cbn. set_eval_ren er1. set_eval_ren er2.
+    destruct er1, er2.
+    all: unfold funcomp ; cbn in *.
+    all: try solve [ rewrite IHr1, IHr2 ; reflexivity ].
+    + rewrite IHr1, IHr2. apply scons_comp'.
+    + rewrite IHr1, IHr2. destruct n0.
+      * cbn. admit.
 Admitted.
 
 Lemma eval_subst_sound :
@@ -291,19 +305,21 @@ Ltac quote_cterm t :=
 
 (** Main tactic **)
 
+Ltac rasimpl1_t t :=
+  let q := quote_cterm t in
+  change t with (unquote_cterm q) ;
+  rewrite eval_cterm_sound ;
+  cbn [
+    unquote_cterm eval_cterm
+    unquote_ren eval_ren
+    unquote_subst eval_subst
+    unquote_nat
+    ren_cterm subst_cterm
+  ].
+
 Ltac rasimpl1 :=
   match goal with
-  | |- context G[ ?t ] =>
-    let q := quote_cterm t in
-    change t with (unquote_cterm q) ;
-    rewrite eval_cterm_sound ;
-    cbn [
-      unquote_cterm eval_cterm
-      unquote_ren eval_ren
-      unquote_subst eval_subst
-      unquote_nat
-      ren_cterm subst_cterm
-    ]
+  | |- context G[ ?t ] => progress (rasimpl1_t t)
   end.
 
 Ltac rasimpl' :=
@@ -315,6 +331,7 @@ Ltac rasimpl :=
       VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
       Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
       subst1 in * ;
+  minimize ;
   rasimpl' ;
   minimize.
 
