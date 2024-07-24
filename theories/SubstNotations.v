@@ -37,29 +37,43 @@ Ltac ssimpl :=
 
 (** Autosubst reflective tactic that should be more efficient than asimpl **)
 
+Inductive quoted_nat :=
+| qnat_atom (n : nat)
+| q0
+| qS (n : quoted_nat).
+
 Inductive quoted_ren :=
 | qren_atom (ρ : nat → nat)
 | qren_comp (r q : quoted_ren)
-| qren_cons (n : nat) (q : quoted_ren)
+| qren_cons (n : quoted_nat) (q : quoted_ren)
 | qren_id
 | qren_shift.
 
 Inductive quoted_subst :=
 | qsubst_atom (σ : nat → cterm)
 | qsubst_comp (s t : quoted_subst)
+| qsubst_compr (s : quoted_subst) (r : quoted_ren)
 | qsubst_cons (t : cterm) (s : quoted_subst)
-| qsubst_id.
+| qsubst_id
+| qsubst_ren (r : quoted_ren).
 
 Inductive quoted_cterm :=
 | qatom (t : cterm)
 | qren (r : quoted_ren) (t : quoted_cterm)
 | qsubst (s : quoted_subst) (t : quoted_cterm).
 
+Fixpoint unquote_nat q :=
+  match q with
+  | qnat_atom n => n
+  | q0 => 0
+  | qS n => S (unquote_nat n)
+  end.
+
 Fixpoint unquote_ren q :=
   match q with
   | qren_atom ρ => ρ
   | qren_comp r q => funcomp (unquote_ren r) (unquote_ren q)
-  | qren_cons n q => scons n (unquote_ren q)
+  | qren_cons n q => scons (unquote_nat n) (unquote_ren q)
   | qren_id => id
   | qren_shift => shift
   end.
@@ -68,8 +82,10 @@ Fixpoint unquote_subst q :=
   match q with
   | qsubst_atom σ => σ
   | qsubst_comp s t => funcomp (subst_cterm (unquote_subst s)) (unquote_subst t)
+  | qsubst_compr s r => funcomp (unquote_subst s) (unquote_ren r)
   | qsubst_cons t s => scons t (unquote_subst s)
   | qsubst_id => ids
+  | qsubst_ren r => funcomp cvar (unquote_ren r)
   end.
 
 Fixpoint unquote_cterm q :=
@@ -81,6 +97,17 @@ Fixpoint unquote_cterm q :=
 
 (** Evaluation **)
 
+Fixpoint apply_ren (r : quoted_ren) (n : quoted_nat) : quoted_nat :=
+  match r, n with
+  | qren_atom ρ, _ => qnat_atom (ρ (unquote_nat n))
+  | qren_id, _ => n
+  | qren_shift, _ => qS n
+  | _, qnat_atom n => qnat_atom (unquote_ren r n)
+  | qren_comp r q, _ => apply_ren r (apply_ren q n)
+  | qren_cons m q, q0 => m
+  | qren_cons m q, qS n => apply_ren q n
+  end.
+
 Fixpoint eval_ren (r : quoted_ren) :=
   match r with
   | qren_comp r q =>
@@ -91,10 +118,10 @@ Fixpoint eval_ren (r : quoted_ren) :=
     | _, qren_id => r
     | qren_cons n r, qren_shift => r
     | _, qren_comp u v => qren_comp (qren_comp r u) v
-    | _, qren_cons n q => qren_cons (unquote_ren r n) (qren_comp r q)
+    | _, qren_cons n q => qren_cons (apply_ren r n) (qren_comp r q)
     | _, _ => qren_comp r q
     end
-  | qren_cons 0 qren_shift => qren_id
+  | qren_cons q0 qren_shift => qren_id
   | _ => r
   end.
 
@@ -109,7 +136,29 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | _, qsubst_comp x y => qsubst_comp (qsubst_comp u x) y
     | _, qsubst_cons t s =>
       qsubst_cons (subst_cterm (unquote_subst s) t) (qsubst_comp u s)
+    | _, qsubst_ren r => qsubst_compr u r
     | _, _ => qsubst_comp u v
+    end
+  | qsubst_compr s r =>
+    let s := eval_subst s in
+    let r := eval_ren r in
+    match s, r with
+    | qsubst_id, _ => qsubst_ren r
+    | _, qren_id => s
+    | _, qren_comp x y => qsubst_compr (qsubst_compr s x) y
+    | _, qren_cons n r =>
+      qsubst_cons (unquote_subst s (unquote_nat n)) (qsubst_compr s r)
+    | qsubst_ren s, _ => qsubst_ren (qren_comp s r)
+    | _, _ => qsubst_compr s r
+    end
+  | qsubst_cons t s =>
+    let s := eval_subst s in
+    qsubst_cons t s
+  | qsubst_ren r =>
+    let r := eval_ren r in
+    match r with
+    | qren_id => qsubst_id
+    | _ => qsubst_ren r
     end
   | _ => s
   end.
@@ -159,15 +208,30 @@ Admitted.
 
 (** Quoting **)
 
+Ltac quote_nat n :=
+  lazymatch n with
+  | 0 => constr:(q0)
+  | var_zero => constr:(q0)
+  | S ?n =>
+    let q := quote_nat n in
+    constr:(qS q)
+  | _ => constr:(qnat_atom n)
+  end.
+
 Ltac quote_ren r :=
   lazymatch r with
   | funcomp ?r ?r' =>
     let q := quote_ren r in
     let q' := quote_ren r' in
     constr:(qren_comp q q')
-  | scons ?n ?r =>
+  | λ x, ?r (?r' x) =>
     let q := quote_ren r in
-    constr:(qren_cons n q)
+    let q' := quote_ren r' in
+    constr:(qren_comp q q')
+  | scons ?n ?r =>
+    let qn := quote_nat n in
+    let q := quote_ren r in
+    constr:(qren_cons qn q)
   | id => constr:(qren_id)
   | shift => constr:(qren_shift)
   | S => constr:(qren_shift)
@@ -180,11 +244,28 @@ Ltac quote_subst s :=
     let q := quote_subst s in
     let q' := quote_subst t in
     constr:(qsubst_comp q q')
+  | λ x, subst_cterm ?s (?t x) =>
+    let q := quote_subst s in
+    let q' := quote_subst t in
+    constr:(qsubst_comp q q')
+  | funcomp ?s ?r =>
+    let qs := quote_subst s in
+    let qr := quote_ren r in
+    constr:(qsubst_compr qs qr)
+  | λ x, ?s (?r x) =>
+    let qs := quote_subst s in
+    let qr := quote_ren r in
+    constr:(qsubst_compr qs qr)
   | scons ?t ?s =>
     let q := quote_subst s in
     constr:(qsubst_cons t q)
   | ids => constr:(qsubst_id)
-  | _ => constr:(qsubst_atom s)
+  | _ =>
+    first [
+      let q := quote_ren s in
+      constr:(qsubst_ren q)
+    | constr:(qsubst_atom s)
+    ]
   end.
 
 Ltac quote_cterm t :=
@@ -220,6 +301,7 @@ Ltac rasimpl1 :=
       unquote_cterm eval_cterm
       unquote_ren eval_ren
       unquote_subst eval_subst
+      unquote_nat
       ren_cterm subst_cterm
     ]
   end.
