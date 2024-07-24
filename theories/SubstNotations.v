@@ -303,14 +303,14 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     let r := eval_ren r in
     let t := eval_cterm t in
     match t with
-    | qren r' t => qren (qren_comp r' r) t
+    | qren r' t => qren (qren_comp r r') t
     | _ => qren r t
     end
   | qsubst s t =>
     let s := eval_subst s in
     let t := eval_cterm t in
     match t with
-    | qsubst s' t => qsubst (qsubst_comp s' s) t
+    | qsubst s' t => qsubst (qsubst_comp s s') t
     | qren r t => qsubst (qsubst_compr s r) t
     | _ => qsubst s t
     end
@@ -469,7 +469,34 @@ Lemma eval_cterm_sound :
   ∀ t,
     unquote_cterm t = unquote_cterm (eval_cterm t).
 Proof.
-Admitted.
+  intros t.
+  induction t.
+  - reflexivity.
+  - cbn. remember (eval_cterm _) as et eqn:e in *.
+    destruct et.
+    + cbn. rewrite IHt. cbn.
+      eapply ren_cterm_morphism. 2: reflexivity.
+      intro. apply eval_ren_sound.
+    + cbn. rewrite IHt. cbn. rewrite renRen_cterm.
+      apply ren_cterm_morphism. 2: reflexivity.
+      intro. unfold funcomp. rewrite <- eval_ren_sound. reflexivity.
+    + cbn. rewrite IHt. cbn.
+      eapply ren_cterm_morphism. 2: reflexivity.
+      intro. apply eval_ren_sound.
+  - cbn. remember (eval_cterm _) as et eqn:e in *.
+    destruct et.
+    + cbn. rewrite IHt. cbn.
+      eapply subst_cterm_morphism. 2: reflexivity.
+      intro. apply eval_subst_sound.
+    + cbn. rewrite IHt. cbn. rewrite renSubst_cterm.
+      apply subst_cterm_morphism. 2: reflexivity.
+      intro. unfold funcomp. rewrite <- eval_subst_sound. reflexivity.
+    + cbn. rewrite IHt. cbn. rewrite substSubst_cterm.
+      eapply subst_cterm_morphism. 2: reflexivity.
+      intro. unfold funcomp.
+      eapply subst_cterm_morphism. 2: reflexivity.
+      intro. rewrite <- eval_subst_sound. reflexivity.
+Qed.
 
 (** Quoting **)
 
