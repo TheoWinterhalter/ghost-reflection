@@ -224,5 +224,21 @@ Ltac rasimpl1 :=
     ]
   end.
 
-Ltac rasimpl :=
+Ltac rasimpl' :=
   repeat rasimpl1.
+
+Ltac rasimpl :=
+  repeat
+    unfold
+      VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
+      Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
+      subst1 in * ;
+  rasimpl' ;
+  minimize.
+
+Ltac rssimpl :=
+  rasimpl ;
+  autosubst_unfold ;
+  rasimpl ;
+  resubst ;
+  rasimpl.
