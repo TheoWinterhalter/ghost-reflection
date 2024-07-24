@@ -196,24 +196,78 @@ Definition eval_ren_comp_c r q : eval_ren_comp_view r q :=
   | eval_ren_other r => r
   }. *)
 
+Inductive eval_subst_comp_view : quoted_subst → quoted_subst → Type :=
+| es_id_l s : eval_subst_comp_view qsubst_id s
+| es_id_r s : eval_subst_comp_view s qsubst_id
+| es_comp_r s u v : eval_subst_comp_view s (qsubst_comp u v)
+| es_cons_r s t s' : eval_subst_comp_view s (qsubst_cons t s')
+| es_ren_r s r : eval_subst_comp_view s (qsubst_ren r)
+| es_other u v : eval_subst_comp_view u v.
+
+Definition eval_subst_comp_c u v : eval_subst_comp_view u v :=
+  match u, v with
+  | qsubst_id, v => es_id_l v
+  | u, qsubst_id => es_id_r u
+  | u, qsubst_comp x y => es_comp_r u x y
+  | u, qsubst_cons t s => es_cons_r u t s
+  | u, qsubst_ren r => es_ren_r u r
+  | u, v => es_other u v
+  end.
+
+Inductive eval_subst_compr_view : quoted_subst → quoted_ren → Type :=
+| esr_id_l r : eval_subst_compr_view qsubst_id r
+| esr_id_r s : eval_subst_compr_view s qren_id
+| esr_comp_r s x y : eval_subst_compr_view s (qren_comp x y)
+| esr_cons_r s n r : eval_subst_compr_view s (qren_cons n r)
+| esr_ren_l s r : eval_subst_compr_view (qsubst_ren s) r
+| esr_other s r : eval_subst_compr_view s r.
+
+Definition eval_subst_compr_c s r : eval_subst_compr_view s r :=
+  match s, r with
+  | qsubst_id, v => esr_id_l r
+  | s, qren_id => esr_id_r s
+  | s, qren_comp x y => esr_comp_r s x y
+  | s, qren_cons n r => esr_cons_r s n r
+  | qsubst_ren s, r => esr_ren_l s r
+  | s, r => esr_other s r
+  end.
+
+Inductive qren_id_view : quoted_ren → Type :=
+| is_qren_id : qren_id_view qren_id
+| not_qren_id r : qren_id_view r.
+
+Definition test_qren_id r : qren_id_view r :=
+  match r with
+  | qren_id => is_qren_id
+  | r => not_qren_id r
+  end.
+
 Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
   match s with
   | qsubst_comp u v =>
     let u := eval_subst u in
     let v := eval_subst v in
-    match u, v with
+    match eval_subst_comp_c u v with
+    | es_id_l v => v
+    | es_id_r u => u
+    | es_comp_r u x y => qsubst_comp (qsubst_comp u x) y
+    | es_cons_r u t s => qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
+    | es_ren_r u r => qsubst_compr u r
+    | es_other u v => qsubst_comp u v
+    end
+    (* match u, v with
     | qsubst_id, _ => v
     | _, qsubst_id => u
     | _, qsubst_comp x y => qsubst_comp (qsubst_comp u x) y
     | _, qsubst_cons t s =>
-      qsubst_cons (subst_cterm (unquote_subst s) t) (qsubst_comp u s)
+      qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
     | _, qsubst_ren r => qsubst_compr u r
     | _, _ => qsubst_comp u v
-    end
+    end *)
   | qsubst_compr s r =>
     let s := eval_subst s in
     let r := eval_ren r in
-    match s, r with
+    (* match s, r with
     | qsubst_id, _ => qsubst_ren r
     | _, qren_id => s
     | _, qren_comp x y => qsubst_compr (qsubst_compr s x) y
@@ -221,15 +275,24 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
       qsubst_cons (unquote_subst s (unquote_nat n)) (qsubst_compr s r)
     | qsubst_ren s, _ => qsubst_ren (qren_comp s r)
     | _, _ => qsubst_compr s r
+    end *)
+    match eval_subst_compr_c s r with
+    | esr_id_l r => qsubst_ren r
+    | esr_id_r s => s
+    | esr_comp_r s x y => qsubst_compr (qsubst_compr s x) y
+    | esr_cons_r s n r =>
+      qsubst_cons (unquote_subst s (unquote_nat n)) (qsubst_compr s r)
+    | esr_ren_l s r => qsubst_ren (qren_comp s r)
+    | esr_other s r => qsubst_compr s r
     end
   | qsubst_cons t s =>
     let s := eval_subst s in
     qsubst_cons t s
   | qsubst_ren r =>
     let r := eval_ren r in
-    match r with
-    | qren_id => qsubst_id
-    | _ => qsubst_ren r
+    match test_qren_id r with
+    | is_qren_id => qsubst_id
+    | not_qren_id r => qsubst_ren r
     end
   | _ => s
   end.
@@ -336,11 +399,71 @@ Proof.
       assumption.
 Qed.
 
+Ltac set_eval_subst na :=
+  lazymatch goal with
+  | |- context [ eval_subst ?s ] =>
+    set (na := eval_subst s) in * ;
+    clearbody na
+  end.
+
 Lemma eval_subst_sound :
   ∀ s n,
     unquote_subst s n = unquote_subst (eval_subst s) n.
 Proof.
-Admitted.
+  intros s n.
+  induction s in n |- *.
+  all: try reflexivity.
+  - cbn. set_eval_subst es1. set_eval_subst es2.
+    destruct eval_subst_comp_c.
+    + cbn in *. unfold funcomp. rewrite IHs2.
+      etransitivity.
+      1:{
+        eapply subst_cterm_morphism. 1: eassumption.
+        reflexivity.
+      }
+      asimpl. reflexivity.
+    + cbn in *. unfold funcomp. rewrite IHs2.
+      etransitivity.
+      1:{
+        eapply subst_cterm_morphism. 1: eassumption.
+        reflexivity.
+      }
+      asimpl. reflexivity.
+    + cbn in *. unfold funcomp in *.
+      erewrite subst_cterm_morphism. 2,3: eauto.
+      asimpl. reflexivity.
+    + cbn in *. unfold funcomp.
+      erewrite subst_cterm_morphism. 2,3: eauto.
+      asimpl. destruct n. all: reflexivity.
+    + cbn in *. unfold funcomp in *.
+      rewrite IHs2. cbn. rewrite IHs1. reflexivity.
+    + cbn in *. unfold funcomp. rewrite IHs2.
+      erewrite subst_cterm_morphism. 2,3: eauto.
+      reflexivity.
+  - cbn. set_eval_subst es.
+    remember (eval_ren _) as er eqn:e.
+    destruct eval_subst_compr_c.
+    + subst. cbn. unfold funcomp. rewrite IHs.
+      cbn. rewrite <- eval_ren_sound. reflexivity.
+    + unfold funcomp. rewrite eval_ren_sound, <- e. cbn.
+      rewrite IHs. reflexivity.
+    + unfold funcomp. rewrite eval_ren_sound, <- e. cbn.
+      rewrite IHs. reflexivity.
+    + unfold funcomp. rewrite eval_ren_sound, <- e. cbn.
+      rewrite IHs. destruct n. all: reflexivity.
+    + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
+      rewrite IHs. reflexivity.
+    + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
+      rewrite IHs. reflexivity.
+  - cbn. erewrite scons_morphism. 2,3: eauto.
+    reflexivity.
+  - cbn. remember (eval_ren _) as er eqn:e.
+    destruct test_qren_id.
+    + cbn. unfold funcomp. rewrite eval_ren_sound, <- e.
+      reflexivity.
+    + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
+      reflexivity.
+Qed.
 
 Lemma eval_cterm_sound :
   ∀ t,
