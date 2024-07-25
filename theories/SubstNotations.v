@@ -5,7 +5,6 @@
 **)
 
 From Coq Require Import Utf8 List.
-(* From Equations Require Import Equations. *)
 From GhostTT.autosubst Require Import core unscoped GAST CCAST.
 Import ListNotations.
 
@@ -109,57 +108,6 @@ Fixpoint apply_ren (r : quoted_ren) (n : quoted_nat) : quoted_nat :=
   | qren_cons m q, qS n => apply_ren q n
   end.
 
-Fixpoint eval_ren (r : quoted_ren) :=
-  match r with
-  | qren_comp r q =>
-    let r := eval_ren r in
-    let q := eval_ren q in
-    match r, q with
-    | qren_id, _ => q
-    | _, qren_id => r
-    | qren_cons n r, qren_shift => r
-    | _, qren_comp u v => qren_comp (qren_comp r u) v
-    | _, qren_cons n q => qren_cons (apply_ren r n) (qren_comp r q)
-    | _, _ => qren_comp r q
-    end
-  | qren_cons q0 qren_shift => qren_id
-  | qren_cons n r =>
-    let r := eval_ren r in
-    qren_cons n r
-  | _ => r
-  end.
-
-(* Equations eval_ren (r : quoted_ren) : quoted_ren :=
-  eval_ren qr with qr := {
-  | qren_comp r q with eval_ren r, eval_ren q := {
-    | qren_id, _ => q
-    | _, qren_id => r
-    | qren_cons n r', qren_shift => r'
-    | _, qren_comp u v => qren_comp (qren_comp r u) v
-    | _, qren_cons n q' => qren_cons (apply_ren r n) (qren_comp r q')
-    | _, _ => qren_comp r q
-    }
-  | qren_cons q0 qren_shift => qren_id
-  | qren_cons n r with eval_ren r := {
-    | r' => qren_cons n r
-    }
-  | _ => qr
-  }. *)
-
-(* Inductive eval_ren_view : quoted_ren → Type :=
-| eval_ren_comp r q : eval_ren_view (qren_comp r q)
-| eval_ren_cons_0_shift : eval_ren_view (qren_cons q0 qren_shift)
-| eval_ren_cons n r : eval_ren_view (qren_cons n r)
-| eval_ren_other r : eval_ren_view r.
-
-Definition eval_ren_c r : eval_ren_view r :=
-  match r as r return eval_ren_view r with
-  | qren_comp r q => eval_ren_comp r q
-  | qren_cons q0 qren_shift => eval_ren_cons_0_shift
-  | qren_cons n r => eval_ren_cons n r
-  | r => eval_ren_other r
-  end.
-
 Inductive eval_ren_comp_view : quoted_ren → quoted_ren → Type :=
 | eval_ren_id_l q : eval_ren_comp_view qren_id q
 | eval_ren_id_r r : eval_ren_comp_view r qren_id
@@ -176,25 +124,27 @@ Definition eval_ren_comp_c r q : eval_ren_comp_view r q :=
   | r, qren_comp u v => eval_ren_comp_r r u v
   | r, qren_cons n q => eval_ren_cons_r r n q
   | r, q =>  eval_ren_comp_other r q
-  end. *)
+  end.
 
-(* Equations eval_ren (r : quoted_ren) : quoted_ren :=
-  eval_ren r with eval_ren_c r := {
-  (* | eval_ren_comp r q with eval_ren_comp_c (eval_ren r) (eval_ren q) := {
-    | eval_ren_id_l q => q ;
-    | eval_ren_id_r r => r ;
-    | eval_ren_cons_shift n r => r ;
-    | eval_ren_comp_r r u v => qren_comp (qren_comp r u) v ;
-    | eval_ren_cons_r r n q => qren_cons (apply_ren r n) (qren_comp r q) ;
-    | eval_ren_comp_other r q => qren_comp r q
-    } ; *)
-  | eval_ren_comp r q => r ;
-  | eval_ren_cons_0_shift => qren_id ;
-  | eval_ren_cons n r =>
+Fixpoint eval_ren (r : quoted_ren) :=
+  match r with
+  | qren_comp r q =>
     let r := eval_ren r in
-    qren_cons n r ;
-  | eval_ren_other r => r
-  }. *)
+    let q := eval_ren q in
+    match eval_ren_comp_c r q with
+    | eval_ren_id_l q => q
+    | eval_ren_id_r r => r
+    | eval_ren_cons_shift n r => r
+    | eval_ren_comp_r r u v =>  qren_comp (qren_comp r u) v
+    | eval_ren_cons_r r n q =>  qren_cons (apply_ren r n) (qren_comp r q)
+    | eval_ren_comp_other r q => qren_comp r q
+    end
+  | qren_cons q0 qren_shift => qren_id
+  | qren_cons n r =>
+    let r := eval_ren r in
+    qren_cons n r
+  | _ => r
+  end.
 
 Inductive eval_subst_comp_view : quoted_subst → quoted_subst → Type :=
 | es_id_l s : eval_subst_comp_view qsubst_id s
@@ -255,27 +205,9 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | es_ren_r u r => qsubst_compr u r
     | es_other u v => qsubst_comp u v
     end
-    (* match u, v with
-    | qsubst_id, _ => v
-    | _, qsubst_id => u
-    | _, qsubst_comp x y => qsubst_comp (qsubst_comp u x) y
-    | _, qsubst_cons t s =>
-      qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
-    | _, qsubst_ren r => qsubst_compr u r
-    | _, _ => qsubst_comp u v
-    end *)
   | qsubst_compr s r =>
     let s := eval_subst s in
     let r := eval_ren r in
-    (* match s, r with
-    | qsubst_id, _ => qsubst_ren r
-    | _, qren_id => s
-    | _, qren_comp x y => qsubst_compr (qsubst_compr s x) y
-    | _, qren_cons n r =>
-      qsubst_cons (unquote_subst s (unquote_nat n)) (qsubst_compr s r)
-    | qsubst_ren s, _ => qsubst_ren (qren_comp s r)
-    | _, _ => qsubst_compr s r
-    end *)
     match eval_subst_compr_c s r with
     | esr_id_l r => qsubst_ren r
     | esr_id_r s => s
@@ -361,21 +293,12 @@ Proof.
   induction r in n |- *.
   all: try reflexivity.
   - cbn. set_eval_ren er1. set_eval_ren er2.
-    destruct er1, er2.
+    destruct eval_ren_comp_c.
     all: unfold funcomp ; cbn - [apply_ren] in *.
     all: try solve [ rewrite IHr1, IHr2 ; reflexivity ].
-    + rewrite IHr1, IHr2. apply scons_comp'.
-    + rewrite IHr1, IHr2.
-      destruct n0.
-      * cbn. destruct n. all: reflexivity.
-      * cbn. rewrite 2!apply_ren_sound. set_unquote_rens. cbn.
-        destruct n. all: reflexivity.
-      * cbn. rewrite 2!apply_ren_sound. set_unquote_rens. cbn.
-        destruct n. all: reflexivity.
-    + rewrite apply_ren_sound. rewrite IHr1, IHr2. cbn.
-      destruct n. all: reflexivity.
-    + rewrite apply_ren_sound. rewrite IHr1, IHr2. cbn.
-      destruct n. all: reflexivity.
+    rewrite IHr1, IHr2.
+    rewrite apply_ren_sound.
+    apply scons_comp'.
   - cbn. destruct n0.
     + cbn. eapply scons_morphism. 1: reflexivity.
       assumption.
@@ -582,7 +505,7 @@ Ltac rasimpl1_t t :=
   rewrite eval_cterm_sound ;
   cbn [
     unquote_cterm eval_cterm test_qren_id
-    unquote_ren eval_ren apply_ren
+    unquote_ren eval_ren apply_ren eval_ren_comp_c
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     unquote_nat
     ren_cterm subst_cterm
