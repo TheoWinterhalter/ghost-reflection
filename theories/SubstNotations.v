@@ -577,6 +577,14 @@ Ltac rasimpl :=
   rasimpl' ;
   minimize.
 
+Ltac rasimpl_in h :=
+  revert h ;
+  rasimpl ;
+  intro h.
+
+Tactic Notation "rasimpl" "in" hyp(h) :=
+  rasimpl_in h.
+
 Ltac rssimpl :=
   rasimpl ;
   autosubst_unfold ;
