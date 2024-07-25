@@ -235,6 +235,7 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     let r := eval_ren r in
     let t := eval_cterm t in
     match t with
+    | qsubst s t => qsubst (qsubst_comp (qsubst_ren r) s) t
     | qren r' t => qren (qren_comp r r') t
     | _ => qren r t
     end
@@ -404,8 +405,13 @@ Proof.
       apply ren_cterm_morphism. 2: reflexivity.
       intro. unfold funcomp. rewrite <- eval_ren_sound. reflexivity.
     + cbn. rewrite IHt. cbn.
-      eapply ren_cterm_morphism. 2: reflexivity.
-      intro. apply eval_ren_sound.
+      rewrite substRen_cterm.
+      apply subst_cterm_morphism. 2: reflexivity.
+      intro. unfold funcomp.
+      rewrite rinstInst'_cterm.
+      apply subst_cterm_morphism. 2: reflexivity.
+      intro. unfold funcomp.
+      rewrite <- eval_ren_sound. reflexivity.
   - cbn. remember (eval_cterm _) as et eqn:e in *.
     destruct et.
     + cbn. rewrite IHt. cbn.
@@ -515,6 +521,8 @@ Ltac rasimpl1_aux g :=
   first [
     progress (rasimpl1_t g)
   | lazymatch g with
+    | subst_cterm ?s _ => rasimpl1_aux s
+    | ren_cterm ?r _ => rasimpl1_aux r
     | ?f ?u => rasimpl1_aux f ; rasimpl1_aux u
     end
   | idtac
