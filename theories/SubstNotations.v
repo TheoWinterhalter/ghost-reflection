@@ -511,9 +511,18 @@ Ltac rasimpl1_t t :=
     ren_cterm subst_cterm
   ].
 
+Ltac rasimpl1_aux g :=
+  first [
+    progress (rasimpl1_t g)
+  | lazymatch g with
+    | ?f ?u => rasimpl1_aux f ; rasimpl1_aux u
+    end
+  | idtac
+  ].
+
 Ltac rasimpl1 :=
-  match goal with
-  | |- context G[ ?t ] => progress (rasimpl1_t t)
+  lazymatch goal with
+  | |- ?g => rasimpl1_aux g
   end.
 
 Ltac rasimpl' :=
