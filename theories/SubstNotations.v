@@ -70,7 +70,8 @@ Inductive quoted_subst :=
 | qsubst_compr (s : quoted_subst) (r : quoted_ren)
 | qsubst_cons (t : cterm) (s : quoted_subst)
 | qsubst_id
-| qsubst_ren (r : quoted_ren).
+| qsubst_ren (r : quoted_ren)
+| qsubst_compr_l (r : quoted_ren) (s : quoted_subst).
 
 Inductive quoted_cterm :=
 | qatom (t : cterm)
@@ -101,6 +102,7 @@ Fixpoint unquote_subst q :=
   | qsubst_cons t s => scons t (unquote_subst s)
   | qsubst_id => ids
   | qsubst_ren r => funcomp cvar (unquote_ren r)
+  | qsubst_compr_l r s => funcomp (ren_cterm (unquote_ren r)) (unquote_subst s)
   end.
 
 Fixpoint unquote_cterm q :=
@@ -247,6 +249,10 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | is_qren_id => qsubst_id
     | not_qren_id r => qsubst_ren r
     end
+  | qsubst_compr_l r s =>
+    let r := eval_ren r in
+    let s := eval_subst s in
+    qsubst_comp (qsubst_ren r) s
   | _ => s
   end.
 
@@ -427,6 +433,10 @@ Proof.
       reflexivity.
     + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
       reflexivity.
+  - cbn. unfold funcomp. rewrite <- IHs.
+    rewrite rinstInst'_cterm.
+    apply subst_cterm_morphism. 2: reflexivity.
+    intro. unfold funcomp. rewrite eval_ren_sound. reflexivity.
 Qed.
 
 Lemma eval_cterm_sound :
@@ -521,6 +531,10 @@ Ltac quote_subst s :=
     let q := quote_subst s in
     let q' := quote_subst t in
     constr:(qsubst_comp q q')
+  | funcomp (ren_cterm ?r) ?s =>
+    let qr := quote_ren r in
+    let qs := quote_subst s in
+    constr:(qsubst_compr_l qr qs)
   | funcomp ?s ?r =>
     let qs := quote_subst s in
     let qr := quote_ren r in
