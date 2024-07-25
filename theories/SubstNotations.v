@@ -571,6 +571,30 @@ Ltac asimpl_unfold :=
     (* Added myself *)
     upRen_cterm_cterm, up_ren.
 
+Ltac asimpl_unfold_in h :=
+  unfold
+    (* Taken from asimpl *)
+    VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
+    Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
+    subst1,
+    (* Added myself *)
+    upRen_cterm_cterm, up_ren
+  in h.
+
+Ltac asimpl_unfold_all :=
+  unfold
+    (* Taken from asimpl *)
+    VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
+    Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
+    subst1,
+    (* Added myself *)
+    upRen_cterm_cterm, up_ren
+  in *.
+
+Tactic Notation "aunfold" := asimpl_unfold.
+Tactic Notation "aunfold" "in" hyp(h) := asimpl_unfold_in h.
+Tactic Notation "aunfold" "in" "*" := asimpl_unfold_all.
+
 Ltac rasimpl :=
   repeat asimpl_unfold ;
   minimize ;
