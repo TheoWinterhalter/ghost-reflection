@@ -165,6 +165,7 @@ Inductive eval_subst_comp_view : quoted_subst → quoted_subst → Type :=
 | es_id_l s : eval_subst_comp_view qsubst_id s
 | es_id_r s : eval_subst_comp_view s qsubst_id
 | es_comp_r s u v : eval_subst_comp_view s (qsubst_comp u v)
+| es_compr_r s x y : eval_subst_comp_view s (qsubst_compr x y)
 | es_cons_r s t s' : eval_subst_comp_view s (qsubst_cons t s')
 | es_ren_r s r : eval_subst_comp_view s (qsubst_ren r)
 | es_other u v : eval_subst_comp_view u v.
@@ -174,6 +175,7 @@ Definition eval_subst_comp_c u v : eval_subst_comp_view u v :=
   | qsubst_id, v => es_id_l v
   | u, qsubst_id => es_id_r u
   | u, qsubst_comp x y => es_comp_r u x y
+  | u, qsubst_compr x y => es_compr_r u x y
   | u, qsubst_cons t s => es_cons_r u t s
   | u, qsubst_ren r => es_ren_r u r
   | u, v => es_other u v
@@ -218,6 +220,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | es_id_l v => v
     | es_id_r u => u
     | es_comp_r u x y => qsubst_comp (qsubst_comp u x) y
+    | es_compr_r u x y => qsubst_compr (qsubst_comp u x) y
     | es_cons_r u t s => qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
     | es_ren_r u r => qsubst_compr u r
     | es_other u v => qsubst_comp u v
@@ -384,6 +387,9 @@ Proof.
         eapply subst_cterm_morphism. 1: eassumption.
         reflexivity.
       }
+      asimpl. reflexivity.
+    + cbn in *. unfold funcomp in *.
+      erewrite subst_cterm_morphism. 2,3: eauto.
       asimpl. reflexivity.
     + cbn in *. unfold funcomp in *.
       erewrite subst_cterm_morphism. 2,3: eauto.
