@@ -229,6 +229,16 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
   | _ => s
   end.
 
+Inductive qsubst_ren_view : quoted_subst → Type :=
+| is_qsubst_ren r : qsubst_ren_view (qsubst_ren r)
+| not_qsubst_ren s : qsubst_ren_view s.
+
+Definition test_qsubst_ren s : qsubst_ren_view s :=
+  match s with
+  | qsubst_ren r => is_qsubst_ren r
+  | s => not_qsubst_ren s
+  end.
+
 Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
   match t with
   | qren r t =>
@@ -245,7 +255,11 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     match t with
     | qsubst s' t => qsubst (qsubst_comp s s') t
     | qren r t => qsubst (qsubst_compr s r) t
-    | _ => qsubst s t
+    | _ =>
+      match test_qsubst_ren s with
+      | is_qsubst_ren r => qren r t
+      | not_qsubst_ren s => qsubst s t
+      end
     end
   | _ => t
   end.
@@ -414,9 +428,15 @@ Proof.
       rewrite <- eval_ren_sound. reflexivity.
   - cbn. remember (eval_cterm _) as et eqn:e in *.
     destruct et.
-    + cbn. rewrite IHt. cbn.
-      eapply subst_cterm_morphism. 2: reflexivity.
-      intro. apply eval_subst_sound.
+    + remember (eval_subst _) as ss eqn:es in *.
+      rewrite IHt. cbn.
+      destruct test_qsubst_ren.
+      * cbn. erewrite subst_cterm_morphism. 3: reflexivity.
+        2:{ intro. rewrite eval_subst_sound, <- es. reflexivity. }
+        cbn. rewrite rinstInst'_cterm. reflexivity.
+      * subst. cbn.
+        eapply subst_cterm_morphism. 2: reflexivity.
+        intro. apply eval_subst_sound.
     + cbn. rewrite IHt. cbn. rewrite renSubst_cterm.
       apply subst_cterm_morphism. 2: reflexivity.
       intro. unfold funcomp. rewrite <- eval_subst_sound. reflexivity.
@@ -510,11 +530,11 @@ Ltac rasimpl1_t t :=
   change t with (unquote_cterm q) ;
   rewrite eval_cterm_sound ;
   cbn [
-    unquote_cterm eval_cterm test_qren_id
+    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
     unquote_ren eval_ren apply_ren eval_ren_comp_c
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     unquote_nat
-    ren_cterm subst_cterm
+    ren_cterm subst_cterm scons
   ].
 
 Ltac rasimpl1_aux g :=
