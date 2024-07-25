@@ -532,6 +532,12 @@ Ltac quote_ren r :=
 
 Ltac quote_subst s :=
   lazymatch s with
+  | funcomp cvar ?r =>
+    let q := quote_ren r in
+    constr:(qsubst_ren q)
+  | λ x, cvar (?r x) =>
+    let q := quote_ren r in
+    constr:(qsubst_ren q)
   | funcomp (subst_cterm ?s) ?t =>
     let q := quote_subst s in
     let q' := quote_subst t in
@@ -552,28 +558,15 @@ Ltac quote_subst s :=
     let q := quote_subst s in
     constr:(qsubst_cons t q)
   | ids => constr:(qsubst_id)
-  | _ =>
-    first [
-      let q := quote_ren s in
-      constr:(qsubst_ren q)
-    | constr:(qsubst_atom s)
-    ]
+  | _ => constr:(qsubst_atom s)
   end.
 
 Ltac quote_cterm t :=
   lazymatch t with
-  | ren1 ?r ?t =>
-    let qr := quote_ren r in
-    let qt := quote_cterm t in
-    constr:(qren qr qt)
   | ren_cterm ?r ?t =>
     let qr := quote_ren r in
     let qt := quote_cterm t in
     constr:(qren qr qt)
-  | subst1 ?s ?t =>
-    let qs := quote_subst s in
-    let qt := quote_cterm t in
-    constr:(qsubst qs qt)
   | subst_cterm ?s ?t =>
     let qs := quote_subst s in
     let qt := quote_cterm t in
@@ -588,9 +581,9 @@ Ltac rasimpl1_t t :=
   change t with (unquote_cterm q) ;
   rewrite eval_cterm_sound ;
   cbn [
-    unquote_cterm eval_cterm
-    unquote_ren eval_ren
-    unquote_subst eval_subst
+    unquote_cterm eval_cterm test_qren_id
+    unquote_ren eval_ren apply_ren
+    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     unquote_nat
     ren_cterm subst_cterm
   ].
@@ -606,9 +599,12 @@ Ltac rasimpl' :=
 Ltac rasimpl :=
   repeat
     unfold
+      (* Taken from asimpl *)
       VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
       Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
-      subst1 in * ;
+      subst1,
+      (* Added myself *)
+      upRen_cterm_cterm, up_ren ;
   minimize ;
   rasimpl' ;
   minimize.
