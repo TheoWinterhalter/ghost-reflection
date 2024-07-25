@@ -35,7 +35,22 @@ Ltac ssimpl :=
   asimpl ;
   repeat unfold_funcomp.
 
-(** Autosubst reflective tactic that should be more efficient than asimpl **)
+(** Autosubst reflective tactic that should be more efficient than asimpl
+
+  Downsides:
+  - If an expression is under a binder and uses the bound variable, then rasimpl
+    is unable to do anything. I don't see a way to avoid using setoid_rewrite
+    there.
+
+  Ways to improve:
+  - Maybe the traversal isn't optimal, some subterms might be quoted and
+    unquoted many times unnecessarily.
+  - Maybe treatment of var, ids, and renamings as substitutions.
+  - An NbE approach would be nice.
+  - Ideally, we could do much more in one step if we could incude all rules
+    pertaining to constructors of the syntax, but this should be generated.
+
+**)
 
 Inductive quoted_nat :=
 | qnat_atom (n : nat)
@@ -574,7 +589,8 @@ Ltac rasimpl1_t t :=
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     unquote_nat
     ren_cterm subst_cterm scons
-  ].
+  ] ;
+  unfold upRen_cterm_cterm, up_ren. (* Maybe aunfold? *)
 
 Ltac rasimpl1_aux g :=
   first [
