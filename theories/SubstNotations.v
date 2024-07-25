@@ -41,6 +41,7 @@ Ltac ssimpl :=
   - If an expression is under a binder and uses the bound variable, then rasimpl
     is unable to do anything. I don't see a way to avoid using setoid_rewrite
     there.
+  - Also it cannot currently rewrite under new custom contexts.
 
   Ways to improve:
   - Maybe the traversal isn't optimal, some subterms might be quoted and
@@ -256,14 +257,16 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
   | _ => s
   end.
 
-Inductive qsubst_ren_view : quoted_subst → Type :=
-| is_qsubst_ren r : qsubst_ren_view (qsubst_ren r)
-| not_qsubst_ren s : qsubst_ren_view s.
+Inductive qsubst_ren_id_view : quoted_subst → Type :=
+| is_qsubst_ren r : qsubst_ren_id_view (qsubst_ren r)
+| is_qsubst_id : qsubst_ren_id_view qsubst_id
+| not_qsubst_ren_id s : qsubst_ren_id_view s.
 
-Definition test_qsubst_ren s : qsubst_ren_view s :=
+Definition test_qsubst_ren_id s : qsubst_ren_id_view s :=
   match s with
   | qsubst_ren r => is_qsubst_ren r
-  | s => not_qsubst_ren s
+  | qsubst_id => is_qsubst_id
+  | s => not_qsubst_ren_id s
   end.
 
 Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
@@ -274,7 +277,11 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     match t with
     | qsubst s t => qsubst (qsubst_comp (qsubst_ren r) s) t
     | qren r' t => qren (qren_comp r r') t
-    | _ => qren r t
+    | _ =>
+      match test_qren_id r with
+      | is_qren_id => t
+      | not_qren_id r => qren r t
+      end
     end
   | qsubst s t =>
     let s := eval_subst s in
@@ -283,9 +290,10 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     | qsubst s' t => qsubst (qsubst_comp s s') t
     | qren r t => qsubst (qsubst_compr s r) t
     | _ =>
-      match test_qsubst_ren s with
+      match test_qsubst_ren_id s with
       | is_qsubst_ren r => qren r t
-      | not_qsubst_ren s => qsubst s t
+      | is_qsubst_id => t
+      | not_qsubst_ren_id s => qsubst s t
       end
     end
   | _ => t
@@ -448,9 +456,14 @@ Proof.
   - reflexivity.
   - cbn. remember (eval_cterm _) as et eqn:e in *.
     destruct et.
-    + cbn. rewrite IHt. cbn.
-      eapply ren_cterm_morphism. 2: reflexivity.
-      intro. apply eval_ren_sound.
+    + remember (eval_ren _) as rr eqn:er.
+      destruct test_qren_id.
+      * cbn. erewrite ren_cterm_morphism. 3: reflexivity.
+        2:{ intro. rewrite eval_ren_sound, <- er. reflexivity. }
+        cbn. asimpl. assumption.
+      * subst. cbn. rewrite IHt. cbn.
+        eapply ren_cterm_morphism. 2: reflexivity.
+        intro. apply eval_ren_sound.
     + cbn. rewrite IHt. cbn. rewrite renRen_cterm.
       apply ren_cterm_morphism. 2: reflexivity.
       intro. unfold funcomp. rewrite <- eval_ren_sound. reflexivity.
@@ -466,10 +479,13 @@ Proof.
     destruct et.
     + remember (eval_subst _) as ss eqn:es in *.
       rewrite IHt. cbn.
-      destruct test_qsubst_ren.
+      destruct test_qsubst_ren_id.
       * cbn. erewrite subst_cterm_morphism. 3: reflexivity.
         2:{ intro. rewrite eval_subst_sound, <- es. reflexivity. }
         cbn. rewrite rinstInst'_cterm. reflexivity.
+      * cbn. erewrite subst_cterm_morphism. 3: reflexivity.
+        2:{ intro. rewrite eval_subst_sound, <- es. reflexivity. }
+        cbn. asimpl. reflexivity.
       * subst. cbn.
         eapply subst_cterm_morphism. 2: reflexivity.
         intro. apply eval_subst_sound.
@@ -604,7 +620,7 @@ Ltac rasimpl1_t t :=
   change t with (unquote_cterm q) ;
   rewrite eval_cterm_sound ;
   cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
+    unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
     unquote_ren eval_ren apply_ren eval_ren_comp_c
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     unquote_nat
