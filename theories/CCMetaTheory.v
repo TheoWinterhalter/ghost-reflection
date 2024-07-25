@@ -192,7 +192,7 @@ Proof.
   intros n m A en. rewrite <- e.
   eapply h in en as [B [en eB]].
   eexists. split. 1: eassumption.
-  asimpl. rewrite <- eB.
+  rewrite <- eB.
   apply extRen_cterm. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
@@ -341,21 +341,21 @@ Proof.
     eapply IHht2. eapply crtyping_shift. assumption.
   - rasimpl. asimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. reflexivity.
+    rasimpl. reflexivity.
   - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. eauto.
+    rasimpl. eauto.
   - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     instantiate (1 := i). instantiate (1 := m).
-    asimpl. eauto.
+    rasimpl. eauto.
   - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
   - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. eauto.
+    rasimpl. eauto.
   - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
     asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
     asimpl in IHht8.
