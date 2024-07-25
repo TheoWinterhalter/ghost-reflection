@@ -531,37 +531,6 @@ Ltac quote_cterm t :=
 
 (** Main tactic **)
 
-Ltac rasimpl1_t t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) ;
-  rewrite eval_cterm_sound ;
-  cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
-    unquote_ren eval_ren apply_ren eval_ren_comp_c
-    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-    unquote_nat
-    ren_cterm subst_cterm scons
-  ].
-
-Ltac rasimpl1_aux g :=
-  first [
-    progress (rasimpl1_t g)
-  | lazymatch g with
-    | subst_cterm ?s _ => rasimpl1_aux s
-    | ren_cterm ?r _ => rasimpl1_aux r
-    | ?f ?u => rasimpl1_aux f ; rasimpl1_aux u
-    end
-  | idtac
-  ].
-
-Ltac rasimpl1 :=
-  lazymatch goal with
-  | |- ?g => rasimpl1_aux g
-  end.
-
-Ltac rasimpl' :=
-  repeat rasimpl1.
-
 Ltac asimpl_unfold :=
   unfold
     (* Taken from asimpl *)
@@ -595,16 +564,94 @@ Tactic Notation "aunfold" := asimpl_unfold.
 Tactic Notation "aunfold" "in" hyp(h) := asimpl_unfold_in h.
 Tactic Notation "aunfold" "in" "*" := asimpl_unfold_all.
 
+Ltac rasimpl1_t t :=
+  let q := quote_cterm t in
+  change t with (unquote_cterm q) ;
+  rewrite eval_cterm_sound ;
+  cbn [
+    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
+    unquote_ren eval_ren apply_ren eval_ren_comp_c
+    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+    unquote_nat
+    ren_cterm subst_cterm scons
+  ].
+
+Ltac rasimpl1_aux g :=
+  first [
+    progress (rasimpl1_t g)
+  | lazymatch g with
+    | subst_cterm ?s _ => rasimpl1_aux s
+    | ren_cterm ?r _ => rasimpl1_aux r
+    | ?f ?u => rasimpl1_aux f ; rasimpl1_aux u
+    | ∀ x : ?A, ?B => rasimpl1_aux A ; rasimpl1_aux B
+    end
+  | idtac
+  ].
+
+Ltac rasimpl1 :=
+  lazymatch goal with
+  | |- ?g => rasimpl1_aux g
+  end.
+
+Ltac rasimpl' :=
+  repeat rasimpl1.
+
 Ltac rasimpl :=
-  repeat asimpl_unfold ;
+  repeat aunfold ;
   minimize ;
   rasimpl' ;
   minimize.
 
+(* It's how it's done for asimpl but that's unsatisfactory *)
 Ltac rasimpl_in h :=
   revert h ;
   rasimpl ;
   intro h.
+
+(* Taken from core.minimize *)
+(* Ltac minimize_in h :=
+  repeat first [
+    change (λ x, ?f x) with f in h
+  | change (λ x, ?g (?f x)) with (funcomp g f) in h
+  ].
+
+Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
+
+Ltac rasimpl1_t_in h t :=
+  let q := quote_cterm t in
+  change t with (unquote_cterm q) in h ;
+  rewrite eval_cterm_sound in h ;
+  cbn [
+    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
+    unquote_ren eval_ren apply_ren eval_ren_comp_c
+    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+    unquote_nat
+    ren_cterm subst_cterm scons
+  ] in h.
+
+Ltac rasimpl1_aux_in h g :=
+  first [
+    progress (rasimpl1_t_in h g)
+  | lazymatch g with
+    | subst_cterm ?s _ => rasimpl1_aux_in h s
+    | ren_cterm ?r _ => rasimpl1_aux_in h r
+    | ?f ?u => rasimpl1_aux_in h f ; rasimpl1_aux_in h u
+    | ∀ x : ?A, ?B => rasimpl1_aux_in h A ; rasimpl1_aux_in h B
+    end
+  | idtac
+  ].
+
+Ltac rasimpl1_in h :=
+  rasimpl1_aux_in h h.
+
+Ltac rasimpl'_in h :=
+  repeat (rasimpl1_in h).
+
+Ltac rasimpl_in h :=
+  repeat aunfold in h ;
+  minimize in h ;
+  rasimpl'_in h ;
+  minimize in h. *)
 
 Tactic Notation "rasimpl" "in" hyp(h) :=
   rasimpl_in h.
