@@ -159,7 +159,7 @@ Proof.
   intros Γ. induction Γ as [| m Γ ih].
   - constructor.
   - constructor.
-    + eapply csscoping_weak with (m := m) in ih. asimpl in ih. assumption.
+    + eapply csscoping_weak with (m := m) in ih. rasimpl in ih. assumption.
     + destruct m. 2: constructor.
       constructor. reflexivity.
 Qed.
@@ -225,7 +225,7 @@ Proof.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
     rasimpl.
-    apply (f_equal (λ t, S ⋅ t)) in eC. asimpl in eC.
+    apply (f_equal (λ t, S ⋅ t)) in eC. rasimpl in eC.
     assumption.
 Qed.
 
@@ -333,31 +333,31 @@ Proof.
   induction ht in Γ, ρ, hρ |- *.
   all: try solve [ rasimpl ; econstructor ; eauto ; cscoping_ren_finish ].
   - rasimpl. eapply hρ in H as [B [? eB]].
-    asimpl in eB. rewrite eB.
+    rasimpl in eB. rewrite eB.
     econstructor. eassumption.
   - rasimpl. econstructor. 1: eauto.
     eapply IHht2. eapply crtyping_shift. assumption.
   - rasimpl. econstructor. 1: eauto.
     eapply IHht2. eapply crtyping_shift. assumption.
-  - rasimpl. asimpl in IHht1.
+  - rasimpl. rasimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     rasimpl. reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. asimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     rasimpl. eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+  - rasimpl. rasimpl in IHht1. asimpl in IHht2. rasimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     instantiate (1 := i). instantiate (1 := m).
     rasimpl. eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     asimpl in IHht4.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     rasimpl. eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    asimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. asimpl in IHht7.
     asimpl in IHht8.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
@@ -366,63 +366,63 @@ Proof.
     + eapply cmeta_conv. 1: eauto.
       f_equal. ssimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. f_equal. ssimpl. reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6.
+      f_equal. f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
     f_equal. f_equal.
-    ssimpl. reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5.
+    rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
-    f_equal. ssimpl. reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
-    asimpl in IHht12.
+    f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
+    rasimpl in IHht12.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
-      ssimpl. reflexivity.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. reflexivity.
+      f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal. f_equal. f_equal. f_equal.
+      f_equal. rasimpl. f_equal. f_equal. f_equal. f_equal. f_equal.
       f_equal. unfold capps. cbn. f_equal. all: f_equal.
       all: f_equal. all: f_equal. all: f_equal. 1,2: f_equal.
-      all: ssimpl. all: reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
-    asimpl in IHht12.
+      all: rasimpl. all: reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
+    rasimpl in IHht12.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
-      ssimpl. reflexivity.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. reflexivity.
+      f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal. f_equal. f_equal. f_equal.
+      f_equal. rasimpl. f_equal. f_equal. f_equal. f_equal. f_equal.
       f_equal. unfold capps. cbn. f_equal. all: f_equal.
       all: f_equal. all: f_equal. all: f_equal. 1,2: f_equal.
-      all: ssimpl. all: reflexivity.
-    + cbn. unfold elength. f_equal. f_equal. f_equal. ssimpl.
+      all: rasimpl. all: reflexivity.
+    + cbn. unfold elength. f_equal. f_equal. f_equal. rasimpl.
       reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
-      ssimpl. reflexivity.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal. f_equal. f_equal.
+      f_equal. rasimpl. f_equal. f_equal. f_equal. f_equal.
       f_equal. cbn. f_equal.
       all: f_equal. all: f_equal. all: f_equal. all: f_equal.
-      all: ssimpl. all: reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2.
+      all: rasimpl. all: reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_ren. all: eassumption.
 Qed.
@@ -488,7 +488,7 @@ Proof.
           intros n ? ? e. rasimpl. cbn.
           eexists. split. 1: eassumption.
           reflexivity.
-        -- asimpl. reflexivity.
+        -- rasimpl. reflexivity.
 Qed.
 
 Lemma cstyping_weak_none :
@@ -510,7 +510,7 @@ Proof.
           intros n ? ? e. rasimpl. cbn.
           eexists. split. 1: eassumption.
           reflexivity.
-        -- asimpl. reflexivity.
+        -- rasimpl. reflexivity.
 Qed.
 
 Lemma cstyping_shift :
@@ -525,7 +525,7 @@ Proof.
     + constructor. reflexivity.
     + eapply cmeta_conv.
       * econstructor. cbn. reflexivity.
-      * asimpl. reflexivity.
+      * rasimpl. reflexivity.
 Qed.
 
 Lemma cstyping_shift_none :
@@ -547,13 +547,13 @@ Proof.
   - constructor.
   - constructor. 2: split.
     + eapply cstyping_weak with (mx := m) (A := A) in ih.
-      asimpl in ih. assumption.
+      rasimpl in ih. assumption.
     + constructor. reflexivity.
     + eapply cmeta_conv. 1: econstructor.
       * cbn. reflexivity.
       * rasimpl. substify. reflexivity.
   - constructor. 2: constructor.
-    eapply cstyping_weak_none in ih. asimpl in ih. assumption.
+    eapply cstyping_weak_none in ih. rasimpl in ih. assumption.
 Qed.
 
 Lemma cstyping_one :
@@ -563,9 +563,9 @@ Lemma cstyping_one :
     cstyping Γ u.. (Some (mx, A) :: Γ).
 Proof.
   intros Γ mx A u h hm.
-  constructor. all: rasimpl.
+  constructor. all: asimpl.
   - apply cstyping_ids.
-  - cbn. intuition auto. asimpl. assumption.
+  - cbn. intuition auto. rasimpl. assumption.
 Qed.
 
 Ltac cscoping_subst_finish :=
@@ -583,10 +583,22 @@ Proof.
   induction h in Γ, σ, hσ |- *.
   all: try solve [ rasimpl ; econstructor ; eauto ; cscoping_subst_finish ].
   - rasimpl. eapply cmeta_conv_trans_r. 1: econstructor.
-    asimpl. apply ext_cterm.
+    rasimpl. apply ext_cterm.
     intros [].
     + rasimpl. reflexivity.
-    + asimpl. reflexivity.
+    + rasimpl.
+      unfold up_cterm_cterm, var_zero.
+      change (core.funcomp ?f ?g ?x) with (f (g x)).
+      cbn [scons].
+      change (core.funcomp ?f ?g ?x) with (f (g x)).
+      (* Unset Printing Notations. *)
+      (* Doing those changes break already line 111. *)
+      (* Maybe I should check what happens with the first rasimpl above
+        as it might already be responsible for a divergence with asimpl.
+        Divergence is also ok as long as it gets better.
+       *)
+      rasimpl.
+      reflexivity.
   - rasimpl. constructor.
     + auto.
     + eapply IHh2. apply cstyping_shift. assumption.
@@ -604,7 +616,7 @@ Proof.
   intros Γ Δ σ t A hσ ht.
   induction ht in Γ, σ, hσ |- *.
   all: try solve [ rasimpl ; econstructor ; eauto ; cscoping_subst_finish ].
-  - asimpl.
+  - rasimpl.
     induction hσ in x, H |- *. 1: destruct x ; discriminate.
     destruct x.
     + cbn in H. noconf H. cbn in *. intuition assumption.
@@ -613,28 +625,28 @@ Proof.
     eapply IHht2. eapply cstyping_shift. assumption.
   - rasimpl. econstructor. 1: eauto.
     eapply IHht2. eapply cstyping_shift. assumption.
-  - rasimpl. asimpl in IHht1.
+  - rasimpl. rasimpl in IHht1.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. apply ext_cterm. intros [].
-    + asimpl. reflexivity.
-    + asimpl. reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    rasimpl. apply ext_cterm. intros [].
+    + rasimpl. reflexivity.
+    + rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    rasimpl. eauto.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     instantiate (1 := i). instantiate (1 := m).
-    asimpl. eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5.
+    rasimpl. eauto.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    asimpl. eauto.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8.
+    rasimpl. eauto.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal. f_equal. f_equal. f_equal.
@@ -662,25 +674,25 @@ Proof.
         - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
         - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
       }
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
     f_equal. f_equal.
     ssimpl. f_equal. all: f_equal. all: f_equal.
     + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
     + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
     f_equal. ssimpl. f_equal. f_equal. all: f_equal. all: f_equal.
     + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
     + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
-    asimpl in IHht12.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
+    rasimpl in IHht12.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
@@ -700,10 +712,10 @@ Proof.
       5-6: f_equal.
       all: ssimpl.
       all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10. asimpl in IHht11.
-    asimpl in IHht12.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
+    rasimpl in IHht12.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
@@ -731,9 +743,9 @@ Proof.
       3: f_equal.
       all: ssimpl.
       all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
-    asimpl in IHht4. asimpl in IHht5. asimpl in IHht6. asimpl in IHht7.
-    asimpl in IHht8. asimpl in IHht9. asimpl in IHht10.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+    rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
+    rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
@@ -748,7 +760,7 @@ Proof.
       4: f_equal. 4: f_equal.
       all: ssimpl.
       all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
-  - rasimpl. asimpl in IHht1. asimpl in IHht2.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.
 Qed.
@@ -854,7 +866,7 @@ Proof.
         destruct h as [B [e eB]].
         eapply ccmeta_conv.
         -- econstructor. eassumption.
-        -- cbn. asimpl.
+        -- cbn. rasimpl.
           erewrite extRen_cterm.
           ++ erewrite <- eB. substify. rasimpl. reflexivity.
           ++ intro. reflexivity.
