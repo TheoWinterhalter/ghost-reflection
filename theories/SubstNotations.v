@@ -170,6 +170,7 @@ Inductive eval_subst_compr_view : quoted_subst → quoted_ren → Type :=
 | esr_comp_r s x y : eval_subst_compr_view s (qren_comp x y)
 | esr_cons_r s n r : eval_subst_compr_view s (qren_cons n r)
 | esr_ren_l s r : eval_subst_compr_view (qsubst_ren s) r
+| esr_cons_shift t s : eval_subst_compr_view (qsubst_cons t s) qren_shift
 | esr_other s r : eval_subst_compr_view s r.
 
 Definition eval_subst_compr_c s r : eval_subst_compr_view s r :=
@@ -179,6 +180,7 @@ Definition eval_subst_compr_c s r : eval_subst_compr_view s r :=
   | s, qren_comp x y => esr_comp_r s x y
   | s, qren_cons n r => esr_cons_r s n r
   | qsubst_ren s, r => esr_ren_l s r
+  | qsubst_cons t s, qren_shift => esr_cons_shift t s
   | s, r => esr_other s r
   end.
 
@@ -215,6 +217,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | esr_cons_r s n r =>
       qsubst_cons (unquote_subst s (unquote_nat n)) (qsubst_compr s r)
     | esr_ren_l s r => qsubst_ren (qren_comp s r)
+    | esr_cons_shift t s => s
     | esr_other s r => qsubst_compr s r
     end
   | qsubst_cons t s =>
@@ -391,6 +394,8 @@ Proof.
       rewrite IHs. destruct n. all: reflexivity.
     + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
       rewrite IHs. reflexivity.
+    + unfold funcomp. rewrite eval_ren_sound, <- e. cbn.
+      rewrite IHs. cbn. reflexivity.
     + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
       rewrite IHs. reflexivity.
   - cbn. erewrite scons_morphism. 2,3: eauto.
@@ -556,15 +561,17 @@ Ltac rasimpl1 :=
 Ltac rasimpl' :=
   repeat rasimpl1.
 
+Ltac asimpl_unfold :=
+  unfold
+    (* Taken from asimpl *)
+    VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
+    Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
+    subst1,
+    (* Added myself *)
+    upRen_cterm_cterm, up_ren.
+
 Ltac rasimpl :=
-  repeat
-    unfold
-      (* Taken from asimpl *)
-      VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
-      Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
-      subst1,
-      (* Added myself *)
-      upRen_cterm_cterm, up_ren ;
+  repeat asimpl_unfold ;
   minimize ;
   rasimpl' ;
   minimize.
