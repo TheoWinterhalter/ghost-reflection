@@ -192,7 +192,7 @@ Proof.
   intros n m A en. rewrite <- e.
   eapply h in en as [B [en eB]].
   eexists. split. 1: eassumption.
-  rasimpl. rewrite <- eB.
+  asimpl. rewrite <- eB.
   apply extRen_cterm. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
@@ -314,7 +314,7 @@ Proof.
   induction h in Γ, ρ, hρ |- *.
   all: try solve [ rasimpl ; econstructor ; eauto ; cscoping_ren_finish ].
   - rasimpl. eapply cmeta_conv_trans_r. 1: econstructor.
-    asimpl. reflexivity.
+    rasimpl. reflexivity.
   - rasimpl. constructor.
     + auto.
     + eapply IHh2. apply crtyping_shift. assumption.

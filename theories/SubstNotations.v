@@ -512,6 +512,7 @@ Ltac quote_subst s :=
     let q := quote_subst s in
     constr:(qsubst_cons t q)
   | ids => constr:(qsubst_id)
+  | cvar => constr:(qsubst_id)
   | _ => constr:(qsubst_atom s)
   end.
 
