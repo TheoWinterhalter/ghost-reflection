@@ -71,10 +71,10 @@ Inductive quoted_subst :=
 | qsubst_atom (σ : nat → cterm)
 | qsubst_comp (s t : quoted_subst)
 | qsubst_compr (s : quoted_subst) (r : quoted_ren)
+| qsubst_rcomp (r : quoted_ren) (s : quoted_subst)
 | qsubst_cons (t : cterm) (s : quoted_subst)
 | qsubst_id
-| qsubst_ren (r : quoted_ren)
-| qsubst_compr_l (r : quoted_ren) (s : quoted_subst).
+| qsubst_ren (r : quoted_ren).
 
 Inductive quoted_cterm :=
 | qatom (t : cterm)
@@ -102,10 +102,10 @@ Fixpoint unquote_subst q :=
   | qsubst_atom σ => σ
   | qsubst_comp s t => funcomp (subst_cterm (unquote_subst s)) (unquote_subst t)
   | qsubst_compr s r => funcomp (unquote_subst s) (unquote_ren r)
+  | qsubst_rcomp r s => funcomp (ren_cterm (unquote_ren r)) (unquote_subst s)
   | qsubst_cons t s => scons t (unquote_subst s)
   | qsubst_id => ids
   | qsubst_ren r => funcomp cvar (unquote_ren r)
-  | qsubst_compr_l r s => funcomp (ren_cterm (unquote_ren r)) (unquote_subst s)
   end.
 
 Fixpoint unquote_cterm q :=
@@ -171,6 +171,7 @@ Inductive eval_subst_comp_view : quoted_subst → quoted_subst → Type :=
 | es_id_r s : eval_subst_comp_view s qsubst_id
 | es_comp_r s u v : eval_subst_comp_view s (qsubst_comp u v)
 | es_compr_r s x y : eval_subst_comp_view s (qsubst_compr x y)
+| es_rcomp_r s x y : eval_subst_comp_view s (qsubst_rcomp x y)
 | es_cons_r s t s' : eval_subst_comp_view s (qsubst_cons t s')
 | es_ren_r s r : eval_subst_comp_view s (qsubst_ren r)
 | es_other u v : eval_subst_comp_view u v.
@@ -181,6 +182,7 @@ Definition eval_subst_comp_c u v : eval_subst_comp_view u v :=
   | u, qsubst_id => es_id_r u
   | u, qsubst_comp x y => es_comp_r u x y
   | u, qsubst_compr x y => es_compr_r u x y
+  | u, qsubst_rcomp x y => es_rcomp_r u x y
   | u, qsubst_cons t s => es_cons_r u t s
   | u, qsubst_ren r => es_ren_r u r
   | u, v => es_other u v
@@ -197,13 +199,35 @@ Inductive eval_subst_compr_view : quoted_subst → quoted_ren → Type :=
 
 Definition eval_subst_compr_c s r : eval_subst_compr_view s r :=
   match s, r with
-  | qsubst_id, v => esr_id_l r
+  | qsubst_id, r => esr_id_l r
   | s, qren_id => esr_id_r s
   | s, qren_comp x y => esr_comp_r s x y
   | s, qren_cons n r => esr_cons_r s n r
   | qsubst_ren s, r => esr_ren_l s r
   | qsubst_cons t s, qren_shift => esr_cons_shift t s
   | s, r => esr_other s r
+  end.
+
+Inductive eval_subst_rcomp_view : quoted_ren → quoted_subst → Type :=
+| ers_id_l s : eval_subst_rcomp_view qren_id s
+| ers_id_r r : eval_subst_rcomp_view r qsubst_id
+| ers_comp_r r x y : eval_subst_rcomp_view r (qsubst_comp x y)
+| ers_compr_r r x y : eval_subst_rcomp_view r (qsubst_compr x y)
+| ers_rcomp_r r x y : eval_subst_rcomp_view r (qsubst_rcomp x y)
+| ers_cons_r r t s : eval_subst_rcomp_view r (qsubst_cons t s)
+| ers_ren_r r s : eval_subst_rcomp_view r (qsubst_ren s)
+| ers_other r s : eval_subst_rcomp_view r s.
+
+Definition eval_subst_rcomp_c r s : eval_subst_rcomp_view r s :=
+  match r, s with
+  | qren_id, s => ers_id_l s
+  | r, qsubst_id => ers_id_r r
+  | r, qsubst_comp x y => ers_comp_r r x y
+  | r, qsubst_compr x y => ers_compr_r r x y
+  | r, qsubst_rcomp x y => ers_rcomp_r r x y
+  | r, qsubst_cons t s => ers_cons_r r t s
+  | r, qsubst_ren s => ers_ren_r r s
+  | r, s => ers_other r s
   end.
 
 Inductive qren_id_view : quoted_ren → Type :=
@@ -226,6 +250,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | es_id_r u => u
     | es_comp_r u x y => qsubst_comp (qsubst_comp u x) y
     | es_compr_r u x y => qsubst_compr (qsubst_comp u x) y
+    | es_rcomp_r u x y => qsubst_comp (qsubst_compr u x) y
     | es_cons_r u t s => qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
     | es_ren_r u r => qsubst_compr u r
     | es_other u v => qsubst_comp u v
@@ -243,6 +268,20 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | esr_cons_shift t s => s
     | esr_other s r => qsubst_compr s r
     end
+  | qsubst_rcomp r s =>
+    let r := eval_ren r in
+    let s := eval_subst s in
+    match eval_subst_rcomp_c r s with
+    | ers_id_l s => s
+    | ers_id_r r => qsubst_ren r
+    | ers_comp_r r x y => qsubst_comp (qsubst_rcomp r x) y
+    | ers_compr_r r x y => qsubst_compr (qsubst_rcomp r x) y
+    | ers_rcomp_r r x y => qsubst_rcomp (qren_comp r x) y
+    | ers_cons_r r t s =>
+      qsubst_cons (ren_cterm (unquote_ren r) t) (qsubst_rcomp r s)
+    | ers_ren_r r s => qsubst_ren (qren_comp r s)
+    | ers_other r s => qsubst_rcomp r s
+    end
   | qsubst_cons t s =>
     let s := eval_subst s in
     qsubst_cons t s
@@ -252,10 +291,6 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | is_qren_id => qsubst_id
     | not_qren_id r => qsubst_ren r
     end
-  | qsubst_compr_l r s =>
-    let r := eval_ren r in
-    let s := eval_subst s in
-    qsubst_comp (qsubst_ren r) s
   | _ => s
   end.
 
@@ -410,6 +445,9 @@ Proof.
     + cbn in *. unfold funcomp in *.
       erewrite subst_cterm_morphism. 2,3: eauto.
       asimpl. reflexivity.
+    + cbn in *. unfold funcomp in *.
+      erewrite subst_cterm_morphism. 2,3: eauto.
+      asimpl. reflexivity.
     + cbn in *. unfold funcomp.
       erewrite subst_cterm_morphism. 2,3: eauto.
       asimpl. destruct n. all: reflexivity.
@@ -435,6 +473,36 @@ Proof.
       rewrite IHs. cbn. reflexivity.
     + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
       rewrite IHs. reflexivity.
+  - cbn. set_eval_subst es.
+    remember (eval_ren _) as er eqn:e.
+    destruct eval_subst_rcomp_c.
+    + unfold funcomp.
+      erewrite ren_cterm_morphism. 3: reflexivity.
+      2:{ intro. rewrite eval_ren_sound, <- e. reflexivity. }
+      cbn. asimpl. auto.
+    + subst. unfold funcomp. rewrite IHs. cbn. rewrite eval_ren_sound.
+      reflexivity.
+    + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
+      rewrite substRen_cterm. apply subst_cterm_morphism. 2: reflexivity.
+      intro. unfold funcomp. apply ren_cterm_morphism. 2: reflexivity.
+      intro. rewrite <- eval_ren_sound. reflexivity.
+    + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
+      apply ren_cterm_morphism. 2: reflexivity.
+      intro. rewrite <- eval_ren_sound. reflexivity.
+    + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
+      rewrite renRen_cterm. apply ren_cterm_morphism. 2: reflexivity.
+      intro. rewrite <- eval_ren_sound. reflexivity.
+    + subst. unfold funcomp. rewrite IHs. cbn.
+      destruct n.
+      * cbn. apply ren_cterm_morphism. 2: reflexivity.
+        intro. rewrite eval_ren_sound. reflexivity.
+      * cbn. unfold funcomp. apply ren_cterm_morphism. 2: reflexivity.
+        intro. rewrite eval_ren_sound. reflexivity.
+    + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
+      rewrite <- eval_ren_sound. reflexivity.
+    + subst. cbn. unfold funcomp. rewrite IHs.
+      apply ren_cterm_morphism. 2: reflexivity.
+      intro. rewrite eval_ren_sound. reflexivity.
   - cbn. erewrite scons_morphism. 2,3: eauto.
     reflexivity.
   - cbn. remember (eval_ren _) as er eqn:e.
@@ -443,10 +511,6 @@ Proof.
       reflexivity.
     + subst. cbn. unfold funcomp. rewrite <- eval_ren_sound.
       reflexivity.
-  - cbn. unfold funcomp. rewrite <- IHs.
-    rewrite rinstInst'_cterm.
-    apply subst_cterm_morphism. 2: reflexivity.
-    intro. unfold funcomp. rewrite eval_ren_sound. reflexivity.
 Qed.
 
 Lemma eval_cterm_sound :
@@ -552,7 +616,7 @@ Ltac quote_subst s :=
   | funcomp (ren_cterm ?r) ?s =>
     let qr := quote_ren r in
     let qs := quote_subst s in
-    constr:(qsubst_compr_l qr qs)
+    constr:(qsubst_rcomp qr qs)
   | funcomp ?s ?r =>
     let qs := quote_subst s in
     let qr := quote_ren r in
@@ -625,6 +689,7 @@ Ltac rasimpl1_t t :=
     unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
     unquote_ren eval_ren apply_ren eval_ren_comp_c
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+    eval_subst_rcomp_c
     unquote_nat
     ren_cterm subst_cterm scons
   ] ;
