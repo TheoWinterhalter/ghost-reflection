@@ -44,6 +44,8 @@ Ltac ssimpl :=
     ⇒ Maybe by using meta-variables instead of "atoms" so that rewrite doesn't
       have to touch the local variables.
   - Also it cannot currently rewrite under new custom contexts.
+  - Because I still need to use asimpl sometimes, and they don't normalise
+    exactly the same, there might be a mismatch.
 
   Ways to improve:
   - Maybe the traversal isn't optimal, some subterms might be quoted and
