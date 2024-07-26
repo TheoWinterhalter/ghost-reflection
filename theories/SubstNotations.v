@@ -662,7 +662,7 @@ Ltac asimpl_unfold :=
     Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
     subst1,
     (* Added myself *)
-    upRen_cterm_cterm, up_ren.
+    upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero.
 
 Ltac asimpl_unfold_in h :=
   unfold
@@ -671,7 +671,7 @@ Ltac asimpl_unfold_in h :=
     Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
     subst1,
     (* Added myself *)
-    upRen_cterm_cterm, up_ren
+    upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero
   in h.
 
 Ltac asimpl_unfold_all :=
@@ -681,7 +681,7 @@ Ltac asimpl_unfold_all :=
     Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
     subst1,
     (* Added myself *)
-    upRen_cterm_cterm, up_ren
+    upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero
   in *.
 
 Tactic Notation "aunfold" := asimpl_unfold.
@@ -700,7 +700,7 @@ Ltac rasimpl1_t t :=
     unquote_nat
     ren_cterm subst_cterm scons
   ] ;
-  unfold upRen_cterm_cterm, up_ren. (* Maybe aunfold? *)
+  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero. (* Maybe aunfold? *)
 
 Ltac rasimpl1_aux g :=
   first [

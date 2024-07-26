@@ -586,27 +586,7 @@ Proof.
     rasimpl. apply ext_cterm.
     intros [].
     + rasimpl. reflexivity.
-    + rasimpl.
-      unfold up_cterm_cterm, var_zero.
-      change (core.funcomp ?f ?g ?x) with (f (g x)).
-      cbn [scons].
-      change (core.funcomp ?f ?g ?x) with (f (g x)).
-      (* Unset Printing Notations. *)
-      (* Doing those changes break already line 111. *)
-      (* Maybe I should check what happens with the first rasimpl above
-        as it might already be responsible for a divergence with asimpl.
-        Divergence is also ok as long as it gets better.
-
-        TODO: [ρ >> var] should be unquoted as ⟨ ρ ⟩
-        This happens only with qsubst_comp (qsubst_ren ρ) s
-        which is exactly what you get from qsubst_compr_l so maybe that optim
-        was wrong?
-        Maybe I need to see substitutions as combinations of renamings,
-        then proper substs, then term → term things (just renamings again?).
-       *)
-      rasimpl.
-      fail.
-      reflexivity.
+    + rasimpl. reflexivity.
   - rasimpl. constructor.
     + auto.
     + eapply IHh2. apply cstyping_shift. assumption.
