@@ -41,6 +41,8 @@ Ltac ssimpl :=
   - If an expression is under a binder and uses the bound variable, then rasimpl
     is unable to do anything. I don't see a way to avoid using setoid_rewrite
     there.
+    ⇒ Maybe by using meta-variables instead of "atoms" so that rewrite doesn't
+      have to touch the local variables.
   - Also it cannot currently rewrite under new custom contexts.
 
   Ways to improve:
