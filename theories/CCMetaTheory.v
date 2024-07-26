@@ -642,40 +642,20 @@ Proof.
       * rasimpl. reflexivity.
       * rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal. f_equal.
-      eapply ext_cterm.
-      intros [].
-      * ssimpl. reflexivity.
-      * ssimpl. reflexivity.
+      clear. f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. f_equal. ssimpl. f_equal.
-      * {
-        f_equal. f_equal. eapply ext_cterm.
-        intros [].
-        - ssimpl. reflexivity.
-        - ssimpl. reflexivity.
-      }
-      * {
-        f_equal. all: f_equal. all: f_equal. all: f_equal.
-        - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-        - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-        - eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      }
+      clear. f_equal. f_equal. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
-    f_equal. f_equal.
-    ssimpl. f_equal. all: f_equal. all: f_equal.
-    + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-    + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+    clear. f_equal. f_equal.
+    rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
-    f_equal. ssimpl. f_equal. f_equal. all: f_equal. all: f_equal.
-    + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-    + eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+    f_equal. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
@@ -683,70 +663,37 @@ Proof.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal.
-      ssimpl. f_equal. all: f_equal. all: f_equal. 2,3: f_equal. 4: f_equal.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal.  all: f_equal. all: f_equal.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal. f_equal. unfold capps. cbn. f_equal.
-      all: f_equal. all: f_equal. 2-4: f_equal.
-      4-6: f_equal. 5-7: f_equal. 5-7: f_equal. 5-7: f_equal.
-      5-6: f_equal.
-      all: ssimpl.
-      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
+      f_equal. rasimpl. f_equal. f_equal. f_equal. unfold capps. cbn. f_equal.
+      f_equal. f_equal. f_equal. all: f_equal. all: f_equal. all: f_equal.
+      all: f_equal. 1,2: f_equal.
+      all: rasimpl. all: reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
     rasimpl in IHht12.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. f_equal.
-      ssimpl. f_equal. all: f_equal. all: f_equal. 2,3: f_equal. 4: f_equal.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      clear. f_equal. f_equal.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal.  all: f_equal. all: f_equal.
-      2,3: f_equal.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      clear. f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. f_equal. f_equal. f_equal. unfold capps. cbn. f_equal.
-      all: f_equal. all: f_equal. 2-4: f_equal.
-      4-6: f_equal. 5-7: f_equal. 5-7: f_equal. 5-7: f_equal.
-      5-7: f_equal.
-      all: ssimpl.
-      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
-    + cbn. unfold elength. f_equal. f_equal. f_equal.
-      ssimpl. f_equal. f_equal. f_equal.
-      all: f_equal. 2,3: f_equal. 2-4: f_equal. 2,4: f_equal.
-      3: f_equal.
-      all: ssimpl.
-      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
+      clear. f_equal. rasimpl. unfold capps. cbn. rasimpl. reflexivity.
+    + clear. cbn. unfold elength. f_equal. f_equal. f_equal.
+      rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. f_equal.
-      ssimpl. f_equal. all: f_equal. all: f_equal. 2: f_equal.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
-      * eapply ext_cterm. intros []. all: ssimpl. all: reflexivity.
+      clear. f_equal. f_equal.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      unfold capps. cbn.
-      f_equal. ssimpl. f_equal. clear. f_equal. f_equal. f_equal. all: f_equal.
-      all: f_equal. 2-4: f_equal. 4-5: f_equal. 5: f_equal. 5: f_equal.
-      4: f_equal. 4: f_equal.
-      all: ssimpl.
-      all: eapply ext_cterm ; intros [] ; ssimpl ; reflexivity.
+      clear. unfold capps. cbn. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.
