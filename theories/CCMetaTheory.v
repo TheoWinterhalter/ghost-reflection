@@ -618,10 +618,10 @@ Proof.
     rasimpl. apply ext_cterm. intros [].
     + rasimpl. reflexivity.
     + rasimpl. reflexivity.
-  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. asimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     rasimpl. eauto.
-  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
+  - rasimpl. rasimpl in IHht1. asimpl in IHht2. rasimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     instantiate (1 := i). instantiate (1 := m).
     rasimpl. eauto.
@@ -629,9 +629,9 @@ Proof.
     rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
-    rasimpl in IHht4.
+    asimpl in IHht4.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    rasimpl. eauto.
+    asimpl. eauto.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8.
@@ -854,7 +854,7 @@ Proof.
         destruct h as [B [e eB]].
         eapply ccmeta_conv.
         -- econstructor. eassumption.
-        -- cbn. rasimpl.
+        -- cbn. rasimpl. rasimpl in eB.
           erewrite extRen_cterm.
           ++ erewrite <- eB. substify. rasimpl. reflexivity.
           ++ intro. reflexivity.
