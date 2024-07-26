@@ -603,6 +603,7 @@ Ltac quote_ren r :=
     let q := quote_ren r in
     constr:(qren_cons qn q)
   | id => constr:(qren_id)
+  | λ x, x => constr:(qren_id)
   | shift => constr:(qren_shift)
   | S => constr:(qren_shift)
   | _ => constr:(qren_atom r)
