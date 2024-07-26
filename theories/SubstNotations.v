@@ -173,6 +173,7 @@ Inductive eval_subst_comp_view : quoted_subst → quoted_subst → Type :=
 | es_compr_r s x y : eval_subst_comp_view s (qsubst_compr x y)
 | es_rcomp_r s x y : eval_subst_comp_view s (qsubst_rcomp x y)
 | es_cons_r s t s' : eval_subst_comp_view s (qsubst_cons t s')
+| es_ren_l r s : eval_subst_comp_view (qsubst_ren r) s
 | es_ren_r s r : eval_subst_comp_view s (qsubst_ren r)
 | es_other u v : eval_subst_comp_view u v.
 
@@ -184,6 +185,7 @@ Definition eval_subst_comp_c u v : eval_subst_comp_view u v :=
   | u, qsubst_compr x y => es_compr_r u x y
   | u, qsubst_rcomp x y => es_rcomp_r u x y
   | u, qsubst_cons t s => es_cons_r u t s
+  | qsubst_ren r, s => es_ren_l r s
   | u, qsubst_ren r => es_ren_r u r
   | u, v => es_other u v
   end.
@@ -252,6 +254,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | es_compr_r u x y => qsubst_compr (qsubst_comp u x) y
     | es_rcomp_r u x y => qsubst_comp (qsubst_compr u x) y
     | es_cons_r u t s => qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
+    | es_ren_l r s => qsubst_rcomp r s
     | es_ren_r u r => qsubst_compr u r
     | es_other u v => qsubst_comp u v
     end
@@ -451,6 +454,10 @@ Proof.
     + cbn in *. unfold funcomp.
       erewrite subst_cterm_morphism. 2,3: eauto.
       asimpl. destruct n. all: reflexivity.
+    + cbn in *. unfold funcomp in *.
+      rewrite IHs2.
+      rewrite rinstInst'_cterm. apply subst_cterm_morphism. 2: reflexivity.
+      intro. rewrite IHs1. unfold funcomp. reflexivity.
     + cbn in *. unfold funcomp in *.
       rewrite IHs2. cbn. rewrite IHs1. reflexivity.
     + cbn in *. unfold funcomp. rewrite IHs2.
