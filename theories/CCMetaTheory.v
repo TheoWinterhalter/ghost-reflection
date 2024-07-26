@@ -240,8 +240,7 @@ Proof.
   - cbn in *. noconf hy.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
-    apply (f_equal (λ t, S ⋅ t)) in eC.
-    revert eC. ssimpl. intro eC.
+    apply (f_equal (λ t, S ⋅ t)) in eC. rasimpl in eC.
     etransitivity. 2: eapply eC.
     reflexivity.
 Qed.
@@ -362,9 +361,9 @@ Proof.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal. f_equal. f_equal. f_equal.
-      ssimpl. reflexivity.
+      rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. ssimpl. reflexivity.
+      f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
@@ -638,10 +637,10 @@ Proof.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     + eapply cmeta_conv. 1: eauto.
       f_equal. f_equal. f_equal. f_equal. f_equal.
-      ssimpl. eapply ext_cterm.
+      rasimpl. eapply ext_cterm.
       intros [].
-      * ssimpl. reflexivity.
-      * ssimpl. reflexivity.
+      * rasimpl. reflexivity.
+      * rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
       f_equal. ssimpl. f_equal. f_equal. f_equal.
       eapply ext_cterm.
