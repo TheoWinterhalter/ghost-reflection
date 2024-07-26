@@ -50,6 +50,8 @@ Ltac ssimpl :=
   - An NbE approach would be nice.
   - Ideally, we could do much more in one step if we could incude all rules
     pertaining to constructors of the syntax, but this should be generated.
+  - shift could be shiftn instead, as we often need those, better than using
+    addn manually, and the tactic could handle those easily.
 
 **)
 
