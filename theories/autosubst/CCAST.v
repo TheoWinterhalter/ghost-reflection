@@ -2495,28 +2495,28 @@ Instance Up_cterm_cterm : (Up_cterm _ _) := @up_cterm_cterm.
 Instance VarInstance_cterm : (Var _ _) := @cvar.
 
 Notation "[ sigma_cterm ]" := (subst_cterm sigma_cterm)
-  ( at level 1, left associativity, only printing) : fscope.
+( at level 1, left associativity, only printing)  : fscope.
 
 Notation "s [ sigma_cterm ]" := (subst_cterm sigma_cterm s)
-  ( at level 7, left associativity, only printing) : subst_scope.
+( at level 7, left associativity, only printing)  : subst_scope.
 
-Notation "↑__cterm" := up_cterm (only printing) : subst_scope.
+Notation "↑__cterm" := up_cterm (only printing)  : subst_scope.
 
-Notation "↑__cterm" := up_cterm_cterm (only printing) : subst_scope.
+Notation "↑__cterm" := up_cterm_cterm (only printing)  : subst_scope.
 
 Notation "⟨ xi_cterm ⟩" := (ren_cterm xi_cterm)
-  ( at level 1, left associativity, only printing) : fscope.
+( at level 1, left associativity, only printing)  : fscope.
 
 Notation "s ⟨ xi_cterm ⟩" := (ren_cterm xi_cterm s)
-  ( at level 7, left associativity, only printing) : subst_scope.
+( at level 7, left associativity, only printing)  : subst_scope.
 
-Notation "'var'" := cvar ( at level 1, only printing) : subst_scope.
+Notation "'var'" := cvar ( at level 1, only printing)  : subst_scope.
 
 Notation "x '__cterm'" := (@ids _ _ VarInstance_cterm x)
-  ( at level 5, format "x __cterm", only printing) : subst_scope.
+( at level 5, format "x __cterm", only printing)  : subst_scope.
 
-Notation "x '__cterm'" := (cvar x) ( at level 5, format "x __cterm") :
-  subst_scope.
+Notation "x '__cterm'" := (cvar x) ( at level 5, format "x __cterm")  :
+subst_scope.
 
 #[global]
 Instance subst_cterm_morphism :

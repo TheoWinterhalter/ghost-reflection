@@ -9,30 +9,28 @@ https://zenodo.org/records/11500966
 ## Building the syntax (optional)
 
 We build the syntax of our type theories using [Autosubst 2 OCaml].
-When we prepared this supplementary material there was no Coq 8.18 version for
-this package so we provide instead the generated file directly in this
-repository.
+We provide the generated files, but if you want to run generation again you can
+simply run `make autosubst` after having installed [Autosubst 2 OCaml] for
+Coq 8.19.
 
-In the event you would like to build the syntax files, you can checkout the
-`coq-8.13` branch of [Autosubst 2 OCaml] and run
+Just run
+```sh
+opam install coq-autosubst-ocaml
 ```
-dune build
-dune install
-```
+after you installed the other dependencies (see below).
 
-Once installed, you can run `make` in the `theories/autosubst` directory. It
-will generate `GAST.v`, `CCAST.v`, `unscoped.v` and `core.v`.
+It will generate `GAST.v`, `CCAST.v`, `unscoped.v` and `core.v`.
 
 ## Building the project
 
-We use Coq 8.18 and Equations 1.3.
+We use Coq 8.19 and Equations 1.3.
 You can get Coq and Equations using [opam] as follows:
 
 ```sh
 opam repo add coq-released https://coq.inria.fr/opam/released
 opam update
-opam pin add coq 8.18.0
-opam install coq-equations
+opam pin add coq 8.19.0
+opam install coq-equations coq-autosubst-ocaml
 ```
 
 Running `make` at the root of the project is enough to build everything.

@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      coq_version: '8.18'
+      coq_version: '8.19'
       fail-fast: true
 
     steps:

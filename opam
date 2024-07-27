@@ -9,6 +9,7 @@ authors: [
 depends: [
   "coq" { >= "8.18" & < "8.20~" }
   "coq-equations" { >= "1.3" }
+  "coq-autosubst-ocaml"
 ]
 build: [
   [make]
