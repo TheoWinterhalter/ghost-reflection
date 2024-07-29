@@ -709,10 +709,7 @@ Tactic Notation "aunfold" := asimpl_unfold.
 Tactic Notation "aunfold" "in" hyp(h) := asimpl_unfold_in h.
 Tactic Notation "aunfold" "in" "*" := asimpl_unfold_all.
 
-Ltac rasimpl1_t t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) ;
-  rewrite eval_cterm_sound ;
+Ltac post_process :=
   cbn [
     unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
     unquote_ren eval_ren apply_ren eval_ren_comp_c
@@ -723,36 +720,61 @@ Ltac rasimpl1_t t :=
   ] ;
   unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero. (* Maybe aunfold? *)
 
-Ltac rasimpl1_aux g :=
-  first [
-    progress (rasimpl1_t g)
-  | lazymatch g with
-    | subst_cterm ?s _ => rasimpl1_aux s
-    | ren_cterm ?r _ => rasimpl1_aux r
-    | ?f ?u => rasimpl1_aux f ; rasimpl1_aux u
-    | ∀ x : ?A, ?B => rasimpl1_aux A ; rasimpl1_aux B
-    end
-  | idtac
-  ].
+Ltac rasimpl1_t t :=
+  let q := quote_cterm t in
+  change t with (unquote_cterm q) ;
+  rewrite eval_cterm_sound ;
+  post_process.
 
-Ltac rasimpl1 :=
+Ltac setoid_rasimpl1_t t :=
+  let q := quote_cterm t in
+  change t with (unquote_cterm q) ;
+  setoid_rewrite eval_cterm_sound ;
+  post_process.
+
+Ltac rasimpl1_aux tac g :=
+  let rec aux g :=
+    first [
+      progress (tac g)
+    | lazymatch g with
+      | subst_cterm ?s _ => aux s
+      | ren_cterm ?r _ => aux r
+      | ?f ?u => aux f ; aux u
+      | ∀ x : ?A, ?B => aux A ; aux B
+      end
+    | idtac
+    ]
+  in aux g.
+
+Ltac rasimpl1 tac :=
   lazymatch goal with
-  | |- ?g => rasimpl1_aux g
+  | |- ?g => rasimpl1_aux tac g
   end.
 
-Ltac rasimpl' :=
-  repeat rasimpl1.
+Ltac rasimpl' tac :=
+  repeat (rasimpl1 tac).
 
-Ltac rasimpl :=
+Ltac rasimpl_ tac :=
   repeat aunfold ;
   minimize ;
-  rasimpl' ;
+  rasimpl' tac ;
   minimize.
+
+Ltac rasimpl :=
+  rasimpl_ rasimpl1_t.
+
+Ltac setoid_rasimpl :=
+  rasimpl_ setoid_rasimpl1_t.
 
 (* It's how it's done for asimpl but that's unsatisfactory *)
 Ltac rasimpl_in h :=
   revert h ;
   rasimpl ;
+  intro h.
+
+Ltac setoid_rasimpl_in h :=
+  revert h ;
+  setoid_rasimpl ;
   intro h.
 
 (* Taken from core.minimize *)
@@ -803,9 +825,12 @@ Ltac rasimpl_in h :=
 Tactic Notation "rasimpl" "in" hyp(h) :=
   rasimpl_in h.
 
-Ltac rssimpl :=
+Tactic Notation "setoid_rasimpl" "in" hyp(h) :=
+  setoid_rasimpl_in h.
+
+(* Ltac rssimpl :=
   rasimpl ;
   autosubst_unfold ;
   rasimpl ;
   resubst ;
-  rasimpl.
+  rasimpl. *)
