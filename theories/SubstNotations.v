@@ -674,7 +674,11 @@ Ltac quote_cterm t :=
   | _ => constr:(qatom t)
   end.
 
-(** Main tactic **)
+(** Main tactic
+
+  To make it user-extensible, we rely on type classes.
+
+**)
 
 Ltac asimpl_unfold :=
   unfold
@@ -720,51 +724,81 @@ Ltac post_process :=
   ] ;
   unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero. (* Maybe aunfold? *)
 
-Ltac rasimpl1_t t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) ;
-  rewrite eval_cterm_sound ;
-  post_process.
+Class CTermQuote (t : cterm) (q : quoted_cterm) := MkCTmQuote {
+  is_quote_term : t = unquote_cterm q
+}.
 
-Ltac setoid_rasimpl1_t t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) ;
-  setoid_rewrite eval_cterm_sound ;
-  post_process.
+Hint Mode CTermQuote + - : typeclass_instances.
 
-Ltac rasimpl1_aux tac g :=
-  let rec aux t :=
-    first [
-      progress (repeat (tac t))
-    | lazymatch t with
-      | subst_cterm ?s _ => aux s
-      | ren_cterm ?r _ => aux r
-      | ?f ?u => aux f ; aux u
-      | ∀ x : ?A, ?B => aux A ; aux B
-      end
-    | idtac
+#[export] Hint Extern 10 (CTermQuote ?t _) =>
+  let q := quote_cterm t in
+  (* let q :=
+    eval cbn [
+      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+      unquote_ren eval_ren apply_ren eval_ren_comp_c
+      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+      eval_subst_rcomp_c
+      unquote_nat
+      ren_cterm subst_cterm scons
+    ] in
+    q
+  in
+  let q :=
+    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in q
+  in *)
+  exact (MkCTmQuote t q eq_refl)
+  : typeclass_instances.
+
+Class ASimplification {A} (a s : A) := MkSimpl {
+  autosubst_simpl : a = s
+}.
+
+Arguments autosubst_simpl {A} a {s _}.
+
+(* Hint Mode ASimplification + + - : typeclass_instances. *)
+
+Lemma ASimplification_cterm t {q} :
+  CTermQuote t q →
+  ASimplification t (unquote_cterm (eval_cterm q)).
+Proof.
+  intros [->].
+  constructor. apply eval_cterm_sound.
+Qed.
+
+Definition autosubst_simplify {A} {t s} (h : @ASimplification A t s) := s.
+
+#[export] Hint Extern 1 (ASimplification_cterm ?t _) =>
+  let H := constr:(ASimplification_cterm t _) in
+  let s := constr:(autosubst_simplify H) in
+  let s :=
+    eval cbn [
+      autosubst_simplify
+      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+      unquote_ren eval_ren apply_ren eval_ren_comp_c
+      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+      eval_subst_rcomp_c
+      unquote_nat
+      ren_cterm subst_cterm scons
     ]
-  in aux g.
-
-Ltac rasimpl1 tac :=
-  lazymatch goal with
-  | |- ?g => rasimpl1_aux tac g
-  end.
-
-Ltac rasimpl' tac :=
-  repeat (rasimpl1 tac).
-
-Ltac rasimpl_ tac :=
-  repeat aunfold ;
-  minimize ;
-  rasimpl' tac ;
-  minimize.
+    in s
+  in
+  let s :=
+    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
+  in
+  exact (MkSimpl _ t s (@autosubst_simpl _ t s H))
+  : typeclass_instances.
 
 Ltac rasimpl :=
-  rasimpl_ rasimpl1_t.
+  repeat aunfold ;
+  minimize ;
+  rewrite ?autosubst_simpl ;
+  minimize.
 
 Ltac setoid_rasimpl :=
-  rasimpl_ setoid_rasimpl1_t.
+  repeat aunfold ;
+  minimize ;
+  setoid_rewrite ?autosubst_simpl ;
+  minimize.
 
 (* It's how it's done for asimpl but that's unsatisfactory *)
 Ltac rasimpl_in h :=

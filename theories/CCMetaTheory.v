@@ -211,6 +211,14 @@ Proof.
   rewrite en. reflexivity.
 Qed.
 
+#[export] Instance ASimplification_cterm t {q} :
+  CTermQuote t q →
+  ASimplification t (unquote_cterm (eval_cterm q)).
+Proof.
+  intros [->].
+  constructor. apply eval_cterm_sound.
+Qed.
+
 Lemma crtyping_shift :
   ∀ Γ Δ mx A ρ,
     crtyping Γ ρ Δ →
@@ -221,6 +229,10 @@ Proof.
   destruct y.
   - cbn in *. noconf hy. eexists.
     split. 1: reflexivity.
+    (* rewrite autosubst_simpl. *)
+    lazymatch goal with
+    | |- _ = ?t => rewrite (autosubst_simpl t)
+    end.
     rasimpl. reflexivity.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
