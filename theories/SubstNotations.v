@@ -6,6 +6,7 @@
 
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import core unscoped GAST CCAST.
+From Coq Require Import Setoid Morphisms Relation_Definitions.
 Import ListNotations.
 
 Notation "a ⋅ x" :=
@@ -75,6 +76,44 @@ Ltac ssimpl :=
 
 **)
 
+Class Syntax (tm : Type)
+`{Ren1 (nat → nat) tm tm} `{Subst1 (nat → tm) tm tm} `{Var nat tm} := {
+  instId'_tm : ∀ (t : tm), subst1 ids t = t ;
+  subst_ids : ∀ s n, subst1 s (ids n) = s n ;
+  subst_subst : ∀ σ θ t, subst1 θ (subst1 σ t) = subst1 (funcomp (subst1 θ) σ) t ;
+  ren_subst : ∀ ρ σ t, subst1 σ (ren1 ρ t) = subst1 (funcomp σ ρ) t ;
+  subst_ren : ∀ σ ρ t, ren1 ρ (subst1 σ t) = subst1 (funcomp (ren1 ρ) σ) t ;
+  ren_ren : ∀ ξ ρ t, ren1 ρ (ren1 ξ t) = ren1 (funcomp ρ ξ) t ;
+  rinstInst'_tm : ∀ ρ t, ren1 ρ t = subst1 (funcomp ids ρ) t ;
+  ren_id : ∀ (t : tm), ren1 id t = t ;
+  ren_ids : ∀ ρ n, ren1 ρ (ids n) = ids (ρ n)
+}.
+
+#[export, refine] Instance Syntax_cterm : Syntax cterm := {|
+  instId'_tm := instId'_cterm ;
+  subst_subst := substSubst_cterm ;
+  ren_subst := renSubst_cterm ;
+  subst_ren := substRen_cterm ;
+  ren_ren := renRen_cterm ;
+  rinstInst'_tm := rinstInst'_cterm ;
+  ren_id := rinstId'_cterm
+|}.
+Proof.
+  all: reflexivity.
+Qed.
+
+Section Evaluation.
+
+Context {tm : Type} `{Ren1 (nat → nat) tm tm} `{Subst1 (nat → tm) tm tm}.
+Context `{Var nat tm}.
+Context {subst_tm_morphism :
+  Proper (respectful (pointwise_relation _ eq) (respectful eq eq)) subst1
+}.
+Context {ren_tm_morphism :
+  Proper (respectful (pointwise_relation _ eq) (respectful eq eq)) ren1
+}.
+Context {Syntax_tm : Syntax tm}.
+
 Inductive quoted_nat :=
 | qnat_atom (n : nat)
 | q0
@@ -88,18 +127,18 @@ Inductive quoted_ren :=
 | qren_shift.
 
 Inductive quoted_subst :=
-| qsubst_atom (σ : nat → cterm)
+| qsubst_atom (σ : nat → tm)
 | qsubst_comp (s t : quoted_subst)
 | qsubst_compr (s : quoted_subst) (r : quoted_ren)
 | qsubst_rcomp (r : quoted_ren) (s : quoted_subst)
-| qsubst_cons (t : cterm) (s : quoted_subst)
+| qsubst_cons (t : tm) (s : quoted_subst)
 | qsubst_id
 | qsubst_ren (r : quoted_ren).
 
-Inductive quoted_cterm :=
-| qatom (t : cterm)
-| qren (r : quoted_ren) (t : quoted_cterm)
-| qsubst (s : quoted_subst) (t : quoted_cterm).
+Inductive quoted_tm :=
+| qatom (t : tm)
+| qren (r : quoted_ren) (t : quoted_tm)
+| qsubst (s : quoted_subst) (t : quoted_tm).
 
 Fixpoint unquote_nat q :=
   match q with
@@ -120,19 +159,19 @@ Fixpoint unquote_ren q :=
 Fixpoint unquote_subst q :=
   match q with
   | qsubst_atom σ => σ
-  | qsubst_comp s t => funcomp (subst_cterm (unquote_subst s)) (unquote_subst t)
+  | qsubst_comp s t => funcomp (subst1 (unquote_subst s)) (unquote_subst t)
   | qsubst_compr s r => funcomp (unquote_subst s) (unquote_ren r)
-  | qsubst_rcomp r s => funcomp (ren_cterm (unquote_ren r)) (unquote_subst s)
+  | qsubst_rcomp r s => funcomp (ren1 (unquote_ren r)) (unquote_subst s)
   | qsubst_cons t s => scons t (unquote_subst s)
   | qsubst_id => ids
-  | qsubst_ren r => funcomp cvar (unquote_ren r)
+  | qsubst_ren r => funcomp ids (unquote_ren r)
   end.
 
-Fixpoint unquote_cterm q :=
+Fixpoint unquote_tm q :=
   match q with
   | qatom t => t
-  | qren r t => ren_cterm (unquote_ren r) (unquote_cterm t)
-  | qsubst s t => subst_cterm (unquote_subst s) (unquote_cterm t)
+  | qren r t => ren1 (unquote_ren r) (unquote_tm t)
+  | qsubst s t => subst1 (unquote_subst s) (unquote_tm t)
   end.
 
 (** Evaluation **)
@@ -273,7 +312,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | es_comp_r u x y => qsubst_comp (qsubst_comp u x) y
     | es_compr_r u x y => qsubst_compr (qsubst_comp u x) y
     | es_rcomp_r u x y => qsubst_comp (qsubst_compr u x) y
-    | es_cons_r u t s => qsubst_cons (subst_cterm (unquote_subst u) t) (qsubst_comp u s)
+    | es_cons_r u t s => qsubst_cons (subst1 (unquote_subst u) t) (qsubst_comp u s)
     | es_ren_l r s => qsubst_rcomp r s
     | es_ren_r u r => qsubst_compr u r
     | es_other u v => qsubst_comp u v
@@ -301,7 +340,7 @@ Fixpoint eval_subst (s : quoted_subst) : quoted_subst :=
     | ers_compr_r r x y => qsubst_compr (qsubst_rcomp r x) y
     | ers_rcomp_r r x y => qsubst_rcomp (qren_comp r x) y
     | ers_cons_r r t s =>
-      qsubst_cons (ren_cterm (unquote_ren r) t) (qsubst_rcomp r s)
+      qsubst_cons (ren1 (unquote_ren r) t) (qsubst_rcomp r s)
     | ers_ren_r r s => qsubst_ren (qren_comp r s)
     | ers_other r s => qsubst_rcomp r s
     end
@@ -329,11 +368,11 @@ Definition test_qsubst_ren_id s : qsubst_ren_id_view s :=
   | s => not_qsubst_ren_id s
   end.
 
-Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
+Fixpoint eval_tm (t : quoted_tm) : quoted_tm :=
   match t with
   | qren r t =>
     let r := eval_ren r in
-    let t := eval_cterm t in
+    let t := eval_tm t in
     match t with
     | qsubst s t => qsubst (qsubst_comp (qsubst_ren r) s) t
     | qren r' t => qren (qren_comp r r') t
@@ -345,7 +384,7 @@ Fixpoint eval_cterm (t : quoted_cterm) : quoted_cterm :=
     end
   | qsubst s t =>
     let s := eval_subst s in
-    let t := eval_cterm t in
+    let t := eval_tm t in
     match t with
     | qsubst s' t => qsubst (qsubst_comp s s') t
     | qren r t => qsubst (qsubst_compr s r) t
@@ -451,37 +490,36 @@ Proof.
     + cbn in *. unfold funcomp. rewrite IHs2.
       etransitivity.
       1:{
-        eapply subst_cterm_morphism. 1: eassumption.
+        eapply subst_tm_morphism. 1: eassumption.
         reflexivity.
       }
-      asimpl. reflexivity.
+      apply instId'_tm.
     + cbn in *. unfold funcomp. rewrite IHs2.
       etransitivity.
       1:{
-        eapply subst_cterm_morphism. 1: eassumption.
+        eapply subst_tm_morphism. 1: eassumption.
         reflexivity.
       }
-      asimpl. reflexivity.
+      apply subst_ids.
     + cbn in *. unfold funcomp in *.
-      erewrite subst_cterm_morphism. 2,3: eauto.
-      asimpl. reflexivity.
+      erewrite subst_tm_morphism. 2,3: eauto.
+      apply subst_subst.
     + cbn in *. unfold funcomp in *.
-      erewrite subst_cterm_morphism. 2,3: eauto.
-      asimpl. reflexivity.
+      eapply subst_tm_morphism. all: eauto.
     + cbn in *. unfold funcomp in *.
-      erewrite subst_cterm_morphism. 2,3: eauto.
-      asimpl. reflexivity.
+      erewrite subst_tm_morphism. 2,3: eauto.
+      apply ren_subst.
     + cbn in *. unfold funcomp.
-      erewrite subst_cterm_morphism. 2,3: eauto.
-      asimpl. destruct n. all: reflexivity.
+      erewrite subst_tm_morphism. 2,3: eauto.
+      destruct n. all: reflexivity.
     + cbn in *. unfold funcomp in *.
       rewrite IHs2.
-      rewrite rinstInst'_cterm. apply subst_cterm_morphism. 2: reflexivity.
+      rewrite rinstInst'_tm. apply subst_tm_morphism. 2: reflexivity.
       intro. rewrite IHs1. unfold funcomp. reflexivity.
     + cbn in *. unfold funcomp in *.
-      rewrite IHs2. cbn. rewrite IHs1. reflexivity.
+      rewrite IHs2. rewrite subst_ids. rewrite IHs1. reflexivity.
     + cbn in *. unfold funcomp. rewrite IHs2.
-      erewrite subst_cterm_morphism. 2,3: eauto.
+      erewrite subst_tm_morphism. 2,3: eauto.
       reflexivity.
   - cbn. set_eval_subst es.
     remember (eval_ren _) as er eqn:e.
@@ -504,31 +542,32 @@ Proof.
     remember (eval_ren _) as er eqn:e.
     destruct eval_subst_rcomp_c.
     + unfold funcomp.
-      erewrite ren_cterm_morphism. 3: reflexivity.
+      erewrite ren_tm_morphism. 3: reflexivity.
       2:{ intro. rewrite eval_ren_sound, <- e. reflexivity. }
-      cbn. asimpl. auto.
-    + subst. unfold funcomp. rewrite IHs. cbn. rewrite eval_ren_sound.
+      cbn. rewrite ren_id. auto.
+    + subst. unfold funcomp. rewrite IHs. cbn. rewrite ren_ids.
+      rewrite eval_ren_sound.
       reflexivity.
     + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
-      rewrite substRen_cterm. apply subst_cterm_morphism. 2: reflexivity.
-      intro. unfold funcomp. apply ren_cterm_morphism. 2: reflexivity.
+      rewrite subst_ren. apply subst_tm_morphism. 2: reflexivity.
+      intro. unfold funcomp. apply ren_tm_morphism. 2: reflexivity.
       intro. rewrite <- eval_ren_sound. reflexivity.
     + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
-      apply ren_cterm_morphism. 2: reflexivity.
+      apply ren_tm_morphism. 2: reflexivity.
       intro. rewrite <- eval_ren_sound. reflexivity.
     + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
-      rewrite renRen_cterm. apply ren_cterm_morphism. 2: reflexivity.
+      rewrite ren_ren. apply ren_tm_morphism. 2: reflexivity.
       intro. rewrite <- eval_ren_sound. reflexivity.
     + subst. unfold funcomp. rewrite IHs. cbn.
       destruct n.
-      * cbn. apply ren_cterm_morphism. 2: reflexivity.
+      * cbn. apply ren_tm_morphism. 2: reflexivity.
         intro. rewrite eval_ren_sound. reflexivity.
-      * cbn. unfold funcomp. apply ren_cterm_morphism. 2: reflexivity.
+      * cbn. unfold funcomp. apply ren_tm_morphism. 2: reflexivity.
         intro. rewrite eval_ren_sound. reflexivity.
     + subst. unfold funcomp. rewrite IHs. cbn. unfold funcomp.
-      rewrite <- eval_ren_sound. reflexivity.
+      rewrite <- eval_ren_sound. rewrite ren_ids. reflexivity.
     + subst. cbn. unfold funcomp. rewrite IHs.
-      apply ren_cterm_morphism. 2: reflexivity.
+      apply ren_tm_morphism. 2: reflexivity.
       intro. rewrite eval_ren_sound. reflexivity.
   - cbn. erewrite scons_morphism. 2,3: eauto.
     reflexivity.
@@ -540,57 +579,71 @@ Proof.
       reflexivity.
 Qed.
 
-Lemma eval_cterm_sound :
+Lemma eval_tm_sound :
   ∀ t,
-    unquote_cterm t = unquote_cterm (eval_cterm t).
+    unquote_tm t = unquote_tm (eval_tm t).
 Proof.
   intros t.
   induction t.
   - reflexivity.
-  - cbn. remember (eval_cterm _) as et eqn:e in *.
+  - cbn. remember (eval_tm _) as et eqn:e in *.
     destruct et.
     + remember (eval_ren _) as rr eqn:er.
       destruct test_qren_id.
-      * cbn. erewrite ren_cterm_morphism. 3: reflexivity.
+      * cbn. erewrite ren_tm_morphism. 3: reflexivity.
         2:{ intro. rewrite eval_ren_sound, <- er. reflexivity. }
-        cbn. asimpl. assumption.
+        cbn. rewrite ren_id. assumption.
       * subst. cbn. rewrite IHt. cbn.
-        eapply ren_cterm_morphism. 2: reflexivity.
+        eapply ren_tm_morphism. 2: reflexivity.
         intro. apply eval_ren_sound.
-    + cbn. rewrite IHt. cbn. rewrite renRen_cterm.
-      apply ren_cterm_morphism. 2: reflexivity.
+    + cbn. rewrite IHt. cbn. rewrite ren_ren.
+      apply ren_tm_morphism. 2: reflexivity.
       intro. unfold funcomp. rewrite <- eval_ren_sound. reflexivity.
     + cbn. rewrite IHt. cbn.
-      rewrite substRen_cterm.
-      apply subst_cterm_morphism. 2: reflexivity.
+      rewrite subst_ren.
+      apply subst_tm_morphism. 2: reflexivity.
       intro. unfold funcomp.
-      rewrite rinstInst'_cterm.
-      apply subst_cterm_morphism. 2: reflexivity.
+      rewrite rinstInst'_tm.
+      apply subst_tm_morphism. 2: reflexivity.
       intro. unfold funcomp.
       rewrite <- eval_ren_sound. reflexivity.
-  - cbn. remember (eval_cterm _) as et eqn:e in *.
+  - cbn. remember (eval_tm _) as et eqn:e in *.
     destruct et.
     + remember (eval_subst _) as ss eqn:es in *.
       rewrite IHt. cbn.
       destruct test_qsubst_ren_id.
-      * cbn. erewrite subst_cterm_morphism. 3: reflexivity.
+      * cbn. erewrite subst_tm_morphism. 3: reflexivity.
         2:{ intro. rewrite eval_subst_sound, <- es. reflexivity. }
-        cbn. rewrite rinstInst'_cterm. reflexivity.
-      * cbn. erewrite subst_cterm_morphism. 3: reflexivity.
+        cbn. rewrite rinstInst'_tm. reflexivity.
+      * cbn. erewrite subst_tm_morphism. 3: reflexivity.
         2:{ intro. rewrite eval_subst_sound, <- es. reflexivity. }
-        cbn. asimpl. reflexivity.
+        cbn. apply instId'_tm.
       * subst. cbn.
-        eapply subst_cterm_morphism. 2: reflexivity.
+        eapply subst_tm_morphism. 2: reflexivity.
         intro. apply eval_subst_sound.
-    + cbn. rewrite IHt. cbn. rewrite renSubst_cterm.
-      apply subst_cterm_morphism. 2: reflexivity.
+    + cbn. rewrite IHt. cbn. rewrite ren_subst.
+      apply subst_tm_morphism. 2: reflexivity.
       intro. unfold funcomp. rewrite <- eval_subst_sound. reflexivity.
-    + cbn. rewrite IHt. cbn. rewrite substSubst_cterm.
-      eapply subst_cterm_morphism. 2: reflexivity.
+    + cbn. rewrite IHt. cbn. rewrite subst_subst.
+      eapply subst_tm_morphism. 2: reflexivity.
       intro. unfold funcomp.
-      eapply subst_cterm_morphism. 2: reflexivity.
+      eapply subst_tm_morphism. 2: reflexivity.
       intro. rewrite <- eval_subst_sound. reflexivity.
 Qed.
+
+End Evaluation.
+
+Arguments qsubst_atom {tm}.
+Arguments qsubst_comp {tm}.
+Arguments qsubst_compr {tm}.
+Arguments qsubst_rcomp {tm}.
+Arguments qsubst_cons {tm}.
+Arguments qsubst_id {tm}.
+Arguments qsubst_ren {tm}.
+
+Arguments qatom {tm}.
+Arguments qren {tm}.
+Arguments qsubst {tm}.
 
 (** Quoting **)
 
@@ -633,15 +686,15 @@ Ltac quote_subst s :=
   | λ x, cvar (?r x) =>
     let q := quote_ren r in
     constr:(qsubst_ren q)
-  | funcomp (subst_cterm ?s) ?t =>
+  | funcomp (subst1 ?s) ?t =>
     let q := quote_subst s in
     let q' := quote_subst t in
     constr:(qsubst_comp q q')
-  | λ x, subst_cterm ?s (?t x) =>
+  | λ x, subst1 ?s (?t x) =>
     let q := quote_subst s in
     let q' := quote_subst t in
     constr:(qsubst_comp q q')
-  | funcomp (ren_cterm ?r) ?s =>
+  | funcomp (ren1 ?r) ?s =>
     let qr := quote_ren r in
     let qs := quote_subst s in
     constr:(qsubst_rcomp qr qs)
@@ -657,24 +710,30 @@ Ltac quote_subst s :=
     let q := quote_subst s in
     constr:(qsubst_cons t q)
   | ids => constr:(qsubst_id)
-  | cvar => constr:(qsubst_id)
   | _ => constr:(qsubst_atom s)
   end.
 
-Ltac quote_cterm t :=
+Ltac quote_tm t :=
   lazymatch t with
-  | ren_cterm ?r ?t =>
+  | ren1 ?r ?t =>
     let qr := quote_ren r in
-    let qt := quote_cterm t in
+    let qt := quote_tm t in
     constr:(qren qr qt)
-  | subst_cterm ?s ?t =>
+  | subst1 ?s ?t =>
     let qs := quote_subst s in
-    let qt := quote_cterm t in
+    let qt := quote_tm t in
     constr:(qsubst qs qt)
   | _ => constr:(qatom t)
   end.
 
 (** Main tactic **)
+
+Ltac fold_cterm :=
+  repeat first [
+    change ren_cterm with (ren1 (Y := cterm))
+  | change subst_cterm with (subst1 (Y := cterm))
+  | change cvar with (ids (Y := cterm))
+  ].
 
 Ltac asimpl_unfold :=
   unfold
@@ -710,26 +769,28 @@ Tactic Notation "aunfold" "in" hyp(h) := asimpl_unfold_in h.
 Tactic Notation "aunfold" "in" "*" := asimpl_unfold_all.
 
 Ltac post_process :=
+  (* aunfold ; *) (* Makes it loop *)
   cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+    unquote_tm eval_tm test_qren_id test_qsubst_ren_id
     unquote_ren eval_ren apply_ren eval_ren_comp_c
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     eval_subst_rcomp_c
     unquote_nat
     ren_cterm subst_cterm scons
   ] ;
-  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero. (* Maybe aunfold? *)
+  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero ; (* Maybe aunfold? *)
+  fold_cterm.
 
 Ltac rasimpl1_t t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) ;
-  rewrite eval_cterm_sound ;
+  let q := quote_tm t in
+  change t with (unquote_tm q) ;
+  rewrite eval_tm_sound ;
   post_process.
 
 Ltac setoid_rasimpl1_t t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) ;
-  setoid_rewrite eval_cterm_sound ;
+  let q := quote_tm t in
+  change t with (unquote_tm q) ;
+  setoid_rewrite eval_tm_sound ;
   post_process.
 
 Ltac rasimpl1_aux tac g :=
@@ -757,6 +818,7 @@ Ltac rasimpl' tac :=
 Ltac rasimpl_ tac :=
   repeat aunfold ;
   minimize ;
+  fold_cterm ;
   rasimpl' tac ;
   minimize.
 
@@ -787,11 +849,11 @@ Ltac setoid_rasimpl_in h :=
 Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 
 Ltac rasimpl1_t_in h t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) in h ;
-  rewrite eval_cterm_sound in h ;
+  let q := quote_tm t in
+  change t with (unquote_tm q) in h ;
+  rewrite eval_tm_sound in h ;
   cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
+    unquote_tm eval_tm test_qren_id test_qsubst_ren
     unquote_ren eval_ren apply_ren eval_ren_comp_c
     unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
     unquote_nat
