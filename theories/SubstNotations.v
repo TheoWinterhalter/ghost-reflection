@@ -735,7 +735,7 @@ Ltac setoid_rasimpl1_t t :=
 Ltac rasimpl1_aux tac g :=
   let rec aux t :=
     first [
-      progress (tac t)
+      progress (repeat (tac t))
     | lazymatch t with
       | subst_cterm ?s _ => aux s
       | ren_cterm ?r _ => aux r
