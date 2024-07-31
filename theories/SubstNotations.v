@@ -764,6 +764,10 @@ Proof.
   constructor. apply eval_cterm_sound.
 Qed.
 
+Create HintDb asimpl.
+
+#[export] Hint Rewrite -> autosubst_simpl_cterm : asimpl.
+
 (* TODO
 
   Below, progress is useless because autosubst_simpl_cterm will always progress
@@ -772,7 +776,7 @@ Qed.
 *)
 
 Ltac rasimpl' :=
-  (rewrite_strat (topdown (progress autosubst_simpl_cterm))) ;
+  (rewrite_strat (topdown (progress (hints asimpl)))) ;
   [ | (exact _) .. ] ;
   post_process.
 
@@ -792,7 +796,7 @@ Ltac minimize_in h :=
 Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 
 Ltac rasimpl'_in h :=
-  (rewrite_strat (topdown (progress autosubst_simpl_cterm)) in h) ;
+  (rewrite_strat (topdown (progress (hints asimpl))) in h) ;
   [ | (exact _) .. ] ;
   post_process_in h.
 

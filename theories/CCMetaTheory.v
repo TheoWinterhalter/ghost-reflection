@@ -313,7 +313,10 @@ Proof.
   induction h in Γ, ρ, hρ |- *.
   all: try solve [ rasimpl ; econstructor ; eauto ; cscoping_ren_finish ].
   - rasimpl. eapply cmeta_conv_trans_r. 1: econstructor.
-    rasimpl. reflexivity.
+    rasimpl.
+    rewrite_strat (topdown (progress (hints asimpl))).
+    fail.
+    reflexivity.
   - rasimpl. constructor.
     + auto.
     + eapply IHh2. apply crtyping_shift. assumption.
