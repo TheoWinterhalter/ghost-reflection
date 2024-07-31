@@ -764,6 +764,13 @@ Proof.
   constructor. apply eval_cterm_sound.
 Qed.
 
+(* TODO
+
+  Below, progress is useless because autosubst_simpl_cterm will always progress
+  as long as we cannot test progress *after* the exact and post-process.
+
+*)
+
 Ltac rasimpl' :=
   (rewrite_strat (topdown (progress autosubst_simpl_cterm))) ;
   [ | (exact _) .. ] ;
