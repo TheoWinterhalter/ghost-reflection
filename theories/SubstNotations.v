@@ -772,7 +772,7 @@ Ltac rasimpl' :=
 Ltac rasimpl :=
   aunfold ;
   minimize ;
-  try rasimpl' ;
+  repeat rasimpl' ;
   minimize.
 
 (* Taken from core.minimize *)
@@ -792,7 +792,7 @@ Ltac rasimpl'_in h :=
 Ltac rasimpl_in h :=
   aunfold in h ;
   minimize in h ;
-  try rasimpl'_in h ;
+  repeat rasimpl'_in h ;
   minimize in h.
 
 Tactic Notation "rasimpl" "in" hyp(h) :=
