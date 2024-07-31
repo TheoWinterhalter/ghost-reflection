@@ -211,13 +211,14 @@ Proof.
   rewrite en. reflexivity.
 Qed.
 
-#[export] Instance ASimplification_cterm t {q} :
-  CTermQuote t q →
-  ASimplification t (unquote_cterm (eval_cterm q)).
+(* Instance subrelation_eq_iff : subrelation eq (Basics.flip Basics.impl).
 Proof.
-  intros [->].
-  constructor. apply eval_cterm_sound.
-Qed.
+  destruct 1. reflexivity.
+Qed. *)
+
+(* TODO Maybe specialise to cterm but then we lose generality?
+  Maybe that's ok, we don't really have it anyway.
+*)
 
 Lemma crtyping_shift :
   ∀ Γ Δ mx A ρ,
@@ -229,7 +230,8 @@ Proof.
   destruct y.
   - cbn in *. noconf hy. eexists.
     split. 1: reflexivity.
-    (* rewrite autosubst_simpl. *)
+    (* rewrite_strat (autosubst_simpl). *)
+    (* setoid_rewrite autosubst_simpl. *)
     lazymatch goal with
     | |- _ = ?t => rewrite (autosubst_simpl t)
     end.

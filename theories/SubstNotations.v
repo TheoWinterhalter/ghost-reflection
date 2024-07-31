@@ -732,20 +732,6 @@ Hint Mode CTermQuote + - : typeclass_instances.
 
 #[export] Hint Extern 10 (CTermQuote ?t _) =>
   let q := quote_cterm t in
-  (* let q :=
-    eval cbn [
-      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-      unquote_ren eval_ren apply_ren eval_ren_comp_c
-      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-      eval_subst_rcomp_c
-      unquote_nat
-      ren_cterm subst_cterm scons
-    ] in
-    q
-  in
-  let q :=
-    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in q
-  in *)
   exact (MkCTmQuote t q eq_refl)
   : typeclass_instances.
 
@@ -757,7 +743,7 @@ Arguments autosubst_simpl {A} a {s _}.
 
 (* Hint Mode ASimplification + + - : typeclass_instances. *)
 
-Lemma ASimplification_cterm t {q} :
+#[export] Instance ASimplification_cterm t {q} :
   CTermQuote t q →
   ASimplification t (unquote_cterm (eval_cterm q)).
 Proof.
@@ -765,7 +751,7 @@ Proof.
   constructor. apply eval_cterm_sound.
 Qed.
 
-Definition autosubst_simplify {A} {t s} (h : @ASimplification A t s) := s.
+(* Definition autosubst_simplify {A} {t s} (h : @ASimplification A t s) := s.
 
 #[export] Hint Extern 1 (ASimplification_cterm ?t _) =>
   let H := constr:(ASimplification_cterm t _) in
@@ -786,7 +772,7 @@ Definition autosubst_simplify {A} {t s} (h : @ASimplification A t s) := s.
     eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
   in
   exact (MkSimpl _ t s (@autosubst_simpl _ t s H))
-  : typeclass_instances.
+  : typeclass_instances. *)
 
 Ltac rasimpl :=
   repeat aunfold ;
