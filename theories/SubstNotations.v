@@ -765,7 +765,7 @@ Proof.
 Qed.
 
 Ltac rasimpl' :=
-  (rewrite_strat (topdown autosubst_simpl_cterm)) ;
+  (rewrite_strat (topdown (progress autosubst_simpl_cterm))) ;
   [ | (exact _) .. ] ;
   post_process.
 
@@ -785,7 +785,7 @@ Ltac minimize_in h :=
 Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 
 Ltac rasimpl'_in h :=
-  (rewrite_strat (topdown autosubst_simpl_cterm) in h) ;
+  (rewrite_strat (topdown (progress autosubst_simpl_cterm)) in h) ;
   [ | (exact _) .. ] ;
   post_process_in h.
 
