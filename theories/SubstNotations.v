@@ -737,17 +737,17 @@ Hint Mode CTermQuote + - : typeclass_instances.
   exact (MkCTmQuote t q eq_refl)
   : typeclass_instances.
 
-Class ASimplification {A} (a s : A) := MkSimpl {
-  autosubst_simpl : a = s
+Class CTermSimplification (a s : cterm) := MkSimplCTm {
+  autosubst_simpl_cterm : a = s
 }.
 
-Arguments autosubst_simpl {A} a {s _}.
+Arguments autosubst_simpl_cterm a {s _}.
 
 (* Hint Mode ASimplification + + - : typeclass_instances. *)
 
-#[export] Instance ASimplification_cterm t {q} :
+#[export] Instance CTermSimplification_eval t {q} :
   CTermQuote t q →
-  ASimplification t (unquote_cterm (eval_cterm q)).
+  CTermSimplification t (unquote_cterm (eval_cterm q)).
 Proof.
   intros [->].
   constructor. apply eval_cterm_sound.
@@ -779,13 +779,13 @@ Qed.
 Ltac rasimpl :=
   repeat aunfold ;
   minimize ;
-  rewrite ?autosubst_simpl ;
+  rewrite ?autosubst_simpl_cterm ;
   minimize.
 
 Ltac setoid_rasimpl :=
   repeat aunfold ;
   minimize ;
-  setoid_rewrite ?autosubst_simpl ;
+  setoid_rewrite autosubst_simpl_cterm ;
   minimize.
 
 (* It's how it's done for asimpl but that's unsatisfactory *)

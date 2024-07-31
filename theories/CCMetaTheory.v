@@ -211,15 +211,6 @@ Proof.
   rewrite en. reflexivity.
 Qed.
 
-(* Instance subrelation_eq_iff : subrelation eq (Basics.flip Basics.impl).
-Proof.
-  destruct 1. reflexivity.
-Qed. *)
-
-(* TODO Maybe specialise to cterm but then we lose generality?
-  Maybe that's ok, we don't really have it anyway.
-*)
-
 Lemma crtyping_shift :
   ∀ Γ Δ mx A ρ,
     crtyping Γ ρ Δ →
@@ -230,11 +221,15 @@ Proof.
   destruct y.
   - cbn in *. noconf hy. eexists.
     split. 1: reflexivity.
-    (* rewrite_strat (autosubst_simpl). *)
-    (* setoid_rewrite autosubst_simpl. *)
-    lazymatch goal with
-    | |- _ = ?t => rewrite (autosubst_simpl t)
-    end.
+    aunfold.
+    core.minimize.
+    rewrite_strat (subterms autosubst_simpl_cterm).
+    2,3: exact _.
+    post_process.
+    (* Almost there, but why isn't type class resolution called?
+      Is it a hint mode thing?
+    *)
+    fail.
     rasimpl. reflexivity.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
