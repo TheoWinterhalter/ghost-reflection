@@ -726,6 +726,17 @@ Ltac post_process :=
   ] ;
   unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero. (* Maybe aunfold? *)
 
+Ltac post_process_in h :=
+  cbn [
+    unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+    unquote_ren eval_ren apply_ren eval_ren_comp_c
+    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+    eval_subst_rcomp_c
+    unquote_nat
+    ren_cterm subst_cterm scons
+  ] in h ;
+  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in h. (* Maybe aunfold? *)
+
 Class CTermQuote (t : cterm) (q : quoted_cterm) := MkCTmQuote {
   is_quote_term : t = unquote_cterm q
 }.
@@ -753,54 +764,19 @@ Proof.
   constructor. apply eval_cterm_sound.
 Qed.
 
-(* Definition autosubst_simplify {A} {t s} (h : @ASimplification A t s) := s.
-
-#[export] Hint Extern 1 (ASimplification_cterm ?t _) =>
-  let H := constr:(ASimplification_cterm t _) in
-  let s := constr:(autosubst_simplify H) in
-  let s :=
-    eval cbn [
-      autosubst_simplify
-      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-      unquote_ren eval_ren apply_ren eval_ren_comp_c
-      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-      eval_subst_rcomp_c
-      unquote_nat
-      ren_cterm subst_cterm scons
-    ]
-    in s
-  in
-  let s :=
-    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
-  in
-  exact (MkSimpl _ t s (@autosubst_simpl _ t s H))
-  : typeclass_instances. *)
+Ltac rasimpl' :=
+  (rewrite_strat (topdown autosubst_simpl_cterm)) ;
+  [ | (exact _) .. ] ;
+  post_process.
 
 Ltac rasimpl :=
-  repeat aunfold ;
+  aunfold ;
   minimize ;
-  rewrite ?autosubst_simpl_cterm ;
+  try rasimpl' ;
   minimize.
-
-Ltac setoid_rasimpl :=
-  repeat aunfold ;
-  minimize ;
-  setoid_rewrite autosubst_simpl_cterm ;
-  minimize.
-
-(* It's how it's done for asimpl but that's unsatisfactory *)
-Ltac rasimpl_in h :=
-  revert h ;
-  rasimpl ;
-  intro h.
-
-Ltac setoid_rasimpl_in h :=
-  revert h ;
-  setoid_rasimpl ;
-  intro h.
 
 (* Taken from core.minimize *)
-(* Ltac minimize_in h :=
+Ltac minimize_in h :=
   repeat first [
     change (λ x, ?f x) with f in h
   | change (λ x, ?g (?f x)) with (funcomp g f) in h
@@ -808,51 +784,16 @@ Ltac setoid_rasimpl_in h :=
 
 Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 
-Ltac rasimpl1_t_in h t :=
-  let q := quote_cterm t in
-  change t with (unquote_cterm q) in h ;
-  rewrite eval_cterm_sound in h ;
-  cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren
-    unquote_ren eval_ren apply_ren eval_ren_comp_c
-    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-    unquote_nat
-    ren_cterm subst_cterm scons
-  ] in h.
-
-Ltac rasimpl1_aux_in h g :=
-  first [
-    progress (rasimpl1_t_in h g)
-  | lazymatch g with
-    | subst_cterm ?s _ => rasimpl1_aux_in h s
-    | ren_cterm ?r _ => rasimpl1_aux_in h r
-    | ?f ?u => rasimpl1_aux_in h f ; rasimpl1_aux_in h u
-    | ∀ x : ?A, ?B => rasimpl1_aux_in h A ; rasimpl1_aux_in h B
-    end
-  | idtac
-  ].
-
-Ltac rasimpl1_in h :=
-  rasimpl1_aux_in h h.
-
 Ltac rasimpl'_in h :=
-  repeat (rasimpl1_in h).
+  (rewrite_strat (topdown autosubst_simpl_cterm) in h) ;
+  [ | (exact _) .. ] ;
+  post_process_in h.
 
 Ltac rasimpl_in h :=
-  repeat aunfold in h ;
+  aunfold in h ;
   minimize in h ;
-  rasimpl'_in h ;
-  minimize in h. *)
+  try rasimpl'_in h ;
+  minimize in h.
 
 Tactic Notation "rasimpl" "in" hyp(h) :=
   rasimpl_in h.
-
-Tactic Notation "setoid_rasimpl" "in" hyp(h) :=
-  setoid_rasimpl_in h.
-
-(* Ltac rssimpl :=
-  rasimpl ;
-  autosubst_unfold ;
-  rasimpl ;
-  resubst ;
-  rasimpl. *)

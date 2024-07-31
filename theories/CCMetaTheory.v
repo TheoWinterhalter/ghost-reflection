@@ -221,15 +221,6 @@ Proof.
   destruct y.
   - cbn in *. noconf hy. eexists.
     split. 1: reflexivity.
-    aunfold.
-    core.minimize.
-    rewrite_strat (subterms autosubst_simpl_cterm).
-    2,3: exact _.
-    post_process.
-    (* Almost there, but why isn't type class resolution called?
-      Is it a hint mode thing?
-    *)
-    fail.
     rasimpl. reflexivity.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
