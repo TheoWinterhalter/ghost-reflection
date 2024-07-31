@@ -72,6 +72,8 @@ Ltac ssimpl :=
     somehow. We also would need some preprocessing to move everything to using
     typeclasses notations.
     Preprocessing can be done on the fly though.
+  - IDEA: Using rewrite_strat I can invoke a hint database. This one could be
+    populated with autosubt_simpl_cterm and autosubt_simpl_term and so on.
 
 **)
 
