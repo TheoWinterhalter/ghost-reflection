@@ -737,32 +737,32 @@ Ltac post_process_in h :=
   ] in h ;
   unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in h. (* Maybe aunfold? *)
 
-Class CTermQuote (t : cterm) (q : quoted_cterm) := MkCTmQuote {
-  is_quote_term : t = unquote_cterm q
+Class CTermSimplification (t s : cterm) := MkSimplCTm {
+  autosubst_simpl_cterm : t = s
 }.
 
-Hint Mode CTermQuote + - : typeclass_instances.
+Arguments autosubst_simpl_cterm t {s _}.
 
-#[export] Hint Extern 10 (CTermQuote ?t _) =>
+Hint Mode CTermSimplification + - : typeclass_instances.
+
+#[export] Hint Extern 10 (CTermSimplification ?t _) =>
   let q := quote_cterm t in
-  exact (MkCTmQuote t q eq_refl)
+  let s :=
+    eval cbn [
+      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+      unquote_ren eval_ren apply_ren eval_ren_comp_c
+      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+      eval_subst_rcomp_c
+      unquote_nat
+      ren_cterm subst_cterm scons
+    ]
+    in (unquote_cterm (eval_cterm q))
+  in
+  let s :=
+    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
+  in
+  exact (MkSimplCTm t s (eval_cterm_sound q))
   : typeclass_instances.
-
-Class CTermSimplification (a s : cterm) := MkSimplCTm {
-  autosubst_simpl_cterm : a = s
-}.
-
-Arguments autosubst_simpl_cterm a {s _}.
-
-(* Hint Mode ASimplification + + - : typeclass_instances. *)
-
-#[export] Instance CTermSimplification_eval t {q} :
-  CTermQuote t q →
-  CTermSimplification t (unquote_cterm (eval_cterm q)).
-Proof.
-  intros [->].
-  constructor. apply eval_cterm_sound.
-Qed.
 
 Create HintDb asimpl.
 
@@ -776,9 +776,7 @@ Create HintDb asimpl.
 *)
 
 Ltac rasimpl' :=
-  (rewrite_strat (topdown (progress (hints asimpl)))) ;
-  [ | (exact _) .. ] ;
-  post_process.
+  (rewrite_strat (topdown (progress (hints asimpl)))) ; [ | (exact _) ..].
 
 Ltac rasimpl :=
   aunfold ;
@@ -796,9 +794,7 @@ Ltac minimize_in h :=
 Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 
 Ltac rasimpl'_in h :=
-  (rewrite_strat (topdown (progress (hints asimpl))) in h) ;
-  [ | (exact _) .. ] ;
-  post_process_in h.
+  (rewrite_strat (topdown (progress (hints asimpl))) in h) ; [ | (exact _) ..].
 
 Ltac rasimpl_in h :=
   aunfold in h ;
