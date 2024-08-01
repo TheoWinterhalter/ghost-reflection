@@ -456,7 +456,8 @@ Proof.
     erewrite !erase_subst. 2-5: eassumption.
     rewrite !erase_rev_subst.
     destruct_if eg. 2: reflexivity.
-    cbn. f_equal. rasimpl. reflexivity.
+    cbn. f_equal. rasimpl. f_equal. f_equal.
+    rasimpl. reflexivity.
   - cbn.
     erewrite IHt3. 2,3: eassumption.
     erewrite IHt4. 2,3: eassumption.
@@ -468,7 +469,10 @@ Proof.
     erewrite !erase_subst. 2-7: eassumption.
     rewrite !erase_rev_subst.
     destruct_if eg. 2: reflexivity.
-    cbn. unfold elength. rasimpl. reflexivity.
+    clear. cbn. unfold elength. f_equal. f_equal. f_equal.
+    all: f_equal. all: f_equal. 2-3: f_equal. 3-4: f_equal.
+    3-5: f_equal. 3,5: f_equal.
+    all: rasimpl. all: reflexivity.
   - cbn.
     destruct_ifs. 2: reflexivity.
     erewrite erase_subst. 2,3: eassumption.
@@ -1242,8 +1246,10 @@ Proof.
         + reflexivity.
     }
     etype. 1: reflexivity.
-    revert IHh4. rasimpl.
-    auto.
+    rasimpl in IHh4. rasimpl.
+    eapply ccmeta_conv. 1: eauto.
+    clear. f_equal. f_equal. f_equal. f_equal.
+    rasimpl. reflexivity.
   - cbn in hm. subst.
     cbn. remd. cbn.
     eapply erase_typing in h1 as hve. 2:{ remd. reflexivity. }
@@ -1277,6 +1283,7 @@ Proof.
       constructor. 1: econv.
       eapply cconv_trans. 1: constructor.
       erewrite !erase_ren. 2-19: eauto using rscoping_S, rscoping_comp_S.
+      rasimpl.
       constructor.
       1:{
         apply ccmeta_refl. rasimpl.
@@ -1286,10 +1293,13 @@ Proof.
       constructor.
       1:{
         apply ccmeta_refl. rasimpl.
+        apply (f_equal cEl). rasimpl.
+        apply (f_equal (λ x, capp x _)). rasimpl.
         reflexivity.
       }
       apply ccmeta_refl. rasimpl. cbn. rasimpl.
-      unfold shift.
+      apply (f_equal cEl). rasimpl.
+      apply (f_equal (λ x, capp x _)). rasimpl.
       reflexivity.
     }
     2:{
@@ -1301,7 +1311,7 @@ Proof.
       - eapply ccmeta_conv.
         + ertype. 2: reflexivity.
           eapply ccmeta_conv.
-          * ertype.
+          * rasimpl. ertype.
           * cbn. f_equal. rasimpl. reflexivity.
         + reflexivity.
       - eapply ccmeta_conv.
@@ -1328,6 +1338,7 @@ Proof.
       eapply ccmeta_conv. 1: ertype.
       reflexivity.
     }
+    rasimpl.
     eapply ccmeta_conv.
     + ertype. 2: reflexivity.
       eapply ccmeta_conv.
@@ -1349,7 +1360,7 @@ Proof.
                   * cbn. rasimpl. reflexivity.
               - reflexivity.
             }
-            * eapply ccmeta_conv. 1: ertype.
+            * rasimpl. tm_ssimpl. rasimpl. eapply ccmeta_conv. 1: ertype.
               reflexivity.
             * {
               eapply ccmeta_conv.
