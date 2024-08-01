@@ -854,7 +854,27 @@ Hint Mode CSubstSimplification + - : typeclass_instances.
 
 Create HintDb asimpl.
 
-#[export] Hint Rewrite -> autosubst_simpl_cterm : asimpl.
+Lemma autosubst_simpl_cterm_ren :
+  ∀ r t s,
+    CTermSimplification (ren_cterm r t) s →
+    ren_cterm r t = s.
+Proof.
+  intros r t s H.
+  apply autosubst_simpl_cterm, _.
+Qed.
+
+Lemma autosubst_simpl_cterm_subst :
+  ∀ r t s,
+    CTermSimplification (subst_cterm r t) s →
+    subst_cterm r t = s.
+Proof.
+  intros r t s H.
+  apply autosubst_simpl_cterm, _.
+Qed.
+
+(* #[export] Hint Rewrite -> autosubst_simpl_cterm : asimpl. *)
+#[export] Hint Rewrite -> autosubst_simpl_cterm_ren : asimpl.
+#[export] Hint Rewrite -> autosubst_simpl_cterm_subst : asimpl.
 #[export] Hint Rewrite -> autosubst_simpl_ren : asimpl.
 #[export] Hint Rewrite -> autosubst_simpl_csubst : asimpl.
 
