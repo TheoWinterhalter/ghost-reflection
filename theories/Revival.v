@@ -1347,7 +1347,7 @@ Proof.
         - econstructor.
           + ertype. 2: reflexivity.
             eapply ccmeta_conv. 1: ertype.
-            cbn. reflexivity.
+            cbn. rasimpl. reflexivity.
           + cbn. econv. apply cconv_sym. econv.
           + rasimpl. ertype.
             * {
@@ -1364,17 +1364,19 @@ Proof.
               reflexivity.
             * {
               eapply ccmeta_conv.
-              - ertype. 2: reflexivity.
+              - rasimpl. ertype. 2: reflexivity.
+                rasimpl. tm_ssimpl. rasimpl.
                 eapply ccmeta_conv. 1: ertype.
                 cbn. f_equal. f_equal. f_equal. rasimpl. reflexivity.
               - reflexivity.
             }
             * {
-              eapply ccmeta_conv.
+              rasimpl. eapply ccmeta_conv.
               - econstructor.
-                + eapply ccmeta_conv. 1: ertype.
+                + rasimpl. tm_ssimpl. rasimpl.
+                  eapply ccmeta_conv. 1: ertype.
                   cbn. reflexivity.
-                + ertype.
+                + rasimpl. ertype.
                   * {
                     eapply ccmeta_conv.
                     - ertype. reflexivity.
