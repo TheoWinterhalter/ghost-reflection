@@ -6,6 +6,7 @@
 
 From Coq Require Import Utf8 List.
 From GhostTT.autosubst Require Import core unscoped GAST CCAST.
+From Coq Require Import Setoid Morphisms Relation_Definitions.
 Import ListNotations.
 
 Notation "a ⋅ x" :=
@@ -398,8 +399,8 @@ Ltac set_unquote_rens :=
   repeat (let n := fresh "r" in set_unquote_ren n).
 
 Lemma eval_ren_sound :
-  ∀ r n,
-    unquote_ren r n = unquote_ren (eval_ren r) n.
+  ∀ r,
+    pointwise_relation _ eq (unquote_ren r) (unquote_ren (eval_ren r)).
 Proof.
   intros r n.
   induction r in n |- *.
@@ -442,8 +443,8 @@ Ltac set_eval_subst na :=
   end.
 
 Lemma eval_subst_sound :
-  ∀ s n,
-    unquote_subst s n = unquote_subst (eval_subst s) n.
+  ∀ s,
+    pointwise_relation _ eq (unquote_subst s) (unquote_subst (eval_subst s)).
 Proof.
   intros s n.
   induction s in n |- *.
@@ -764,19 +765,68 @@ Hint Mode CTermSimplification + - : typeclass_instances.
   exact (MkSimplCTm t s (eval_cterm_sound q))
   : typeclass_instances.
 
+Class RenSimplification (r s : nat → nat) := MkSimplRen {
+  autosubst_simpl_ren : pointwise_relation _ eq r s
+}.
+
+Arguments autosubst_simpl_ren r {s _}.
+
+Hint Mode RenSimplification + - : typeclass_instances.
+
+#[export] Hint Extern 10 (RenSimplification ?r _) =>
+  let q := quote_ren r in
+  let s :=
+    eval cbn [
+      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+      unquote_ren eval_ren apply_ren eval_ren_comp_c
+      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+      eval_subst_rcomp_c
+      unquote_nat
+      ren_cterm subst_cterm scons
+    ]
+    in (unquote_ren (eval_ren q))
+  in
+  let s :=
+    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
+  in
+  exact (MkSimplRen r s (eval_ren_sound q))
+  : typeclass_instances.
+
+Class CSubstSimplification (r s : nat → cterm) := MkSimplCSubst {
+  autosubst_simpl_csubst : pointwise_relation _ eq r s
+}.
+
+Arguments autosubst_simpl_csubst r {s _}.
+
+Hint Mode CSubstSimplification + - : typeclass_instances.
+
+#[export] Hint Extern 10 (CSubstSimplification ?r _) =>
+  let q := quote_subst r in
+  let s :=
+    eval cbn [
+      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+      unquote_ren eval_ren apply_ren eval_ren_comp_c
+      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+      eval_subst_rcomp_c
+      unquote_nat
+      ren_cterm subst_cterm scons
+    ]
+    in (unquote_subst (eval_subst q))
+  in
+  let s :=
+    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
+  in
+  exact (MkSimplCSubst r s (eval_subst_sound q))
+  : typeclass_instances.
+
 Create HintDb asimpl.
 
 #[export] Hint Rewrite -> autosubst_simpl_cterm : asimpl.
-
-(* TODO
-
-  Below, progress is useless because autosubst_simpl_cterm will always progress
-  as long as we cannot test progress *after* the exact and post-process.
-
-*)
+#[export] Hint Rewrite -> autosubst_simpl_ren : asimpl.
+#[export] Hint Rewrite -> autosubst_simpl_csubst : asimpl.
 
 Ltac rasimpl' :=
-  (rewrite_strat (topdown (progress (hints asimpl)))) ; [ | (exact _) ..].
+  (rewrite_strat (topdown (hints asimpl))) ; [ | (exact _) ..].
 
 Ltac rasimpl :=
   aunfold ;
@@ -794,7 +844,7 @@ Ltac minimize_in h :=
 Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 
 Ltac rasimpl'_in h :=
-  (rewrite_strat (topdown (progress (hints asimpl))) in h) ; [ | (exact _) ..].
+  (rewrite_strat (topdown (hints asimpl)) in h) ; [ | (exact _) ..].
 
 Ltac rasimpl_in h :=
   aunfold in h ;
