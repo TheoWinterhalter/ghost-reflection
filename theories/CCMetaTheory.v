@@ -343,7 +343,18 @@ Proof.
     rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. asimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
-    rasimpl. eauto.
+    rasimpl.
+
+    (* The problem here is that the subterms are never reached.
+      Because of how setoid rewrite replaces any term with an evar, there is no
+      way to overcome this without changing how simplification works.
+      Maybe by changing quoting and or eval.
+      Another option would be to tell setoid_rewrite to only focus on subterms
+      of the form ren1 _ _ or subst1 _ _.
+      That should actually be cheaper, but is that easy?
+    *)
+
+    eauto.
   - rasimpl. rasimpl in IHht1. asimpl in IHht2. rasimpl in IHht3.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     instantiate (1 := i). instantiate (1 := m).
