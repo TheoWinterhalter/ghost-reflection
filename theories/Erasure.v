@@ -459,7 +459,7 @@ Proof.
       erewrite IHt2.
       2:{ eapply sscoping_shift. eassumption. }
       2:{ eapply sscoping_comp_shift. assumption. }
-      rasimpl. f_equal.
+      rasimpl. cbn. f_equal.
       eapply ext_cterm. intros [].
       * cbn. rewrite e0. reflexivity.
       * cbn. ssimpl.
@@ -767,6 +767,7 @@ Proof.
   - eassumption.
   - eapply (f_equal (λ A, ρ ⋅ A)) in eB.
     rasimpl in eB. rasimpl in eC.
+    rasimpl.
     rewrite eB. assumption.
 Qed.
 
