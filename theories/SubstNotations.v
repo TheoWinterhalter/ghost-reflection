@@ -117,7 +117,7 @@ Fixpoint unquote_ren q :=
   | qren_comp r q => funcomp (unquote_ren r) (unquote_ren q)
   | qren_cons n q => scons (unquote_nat n) (unquote_ren q)
   | qren_id => id
-  | qren_shift => shift
+  | qren_shift => S
   end.
 
 Fixpoint unquote_subst q :=
@@ -127,7 +127,7 @@ Fixpoint unquote_subst q :=
   | qsubst_compr s r => funcomp (unquote_subst s) (unquote_ren r)
   | qsubst_rcomp r s => funcomp (ren_cterm (unquote_ren r)) (unquote_subst s)
   | qsubst_cons t s => scons (unquote_cterm t) (unquote_subst s)
-  | qsubst_id => ids
+  | qsubst_id => cvar
   | qsubst_ren r => funcomp cvar (unquote_ren r)
   end
 

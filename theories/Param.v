@@ -851,12 +851,12 @@ Proof.
     destruct (nth_error Δ n) eqn:e.
     + eapply hρ in e as e'. rewrite e'.
       destruct_if e1.
-      * unfold vreg, pren. rasimpl. f_equal.
+      * unfold vreg, pren. rasimpl. cbn [ren_cterm]. f_equal.
         replace (n * 2) with (2 * n) by lia.
         rewrite PeanoNat.Nat.div2_succ_double.
         rewrite PeanoNat.Nat.odd_succ.
         rewrite PeanoNat.Nat.even_mul. cbn. lia.
-      * unfold pren, vpar. rasimpl. f_equal.
+      * unfold pren, vpar. rasimpl. cbn [ren_cterm]. f_equal.
         replace (n * 2) with (2 * n) by lia.
         rewrite PeanoNat.Nat.div2_double.
         rewrite PeanoNat.Nat.odd_mul. cbn. lia.
@@ -1584,8 +1584,19 @@ Proof.
       eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
       ssimpl. rewrite psubst_SS. rasimpl.
       erewrite rinstInst'_cterm. reflexivity.
-    + cbn. f_equal. unfold plam. f_equal. f_equal.
-      * rasimpl. reflexivity.
+    + cbn. unfold plam. f_equal. f_equal.
+      * fail.
+        aunfold. minimize.
+        rewrite_strat (topdown (hints asimpl)). 3,5: exact _.
+        2: exact _.
+        2: exact _.
+        Set Printing All.
+        aunfold. minimize.
+        rewrite_strat (topdown (hints asimpl)). 3,5: exact _.
+        2: exact _.
+        2: exact _.
+        reflexivity.
+      setoid_rewrite autosubst_simpl_cterm_subst. rasimpl. f_equal. rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         rewrite psubst_SS. rasimpl. reflexivity.
     + cbn. unfold plam. f_equal. f_equal.
