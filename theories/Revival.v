@@ -395,15 +395,15 @@ Proof.
       * cbn. unfold rev_subst. rasimpl. unfold ghv. cbn.
         destruct (nth_error Δ n) eqn:e1.
         -- destruct_if e2.
-          ++ ssimpl. erewrite revive_ren.
+          ++ unfold_funcomp. erewrite revive_ren.
             2:{ eapply rscoping_S. }
             2:{ eapply rscoping_comp_S. }
             rasimpl. reflexivity.
-          ++ ssimpl. erewrite erase_ren.
+          ++ unfold_funcomp. erewrite erase_ren.
             2:{ eapply rscoping_S. }
             2:{ eapply rscoping_comp_S. }
             rasimpl. reflexivity.
-        -- ssimpl. erewrite erase_ren.
+        -- unfold_funcomp. erewrite erase_ren.
           2:{ eapply rscoping_S. }
           2:{ eapply rscoping_comp_S. }
           rasimpl. reflexivity.
@@ -417,15 +417,15 @@ Proof.
         -- cbn. unfold rev_subst. unfold ghv. cbn.
           destruct (nth_error _ _) eqn:e1.
           ++ destruct_if e2.
-            ** ssimpl. erewrite revive_ren.
+            ** unfold_funcomp. erewrite revive_ren.
               2: eapply rscoping_S.
               2: eapply rscoping_comp_S.
               reflexivity.
-            ** ssimpl. erewrite erase_ren.
+            ** unfold_funcomp. erewrite erase_ren.
               2: eapply rscoping_S.
               2: eapply rscoping_comp_S.
               reflexivity.
-          ++ ssimpl. erewrite erase_ren.
+          ++ unfold_funcomp. erewrite erase_ren.
             2: eapply rscoping_S.
             2: eapply rscoping_comp_S.
             reflexivity.
