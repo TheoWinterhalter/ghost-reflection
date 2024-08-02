@@ -5037,8 +5037,7 @@ Proof.
                   eapply ctyping_subst. 2: eassumption.
                   destruct (isKind mx) eqn:ek.
                   - constructor. 1: rasimpl. 1: constructor. 1: rasimpl.
-                    + rewrite <- !funcomp_assoc.
-                      apply crtyping_typing. ertype.
+                    + apply crtyping_typing. ertype.
                     + cbn. split.
                       * ertype.
                       * eapply ccmeta_conv. 1: ertype.
@@ -5049,8 +5048,7 @@ Proof.
                       * eapply ccmeta_conv. 1: ertype.
                         cbn. rasimpl. rewrite rinstInst'_cterm. reflexivity.
                   - constructor. 1: rasimpl. 1: constructor. 1: rasimpl.
-                    + rewrite <- !funcomp_assoc.
-                      apply crtyping_typing. ertype.
+                    + apply crtyping_typing. ertype.
                     + cbn. split.
                       * ertype.
                       * eapply ccmeta_conv. 1: ertype.
@@ -5077,8 +5075,7 @@ Proof.
                   - ertype. eapply ccmeta_conv.
                     + eapply ctyping_subst. 2: ertype.
                       cbn. constructor. 1: rasimpl. 1: constructor. 1: rasimpl.
-                      * rewrite <- !funcomp_assoc.
-                        apply crtyping_typing. ertype.
+                      * apply crtyping_typing. ertype.
                       * {
                         cbn. split.
                         - ertype.
@@ -5216,8 +5213,7 @@ Proof.
                   - eapply ctyping_subst. 2: ertype.
                     destruct (isKind mx) eqn:ekx.
                     + constructor. 1: rasimpl. 1: constructor. 1: rasimpl.
-                      * rewrite <- !funcomp_assoc.
-                        apply crtyping_typing. ertype.
+                      * apply crtyping_typing. ertype.
                       * {
                         cbn. split.
                         - ertype.
@@ -5232,8 +5228,7 @@ Proof.
                           cbn. rasimpl. rewrite rinstInst'_cterm. reflexivity.
                       }
                     + constructor. 1: rasimpl. 1: constructor. 1: rasimpl.
-                      * rewrite <- !funcomp_assoc.
-                        apply crtyping_typing. ertype.
+                      * apply crtyping_typing. ertype.
                       * {
                         cbn. split.
                         - ertype.
