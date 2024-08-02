@@ -1585,18 +1585,7 @@ Proof.
       ssimpl. rewrite psubst_SS. rasimpl.
       erewrite rinstInst'_cterm. reflexivity.
     + cbn. unfold plam. f_equal. f_equal.
-      * fail.
-        aunfold. minimize.
-        rewrite_strat (topdown (hints asimpl)). 3,5: exact _.
-        2: exact _.
-        2: exact _.
-        Set Printing All.
-        aunfold. minimize.
-        rewrite_strat (topdown (hints asimpl)). 3,5: exact _.
-        2: exact _.
-        2: exact _.
-        reflexivity.
-      setoid_rewrite autosubst_simpl_cterm_subst. rasimpl. f_equal. rasimpl. reflexivity.
+      * rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
         rewrite psubst_SS. rasimpl. reflexivity.
     + cbn. unfold plam. f_equal. f_equal.
@@ -1672,7 +1661,29 @@ Proof.
     2:{ econstructor. eapply erase_scoping. }
     destruct md eqn:e.
     + reflexivity.
-    + unfold pcastTG. cbn. rasimpl. reflexivity.
+    + unfold pcastTG. cbn. rasimpl.
+
+        aunfold. minimize.
+        rewrite_strat (topdown (hints asimpl)). 2-61: try (exact _).
+        (** TODO
+          How do we solve this issue? If the rhs gets instantiated before
+          it is solved we run into a problem. This comes from the fact that
+          setoid rewrite considers things a success even though it hasn't yet
+          found an instance.
+
+          Another way to solve this particular case is to remove RenSimpl but
+          that would break other things.
+          Although I expect most times there shouldn't be overlap between
+          evars, so why is this happening here?
+        **)
+
+
+
+      clear. f_equal. all: f_equal. all: f_equal. 1,3: f_equal.
+      1,3,4: f_equal. 4,5: f_equal. 4,5: f_equal. 6,7: f_equal.
+      7: f_equal. 7: f_equal.
+      all: rasimpl. all: reflexivity.
+      reflexivity.
     + unfold pcastTG. cbn. rasimpl. reflexivity.
     + unfold pcastP. cbn. rasimpl. reflexivity.
   - cbn. reflexivity.

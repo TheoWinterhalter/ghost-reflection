@@ -456,8 +456,7 @@ Proof.
     erewrite !erase_subst. 2-5: eassumption.
     rewrite !erase_rev_subst.
     destruct_if eg. 2: reflexivity.
-    cbn. f_equal. rasimpl. f_equal. f_equal.
-    rasimpl. reflexivity.
+    cbn. f_equal. rasimpl. reflexivity.
   - cbn.
     erewrite IHt3. 2,3: eassumption.
     erewrite IHt4. 2,3: eassumption.
@@ -1246,10 +1245,7 @@ Proof.
         + reflexivity.
     }
     etype. 1: reflexivity.
-    rasimpl in IHh4. rasimpl.
-    eapply ccmeta_conv. 1: eauto.
-    clear. f_equal. f_equal. f_equal. f_equal.
-    rasimpl. reflexivity.
+    rasimpl in IHh4. rasimpl. eauto.
   - cbn in hm. subst.
     cbn. remd. cbn.
     eapply erase_typing in h1 as hve. 2:{ remd. reflexivity. }
@@ -1365,9 +1361,9 @@ Proof.
             * {
               eapply ccmeta_conv.
               - rasimpl. ertype. 2: reflexivity.
-                rasimpl. tm_ssimpl. rasimpl.
+                rasimpl.
                 eapply ccmeta_conv. 1: ertype.
-                cbn. f_equal. f_equal. f_equal. rasimpl. reflexivity.
+                cbn. reflexivity.
               - reflexivity.
             }
             * {

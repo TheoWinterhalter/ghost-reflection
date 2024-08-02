@@ -648,7 +648,6 @@ Proof.
     rasimpl in IHht4.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     rasimpl. eapply cmeta_conv. 1: eauto.
-    rasimpl. f_equal. f_equal. f_equal. f_equal.
     rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
