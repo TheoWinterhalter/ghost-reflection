@@ -852,8 +852,6 @@ Hint Mode CSubstSimplification + - : typeclass_instances.
   exact (MkSimplCSubst r s (eval_subst_sound q))
   : typeclass_instances.
 
-Create HintDb asimpl.
-
 Lemma autosubst_simpl_cterm_ren :
   ∀ r t s,
     CTermSimplification (ren_cterm r t) s →
@@ -872,19 +870,41 @@ Proof.
   apply autosubst_simpl_cterm, _.
 Qed.
 
+(** Triggers
+
+  In order to avoid flooding type class resolution with useless cases, we only
+  ever rewrite when there are certain triggers.
+  By default those are a term with a substitution or renaming in its head.
+
+  If you want to support other cases such as triggering renaming simplification
+  in a certain judgment, then you need to add the corresponding trigger.
+
+  For now, it seems better to have term simplication done using the topdown
+  strategy while substitution and renaming simplification performed using the
+  the outermost one. We thus use an extra database for the latter.
+
+**)
+
+Create HintDb asimpl.
+Create HintDb asimpl_outermost.
+
 (* #[export] Hint Rewrite -> autosubst_simpl_cterm : asimpl. *)
 #[export] Hint Rewrite -> autosubst_simpl_cterm_ren : asimpl.
 #[export] Hint Rewrite -> autosubst_simpl_cterm_subst : asimpl.
-#[export] Hint Rewrite -> autosubst_simpl_ren : asimpl.
-#[export] Hint Rewrite -> autosubst_simpl_csubst : asimpl.
+(* #[export] Hint Rewrite -> autosubst_simpl_ren : asimpl. *)
+(* #[export] Hint Rewrite -> autosubst_simpl_csubst : asimpl. *)
 
 Ltac rasimpl' :=
   (rewrite_strat (topdown (hints asimpl))) ; [ | (exact _) ..].
+
+Ltac rasimpl'_outermost :=
+  (rewrite_strat (outermost (hints asimpl_outermost))) ; [ | (exact _) ..].
 
 Ltac rasimpl :=
   aunfold ;
   minimize ;
   repeat rasimpl' ;
+  repeat rasimpl'_outermost ;
   minimize.
 
 (* Taken from core.minimize *)
@@ -899,10 +919,14 @@ Tactic Notation "minimize" "in" hyp(h) := minimize_in h.
 Ltac rasimpl'_in h :=
   (rewrite_strat (topdown (hints asimpl)) in h) ; [ | (exact _) ..].
 
+Ltac rasimpl'_outermost_in h :=
+  (rewrite_strat (outermost (hints asimpl_outermost)) in h) ; [ | (exact _) ..].
+
 Ltac rasimpl_in h :=
   aunfold in h ;
   minimize in h ;
   repeat rasimpl'_in h ;
+  repeat rasimpl'_outermost_in h ;
   minimize in h.
 
 Tactic Notation "rasimpl" "in" hyp(h) :=

@@ -1661,52 +1661,7 @@ Proof.
     2:{ econstructor. eapply erase_scoping. }
     destruct md eqn:e.
     + reflexivity.
-    + unfold pcastTG. cbn. rasimpl.
-
-        aunfold. minimize.
-
-        rewrite_strat (topdown (hints asimpl)).
-        (* Goal 54 is already instantiated!
-
-          So there is no way to solve it after the fact. But where is it coming
-          from??
-
-          I can test in the 1st goal to see where it appears by using f_equal
-          and the presence check.
-
-        *)
-        1:{
-          f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
-          f_equal. f_equal. f_equal.
-          match goal with
-          | |- context [ PeanoNat.Nat.ones ] => idtac
-          end.
-        }
-
-        2-61: try (exact _).
-        Search PeanoNat.Nat.ones.
-        (** TODO
-          How do we solve this issue? If the rhs gets instantiated before
-          it is solved we run into a problem. This comes from the fact that
-          setoid rewrite considers things a success even though it hasn't yet
-          found an instance.
-
-          Another way to solve this particular case is to remove RenSimpl but
-          that would break other things.
-          Although I expect most times there shouldn't be overlap between
-          evars, so why is this happening here?
-
-          Maybe we should only rewrite ren and substs with triggers like for
-          terms? That might also save some time?
-        **)
-
-
-
-      clear. f_equal. all: f_equal. all: f_equal. 1,3: f_equal.
-      1,3,4: f_equal. 4,5: f_equal. 4,5: f_equal. 6,7: f_equal.
-      7: f_equal. 7: f_equal.
-      all: rasimpl. all: reflexivity.
-      reflexivity.
+    + unfold pcastTG. cbn. rasimpl. reflexivity.
     + unfold pcastTG. cbn. rasimpl. reflexivity.
     + unfold pcastP. cbn. rasimpl. reflexivity.
   - cbn. reflexivity.

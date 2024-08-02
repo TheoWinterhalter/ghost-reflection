@@ -140,6 +140,18 @@ Proof.
   intros n m en. rewrite <- e. apply h. assumption.
 Qed.
 
+Lemma autosubst_simpl_crscoping :
+  ∀ Γ Δ r s,
+    RenSimplification r s →
+    crscoping Γ r Δ ↔ crscoping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply crscoping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_crscoping : asimpl_outermost.
+
 #[export] Instance csscoping_morphism :
   Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) csscoping.
 Proof.
@@ -151,6 +163,18 @@ Proof.
     + apply ih. intros n. apply e.
     + rewrite <- e. assumption.
 Qed.
+
+Lemma autosubst_simpl_csscoping :
+  ∀ Γ Δ r s,
+    CSubstSimplification r s →
+    csscoping Γ r Δ ↔ csscoping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply csscoping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_csscoping : asimpl_outermost.
 
 Lemma csscoping_ids :
   ∀ Γ,
@@ -196,6 +220,18 @@ Proof.
   apply extRen_cterm. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
+
+Lemma autosubst_simpl_crtyping :
+  ∀ Γ Δ r s,
+    RenSimplification r s →
+    crtyping Γ r Δ ↔ crtyping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply crtyping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_crtyping : asimpl_outermost.
 
 Lemma crtyping_cscoping :
   ∀ Γ Δ ρ,
@@ -365,9 +401,7 @@ Proof.
     + eapply cmeta_conv. 1: eauto.
       f_equal. rasimpl. reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. f_equal. rasimpl.
-      f_equal. all: f_equal. all: f_equal. 2-4: f_equal. 2-4: f_equal.
-      all: rasimpl. all: reflexivity.
+      f_equal. f_equal. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6.
     eapply cmeta_conv. 1: econstructor. all: eauto.
@@ -394,12 +428,7 @@ Proof.
       all: rasimpl. all: reflexivity.
     + eapply cmeta_conv. 1: eauto.
       unfold capps. cbn.
-      f_equal. rasimpl. f_equal. all: f_equal.
-      1:{ rasimpl. reflexivity. }
-      f_equal. f_equal. all: f_equal. all: f_equal.
-      2-4: f_equal. 4-6: f_equal. 5-7: f_equal. 5-7: f_equal. 5-7: f_equal.
-      5-6: f_equal.
-      all: rasimpl. all: reflexivity.
+      f_equal. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
@@ -413,12 +442,8 @@ Proof.
       f_equal. f_equal. f_equal. all: f_equal. all: f_equal. 2-3: f_equal.
       all: rasimpl. all: reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. rasimpl. f_equal. all: f_equal.
-      1:{ rasimpl. reflexivity. }
-      f_equal. unfold capps. cbn. f_equal. all: f_equal. all: f_equal.
-      2-4: f_equal. 4-6: f_equal. 5-7: f_equal. 5-7: f_equal. 5-7: f_equal.
-      5-7: f_equal.
-      all: rasimpl. all: reflexivity.
+      f_equal. rasimpl. f_equal. f_equal. f_equal. f_equal. f_equal.
+      unfold capps. cbn. rasimpl. reflexivity.
     + cbn. unfold elength. f_equal. f_equal. f_equal. f_equal. all: f_equal.
       all: f_equal. 2-3: f_equal. 3-4: f_equal. 3-5: f_equal. 3,5: f_equal.
       4: f_equal.
@@ -432,10 +457,7 @@ Proof.
       f_equal. f_equal. f_equal. all: f_equal. all: f_equal. 2: f_equal.
       all: rasimpl. all: reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      f_equal. rasimpl. cbn. f_equal. all: f_equal. 2: f_equal. 2: f_equal.
-      2-3: f_equal. 2-4: f_equal. 3-5: f_equal. 5-6: f_equal. 5-6: f_equal.
-      5-6: f_equal.
-      all: rasimpl. all: reflexivity.
+      clear. cbn. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_ren. all: eassumption.
@@ -470,6 +492,18 @@ Proof.
         rasimpl. apply ext_cterm.
         intro. apply e.
 Qed.
+
+Lemma autosubst_simpl_cstyping :
+  ∀ Γ Δ r s,
+    CSubstSimplification r s →
+    cstyping Γ r Δ ↔ cstyping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply styping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_cstyping : asimpl_outermost.
 
 Lemma cstyping_cscoping :
   ∀ Γ Δ σ,
@@ -674,9 +708,7 @@ Proof.
     rasimpl in IHht4. rasimpl in IHht5.
     eapply cmeta_conv. 1: econstructor. all: eauto.
     eapply cmeta_conv. 1: eauto.
-    f_equal. rasimpl. f_equal. all: f_equal. all: f_equal.
-    2-3: f_equal.
-    all: rasimpl. all: reflexivity.
+    f_equal. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
@@ -691,10 +723,7 @@ Proof.
       2-3: f_equal.
       all: rasimpl. all: reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      clear. f_equal. f_equal. all: f_equal. 2: f_equal. 2: unfold capps.
-      2: cbn. 2: f_equal. 2-3: f_equal. 2-4: f_equal. 3-5: f_equal.
-      5-7: f_equal. 6-8: f_equal. 6-8: f_equal. 6-8: f_equal. 6-7: f_equal.
-      all: rasimpl. all: reflexivity.
+      clear. unfold capps. cbn. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10. rasimpl in IHht11.
@@ -713,10 +742,7 @@ Proof.
       2: f_equal. 2: f_equal. 2-3: f_equal. 2-4: f_equal. 3-5: f_equal.
       5-7: f_equal. 6-8: f_equal. 6-8: f_equal. 6-8: f_equal. 6-8: f_equal.
       all: rasimpl. all: reflexivity.
-    + clear. cbn. unfold elength. f_equal. f_equal. f_equal. f_equal.
-      all: f_equal. all: f_equal. 2-3: f_equal. 3-4: f_equal. 3-5: f_equal.
-      3,5: f_equal. 4: f_equal.
-      all: rasimpl. all: reflexivity.
+    + clear. cbn. unfold elength. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     rasimpl in IHht4. rasimpl in IHht5. rasimpl in IHht6. rasimpl in IHht7.
     rasimpl in IHht8. rasimpl in IHht9. rasimpl in IHht10.
@@ -726,10 +752,7 @@ Proof.
       2: f_equal.
       all: rasimpl. all: reflexivity.
     + eapply cmeta_conv. 1: eauto.
-      clear. unfold capps. cbn. f_equal. f_equal.  all: f_equal.
-      2: f_equal. 2: f_equal. 2-3: f_equal. 2-4: f_equal. 3-5: f_equal.
-      5-6: f_equal. 5-6: f_equal. 5-6: f_equal.
-      all: rasimpl. all: reflexivity.
+      clear. unfold capps. cbn. rasimpl. reflexivity.
   - rasimpl. rasimpl in IHht1. rasimpl in IHht2.
     econstructor. all: eauto.
     eapply cconv_subst. all: eassumption.
