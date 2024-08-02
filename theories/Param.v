@@ -1664,7 +1664,27 @@ Proof.
     + unfold pcastTG. cbn. rasimpl.
 
         aunfold. minimize.
-        rewrite_strat (topdown (hints asimpl)). 2-61: try (exact _).
+
+        rewrite_strat (topdown (hints asimpl)).
+        (* Goal 54 is already instantiated!
+
+          So there is no way to solve it after the fact. But where is it coming
+          from??
+
+          I can test in the 1st goal to see where it appears by using f_equal
+          and the presence check.
+
+        *)
+        1:{
+          f_equal. f_equal. f_equal. f_equal. f_equal. f_equal. f_equal.
+          f_equal. f_equal. f_equal.
+          match goal with
+          | |- context [ PeanoNat.Nat.ones ] => idtac
+          end.
+        }
+
+        2-61: try (exact _).
+        Search PeanoNat.Nat.ones.
         (** TODO
           How do we solve this issue? If the rhs gets instantiated before
           it is solved we run into a problem. This comes from the fact that
@@ -1675,6 +1695,9 @@ Proof.
           that would break other things.
           Although I expect most times there shouldn't be overlap between
           evars, so why is this happening here?
+
+          Maybe we should only rewrite ren and substs with triggers like for
+          terms? That might also save some time?
         **)
 
 
