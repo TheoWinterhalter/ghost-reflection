@@ -38,24 +38,7 @@ Ltac ssimpl :=
 
 (** Autosubst reflective tactic that should be more efficient than asimpl
 
-  Downsides:
-  - If an expression is under a binder and uses the bound variable, then rasimpl
-    is unable to do anything. I don't see a way to avoid using setoid_rewrite
-    there.
-    ⇒ Maybe by using meta-variables instead of "atoms" so that rewrite doesn't
-      have to touch the local variables.
-      Not sure it would work.
-    ⇒ Another option would be to have setoid_rasimpl which uses setoid_rewrite
-      instead.
-  - Also it cannot currently rewrite under new custom contexts.
-  - Because I still need to use asimpl sometimes, and they don't normalise
-    exactly the same, there might be a mismatch.
-
   Ways to improve:
-  - Maybe the traversal isn't optimal, some subterms might be quoted and
-    unquoted many times unnecessarily.
-  - Maybe treatment of var, ids, and renamings as substitutions.
-  - An NbE approach would be nice.
   - Ideally, we could do much more in one step if we could incude all rules
     pertaining to constructors of the syntax, but this should be generated.
   - shift could be shiftn instead, as we often need those, better than using
@@ -63,18 +46,6 @@ Ltac ssimpl :=
   - Could call minimize only on subterms that are to be quoted as substitutions
     or renamings. In fact could be on the fly like quote λ x, ?f x as
     quote_subst f and so on for funcomp.
-  - We could hijack typeclass resolution and hints to make the tactic extensible
-    so as to support user-defined symbols. In that case, they could even call
-    rasimpl_t or event rasimpl_r or rasimpl_s directly when the subterm is
-    already known to be eg. a substitution.
-  - We could also make the tactic generic over the syntax (at least as long as
-    we don't exploit it) by replacing cterm here by some variable.
-    The problem being that we need to provide the ren_cterm and subst_cterm
-    somehow. We also would need some preprocessing to move everything to using
-    typeclasses notations.
-    Preprocessing can be done on the fly though.
-  - IDEA: Using rewrite_strat I can invoke a hint database. This one could be
-    populated with autosubt_simpl_cterm and autosubt_simpl_term and so on.
 
 **)
 
