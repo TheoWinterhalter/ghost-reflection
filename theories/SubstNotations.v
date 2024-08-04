@@ -687,60 +687,28 @@ with quote_cterm t :=
 
 **)
 
-Ltac asimpl_unfold :=
-  unfold
-    (* Taken from asimpl *)
-    VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
-    Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
-    subst1,
-    (* Added myself *)
-    upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero.
+Create HintDb asimpl_unfold.
 
-Ltac asimpl_unfold_in h :=
-  unfold
-    (* Taken from asimpl *)
-    VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
-    Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
-    subst1,
-    (* Added myself *)
-    upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero
-  in h.
+(* Common *)
+#[export] Hint Unfold
+  Var ids Ren1 ren1 Subst1 subst1 up_ren var_zero
+  : asimpl_unfold.
 
-Ltac asimpl_unfold_all :=
-  unfold
-    (* Taken from asimpl *)
-    VarInstance_cterm, Var, ids, Ren_cterm, Ren1, ren1,
-    Up_cterm_cterm, Up_cterm, up_cterm, Subst_cterm, Subst1,
-    subst1,
-    (* Added myself *)
-    upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero
-  in *.
+(* CCAST *)
+#[export] Hint Unfold
+  VarInstance_cterm Ren_cterm Up_cterm_cterm Up_cterm up_cterm Subst_cterm
+  upRen_cterm_cterm up_cterm_cterm
+  : asimpl_unfold.
 
-Tactic Notation "aunfold" := asimpl_unfold.
-Tactic Notation "aunfold" "in" hyp(h) := asimpl_unfold_in h.
-Tactic Notation "aunfold" "in" "*" := asimpl_unfold_all.
+(* GAST *)
+#[export] Hint Unfold
+  VarInstance_term Ren_term Up_term_term Up_term up_term Subst_term
+  upRen_term_term up_term_term
+  : asimpl_unfold.
 
-Ltac post_process :=
-  cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-    unquote_ren eval_ren apply_ren eval_ren_comp_c
-    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-    eval_subst_rcomp_c apply_subst
-    unquote_nat
-    ren_cterm subst_cterm scons
-  ] ;
-  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero. (* Maybe aunfold? *)
-
-Ltac post_process_in h :=
-  cbn [
-    unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-    unquote_ren eval_ren apply_ren eval_ren_comp_c
-    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-    eval_subst_rcomp_c apply_subst
-    unquote_nat
-    ren_cterm subst_cterm scons
-  ] in h ;
-  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in h. (* Maybe aunfold? *)
+Tactic Notation "aunfold" := autounfold with asimpl_unfold.
+Tactic Notation "aunfold" "in" hyp(h) := autounfold with asimpl_unfold in h.
+Tactic Notation "aunfold" "in" "*" := autounfold with asimpl_unfold in *.
 
 Class CTermSimplification (t s : cterm) := MkSimplCTm {
   autosubst_simpl_cterm : t = s
@@ -750,22 +718,24 @@ Arguments autosubst_simpl_cterm t {s _}.
 
 Hint Mode CTermSimplification + - : typeclass_instances.
 
+(* TODO I may need to use Ltac2 to generalise this *)
+Declare Reduction asimpl_cbn :=
+  cbn [
+    unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
+    unquote_ren eval_ren apply_ren eval_ren_comp_c
+    unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
+    eval_subst_rcomp_c apply_subst
+    unquote_nat
+    ren_cterm subst_cterm scons
+  ].
+
+Declare Reduction asimpl_unfold :=
+  unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero.
+
 #[export] Hint Extern 10 (CTermSimplification ?t _) =>
   let q := quote_cterm t in
-  let s :=
-    eval cbn [
-      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-      unquote_ren eval_ren apply_ren eval_ren_comp_c
-      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-      eval_subst_rcomp_c apply_subst
-      unquote_nat
-      ren_cterm subst_cterm scons
-    ]
-    in (unquote_cterm (eval_cterm q))
-  in
-  let s :=
-    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
-  in
+  let s := eval asimpl_cbn in (unquote_cterm (eval_cterm q)) in
+  let s := eval asimpl_unfold in s in
   exact (MkSimplCTm t s (eval_cterm_sound q))
   : typeclass_instances.
 
@@ -779,20 +749,8 @@ Hint Mode RenSimplification + - : typeclass_instances.
 
 #[export] Hint Extern 10 (RenSimplification ?r _) =>
   let q := quote_ren r in
-  let s :=
-    eval cbn [
-      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-      unquote_ren eval_ren apply_ren eval_ren_comp_c
-      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-      eval_subst_rcomp_c apply_subst
-      unquote_nat
-      ren_cterm subst_cterm scons
-    ]
-    in (unquote_ren (eval_ren q))
-  in
-  let s :=
-    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
-  in
+  let s := eval asimpl_cbn in (unquote_ren (eval_ren q)) in
+  let s := eval asimpl_unfold in s in
   exact (MkSimplRen r s (eval_ren_sound q))
   : typeclass_instances.
 
@@ -806,20 +764,8 @@ Hint Mode CSubstSimplification + - : typeclass_instances.
 
 #[export] Hint Extern 10 (CSubstSimplification ?r _) =>
   let q := quote_subst r in
-  let s :=
-    eval cbn [
-      unquote_cterm eval_cterm test_qren_id test_qsubst_ren_id
-      unquote_ren eval_ren apply_ren eval_ren_comp_c
-      unquote_subst eval_subst eval_subst_compr_c eval_subst_comp_c
-      eval_subst_rcomp_c apply_subst
-      unquote_nat
-      ren_cterm subst_cterm scons
-    ]
-    in (unquote_subst (eval_subst q))
-  in
-  let s :=
-    eval unfold upRen_cterm_cterm, up_ren, up_cterm_cterm, var_zero in s
-  in
+  let s := eval asimpl_cbn in (unquote_subst (eval_subst q)) in
+  let s := eval asimpl_unfold in s in
   exact (MkSimplCSubst r s (eval_subst_sound q))
   : typeclass_instances.
 

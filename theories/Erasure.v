@@ -315,7 +315,7 @@ Proof.
     2:{ eapply rscoping_comp_upren. assumption. }
     destruct_ifs. all: try solve [ eauto ].
     2:{ unfold close. ssimpl. cbn. unfold cty_lift. rasimpl. reflexivity. }
-    rasimpl. asimpl. unfold nones. rasimpl. reflexivity.
+    rasimpl. unfold nones. rasimpl. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.

@@ -1288,6 +1288,14 @@ Proof.
   - reflexivity.
 Qed.
 
+Lemma psubst_SS' :
+  ∀ m Δ Γ σ n,
+    psubst (m :: Δ) (m :: Γ) (var 0 .: σ >> ren_term S) (S (S n)) =
+    plus 2 ⋅ psubst Δ Γ σ n.
+Proof.
+  apply psubst_SS.
+Qed.
+
 Transparent epm_lift rpm_lift.
 
 Lemma psubst_epm_lift :
@@ -1369,7 +1377,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       f_equal. all: f_equal. all: f_equal.
       all: eapply ext_cterm. all: rasimpl. all: intros [].
@@ -1384,7 +1392,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       f_equal. all: f_equal. all: f_equal.
       all: eapply ext_cterm. all: rasimpl. all: intros [].
@@ -1399,7 +1407,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       unfold cty_lift. f_equal. all: f_equal.
       all: unfold close. all: rasimpl.
@@ -1417,8 +1425,8 @@ Proof.
       2:{
         unfold close. rasimpl. eapply ext_cterm.
         intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl.
-        rewrite rinstInst'_cterm. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl.
+        unfold funcomp. rewrite rinstInst'_cterm. reflexivity.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal.
       all: unfold close. all: rasimpl.
@@ -1436,7 +1444,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: rasimpl.
@@ -1452,7 +1460,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: rasimpl.
@@ -1468,7 +1476,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: rasimpl.
@@ -1485,8 +1493,8 @@ Proof.
       all: f_equal.
       2:{
         unfold close. rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl.
-        erewrite rinstInst'_cterm. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl.
+        unfold funcomp. erewrite rinstInst'_cterm. reflexivity.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: rasimpl.
@@ -1504,7 +1512,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: rasimpl.
@@ -1520,7 +1528,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: rasimpl.
@@ -1536,7 +1544,7 @@ Proof.
       2:{ rasimpl. reflexivity. }
       2:{
         rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
       }
       cbn. f_equal. f_equal. all: f_equal. all: f_equal.
       all: rasimpl.
@@ -1556,8 +1564,8 @@ Proof.
       2:{
         unfold close. rasimpl. eapply ext_cterm.
         intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl.
-        erewrite rinstInst'_cterm. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl.
+        unfold funcomp. erewrite rinstInst'_cterm. reflexivity.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: rasimpl.
@@ -1570,19 +1578,19 @@ Proof.
     + f_equal. all: f_equal. 1: f_equal.
       * rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
     + f_equal. all: f_equal. 1: f_equal.
       * rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
     + f_equal. all: f_equal. 1: f_equal.
       * rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        unfold funcomp. rewrite psubst_SS. rasimpl. reflexivity.
+        unfold_funcomp. rewrite psubst_SS'. rasimpl. reflexivity.
     + f_equal. unfold close.
       rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-      unfold funcomp. rewrite psubst_SS. rasimpl.
-      rewrite rinstInst'_cterm. reflexivity.
+      unfold_funcomp. rewrite psubst_SS'. rasimpl.
+      unfold funcomp. rewrite rinstInst'_cterm. reflexivity.
   - cbn.
     erewrite IHt1. 2,3: eassumption.
     erewrite IHt2.
@@ -1594,13 +1602,13 @@ Proof.
     destruct_ifs. all: mode_eqs.
     + cbn. f_equal. unfold close. rasimpl.
       eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-      unfold funcomp.
-      rewrite psubst_SS. rasimpl.
-      erewrite rinstInst'_cterm. reflexivity.
+      unfold_funcomp.
+      rewrite psubst_SS'. rasimpl.
+      unfold funcomp. erewrite rinstInst'_cterm. reflexivity.
     + cbn. unfold plam. f_equal. f_equal.
       * rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn. 1,2: reflexivity.
-        rewrite psubst_SS. rasimpl. reflexivity.
+        rewrite psubst_SS'. rasimpl. reflexivity.
     + cbn. unfold plam. f_equal. f_equal.
       * rasimpl. reflexivity.
       * rasimpl. eapply ext_cterm. intros [| []]. all: cbn.
@@ -1610,7 +1618,7 @@ Proof.
         --- destruct_ifs. all: mode_eqs. all: try discriminate.
           all: try reflexivity.
           destruct m. all: discriminate.
-        --- rewrite psubst_SS. rasimpl. reflexivity.
+        --- rewrite psubst_SS'. rasimpl. reflexivity.
   - cbn.
     erewrite md_subst. 2,3: eassumption.
     erewrite IHt1. 2,3: eassumption.
