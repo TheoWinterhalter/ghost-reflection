@@ -14,7 +14,7 @@
 From Coq Require Import Utf8 List Bool Lia.
 From Equations Require Import Equations.
 From GhostTT.autosubst Require Import CCAST GAST core unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations ContextDecl
+From GhostTT Require Import Util BasicAST SubstNotations RAsimpl ContextDecl
   Scoping TermMode CastRemoval Typing BasicMetaTheory CScoping CTyping
   CCMetaTheory Admissible Erasure Revival Param Model.
 From Coq Require Import Setoid Morphisms Relation_Definitions.

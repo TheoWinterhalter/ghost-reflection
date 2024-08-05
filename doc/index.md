@@ -17,6 +17,7 @@ and of universe levels. `autosubst/CCAST.sig` and `autosubst/GAST.sig` are used
 to generate the [autosubst/CCAST] and [autosubst/GAST] modules.
 [autosubst/core], [autosubst/unscoped] and [SubstNotations] contain the
 Autosubst library and some notations.
+[autosubst/RAsimpl] contains implementation for the `rasimpl` tactic.
 
 [ContextDecl] defines contexts for both theories.
 
@@ -25,6 +26,7 @@ Autosubst library and some notations.
 [autosubst/GAST]: coqdoc/GhostTT.autosubst.GAST.html
 [autosubst/core]: coqdoc/GhostTT.autosubst.core.html
 [autosubst/unscoped]: coqdoc/GhostTT.autosubst.unscoped.html
+[autosubst/RAsimpl]: coqdoc/GhostTT.autosubst.RAsimpl.html
 [SubstNotations]: coqdoc/GhostTT.SubstNotations.html
 [ContextDecl]: coqdoc/GhostTT.ContextDecl.html
 
