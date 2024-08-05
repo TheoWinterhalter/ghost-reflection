@@ -56,7 +56,7 @@ Proof.
   intros Γ Δ ρ t m hρ ht.
   pose proof rscoping_shift as lem.
   induction ht in Γ, ρ, hρ, lem |- *.
-  all: solve [ asimpl ; econstructor ; eauto ].
+  all: solve [ rasimpl ; econstructor ; eauto ].
 Qed.
 
 Lemma sscoping_weak :
@@ -69,7 +69,7 @@ Proof.
   - constructor.
   - constructor.
     + assumption.
-    + asimpl. eapply scoping_ren. 2: eassumption.
+    + rasimpl. eapply scoping_ren. 2: eassumption.
       apply rscoping_S.
 Qed.
 
@@ -81,22 +81,22 @@ Lemma scoping_subst :
 Proof.
   intros Γ Δ σ t m hσ ht.
   induction ht in Γ, σ, hσ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ].
+  all: try solve [ rasimpl ; econstructor ; eauto ].
   - rename H into hx, Γ0 into Δ.
-    asimpl. induction hσ in x, hx |- *. 1: destruct x ; discriminate.
+    rasimpl. induction hσ in x, hx |- *. 1: destruct x ; discriminate.
     destruct x.
     + simpl in *. inversion hx. subst. assumption.
     + apply IHhσ. simpl in hx. assumption.
-  - asimpl. constructor.
+  - rasimpl. constructor.
     + eauto.
     + apply IHht2. constructor.
-      * asimpl. apply sscoping_weak. assumption.
-      * asimpl. constructor. reflexivity.
-  - asimpl. constructor.
+      * rasimpl. apply sscoping_weak. assumption.
+      * rasimpl. constructor. reflexivity.
+  - rasimpl. constructor.
     + eauto.
     + apply IHht2. constructor.
-      * asimpl. apply sscoping_weak. assumption.
-      * asimpl. constructor. reflexivity.
+      * rasimpl. apply sscoping_weak. assumption.
+      * rasimpl. constructor. reflexivity.
 Qed.
 
 Lemma sscoping_shift :
@@ -106,8 +106,8 @@ Lemma sscoping_shift :
 Proof.
   intros Γ Δ mx σ h.
   constructor.
-  - asimpl. apply sscoping_weak. assumption.
-  - asimpl. constructor. reflexivity.
+  - rasimpl. apply sscoping_weak. assumption.
+  - rasimpl. constructor. reflexivity.
 Qed.
 
 #[export] Instance rscoping_morphism :
@@ -117,6 +117,18 @@ Proof.
   revert ρ ρ' e. wlog_iff. intros ρ ρ' e h.
   intros n m en. rewrite <- e. apply h. assumption.
 Qed.
+
+Lemma autosubst_simpl_rscoping :
+  ∀ Γ Δ r s,
+    RenSimplification r s →
+    rscoping Γ r Δ ↔ rscoping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply rscoping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_rscoping : rasimpl_outermost.
 
 #[export] Instance sscoping_morphism :
   Proper (eq ==> pointwise_relation _ eq ==> eq ==> iff) sscoping.
@@ -130,6 +142,18 @@ Proof.
     + rewrite <- e. assumption.
 Qed.
 
+Lemma autosubst_simpl_sscoping :
+  ∀ Γ Δ r s,
+    SubstSimplification r s →
+    sscoping Γ r Δ ↔ sscoping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply sscoping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_sscoping : rasimpl_outermost.
+
 Lemma sscoping_ids :
   ∀ Γ,
     sscoping Γ ids Γ.
@@ -137,7 +161,7 @@ Proof.
   intros Γ. induction Γ as [| m Γ ih].
   - constructor.
   - constructor.
-    + eapply sscoping_weak with (m := m) in ih. asimpl in ih. assumption.
+    + eapply sscoping_weak with (m := m) in ih. rasimpl in ih. assumption.
     + constructor. reflexivity.
 Qed.
 
@@ -148,8 +172,8 @@ Lemma sscoping_one :
 Proof.
   intros Γ u mx h.
   constructor.
-  - asimpl. apply sscoping_ids.
-  - asimpl. assumption.
+  - rasimpl. apply sscoping_ids.
+  - rasimpl. assumption.
 Qed.
 
 (** Cast removal preserves modes **)
@@ -185,7 +209,7 @@ Proof.
   intros t ρ.
   induction t in ρ |- *.
   all: try reflexivity.
-  all: solve [ simpl ; asimpl ; repeat core.unfold_funcomp ; f_equal ; auto ].
+  all: solve [ simpl ; rasimpl ; repeat core.unfold_funcomp ; f_equal ; auto ].
 Qed.
 
 (** Cast removal commutes with substitution **)
@@ -202,17 +226,17 @@ Proof.
   { intros θ u.
     apply ext_term. intros n.
     destruct n.
-    - asimpl. repeat core.unfold_funcomp. simpl. reflexivity.
-    - asimpl. repeat core.unfold_funcomp. simpl.
+    - rasimpl. repeat core.unfold_funcomp. simpl. reflexivity.
+    - rasimpl. repeat core.unfold_funcomp. simpl.
       apply castrm_ren.
   }
   induction t in σ |- *. all: try reflexivity.
-  all: try solve [ asimpl ; repeat core.unfold_funcomp ; simpl ; f_equal ; auto ].
-  - asimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
-    asimpl. repeat core.unfold_funcomp. rewrite IHt2.
+  all: try solve [ rasimpl ; repeat core.unfold_funcomp ; simpl ; f_equal ; auto ].
+  - rasimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
+    rasimpl. repeat core.unfold_funcomp. rewrite IHt2.
     auto.
-  - asimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
-    asimpl. repeat core.unfold_funcomp. rewrite IHt2.
+  - rasimpl. repeat core.unfold_funcomp. simpl. f_equal. 1: auto.
+    rasimpl. repeat core.unfold_funcomp. rewrite IHt2.
     auto.
 Qed.
 
@@ -417,8 +441,8 @@ Proof.
   - cbn in e. discriminate.
   - cbn in e. cbn.
     eapply h in e as e'. destruct e' as [m [e1 e2]].
-    ssimpl. exists (S m). intuition eauto.
-    rewrite e1. ssimpl. reflexivity.
+    unfold core.funcomp. exists (S m). intuition eauto.
+    rewrite e1. rasimpl. reflexivity.
 Qed.
 
 Lemma rscoping_comp_S :
@@ -560,10 +584,22 @@ Proof.
   intros n m A en. rewrite <- e.
   eapply h in en as [B [en eB]].
   eexists. split. 1: eassumption.
-  asimpl. rewrite <- eB.
+  rasimpl. rasimpl in eB. rewrite <- eB.
   apply extRen_term. intro x. cbn. core.unfold_funcomp.
   rewrite <- e. reflexivity.
 Qed.
+
+Lemma autosubst_simpl_rtyping :
+  ∀ Γ Δ r s,
+    RenSimplification r s →
+    rtyping Γ r Δ ↔ rtyping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply rtyping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_rtyping : rasimpl_outermost.
 
 Lemma rtyping_scoping :
   ∀ Γ Δ ρ,
@@ -589,11 +625,11 @@ Proof.
   destruct y.
   - cbn in *. inversion hy. eexists.
     split. 1: reflexivity.
-    asimpl. reflexivity.
+    rasimpl. reflexivity.
   - cbn in *. eapply hρ in hy. destruct hy as [C [en eC]].
     eexists. split. 1: eassumption.
-    asimpl.
-    apply (f_equal (λ t, S ⋅ t)) in eC. asimpl in eC.
+    rasimpl.
+    apply (f_equal (λ t, S ⋅ t)) in eC. rasimpl in eC.
     assumption.
 Qed.
 
@@ -602,9 +638,9 @@ Lemma rtyping_S :
     rtyping (Γ ,, (m, A)) S Γ.
 Proof.
   intros Γ m A. intros x mx B e.
-  simpl. asimpl.
+  simpl. rasimpl.
   eexists. split. 1: eassumption.
-  asimpl. reflexivity.
+  rasimpl. reflexivity.
 Qed.
 
 Lemma rscoping_sscoping :
@@ -616,7 +652,7 @@ Proof.
   induction Δ as [| m Δ ih] in ρ, h |- *.
   - constructor.
   - constructor.
-    + apply ih. asimpl.
+    + apply ih. rasimpl.
       intros x mx e.
       apply h. cbn. assumption.
     + constructor. apply h. reflexivity.
@@ -670,18 +706,18 @@ Lemma conv_ren :
 Proof.
   intros Γ Δ ρ u v hρ h.
   induction h in Γ, ρ, hρ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ; scoping_ren_finish ].
-  - asimpl. eapply meta_conv_trans_r. 1: econstructor.
+  all: try solve [ rasimpl ; econstructor ; eauto ; scoping_ren_finish ].
+  - rasimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try scoping_ren_finish.
-    asimpl. reflexivity.
-  - asimpl. eapply conv_trans. 1: econstructor.
+    rasimpl. reflexivity.
+  - rasimpl. eapply conv_trans. 1: econstructor.
     all: try scoping_ren_finish. 1: auto.
     cbn. gconv.
-    + ssimpl. gconv.
-    + ssimpl. gconv.
+    + rasimpl. gconv.
+    + rasimpl. gconv.
   - constructor. all: auto.
     eapply IHh2. apply rtyping_shift. assumption.
-  - asimpl. constructor. 1: auto.
+  - rasimpl. constructor. 1: auto.
     eapply IHh2. apply rtyping_shift. assumption.
 Qed.
 
@@ -693,37 +729,37 @@ Lemma typing_ren :
 Proof.
   intros Γ Δ ρ t A hρ ht.
   induction ht in Γ, ρ, hρ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ; scoping_ren_finish ].
-  - asimpl. eapply hρ in H as [B [? eB]].
-    asimpl in eB. rewrite eB.
+  all: try solve [ rasimpl ; econstructor ; eauto ; scoping_ren_finish ].
+  - rasimpl. eapply hρ in H as [B [? eB]].
+    rasimpl in eB. rewrite eB.
     econstructor. eassumption.
-  - asimpl. econstructor. all: eauto. all: try scoping_ren_finish.
+  - rasimpl. econstructor. all: eauto. all: try scoping_ren_finish.
     eapply IHht2. eapply rtyping_shift. assumption.
-  - asimpl. econstructor. all: eauto. all: try scoping_ren_finish.
+  - rasimpl. econstructor. all: eauto. all: try scoping_ren_finish.
     + eapply IHht2. eapply rtyping_shift. assumption.
     + eapply IHht3. eapply rtyping_shift. assumption.
-  - asimpl. asimpl in IHht1. asimpl in IHht4.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht4.
     eapply meta_conv. 1: econstructor. all: eauto. all: try scoping_ren_finish.
     1:{ eapply IHht4. eapply rtyping_shift. assumption. }
-    asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     econstructor. all: eauto. all: try scoping_ren_finish.
     eapply meta_conv. 1: apply IHht3. 1: auto.
-    f_equal. f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    f_equal. f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3. rasimpl in IHht4.
     econstructor. all: eauto. all: scoping_ren_finish.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3. rasimpl in IHht4.
     econstructor. all: eauto. all: try scoping_ren_finish.
     eapply meta_conv. 1: apply IHht4. 1: auto.
-    f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
-    asimpl in IHht5. asimpl in IHht6.
+    f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3. rasimpl in IHht4.
+    rasimpl in IHht5. rasimpl in IHht6.
     econstructor. 8: eauto. all: eauto. all: try scoping_ren_finish.
     + eapply meta_conv. 1: eauto.
-      f_equal. cbn. f_equal. f_equal. asimpl. reflexivity.
+      f_equal. cbn. f_equal. f_equal. rasimpl. reflexivity.
     + eapply meta_conv. 1: eauto.
-      f_equal. cbn. f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht2.
+      f_equal. cbn. f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht2.
     econstructor. all: eauto. all: try scoping_ren_finish.
     rewrite 2!castrm_ren.
     eapply conv_ren. all: eassumption.
@@ -751,9 +787,21 @@ Proof.
     + apply ih. intros n. apply e.
     + rewrite <- e. assumption.
     + rewrite <- e. eapply meta_conv. 1: eassumption.
-      asimpl. apply ext_term.
+      rasimpl. apply ext_term.
       intro. apply e.
 Qed.
+
+Lemma autosubst_simpl_styping :
+  ∀ Γ Δ r s,
+    SubstSimplification r s →
+    styping Γ r Δ ↔ styping Γ s Δ.
+Proof.
+  intros Γ Δ r s H.
+  apply styping_morphism. 1,3: auto.
+  apply H.
+Qed.
+
+#[export] Hint Rewrite -> autosubst_simpl_styping : rasimpl_outermost.
 
 Lemma styping_scoping :
   ∀ Γ Δ σ,
@@ -777,12 +825,12 @@ Proof.
     + assumption.
     + eapply scoping_ren. 2: eassumption.
       apply rscoping_S.
-    + asimpl. eapply meta_conv.
+    + rasimpl. eapply meta_conv.
       * eapply typing_ren. 2: eassumption.
-        intros n ? ? e. asimpl. cbn.
+        intros n ? ? e. rasimpl. cbn.
         eexists. split. 1: eassumption.
         reflexivity.
-      * asimpl. reflexivity.
+      * rasimpl. reflexivity.
 Qed.
 
 Lemma styping_shift :
@@ -792,11 +840,11 @@ Lemma styping_shift :
 Proof.
   intros Γ Δ mx A σ h.
   constructor.
-  - asimpl. apply styping_weak. assumption.
-  - asimpl. constructor. reflexivity.
-  - asimpl. eapply meta_conv.
+  - rasimpl. apply styping_weak. assumption.
+  - rasimpl. constructor. reflexivity.
+  - rasimpl. eapply meta_conv.
     + econstructor. cbn. reflexivity.
-    + asimpl. reflexivity.
+    + rasimpl. reflexivity.
 Qed.
 
 Lemma styping_ids :
@@ -807,11 +855,11 @@ Proof.
   - constructor.
   - constructor.
     + eapply styping_weak with (mx := m) (A := A) in ih.
-      asimpl in ih. assumption.
+      rasimpl in ih. assumption.
     + constructor. reflexivity.
     + eapply meta_conv. 1: econstructor.
       * cbn. reflexivity.
-      * asimpl. substify. reflexivity.
+      * rasimpl. substify. reflexivity.
 Qed.
 
 Lemma styping_one :
@@ -821,7 +869,7 @@ Lemma styping_one :
     styping Γ u.. (Γ ,, (mx, A)).
 Proof.
   intros Γ mx A u h hm.
-  constructor. all: asimpl. all: auto.
+  constructor. all: rasimpl. all: auto.
   apply styping_ids.
 Qed.
 
@@ -843,23 +891,23 @@ Lemma conv_subst :
 Proof.
   intros Γ Δ σ u v hσ h.
   induction h in Γ, σ, hσ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ; conv_subst_finish ].
-  - asimpl. eapply meta_conv_trans_r. 1: econstructor.
+  all: try solve [ rasimpl ; econstructor ; eauto ; conv_subst_finish ].
+  - rasimpl. eapply meta_conv_trans_r. 1: econstructor.
     all: try conv_subst_finish.
-    ssimpl. apply ext_term.
+    rasimpl. apply ext_term.
     intros [].
-    + asimpl. reflexivity.
-    + asimpl. reflexivity.
-  - cbn. ssimpl. eapply conv_trans.
+    + rasimpl. reflexivity.
+    + rasimpl. reflexivity.
+  - cbn. rasimpl. eapply conv_trans.
     1:{ econstructor. all: try conv_subst_finish. assumption. }
     gconv.
-    + ssimpl. gconv.
-    + apply meta_conv_refl. f_equal. ssimpl.
+    + rasimpl. gconv.
+    + apply meta_conv_refl. f_equal. rasimpl.
       eapply ext_term. intro x.
-      ssimpl. cbn. ssimpl. reflexivity.
-  - asimpl. constructor. all: auto.
+      rasimpl. cbn. rasimpl. reflexivity.
+  - rasimpl. constructor. all: auto.
     eapply IHh2. cbn. apply sscoping_shift. assumption.
-  - asimpl. constructor. 1: auto.
+  - rasimpl. constructor. 1: auto.
     eapply IHh2. cbn. apply sscoping_shift. assumption.
 Qed.
 
@@ -873,7 +921,7 @@ Proof.
   - constructor.
   - constructor.
     + assumption.
-    + ssimpl. eapply scoping_castrm. assumption.
+    + rasimpl. eapply scoping_castrm. assumption.
 Qed.
 
 Lemma typing_subst :
@@ -884,42 +932,42 @@ Lemma typing_subst :
 Proof.
   intros Γ Δ σ t A hσ ht.
   induction ht in Γ, σ, hσ |- *.
-  all: try solve [ asimpl ; econstructor ; eauto ; scoping_subst_finish ].
-  - asimpl.
+  all: try solve [ rasimpl ; econstructor ; eauto ; scoping_subst_finish ].
+  - rasimpl.
     induction hσ in x, H |- *. 1: destruct x ; discriminate.
     destruct x.
     + cbn in H. inversion H. subst. assumption.
     + apply IHhσ. assumption.
-  - asimpl. econstructor. all: eauto. all: try scoping_subst_finish.
+  - rasimpl. econstructor. all: eauto. all: try scoping_subst_finish.
     eapply IHht2. eapply styping_shift. assumption.
-  - asimpl. econstructor. all: eauto. all: try scoping_subst_finish.
+  - rasimpl. econstructor. all: eauto. all: try scoping_subst_finish.
     + eapply IHht2. eapply styping_shift. assumption.
     + eapply IHht3. eapply styping_shift. assumption.
-  - asimpl. asimpl in IHht1.
+  - rasimpl. rasimpl in IHht1.
     eapply meta_conv. 1: econstructor.
     all: eauto. all: try scoping_subst_finish.
     1:{ eapply IHht4. eapply styping_shift. assumption. }
-    asimpl. apply ext_term. intros [].
-    + asimpl. reflexivity.
-    + asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3.
+    rasimpl. apply ext_term. intros [].
+    + rasimpl. reflexivity.
+    + rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3.
     econstructor. all: eauto. all: try scoping_subst_finish.
     eapply meta_conv. 1: apply IHht3. 1: auto.
-    f_equal. f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+    f_equal. f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3. rasimpl in IHht4.
     econstructor. all: eauto. all: scoping_subst_finish.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3. rasimpl in IHht4.
     econstructor. all: eauto. all: try scoping_subst_finish.
     eapply meta_conv. 1: apply IHht4. 1: auto.
-    f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht1. asimpl in IHht2. asimpl in IHht3. asimpl in IHht4.
-    asimpl in IHht5. asimpl in IHht6.
+    f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht1. rasimpl in IHht2. rasimpl in IHht3. rasimpl in IHht4.
+    rasimpl in IHht5. rasimpl in IHht6.
     econstructor. 8: eauto. all: eauto. all: try scoping_subst_finish.
     + eapply meta_conv. 1: eauto.
-      f_equal. cbn. f_equal. f_equal. asimpl. reflexivity.
+      f_equal. cbn. f_equal. f_equal. rasimpl. reflexivity.
     + eapply meta_conv. 1: eauto.
-      f_equal. cbn. f_equal. asimpl. reflexivity.
-  - asimpl. asimpl in IHht2.
+      f_equal. cbn. f_equal. rasimpl. reflexivity.
+  - rasimpl. rasimpl in IHht2.
     econstructor. all: eauto. all: try scoping_subst_finish.
     rewrite 2!castrm_subst.
     eapply conv_subst. 2: eassumption.
@@ -1499,14 +1547,14 @@ Proof.
     + induction hΓ as [| Γ my j B hΓ ih hB] in x, H |- *. 1: destruct x ; discriminate.
       destruct x.
       * cbn in *. inversion H. subst.
-        exists j. asimpl.
+        exists j. rasimpl.
         eapply meta_conv. 1: eapply typing_ren.
         -- apply rtyping_S.
         -- eassumption.
         -- reflexivity.
       * cbn in H. eapply ih in H as [i h].
         eapply typing_ren in h. 2: eapply rtyping_S with (m := my) (A := B).
-        asimpl in h.
+        rasimpl in h.
         exists i. assumption.
   - split.
     + cbn. constructor. 1,2: auto.
@@ -1531,7 +1579,7 @@ Proof.
       * constructor. all: auto with datatypes.
       * contradiction.
     + eexists. eapply meta_conv. 1: econstructor. 4: shelve. all: eauto.
-      * asimpl. constructor.
+      * rasimpl. constructor.
       * pose proof IHh2 as hP.
         forward hP by auto. destruct hP as [hsP [l hP]].
         eapply type_pi_inv in hP. intuition assumption.
@@ -1660,7 +1708,7 @@ Proof.
             + eapply meta_conv.
               * gtype. reflexivity.
               * reflexivity.
-          - cbn. f_equal. ssimpl. rewrite instId'_term. reflexivity.
+          - cbn. f_equal. rasimpl. reflexivity.
         }
         all: gtype.
       * reflexivity.
