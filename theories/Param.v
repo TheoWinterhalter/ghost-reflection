@@ -4307,7 +4307,7 @@ Proof.
         }
         2:{ intros y ey. rewrite <- nth_error_skipn in ey. assumption. }
         rasimpl. eapply extRen_cterm. intro n.
-        rewrite pren_comp_S. rewrite pren_plus.
+        minimize. rewrite pren_comp_S. rewrite pren_plus.
         unfold vreg. lia.
     + eapply ccmeta_conv.
       * econstructor. eapply param_ctx_vpar. all: eassumption.
@@ -4319,12 +4319,12 @@ Proof.
         2:{ intros y ey. rewrite <- nth_error_skipn in ey. assumption. }
         destruct_ifs.
         -- rasimpl. f_equal.
-          ++ eapply extRen_cterm. intro. rasimpl.
+          ++ eapply extRen_cterm. intro. minimize.
             rewrite pren_comp_S. rewrite pren_plus.
             unfold vpar. unfold shift, funcomp. lia.
           ++ rewrite epm_lift_eq. cbn. f_equal. unfold vpar, vreg. lia.
         -- rasimpl. f_equal.
-          ++ eapply extRen_cterm. intro. rasimpl.
+          ++ eapply extRen_cterm. intro. minimize.
             rewrite pren_comp_S. rewrite pren_plus.
             unfold vpar. unfold shift, funcomp. lia.
           ++ rewrite epm_lift_eq. cbn. f_equal. unfold vpar, vreg. lia.

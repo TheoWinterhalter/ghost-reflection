@@ -410,19 +410,11 @@ Ltac quote_subst s :=
     let q := quote_subst s in
     let q' := quote_subst t in
     constr:(qsubst_comp q q')
-  | λ x, subst_cterm ?s (?t x) =>
-    let q := quote_subst s in
-    let q' := quote_subst t in
-    constr:(qsubst_comp q q')
   | funcomp (ren_cterm ?r) ?s =>
     let qr := quote_ren r in
     let qs := quote_subst s in
     constr:(qsubst_rcomp qr qs)
   | funcomp ?s ?r =>
-    let qs := quote_subst s in
-    let qr := quote_ren r in
-    constr:(qsubst_compr qs qr)
-  | λ x, ?s (?r x) =>
     let qs := quote_subst s in
     let qr := quote_ren r in
     constr:(qsubst_compr qs qr)
@@ -432,6 +424,13 @@ Ltac quote_subst s :=
     constr:(qsubst_cons qt q)
   | ids => constr:(qsubst_id)
   | cvar => constr:(qsubst_id)
+  (* Instead of minimize *)
+  | λ x, ?g (?f x) =>
+    let t := constr:(funcomp g f) in
+    quote_subst t
+  | λ x, ?f x =>
+    let t := constr:(f) in
+    quote_subst t
   | _ => constr:(qsubst_atom s)
   end
 

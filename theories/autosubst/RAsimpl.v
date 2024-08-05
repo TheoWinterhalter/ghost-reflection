@@ -196,10 +196,6 @@ Ltac quote_ren r :=
     let q := quote_ren r in
     let q' := quote_ren r' in
     constr:(qren_comp q q')
-  | λ x, ?r (?r' x) =>
-    let q := quote_ren r in
-    let q' := quote_ren r' in
-    constr:(qren_comp q q')
   | scons ?n ?r =>
     let qn := quote_nat n in
     let q := quote_ren r in
@@ -208,6 +204,13 @@ Ltac quote_ren r :=
   | λ x, x => constr:(qren_id)
   | shift => constr:(qren_shift)
   | S => constr:(qren_shift)
+  (* Instead of minimize *)
+  | λ x, ?g (?f x) =>
+    let t := constr:(funcomp g f) in
+    quote_ren t
+  | λ x, ?f x =>
+    let t := constr:(f) in
+    quote_ren t
   | _ => constr:(qren_atom r)
   end.
 
@@ -286,10 +289,8 @@ Ltac rasimpl'_outermost :=
 
 Ltac rasimpl :=
   aunfold ;
-  minimize ;
   repeat rasimpl' ;
-  repeat rasimpl'_outermost ;
-  minimize.
+  repeat rasimpl'_outermost.
 
 (* Taken from core.minimize *)
 Ltac minimize_in h :=
@@ -308,10 +309,8 @@ Ltac rasimpl'_outermost_in h :=
 
 Ltac rasimpl_in h :=
   aunfold in h ;
-  minimize in h ;
   repeat rasimpl'_in h ;
-  repeat rasimpl'_outermost_in h ;
-  minimize in h.
+  repeat rasimpl'_outermost_in h.
 
 Tactic Notation "rasimpl" "in" hyp(h) :=
   rasimpl_in h.
