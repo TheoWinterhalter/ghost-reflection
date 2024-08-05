@@ -17,7 +17,9 @@ and of universe levels. `autosubst/CCAST.sig` and `autosubst/GAST.sig` are used
 to generate the [autosubst/CCAST] and [autosubst/GAST] modules.
 [autosubst/core], [autosubst/unscoped] and [SubstNotations] contain the
 Autosubst library and some notations.
-[autosubst/RAsimpl] contains implementation for the `rasimpl` tactic.
+[autosubst/RAsimpl] contains implementation for the `rasimpl` tactic,
+whereas [autosubst/CCAST_rasimpl] and [autosubst/GAST_rasimpl] provide the
+corresponding instances for CC and GTT.
 
 [ContextDecl] defines contexts for both theories.
 

@@ -5,7 +5,7 @@
 **)
 
 From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import core unscoped GAST CCAST.
+From GhostTT.autosubst Require Import core unscoped RAsimpl CCAST_rasimpl GAST_rasimpl GAST CCAST.
 From Coq Require Import Setoid Morphisms Relation_Definitions.
 Import ListNotations.
 

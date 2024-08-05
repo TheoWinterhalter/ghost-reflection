@@ -1,6 +1,6 @@
 From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import GAST unscoped.
-From GhostTT Require Import Util BasicAST SubstNotations RAsimpl ContextDecl CastRemoval
+From GhostTT.autosubst Require Import GAST unscoped RAsimpl CCAST_rasimpl GAST_rasimpl.
+From GhostTT Require Import Util BasicAST SubstNotations ContextDecl CastRemoval
   TermMode Scoping.
 From GhostTT Require Export Univ TermNotations.
 

@@ -9,6 +9,8 @@ theories/autosubst/unscoped.v
 theories/autosubst/GAST.v
 theories/autosubst/CCAST.v
 theories/autosubst/RAsimpl.v
+theories/autosubst/CCAST_rasimpl.v
+theories/autosubst/GAST_rasimpl.v
 
 theories/SubstNotations.v
 

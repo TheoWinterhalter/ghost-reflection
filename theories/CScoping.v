@@ -5,8 +5,8 @@
 **)
 
 From Coq Require Import Utf8 List.
-From GhostTT.autosubst Require Import CCAST unscoped.
-From GhostTT Require Import BasicAST SubstNotations RAsimpl ContextDecl.
+From GhostTT.autosubst Require Import CCAST unscoped RAsimpl CCAST_rasimpl GAST_rasimpl.
+From GhostTT Require Import BasicAST SubstNotations ContextDecl.
 
 Import ListNotations.
 
