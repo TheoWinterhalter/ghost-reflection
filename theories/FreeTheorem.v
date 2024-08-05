@@ -210,7 +210,7 @@ Proof.
       2:{
         eapply ccmeta_conv.
         - ertype. eapply ccmeta_conv. 1: ertype.
-          cbn. lhs_ssimpl. reflexivity.
+          cbn. rasimpl. unfold funcomp, shift. cbn. reflexivity.
         - cbn. reflexivity.
       }
       eapply ccmeta_conv.
@@ -230,7 +230,7 @@ Proof.
       2:{
         eapply ccmeta_conv.
         - ertype. eapply ccmeta_conv. 1: ertype.
-          cbn. lhs_ssimpl. reflexivity.
+          cbn. rasimpl. unfold shift, funcomp. cbn. reflexivity.
         - cbn. reflexivity.
       }
       eapply ccmeta_conv.

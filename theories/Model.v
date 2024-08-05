@@ -131,11 +131,11 @@ Proof.
   - cbn. f_equal. 1: eauto.
     rewrite IHt2. apply ext_term.
     intros []. 1: reflexivity.
-    cbn. ssimpl. rewrite urm_ren. reflexivity.
+    cbn. unfold_funcomp. rewrite urm_ren. reflexivity.
   - cbn. f_equal. 1:eauto.
     rewrite IHt2. apply ext_term.
     intros []. 1: reflexivity.
-    cbn. ssimpl. rewrite urm_ren. reflexivity.
+    cbn. unfold_funcomp. rewrite urm_ren. reflexivity.
 Qed.
 
 Lemma urm_scoping :
@@ -256,7 +256,7 @@ Proof.
   - constructor.
   - constructor.
     + assumption.
-    + ssimpl. eapply urm_scoping. assumption.
+    + rasimpl. eapply urm_scoping. assumption.
 Qed.
 
 (* Conversion only requires the scope not the full context *)
