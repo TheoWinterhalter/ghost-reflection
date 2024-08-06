@@ -403,9 +403,6 @@ Ltac quote_subst s :=
   | funcomp cvar ?r =>
     let q := quote_ren r in
     constr:(qsubst_ren q)
-  | λ x, cvar (?r x) =>
-    let q := quote_ren r in
-    constr:(qsubst_ren q)
   | funcomp (subst_cterm ?s) ?t =>
     let q := quote_subst s in
     let q' := quote_subst t in
