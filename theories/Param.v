@@ -1305,7 +1305,6 @@ Lemma psubst_epm_lift :
 Proof.
   intros Γ Δ σ t ht.
   unfold epm_lift. rasimpl.
-  rewrite renSubst_cterm, substRen_cterm.
   eapply ext_cterm_scoped. 1: eassumption.
   intros x hx.
   unfold funcomp. unfold psubst. rewrite div2_vreg.
@@ -1411,7 +1410,6 @@ Proof.
       }
       unfold cty_lift. f_equal. all: f_equal.
       all: unfold close. all: rasimpl.
-      all: rewrite !substSubst_cterm.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: unfold funcomp.
@@ -1430,7 +1428,6 @@ Proof.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal.
       all: unfold close. all: rasimpl.
-      all: rewrite !substSubst_cterm.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: unfold funcomp.
@@ -1480,7 +1477,6 @@ Proof.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: rasimpl.
-      all: rewrite !substSubst_cterm.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: unfold funcomp.
@@ -1498,7 +1494,6 @@ Proof.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: rasimpl.
-      all: rewrite !substSubst_cterm.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: unfold funcomp.
@@ -1569,7 +1564,6 @@ Proof.
       }
       cbn. unfold cty_lift. f_equal. f_equal. all: f_equal. all: unfold close.
       all: rasimpl.
-      all: rewrite !substSubst_cterm.
       all: eapply ext_cterm. all: intros [].
       all: cbn. 1,3: reflexivity.
       all: unfold funcomp.

@@ -411,7 +411,7 @@ Ltac quote_subst s :=
     let qr := quote_ren r in
     let qs := quote_subst s in
     constr:(qsubst_rcomp qr qs)
-  | funcomp ?s ?r =>
+  | funcomp (Y := nat) ?s ?r =>
     let qs := quote_subst s in
     let qr := quote_ren r in
     constr:(qsubst_compr qs qr)
