@@ -5,9 +5,6 @@
     pertaining to constructors of the syntax, but this should be generated.
   - shift could be shiftn instead, as we often need those, better than using
     addn manually, and the tactic could handle those easily.
-  - Could call minimize only on subterms that are to be quoted as substitutions
-    or renamings. In fact could be on the fly like quote λ x, ?f x as
-    quote_subst f and so on for funcomp.
 
 **)
 
